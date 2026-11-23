@@ -123,19 +123,19 @@ const told = (resource: string, sermonsAt: NonNullable<CatalogueEntry['sermonsAt
 describe('logosArchives: the rows of the sheet’s In Logos group', () => {
   const place = { book: 'rom', chapter: 5, from: 8, to: 8 };
   const ROMANS_8 = [{ book: 'rom', chapter: 5, from: 8, to: 8, at: 'ref=Bible.Ro5.8' }];
-  const books = [told('LLS:SO1COR', ROMANS_8), told('LLS:FRESHSERMS', ROMANS_8)];
+  const books = [told('LLS:NWOLDSCOFLD', ROMANS_8), told('LLS:FRESHSERMS', ROMANS_8)];
 
   it('is one row for each sermon book that is On (one once Pinned reads as On), by name, each a link at the verse', () => {
-    const rows = logosArchives(place, states({ 'LLS:SO1COR': 'pinned', 'LLS:FRESHSERMS': 'on' }), books);
-    expect(rows.map((r) => r.title)).toEqual(['Fresh Sermons', 'Sermon Outlines on 1 Corinthians']);
-    expect(rows[1].open).toEqual({ url: 'logosres:LLS:SO1COR;ref=Bible.Ro5.8', fallback: 'https://ref.ly/logosres/LLS%3ASO1COR?ref=Bible.Ro5.8' });
+    const rows = logosArchives(place, states({ 'LLS:NWOLDSCOFLD': 'pinned', 'LLS:FRESHSERMS': 'on' }), books);
+    expect(rows.map((r) => r.title)).toEqual(['Fresh Sermons', 'Things New and Old: Old and New Testament Studies']);
+    expect(rows[1].open).toEqual({ url: 'logosres:LLS:NWOLDSCOFLD;ref=Bible.Ro5.8', fallback: 'https://ref.ly/logosres/LLS%3ANWOLDSCOFLD?ref=Bible.Ro5.8' });
     expect(rows.every((r) => r.opensIn === 'logos')).toBe(true);
   });
 
   it('opens the sermon a passage or a chapter holds, wherever in it that sermon stands', () => {
-    const shelf = states({ 'LLS:SO1COR': 'on' });
-    expect(logosArchives({ book: 'rom', chapter: 5, from: 1, to: 11 }, shelf, books)[0].open.url).toBe('logosres:LLS:SO1COR;ref=Bible.Ro5.8');
-    expect(logosArchives({ book: 'rom', chapter: 5 }, shelf, books)[0].open.url).toBe('logosres:LLS:SO1COR;ref=Bible.Ro5.8');
+    const shelf = states({ 'LLS:NWOLDSCOFLD': 'on' });
+    expect(logosArchives({ book: 'rom', chapter: 5, from: 1, to: 11 }, shelf, books)[0].open.url).toBe('logosres:LLS:NWOLDSCOFLD;ref=Bible.Ro5.8');
+    expect(logosArchives({ book: 'rom', chapter: 5 }, shelf, books)[0].open.url).toBe('logosres:LLS:NWOLDSCOFLD;ref=Bible.Ro5.8');
   });
 
   it('is none for an archive that is Off, or a book that is not a sermon archive', () => {
@@ -196,7 +196,7 @@ describe('sweep: every In Logos row has known coverage at its place and a link i
   // every pure sermon book told of a sermon at each place and one at none of them, besides the real catalogue's books
   const fixtures = [
     told('LLS:FRESHSERMS', [{ book: 'gal', chapter: 1, from: 4, to: 4, at: 'off=11' }, { book: 'psa', chapter: 23, from: 1, to: 6, at: 'ref=Bible.Ps23' }]),
-    told('LLS:SO1COR', [{ book: 'rom', chapter: 5, from: 6, to: 11, at: 'off=22' }, { book: 'jhn', chapter: 3, from: 16, to: 16, at: 'off=33' }, { book: 'pro', chapter: 19, from: 3, to: 3, at: 'off=44' }]),
+    told('LLS:NWOLDSCOFLD', [{ book: 'rom', chapter: 5, from: 6, to: 11, at: 'off=22' }, { book: 'jhn', chapter: 3, from: 16, to: 16, at: 'off=33' }, { book: 'pro', chapter: 19, from: 3, to: 3, at: 'off=44' }]),
     told('LLS:BEATITUDES', [{ book: 'mat', chapter: 5, from: 3, to: 12, at: 'off=55' }]),
     entryOf('LLS:DVNHLNGSRMNS')!,
   ];

@@ -146,9 +146,9 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     When he taps verse 8
     And he taps "Sermons · 4"
     Then the sheet opens with "On this verse", "In this chapter" and "In Logos"
-    And the part "In Logos" holds "Fresh Sermons" and "Sermon Outlines on 1 Corinthians"
-    And the archive "Sermon Outlines on 1 Corinthians" reads "Opens in Logos"
-    And the archive "Sermon Outlines on 1 Corinthians" is a link to "logosres:LLS:SO1COR;ref=Bible.Ro5.8" with the ref.ly address as its fallback and is 44 px tall
+    And the part "In Logos" holds "Fresh Sermons" and "Things New and Old: Old and New Testament Studies"
+    And the archive "Things New and Old: Old and New Testament Studies" reads "Opens in Logos"
+    And the archive "Things New and Old: Old and New Testament Studies" is a link to "logosres:LLS:NWOLDSCOFLD;ref=Bible.Ro5.8" with the ref.ly address as its fallback and is 44 px tall
     And the sheet still has 4 rows
 
   @uc-sermons @greek
@@ -157,7 +157,7 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     When he taps verse 8
     And he taps "Sermons · 4"
     Then the sheet opens with "On this verse", "In this chapter" and "In Logos"
-    And the part "In Logos" holds "Sermon Outlines on 1 Corinthians"
+    And the part "In Logos" holds "Things New and Old: Old and New Testament Studies"
 
   @uc-sermons @greek
   Scenario: A verse with no listed sermon still has the door where a sermon book holds a sermon on it
@@ -166,7 +166,7 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     Then the Verse view has a button "Sermons"
     When he taps "Sermons"
     Then the sheet says "No sermons here."
-    And the part "In Logos" holds only "Sermon Outlines on 1 Corinthians"
+    And the part "In Logos" holds only "Things New and Old: Old and New Testament Studies"
 
   @uc-sermons @greek
   Scenario: An archive that is Off, or one not on his shelf, is not in the group
@@ -177,11 +177,11 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
 
   @uc-sermons @greek
   Scenario: An archive on his shelf that his Library import lacks is not in the group
-    Given Lampas is opened on "Romans 5" with two sermon archives on his shelf and an import that holds only Sermon Outlines on 1 Corinthians
+    Given Lampas is opened on "Romans 5" with two sermon archives on his shelf and an import that holds only Things New and Old: Old and New Testament Studies
     When he taps verse 8
     And he taps "Sermons · 4"
     Then the sheet opens with "On this verse", "In this chapter" and "In Logos"
-    And the part "In Logos" holds "Sermon Outlines on 1 Corinthians"
+    And the part "In Logos" holds "Things New and Old: Old and New Testament Studies"
 
   @uc-sermons @greek
   Scenario: With Logos Off there is no In Logos group
@@ -195,4 +195,4 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     Given Lampas is opened on "Romans 5" with Logos On and two sermon archives on his shelf
     When he taps the place line
     And he taps "Sermons · 4"
-    Then the archive "Sermon Outlines on 1 Corinthians" is a link to "logosres:LLS:SO1COR;ref=Bible.Ro5.8" with the ref.ly address as its fallback and is 44 px tall
+    Then the archive "Things New and Old: Old and New Testament Studies" is a link to "logosres:LLS:NWOLDSCOFLD;ref=Bible.Ro5.8" with the ref.ly address as its fallback and is 44 px tall

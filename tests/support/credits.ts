@@ -121,6 +121,23 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/sermons/smale-logos/')) return 'Smale\'s The Pentecostal Blessing'; // likewise
   if (path.startsWith('public/sermons/wi-evans-logos/')) return 'W. I. Evans\'s This River Must Flow!'; // likewise
   if (path.startsWith('public/sermons/calvin-pt-logos/')) return 'Calvin\'s sermons in Portuguese'; // likewise
+  // batch 6 (mw-qtu3zvz.31); every one has book files
+  if (path.startsWith('public/sermons/evangelistic-sermon-outlines-logos/')) return 'Sermon Outlines: Evangelistic'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-for-growing-christians-logos/')) return 'Sermon Outlines: for Growing Christians'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-for-seekers-logos/')) return 'Sermon Outlines: for Seekers'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-for-special-days-logos/')) return 'Sermon Outlines: for Special Days'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-on-1-corinthians-logos/')) return 'Sermon Outlines: on 1 Corinthians'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-on-acts-logos/')) return 'Sermon Outlines: on Acts'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-on-christian-living-logos/')) return 'Sermon Outlines: on Christian Living'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-on-ephesians-logos/')) return 'Sermon Outlines: on Ephesians'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-on-galatians-ephesians-philippians-colossians-logos/')) return 'Sermon Outlines: on Galatians-Ephesians-Philippians-Colossians'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-on-romans-logos/')) return 'Sermon Outlines: on Romans'; // likewise
+  if (path.startsWith('public/sermons/sermon-outlines-on-the-gospels-logos/')) return 'Sermon Outlines: on the Gospels'; // likewise
+  if (path.startsWith('public/sermons/sermon-starters-volume-1-logos/')) return 'Sermon Starters, vol 1'; // likewise
+  if (path.startsWith('public/sermons/sermon-starters-volume-2-logos/')) return 'Sermon Starters, vol 2'; // likewise
+  if (path.startsWith('public/sermons/sermon-starters-volume-3-logos/')) return 'Sermon Starters, vol 3'; // likewise
+  if (path.startsWith('public/sermons/sermon-starters-volume-4-logos/')) return 'Sermon Starters, vol 4'; // likewise
+  if (path.startsWith('public/sermons/sermon-starters-volume-5-logos/')) return 'Sermon Starters, vol 5'; // likewise
   if (path.startsWith('public/themes/themes-tcr1934/')) return 'Thompson'; // the theme index's book files (scripts/sermons-build.ts): topics, part labels and passages of CrossWire's TCR module (Thompson's 1934 subject index), facts only
   if (path.startsWith('public/themes/themes-torrey/')) return 'Torrey'; // the same of CrossWire's Torrey module (R. A. Torrey's New Topical Textbook, 1897)
   if (path === 'public/themes/index.json') return 'Thompson'; // the index of the theme sources: each one's licence line and credit (each source has its own rule above)

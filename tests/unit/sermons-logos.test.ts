@@ -38,13 +38,30 @@ const ARCHIVES = [
   { id: 'watson-logos', resource: 'SRMNSBTTDWATSON', param: 'off', preacher: /Watson/, credit: 'Alexander Watson, Jesus the Giver and the Fulfiller of the New Law: A Course of Eight Sermons on the Beatitudes, in Logos (Faithlife)', minRows: 8 },
   { id: 'wi-evans-logos', resource: 'THSRVRMSTFLW', param: 'off', preacher: /Evans/, credit: 'W. I. Evans, This River Must Flow!, in Logos (Faithlife)', minRows: 1 },
   { id: 'calvin-pt-logos', resource: 'SRMSSBRLRPRV', param: 'off', preacher: /Calvin/, credit: 'John Calvin, Sermões sobre Eleição e Reprovação (Portuguese), in Logos (Faithlife)', minRows: 13 },
+  // batch 6 (mw-qtu3zvz.31): the eleven Sermon Outlines books and the five Sermon Starters volumes; every row names a passage (one of Acts's, Acts 8:26-40, runs past Lampas's Acts 8 and is left out)
+  { id: 'evangelistic-sermon-outlines-logos', resource: 'SOEVANG', param: 'off', preacher: /Butler/, credit: 'Burris Butler, Evangelistic Sermon Outlines, in Logos (Faithlife)', minRows: 29 },
+  { id: 'sermon-outlines-for-growing-christians-logos', resource: 'SOGROWCHR', param: 'off', preacher: /Hooks/, credit: 'Stephen M. Hooks, Sermon Outlines for Growing Christians, in Logos (Faithlife)', minRows: 27 },
+  { id: 'sermon-outlines-for-seekers-logos', resource: 'SOSEEKERS', param: 'off', preacher: /Shannon/, credit: 'J. Michael Shannon, Sermon Outlines for Seekers, in Logos (Faithlife)', minRows: 26 },
+  { id: 'sermon-outlines-for-special-days-logos', resource: 'SOSPECDAYS', param: 'off', preacher: /Shannon/, credit: 'Robert C. Shannon, Sermon Outlines for Special Days, in Logos (Faithlife)', minRows: 28 },
+  { id: 'sermon-outlines-on-1-corinthians-logos', resource: 'SO1COR', param: 'off', preacher: /Merold/, credit: 'Ben Merold, Sermon Outlines on 1 Corinthians, in Logos (Faithlife)', minRows: 28 },
+  { id: 'sermon-outlines-on-acts-logos', resource: 'SOACTS', param: 'off', preacher: /Crawford/, credit: 'C. C. Crawford, Sermon Outlines on Acts, in Logos (Faithlife)', minRows: 37 },
+  { id: 'sermon-outlines-on-christian-living-logos', resource: 'SOCHRLIV', param: 'off', preacher: /Butler/, credit: 'Burris Butler, Sermon Outlines on Christian Living, in Logos (Faithlife)', minRows: 30 },
+  { id: 'sermon-outlines-on-ephesians-logos', resource: 'SOEPH', param: 'off', preacher: /Strater/, credit: 'Floyd Strater, Sermon Outlines on Ephesians, in Logos (Faithlife)', minRows: 26 },
+  { id: 'sermon-outlines-on-galatians-ephesians-philippians-colossians-logos', resource: 'SOGEPC', param: 'off', preacher: /Stone/, credit: 'Sam E. Stone, Sermon Outlines on Galatians, Ephesians, Philippians, Colossians, in Logos (Faithlife)', minRows: 30 },
+  { id: 'sermon-outlines-on-romans-logos', resource: 'SOROM', param: 'off', preacher: /Hayden/, credit: 'Marshall W. Hayden, Sermon Outlines on Romans, in Logos (Faithlife)', minRows: 28 },
+  { id: 'sermon-outlines-on-the-gospels-logos', resource: 'SOGOSP', param: 'off', preacher: /Scott/, credit: 'Mark Scott, Sermon Outlines on the Gospels, in Logos (Faithlife)', minRows: 26 },
+  { id: 'sermon-starters-volume-1-logos', resource: 'SERMONSTARTERS01', param: 'off', preacher: /Butler/, credit: 'John G. Butler, Sermon Starters, Volume 1, in Logos (Faithlife)', minRows: 200 },
+  { id: 'sermon-starters-volume-2-logos', resource: 'SERMONSTARTERS02', param: 'off', preacher: /Butler/, credit: 'John G. Butler, Sermon Starters, Volume 2, in Logos (Faithlife)', minRows: 198 },
+  { id: 'sermon-starters-volume-3-logos', resource: 'SERMONSTARTERS03', param: 'off', preacher: /Butler/, credit: 'John G. Butler, Sermon Starters, Volume 3, in Logos (Faithlife)', minRows: 199 },
+  { id: 'sermon-starters-volume-4-logos', resource: 'SERMONSTARTERS04', param: 'off', preacher: /Butler/, credit: 'John G. Butler, Sermon Starters, Volume 4, in Logos (Faithlife)', minRows: 198 },
+  { id: 'sermon-starters-volume-5-logos', resource: 'SERMONSTARTERS05', param: 'off', preacher: /Butler/, credit: 'John G. Butler, Sermon Starters, Volume 5, in Logos (Faithlife)', minRows: 199 },
 ];
 // the lists whose rows name no preaching text (Piper's, Bunyan's, Kuyper's, The World's Great Sermons' and McPherson's only cite passages; Jimmy Evans's have dates and series, and Strong's are addresses and essays, no Scripture;
 // batch 5's Eyton, Chapin, Pope and Smale print no text over their sermons):
 // bundled, Off, and on no verse (tests/unit/sermons-no-ref.test.ts)
 const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos', 'kuyper-logos', 'worlds-great-sermons-logos', 'mcpherson-logos', 'strong-logos', 'eyton-logos', 'chapin-logos', 'pope-logos', 'smale-logos'];
 // every Logos list, in the index's order
-const ALL = ['greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos', 'spurgeon-sermon-notes-logos', 'wesley-logos', 'whitefield-logos', 'moody-logos', 'augustine-logos', 'chrysostom-logos', 'piper-logos', 'bunyan-logos', 'charles-wesley-logos', 'jimmy-evans-logos', 'shedd-logos', 'burroughs-logos', 'keach-logos', 'maclaren-logos', 'kuyper-logos', 'broadus-logos', 'worlds-great-sermons-logos', 'princeton-sermons-logos', 'mcpherson-logos', 'strong-logos', 'sedgwick-logos', 'moberly-logos', 'eyton-logos', 'chapin-logos', 'watson-logos', 'pope-logos', 'smale-logos', 'wi-evans-logos', 'calvin-pt-logos'];
+const ALL = ['greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos', 'spurgeon-sermon-notes-logos', 'wesley-logos', 'whitefield-logos', 'moody-logos', 'augustine-logos', 'chrysostom-logos', 'piper-logos', 'bunyan-logos', 'charles-wesley-logos', 'jimmy-evans-logos', 'shedd-logos', 'burroughs-logos', 'keach-logos', 'maclaren-logos', 'kuyper-logos', 'broadus-logos', 'worlds-great-sermons-logos', 'princeton-sermons-logos', 'mcpherson-logos', 'strong-logos', 'sedgwick-logos', 'moberly-logos', 'eyton-logos', 'chapin-logos', 'watson-logos', 'pope-logos', 'smale-logos', 'wi-evans-logos', 'calvin-pt-logos', 'evangelistic-sermon-outlines-logos', 'sermon-outlines-for-growing-christians-logos', 'sermon-outlines-for-seekers-logos', 'sermon-outlines-for-special-days-logos', 'sermon-outlines-on-1-corinthians-logos', 'sermon-outlines-on-acts-logos', 'sermon-outlines-on-christian-living-logos', 'sermon-outlines-on-ephesians-logos', 'sermon-outlines-on-galatians-ephesians-philippians-colossians-logos', 'sermon-outlines-on-romans-logos', 'sermon-outlines-on-the-gospels-logos', 'sermon-starters-volume-1-logos', 'sermon-starters-volume-2-logos', 'sermon-starters-volume-3-logos', 'sermon-starters-volume-4-logos', 'sermon-starters-volume-5-logos'];
 
 describe('the Logos archives in the sermon bundle', () => {
   it('are listed in sources.json at a commit that has them', () => {
@@ -188,5 +205,30 @@ describe('the bundled Logos sources', () => {
     const everyOn = (key: string) => (key.startsWith('sermons.') || key === 'resource.logos' ? 'on' : undefined);
     expect(enabledSources(sources(), everyOn, new Set(['LLS:SRMNSBTTD'])).map((s) => s.id)).toContain('moberly-logos');
     expect(enabledSources(sources(), everyOn, new Set()).map((s) => s.id)).not.toContain('moberly-logos');
+  });
+
+  it('name batch 6 as Sermon Outlines: <book> and Sermon Starters, vol N, all Off, and give Hayden’s “Condition? Critical!” on Romans 1:18 as a row that opens in Logos', async () => {
+    const batch6 = ALL.slice(-16);
+    const names = batch6.map((id) => index.sources.find((s) => s.id === id)!.name.replace(/ \(Logos library\)$/, ''));
+    expect(names).toEqual([
+      'Sermon Outlines: Evangelistic', 'Sermon Outlines: for Growing Christians', 'Sermon Outlines: for Seekers', 'Sermon Outlines: for Special Days', 'Sermon Outlines: on 1 Corinthians', 'Sermon Outlines: on Acts',
+      'Sermon Outlines: on Christian Living', 'Sermon Outlines: on Ephesians', 'Sermon Outlines: on Galatians-Ephesians-Philippians-Colossians', 'Sermon Outlines: on Romans', 'Sermon Outlines: on the Gospels',
+      'Sermon Starters, vol 1', 'Sermon Starters, vol 2', 'Sermon Starters, vol 3', 'Sermon Starters, vol 4', 'Sermon Starters, vol 5',
+    ]);
+    // SOSOULWIN, the one book of the series with no passage, is not bundled
+    expect(config.sources.filter((id) => /sosoul/i.test(id))).toEqual([]);
+    expect(logos().filter((s) => batch6.includes(s.id)).map((s) => s.default)).toEqual(batch6.map(() => 'off'));
+    const romans = logos().find((s) => s.id === 'sermon-outlines-on-romans-logos')!;
+    const rows = await romans.sermonsFor({ book: 'rom', chapter: 1, from: 18 });
+    expect(rows.map((r) => r.title)).toContain('Condition? Critical!');
+    for (const row of rows) expect(row).toMatchObject({ source: 'sermon-outlines-on-romans-logos', opensIn: 'logos', preacher: 'Marshall W. Hayden', open: { url: expect.stringMatching(/^https:\/\/ref\.ly\/logosres\/LLS:SOROM\?off=/) } });
+    // the Romans book's first outline begins at 1:18, so Romans 1:16 is the Starters' first volume's
+    const starters = logos().find((s) => s.id === 'sermon-starters-volume-1-logos')!;
+    expect((await starters.sermonsFor({ book: 'rom', chapter: 1, from: 16 })).map((r) => r.title)).toContain('Testimony about the Gospel');
+    const logosOn = (key: string) => (key === 'resource.logos' ? 'on' : undefined);
+    expect(enabledSources(sources(), logosOn).map((s) => s.id).filter((id) => batch6.includes(id))).toEqual([]);
+    const everyOn = (key: string) => (key.startsWith('sermons.') || key === 'resource.logos' ? 'on' : undefined);
+    expect(enabledSources(sources(), everyOn, new Set(['LLS:SOROM'])).map((s) => s.id)).toContain('sermon-outlines-on-romans-logos');
+    expect(enabledSources(sources(), everyOn, new Set()).map((s) => s.id)).not.toContain('sermon-outlines-on-romans-logos');
   });
 });

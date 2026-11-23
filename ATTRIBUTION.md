@@ -58,6 +58,22 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Smale's The Pentecostal Blessing](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[W. I. Evans's This River Must Flow!](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[Calvin's sermons in Portuguese](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: Evangelistic](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: for Growing Christians](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: for Seekers](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: for Special Days](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: on 1 Corinthians](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: on Acts](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: on Christian Living](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: on Ephesians](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: on Galatians-Ephesians-Philippians-Colossians](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner.
+- **[Sermon Outlines: on Romans](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Outlines: on the Gospels](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Starters, vol 1](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Starters, vol 2](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Starters, vol 3](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Starters, vol 4](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sermon Starters, vol 5](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[Thompson Chain Topics](https://crosswire.org/study/fulllibrary.jsp?show=TCR)** (Frank Charles Thompson, 1934; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[Torrey's New Topical Textbook](https://crosswire.org/study/fulllibrary.jsp?show=Torrey)** (R. A. Torrey, 1897; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer: the clips for one-letter Greek words (ὁ, ἡ) on phones with no Greek voice. Licence: [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING); sound only. Changes: MP3.

@@ -89,10 +89,10 @@ async function openStudy(logos: 'on' | 'off'): Promise<void> {
 const GREG = 'LLS:GRGLRSRMNRCH';
 const AUGUSTINE = 'LLS:SLSRHMTRTSTGSTN';
 const UNDER = new Set(Object.values(LOGOS_RESOURCES).flat());
-/** Ten sermon books of the catalogue that no list stands for, and one more his import lacks. */
+/** Five sermon books of the catalogue that no list stands for (ten until batch 6, mw-qtu3zvz.31, made lists of eleven of them), and one more his import lacks. */
 const LOOSE = entriesOf('sermons').filter((e) => !UNDER.has(e.resource));
-const TEN = LOOSE.slice(0, 10);
-const LACKED = LOOSE[10];
+const TEN = LOOSE.slice(0, 5);
+const LACKED = LOOSE[5];
 
 /** Opens the app at an address with Logos On or Off, after `seed` has put what the scenario needs on the phone. */
 async function openAt(hash: string, logos: 'on' | 'off', seed: () => Promise<unknown> = async () => undefined): Promise<void> {

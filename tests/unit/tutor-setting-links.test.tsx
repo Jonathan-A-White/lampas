@@ -8,6 +8,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AnswerLink } from '../../src/data/db';
 import { db } from '../../src/data/db';
 import { MAX_LINKS, isTalkAnswer } from '../../src/services/talk';
+import { keySaid } from '../../src/settings/grindText';
 import { SETTINGS } from '../support/settings';
 import { TutorLinks } from '../../src/TutorLinks';
 import { instructionsOf } from '../../scripts/grind-parts';
@@ -97,7 +98,7 @@ describe('the grind instructions on setting links', () => {
     const instructions = instructionsOf('bible-talk');
     expect(instructions).toContain('`kind` `setting`');
     expect(instructions).toMatch(/`key`/);
-    for (const s of SETTINGS) expect(instructions, s.key).toContain(`\`${s.key}\``);
+    for (const s of SETTINGS) expect(instructions, s.key).toContain(`\`${keySaid(s.key)}\``);
     expect(instructions).toMatch(/must be a listed key/i);
   });
 });
