@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.343",
+    "date": "2026-11-23",
+    "story": "mw-qtu3zvz.26",
+    "kind": "new",
+    "text": "Nine more of your Logos sermon books can be switched on to find sermons on a verse (Sedgwick, Moberly, Eyton, Chapin, Watson, Pope, Smale, W. I. Evans, and Calvin in Portuguese)."
+  },
+  {
+    "version": "0.7.343",
+    "date": "2026-11-23",
+    "story": "mw-u2w5klk.349.50",
+    "kind": "fixed",
+    "text": "Tapping an English word in Genesis 46 to 48 now opens the Greek word it renders, not the whole verse."
+  },
+  {
     "version": "0.7.342",
     "date": "2026-11-22",
     "story": "mw-ecpivg5.6",

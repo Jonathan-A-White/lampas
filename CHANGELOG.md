@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.343
+_2026-11-23_
+- New: Nine more of your Logos sermon books can be switched on to find sermons on a verse (Sedgwick, Moberly, Eyton, Chapin, Watson, Pope, Smale, W. I. Evans, and Calvin in Portuguese).
+- Fixed: Tapping an English word in Genesis 46 to 48 now opens the Greek word it renders, not the whole verse.
+
 ## 0.7.342
 _2026-11-22_
 - Fixed: saying "next chapter", "previous chapter" or "read" a place while a sermon is open no longer changes the Bible behind it; it tells you to close the sermon first.
