@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { sameThemeFor, sermonsFor } from '../../src/sermons';
 import { THEME_ROW_LIMIT, themeTier, type TopicLinks } from '../../src/sermons/sermonsFor';
+import { topicHeading } from '../../src/sermons/topicHeading';
 import type { DirectRow, SameTheme, SermonRef, SermonRow, ThemeRow } from '../../src/sermons/types';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../support/test-themes';
@@ -208,5 +209,17 @@ describe('themeTier: directly linked sermons', () => {
     const topics = [topic('t', 'wide', 90, at(1, 1)), topic('t', 'narrow', 6, at(1, 2))];
     const rows = [row('b', '2', at(1, 1)), row('a', '10', at(1, 1)), row('a', '9', at(1, 1)), row('b', '1', at(1, 2)), row('a', '3', at(1, 2))];
     expect(themeTier(topics, rows, new Set(), THEME_ROW_LIMIT, [])).toEqual(themeTier(topics, rows, new Set()));
+  });
+});
+
+describe('the heading of a topic the tier names (mw-qtu3zvz.58)', () => {
+  it("gives no dangling article for a label the module sorts surname-first: ', The' and ', Christ the'", () => {
+    for (const label of ['Church, The', "Sinner's Friend, Christ the", 'Compassion and Sympathy of Christ, The', 'Heavens, The Natural']) {
+      const found = themeTier([{ ...topic('t', 'x', 8, at(1, 1)), label }], [row('s', '1', at(1, 1))], new Set());
+      const heading = topicHeading(found.groups[0].topic.label);
+      expect(heading).not.toMatch(/(, The| the| The| a)$/);
+      expect(heading).not.toContain(', ');
+    }
+    expect(topicHeading("Sinner's Friend, Christ the")).toBe("On Christ the Sinner's Friend");
   });
 });

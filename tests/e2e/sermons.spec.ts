@@ -158,7 +158,11 @@ test('Romans 5:8 names its themes under the title, and the sheet has the sermons
   expect(count).toBeGreaterThan(0);
   expect(count).toBeLessThanOrEqual(12);
   expect(await themed.locator('h4').count()).toBeGreaterThan(0);
-  for (const heading of await themed.locator('h4').allTextContents()) expect(heading).toMatch(/^On \S/);
+  for (const heading of await themed.locator('h4').allTextContents()) {
+    expect(heading).toMatch(/^On \S/);
+    // reader order, never the module's surname-first 'On Sinner's Friend, Christ the' (mw-qtu3zvz.58)
+    expect(heading).not.toMatch(/(, The| the| The| a)$/);
+  }
   for (let i = 0; i < count; i++) expect((await rows.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
   // none of them is a row of the passage groups
   const passage = await sheet.locator('[data-sermons-part="here"] a[data-sermon-row], [data-sermons-part="chapter"] a[data-sermon-row]').evaluateAll((all) => all.map((a) => a.getAttribute('href')));
