@@ -1,0 +1,84 @@
+ref	run	text	g	mark	confidence
+Isa.15:1	1	WORD	1		0.80
+Isa.15:1	1	AGAINST	-		0.80
+Isa.15:1	2	LAND OF MOAB.	4,5		0.80
+Isa.15:1	3	the	8		0.80
+Isa.15:1	3	land of Moab	9		0.80
+Isa.15:1	3	shall be	-		0.80
+Isa.15:1	4	by	-		0.80
+Isa.15:1	5	of	-		0.80
+Isa.15:1	6	land of Moab	16		0.80
+Isa.15:1	6	shall be	-		0.80
+Isa.15:2	1	for yourselves;	2		0.80
+Isa.15:2	2	even	-		0.80
+Isa.15:2	3	your	-		0.80
+Isa.15:2	4	is, shall be	-		0.80
+Isa.15:2	5	shall	-		0.80
+Isa.15:2	6	go	-		0.80
+Isa.15:2	7	of	-		0.80
+Isa.15:2	8	land of Moab:	17		0.80
+Isa.15:2	8	howl you⌃:	18		0.80
+Isa.15:2	9	shall be	-		0.80
+Isa.15:2	10	shall be	-		0.80
+Isa.15:3	1	yourselves with	-		0.80
+Isa.15:3	2	her	-		0.80
+Isa.15:3	3	and in	-		0.80
+Isa.15:3	4	streets,	14,15		0.80
+Isa.15:3	5	ways;	-		0.80
+Isa.15:3	5	howl	18		0.80
+Isa.15:3	6	of you	-		0.80
+Isa.15:4	1	have	-		0.80
+Isa.15:4	2	was	-		0.80
+Isa.15:4	3	therefore	11,12		0.80
+Isa.15:4	4	of	-		0.80
+Isa.15:4	5	region of Moab	16		0.80
+Isa.15:4	6	aloud;	-		0.80
+Isa.15:4	7	shall	-		0.80
+Isa.15:5	1	of	-		0.80
+Isa.15:5	2	region of Moab	3		0.80
+Isa.15:5	3	within	-		0.80
+Isa.15:5	4	it	-		0.80
+Isa.15:5	5	as a	-		0.80
+Isa.15:5	6	of	-		0.80
+Isa.15:5	7	years old:	-		0.80
+Isa.15:5	8	of	-		0.80
+Isa.15:5	9	they shall go	-		0.80
+Isa.15:5	10	by	-		0.80
+Isa.15:5	11	of	-		0.80
+Isa.15:5	12	she	-		0.80
+Isa.15:6	1	of	2		0.80
+Isa.15:6	2	shall	-		0.80
+Isa.15:6	3	desolate,	4		0.80
+Isa.15:6	4	thereof	9		0.80
+Isa.15:6	4	shall fail:	10		0.80
+Isa.15:6	5	there shall	-		0.80
+Isa.15:7	1	Shall	0		0.80
+Isa.15:7	1	Moab	-		0.80
+Isa.15:7	1	even	1		0.80
+Isa.15:7	2	be	3		0.80
+Isa.15:7	2	delivered?	4		0.80
+Isa.15:7	3	I will	-		0.80
+Isa.15:7	4	the	-		0.80
+Isa.15:7	5	they shall	-		0.80
+Isa.15:8	1	cry	3		0.80
+Isa.15:8	1	has reached	0		0.80
+Isa.15:8	2	border of the	6		0.80
+Isa.15:8	3	of	-		0.80
+Isa.15:8	4	even of	8		0.80
+Isa.15:8	5	howling	11		0.80
+Isa.15:8	5	has gone	-		0.80
+Isa.15:8	5	as far as	13		0.80
+Isa.15:8	6	of	16		0.80
+Isa.15:9	1	of	-		0.80
+Isa.15:9	2	shall be	-		0.80
+Isa.15:9	3	with	-		0.80
+Isa.15:9	4	I will	-		0.80
+Isa.15:9	5	I will	-		0.80
+Isa.15:9	6	away	-		0.80
+Isa.15:9	7	of	-		0.80
+Isa.15:9	8	of	-		0.80
+Isa.15:2	fix	go up	12		0.80
+Isa.15:4	fix	cry aloud;	17		0.80
+Isa.15:5	fix	three years old:	12		0.80
+Isa.15:5	fix	they shall go up	21		0.80
+Isa.15:9	fix	take away	13		0.80
