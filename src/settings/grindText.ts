@@ -2,12 +2,20 @@
 // schema and the list of keys and values in its instructions, both made from the registry (src/settings/registry.ts).
 // `npm run grind:build` (scripts/grind-build.ts) writes them into grinds/; tests/unit/bible-talk-grind.test.ts fails when the
 // files and the registry disagree, so a setting added to the registry is not talkable until the build has been run.
-import { SOURCE_HELP } from './definitions/sermons';
 import { helpPlain } from './helpText';
 import { MAX_CHANGES, SETTINGS, TEXT_MAX, type SettingEntry } from './registry';
 
-/** Where the sermon switches are, as the one line of them in the instructions says it: SOURCE_HELP, each switch's own help, adds that a Logos list needs his import, which the tutor has no use for (mw-qtu3zvz.26: the room for the nine more keys). */
+/** Where the sermon switches are, as the one line of them in the instructions says it: each switch's own help (SOURCE_HELP) adds that a Logos list needs his import, which the tutor has no use for (mw-qtu3zvz.26: the room for the nine more keys). */
 const SOURCE_PLACE_HELP = 'Settings > Study resources > Sermons > Sermon sources.';
+
+/**
+ * The one line of all the sermon switches in the instructions (mw-qtu3zvz.31, the Mayor's word after batch 6 took the room: every source cost about 47 bytes of the 10,000 the instructions keep free): the keys are not listed, as the
+ * answer schema's own lists of keys carry each `sermons.<id>` by name (settingsChangesSchema, settingLinkSchema), so a new source costs the instructions nothing.
+ */
+export const SOURCE_FAMILY_KEY = 'sermons.<id>';
+/** The key as the instructions say it: a sermon source's switch by the one family key, any other setting by its own. */
+export const keySaid = (key: string): string => (key.startsWith('sermons.') ? SOURCE_FAMILY_KEY : key);
+const SOURCE_FAMILY_HELP = `A sermon source's On | Off switch: \`sermons.\` and the source's id, each listed by name in the schema's keys (\`sermons.maclaren-logos\`). ${SOURCE_PLACE_HELP}`;
 
 export const SETTINGS_BEGIN = '<!-- settings:begin -->';
 export const SETTINGS_END = '<!-- settings:end -->';
@@ -155,8 +163,9 @@ export function settingsBlock(): string {
   // and its help, where they are, is said shorter (mw-qtu3zvz.26: nine more keys took the room the next setting needs)
   for (const l of lines) {
     if (l.keys.length < 4 || !l.keys.every((k) => k.startsWith('sermons.'))) continue;
+    l.keys = [SOURCE_FAMILY_KEY];
     l.labels = [];
-    l.body = l.body.replace(SOURCE_HELP, SOURCE_PLACE_HELP);
+    l.body = SOURCE_FAMILY_HELP;
   }
   // the labels of a line that says one setting of each language (the three voices, the three speeds, the two keyboards) are its keys said again, so they are not said (mw-qtu3zvz.26)
   return [

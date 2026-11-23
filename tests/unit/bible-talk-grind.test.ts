@@ -5,7 +5,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
 import { pronunciationOf } from '../../src/speech/pronunciation';
 import { FEEDBACK_SUMMARY_MAX, NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
-import { HELP_KEPT, HELP_MAX_BYTES, formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
+import { HELP_KEPT, HELP_MAX_BYTES, formatJson, keySaid, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
 import { helpPlain } from '../../src/settings/helpText';
 import { SETTINGS } from '../support/settings';
 import { lampasRegistry } from '../../src/tutor/registry';
@@ -166,7 +166,9 @@ describe('settings_changes in the answer', () => {
     const options = ((schema.properties as Record<string, Schema>).settings_changes.items as Schema).anyOf ?? [];
     const keys = options.map((o) => (o.properties?.key as Schema).const);
     expect(keys).toEqual(SETTINGS.map((s) => s.key));
-    for (const s of SETTINGS) expect(text, s.key).toContain(`\`${s.key}\``);
+    // a sermon source's switch is said once for all of them (`sermons.<id>`, mw-qtu3zvz.31): the schema's lists of keys name each, so a new source costs the instructions nothing
+    for (const s of SETTINGS) expect(text, s.key).toContain(`\`${keySaid(s.key)}\``);
+    expect(text).not.toMatch(/`sermons\.[a-z0-9-]+-logos`,`/);
     expect(text).toContain(settingsBlock());
     expect(withSettingsBlock(text)).toBe(text);
     expect(formatJson(withSettingsChanges(schema))).toBe(readFileSync(grind.answerSchema as string, 'utf8').trimEnd());
@@ -1111,7 +1113,7 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
 
   it('keeps every setting key and what Weave and Bible voice say in the instructions after the settings were said more tersely (mw-82lb97i.16)', () => {
     const block = settingsBlock();
-    for (const s of SETTINGS) expect(block, s.key).toContain(`\`${s.key}\``);
+    for (const s of SETTINGS) expect(block, s.key).toContain(`\`${keySaid(s.key)}\``);
     expect(block).toMatch(/`weave` — Weave\. Your words in Greek or Hebrew in place of their English: Solid: the solid ones\. \+ Learning: those you learn too/);
     expect(block).toMatch(/`bibleVoice` — Bible voice\..*"msb-david" \(Recording \(David\)\), "msb-david-wifi" \(Recording on Wi-Fi only\), "phone" \(Phone voice\)/);
     // every one of the 37 devotionals is still named: a run of volumes by its first and last
@@ -1124,7 +1126,7 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
 
   it('says a run of settings that differ only in their language once, and still names every key (mw-gdcyf98.28)', () => {
     const block = settingsBlock();
-    for (const s of SETTINGS) expect(block, s.key).toContain(`\`${s.key}\``);
+    for (const s of SETTINGS) expect(block, s.key).toContain(`\`${keySaid(s.key)}\``);
     expect(block.match(/Phone default lets the phone choose/g)).toHaveLength(1);
     expect(block.match(/is read aloud; 1 is normal/g)).toHaveLength(1);
     expect(block.match(/365 Days with Spurgeon/g)).toHaveLength(1);

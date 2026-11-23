@@ -120,7 +120,9 @@ async function whereHeIs(): Promise<unknown> {
 
 const whereHeIsFact: Fact = { name: 'where-he-is', tell: 'the screen he is on, the chapter and verse in the Reader, the sheets open', core: true, read: whereHeIs };
 const todayDrillFact: Fact = { name: 'today-drill', tell: "the items of today's drill (the Today chip), each with its title and whether he ticked it", core: true, read: () => todayNow() };
-const settingsFact: Fact = { name: 'settings', tell: 'what every setting holds now', core: true, read: currentSettings };
+/** What every setting holds now, but for the sermon sources' switches (`sermons.<id>`): they bear on what the app offers on a sheet and not on an answer, the request's own settings leave them out (talk.ts withoutSourceSwitches) and the Settings screen's talk is told one line of them, so a new source costs the request nothing (mw-qtu3zvz.31, after batch 6's sixteen took the room). */
+const settingsWithoutSermons = async (): ReturnType<typeof currentSettings> => Object.fromEntries(Object.entries(await currentSettings()).filter(([key]) => !key.startsWith('sermons.')));
+const settingsFact: Fact = { name: 'settings', tell: 'what every setting holds now', core: true, read: settingsWithoutSermons };
 
 /** The words of the verses he memorizes, the one he has a session open on first. */
 const verseTextNow = async (): Promise<unknown> => verseTextsOf([...new Set((await listMemorized()).map((row) => row.ref))].sort(), memorizeSessionOf(window.location.hash)?.ref);
