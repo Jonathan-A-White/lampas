@@ -91,6 +91,8 @@ test('Romans 5:8: no row\'s second line splits its \'Opens on the web\' or \'Nee
   await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
   const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
   await expect(sheet).toBeVisible();
+  // the rows of 'On the same theme' come after the passage's own (the theme tier is asked once they are drawn): count them all, not the first 22 (it failed on main, in 'shots', with 34 rows after a count of 22)
+  await expect(sheet.locator('h3', { hasText: 'On the same theme' })).toBeVisible();
   const rows = sheet.locator('a[data-sermon-row]');
   const count = await rows.count();
   expect(count).toBeGreaterThan(1);
