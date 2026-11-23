@@ -4,7 +4,7 @@ import { handwritingSetting } from '../definitions/handwriting';
 import { useSetting } from '../store';
 import { usePenSeen } from '../../handwriting/useHandwriting';
 import { ChipRow, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 export const HandwritingControl: Control = ({ row }) => {
   const value = useSetting(handwritingSetting);
@@ -35,3 +35,6 @@ export const HandwritingControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const handwritingControlDraws = draws(HandwritingControl, 'handwritingDrills');

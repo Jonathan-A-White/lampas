@@ -8,7 +8,7 @@ import { hebrewInterestSetting } from '../definitions/hebrewInterest';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 export const LanguagesControl: Control = ({ row }) => {
   const greek = useSetting(greekInterestSetting);
@@ -34,3 +34,6 @@ export const LanguagesControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const languagesControlDraws = draws(LanguagesControl, 'languages');

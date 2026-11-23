@@ -12,7 +12,7 @@ import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPs
 import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 /** One On | Off switch of Settings > Daily: a piece of Today, or its Tick boxes. */
 function dailySwitch(def: typeof dailyReviewSetting | typeof devotionalLogosSetting | typeof devotionalRephilSetting, settingKey: 'dailyReview' | 'dailyMemorize' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'devotionalLogos' | 'devotionalRephil' | 'dailyTicks', more?: (current: 'on' | 'off') => ReactNode): Control {
@@ -235,3 +235,18 @@ export const TodaysDevotionalControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const dailyReviewControlDraws = draws(DailyReviewControl, 'dailyReview');
+export const dailyMemorizeControlDraws = draws(DailyMemorizeControl, 'dailyMemorize');
+export const dailyPlanControlDraws = draws(DailyPlanControl, 'dailyPlan');
+export const dailyPsalmsControlDraws = draws(DailyPsalmsControl, 'dailyPsalms');
+export const dailyDevotionalControlDraws = draws(DailyDevotionalControl, 'dailyDevotional');
+export const devotionalControlDraws = draws(DevotionalControl, 'devotional');
+export const devotionalDrawControlDraws = draws(DevotionalDrawControl, 'devotionalDraw');
+export const devotionalLogosControlDraws = draws(DevotionalLogosControl, 'devotionalLogos');
+export const devotionalRephilControlDraws = draws(DevotionalRephilControl, 'devotionalRephil');
+export const morningRephilOrderControlDraws = draws(MorningRephilOrderControl, 'morningRephilOrder');
+export const morningRephilBackupControlDraws = draws(MorningRephilBackupControl, 'morningRephilBackup');
+export const todaysDevotionalControlDraws = draws(TodaysDevotionalControl, 'todaysDevotional');
+export const dailyTicksControlDraws = draws(DailyTicksControl, 'dailyTicks');

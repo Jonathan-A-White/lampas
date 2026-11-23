@@ -9,7 +9,7 @@ import { septuagintSetting } from '../definitions/septuagint';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { OnOff, RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 function InterestControl({ language, ...props }: Parameters<Control>[0] & { language: InterestLang }) {
   const { row } = props;
@@ -71,3 +71,9 @@ export const SeptuagintGapsControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const greekInterestControlDraws = draws(GreekInterestControl, 'greekInterest');
+export const hebrewInterestControlDraws = draws(HebrewInterestControl, 'hebrewInterest');
+export const septuagintControlDraws = draws(SeptuagintControl, 'septuagint');
+export const septuagintGapsControlDraws = draws(SeptuagintGapsControl, 'septuagintGaps');

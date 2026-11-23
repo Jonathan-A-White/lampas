@@ -5,7 +5,7 @@ import { getGoal } from '../../data/repositories';
 import { navigate } from '../../nav/route';
 import { writeSetting } from '../registry';
 import { PICKER, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 const NO_BOOK = 'Choose a book';
 const range = (n: number): number[] => Array.from({ length: n }, (_, i) => i + 1);
@@ -89,3 +89,6 @@ export const GoalControl: Control = ({ row }) => {
   const goal = useLiveQuery(getGoal, []);
   return <SettingRow row={row}>{goal !== undefined ? <GoalPickers saved={goal} /> : null}</SettingRow>;
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const goalControlDraws = draws(GoalControl, 'goal');

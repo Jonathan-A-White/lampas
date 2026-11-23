@@ -93,7 +93,7 @@ His words (2026-10-24): the Library, verse lists, Memorize, paradigms and the re
 ## Adding a setting to a group
 
 1. Declare the setting in one new file, `src/settings/definitions/<name>.ts`, with its `section` (the files are gathered by glob, `src/settings/gather.ts`: no list, `index.ts` or `registry.ts` to edit; its entry in `SETTINGS` is made from it, last unless it gives a `slot`, and it is in `DEFINITIONS`, last unless it gives an `order`; `outside: '<why>'` keeps one out of both). An entry that is not a plain saved setting (a hand-made `choice`, a write that does more than save) is a file of `src/settings/entries/` exporting `slotted(<slot>, entry)`. Then write its control in `src/settings/controls/` (`CONTROLS`, `index.ts`).
-2. Its page is the page of its section's group: nothing else to do. To put a setting on another page, change its `section`.
+2. Its control is a component in a file of `src/settings/controls/`, which exports beside it the rows it draws: `export const <name>Draws = draws(<Name>Control, '<rowKey>', { prefixes: ['<family>.'] })` (`types.ts`); `controls/index.ts` gathers them by glob (`controlsOf` in `gather.ts`), so no list is edited, and two controls for one row throw. Its page is the page of its section's group: nothing else to do. To put a setting on another page, change its `section`.
 3. A new section: add its id to `SectionId` (`define.ts`), an entry in `SECTIONS` (`rows.ts`) and its id to the `sections` of one group in `GROUPS`; the unit test fails until it is in exactly one.
 4. A new group: an entry in `GROUPS` (id, title, hint, sections) and its id in `GroupId`.
 
@@ -130,6 +130,6 @@ src/ui/ThreeStep.tsx  # Off | On | Pin: a radiogroup of two or three 44 px steps
 src/settings/registry.ts  # every talkable setting: key, label, hint, help, section, dependency, values, read and write; SETTINGS is gathered (gather.ts) from definitions/ and entries/, the entry makers are in entry.ts (fromDefinition, choice, slotted)
 src/tips/UsageCounted.tsx  # 'What Lampas has counted', a page of its own (#/settings?page=counted) behind its row of the Settings home: the screens opened with counts and those never opened, from the usage store alone (docs/tips.md)
 src/settings/link.ts  # the addresses into Settings: a setting, a section, a group; backToSettingsHome
-src/settings/controls/  # the control of each row (CONTROLS by key) and the Section, SettingRow and MoreHelp pieces; ChipRow is src/ui/Chips.tsx bound to a setting
+src/settings/controls/  # the control of each row (CONTROLS by key, gathered by glob from the files' `draws` exports) and the Section, SettingRow and MoreHelp pieces; ChipRow is src/ui/Chips.tsx bound to a setting
 src/settings/definitions/grammarExtent.ts  # the settings whose choices are grammar extents (weaveGrammar, pickerGrammar, paradigmExtent): one table of their values, labels and extents; controls/grammarExtent.tsx ExtentChips draws any of them (mw-irpgqi.2)
 ```

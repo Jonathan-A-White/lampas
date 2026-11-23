@@ -5,7 +5,7 @@
 import { EXTENT_SETTINGS, type ExtentKey } from '../definitions/grammarExtent';
 import { useParadigmExtent } from '../useExtent';
 import { ChipRow, RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 /** The chips of an extent setting: its own values and words, in its order. Nothing is drawn until the saved value (`current`) is read. */
 export function ExtentChips({ settingKey, name, current, size }: { settingKey: ExtentKey; name: string; current: string | undefined; size?: 'row' | 'header' }) {
@@ -24,3 +24,6 @@ export const GrammarExtentControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const grammarExtentControlDraws = draws(GrammarExtentControl, 'paradigmExtent');

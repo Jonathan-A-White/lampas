@@ -3,9 +3,12 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { settingOf } from '../registry';
 import { OnOff, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 export const MapsControl: Control = ({ row }) => {
   const current = useLiveQuery(async () => String(await settingOf(row.key)?.read()), [row.key]);
   return <SettingRow row={row}>{current === 'on' || current === 'off' ? <OnOff name={row.label} current={current} settingKey={row.key as `maps.${string}`} /> : null}</SettingRow>;
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const mapsControlDraws = draws(MapsControl, { prefixes: ['maps.'] });

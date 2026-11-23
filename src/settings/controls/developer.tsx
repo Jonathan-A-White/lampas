@@ -3,7 +3,7 @@ import { getDeveloper, setDeveloper } from '../../data/repositories';
 import { resetReadingPlan } from '../../data/repositories/readingPlan';
 import { showWelcomeAgain } from '../../data/repositories/welcome';
 import { ON_COLOUR, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 function DeveloperChoice({ name, developer }: { name: string; developer: 'on' | 'off' }) {
   return (
@@ -41,3 +41,6 @@ export const DeveloperControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const developerControlDraws = draws(DeveloperControl, 'developer');
