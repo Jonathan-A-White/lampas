@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.359
+_2026-11-23_
+- New: David's recording now reads Proverbs, Song of Songs and Ecclesiastes (except chapter 2) with the highlight following.
+- New: David's recording now plays, with the highlight following, for Psalms 101 to 150.
+- New: David's recording now plays with the highlight following in Isaiah 34 and 36 to 66.
+
 ## 0.7.357
 _2026-11-23_
 - Fixed: The Themes line no longer shows a stray comma before a colon or a doubled colon inside a topic's name.
