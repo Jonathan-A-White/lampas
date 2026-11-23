@@ -35,7 +35,23 @@
     "pope-logos",
     "smale-logos",
     "wi-evans-logos",
-    "calvin-pt-logos"
+    "calvin-pt-logos",
+    "evangelistic-sermon-outlines-logos",
+    "sermon-outlines-for-growing-christians-logos",
+    "sermon-outlines-for-seekers-logos",
+    "sermon-outlines-for-special-days-logos",
+    "sermon-outlines-on-1-corinthians-logos",
+    "sermon-outlines-on-acts-logos",
+    "sermon-outlines-on-christian-living-logos",
+    "sermon-outlines-on-ephesians-logos",
+    "sermon-outlines-on-galatians-ephesians-philippians-colossians-logos",
+    "sermon-outlines-on-romans-logos",
+    "sermon-outlines-on-the-gospels-logos",
+    "sermon-starters-volume-1-logos",
+    "sermon-starters-volume-2-logos",
+    "sermon-starters-volume-3-logos",
+    "sermon-starters-volume-4-logos",
+    "sermon-starters-volume-5-logos"
   ],
   "themes": [
     "themes-tcr1934",
@@ -73,6 +89,22 @@
     "pope-logos": "Pope's The Inward Witness (Logos library)",
     "smale-logos": "Smale's The Pentecostal Blessing (Logos library)",
     "wi-evans-logos": "W. I. Evans's This River Must Flow! (Logos library)",
-    "calvin-pt-logos": "Calvin's sermons in Portuguese (Logos library)"
+    "calvin-pt-logos": "Calvin's sermons in Portuguese (Logos library)",
+    "evangelistic-sermon-outlines-logos": "Sermon Outlines: Evangelistic (Logos library)",
+    "sermon-outlines-for-growing-christians-logos": "Sermon Outlines: for Growing Christians (Logos library)",
+    "sermon-outlines-for-seekers-logos": "Sermon Outlines: for Seekers (Logos library)",
+    "sermon-outlines-for-special-days-logos": "Sermon Outlines: for Special Days (Logos library)",
+    "sermon-outlines-on-1-corinthians-logos": "Sermon Outlines: on 1 Corinthians (Logos library)",
+    "sermon-outlines-on-acts-logos": "Sermon Outlines: on Acts (Logos library)",
+    "sermon-outlines-on-christian-living-logos": "Sermon Outlines: on Christian Living (Logos library)",
+    "sermon-outlines-on-ephesians-logos": "Sermon Outlines: on Ephesians (Logos library)",
+    "sermon-outlines-on-galatians-ephesians-philippians-colossians-logos": "Sermon Outlines: on Galatians-Ephesians-Philippians-Colossians (Logos library)",
+    "sermon-outlines-on-romans-logos": "Sermon Outlines: on Romans (Logos library)",
+    "sermon-outlines-on-the-gospels-logos": "Sermon Outlines: on the Gospels (Logos library)",
+    "sermon-starters-volume-1-logos": "Sermon Starters, vol 1 (Logos library)",
+    "sermon-starters-volume-2-logos": "Sermon Starters, vol 2 (Logos library)",
+    "sermon-starters-volume-3-logos": "Sermon Starters, vol 3 (Logos library)",
+    "sermon-starters-volume-4-logos": "Sermon Starters, vol 4 (Logos library)",
+    "sermon-starters-volume-5-logos": "Sermon Starters, vol 5 (Logos library)"
   }
 }

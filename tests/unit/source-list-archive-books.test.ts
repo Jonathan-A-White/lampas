@@ -70,9 +70,9 @@ describe('a list made from Logos books names them, with their authors', () => {
     expect(missing).toEqual([]);
   });
 
-  it('every list names every sermon book it stands for, and the count is the 63 of logosSermonResources.ts, 53 of them sermon books', () => {
+  it('every list names every sermon book it stands for, and the count is the 79 of logosSermonResources.ts, 69 of them sermon books', () => {
     const source = readFileSync('src/data/logosSermonResources.ts', 'utf8');
-    expect(source.match(/'LLS:[^']+'/g)).toHaveLength(63);
+    expect(source.match(/'LLS:[^']+'/g)).toHaveLength(79);
     let named = 0;
     for (const id of ids) {
       const row = items.get(`sermons.${id}`)!;
@@ -80,7 +80,7 @@ describe('a list made from Logos books names them, with their authors', () => {
       named += row.books?.length ?? 0;
       for (const b of row.books ?? []) expect(b.author, `${id}: ${b.title}`).toBeTruthy();
     }
-    expect(named).toBe(53);
+    expect(named).toBe(69);
   });
 
   it("a search for the preacher finds the list through its books' author", () => {
