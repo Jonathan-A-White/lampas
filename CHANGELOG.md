@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.356
+_2026-11-23_
+- New: David's recording now plays with the highlight following in Isaiah 1 to 33, except chapter 11.
+- New: David's recording now plays with the highlight for Psalms 51 to 100.
+
 ## 0.7.354
 _2026-11-23_
 - New: The Septuagint now opens every chapter of Exodus, Psalms and Isaiah in the reader, where before some chapters were held back.
