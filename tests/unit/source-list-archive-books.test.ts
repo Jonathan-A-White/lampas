@@ -52,7 +52,8 @@ describe('a list made from Logos books names them, with their authors', () => {
   });
 
   // the five volumes of Chrysostom's homilies are 'commentary' in the catalogue, not sermon books (mw-qtu3zvz.108): his list stands for them but names none
-  const COMMENTARY = new Set(['LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14']);
+  // and five of batch 5's books are in no kind of the catalogue (mw-qtu3zvz.26): four of Sedgwick's six (An Arke against a Deluge, Elisha, Haman's Vanity, The Nature and Danger of Heresies) and Calvin's Portuguese Sermões
+  const COMMENTARY = new Set(['LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14', 'LLS:LSHHSTRNSLTNLJH', 'LLS:NARKADELUGE', 'LLS:NGLNDSPRJDGMNTS', 'LLS:NTRDNGRHRSS', 'LLS:SRMSSBRLRPRV']);
 
   // four of batch 4's books are 'text.monograph' in the export, so no type rule takes them: the rules name them by id as sermon books (mw-qtu3zvz.237)
   it("the four batch 4 books the export types 'text.monograph' are in the catalogue as sermon books", () => {
@@ -64,14 +65,14 @@ describe('a list made from Logos books names them, with their authors', () => {
     }
   });
 
-  it('every book of every list is in the catalogue, but the five volumes of Chrysostom', () => {
+  it("every book of every list is in the catalogue, but the five volumes of Chrysostom and batch 5's five", () => {
     const missing = ids.flatMap((id) => LOGOS_RESOURCES[id]).filter((resource) => !COMMENTARY.has(resource) && !CATALOGUE.some((e) => e.resource === resource));
     expect(missing).toEqual([]);
   });
 
-  it('every list names every sermon book it stands for, and the count is the 49 of logosSermonResources.ts, 44 of them sermon books', () => {
+  it('every list names every sermon book it stands for, and the count is the 63 of logosSermonResources.ts, 53 of them sermon books', () => {
     const source = readFileSync('src/data/logosSermonResources.ts', 'utf8');
-    expect(source.match(/'LLS:[^']+'/g)).toHaveLength(49);
+    expect(source.match(/'LLS:[^']+'/g)).toHaveLength(63);
     let named = 0;
     for (const id of ids) {
       const row = items.get(`sermons.${id}`)!;
@@ -79,7 +80,7 @@ describe('a list made from Logos books names them, with their authors', () => {
       named += row.books?.length ?? 0;
       for (const b of row.books ?? []) expect(b.author, `${id}: ${b.title}`).toBeTruthy();
     }
-    expect(named).toBe(44);
+    expect(named).toBe(53);
   });
 
   it("a search for the preacher finds the list through its books' author", () => {

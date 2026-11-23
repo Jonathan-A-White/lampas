@@ -32,12 +32,19 @@ const ARCHIVES = [
   { id: 'maclaren-logos', resource: 'BTTDSTHRSRMNS', param: 'off', preacher: /Maclaren/, credit: 'Alexander Maclaren, The Beatitudes and Other Sermons, in Logos (Faithlife)', minRows: 15 },
   { id: 'broadus-logos', resource: 'JABSERMADDR', param: 'off', preacher: /Broadus/, credit: 'John Albert Broadus, Sermons and Addresses, in Logos (Faithlife)', minRows: 10 },
   { id: 'princeton-sermons-logos', resource: 'PRINCESERMON', param: 'off', preacher: /Warfield|Hodge|Aiken|Patton|Murray|Davis|Green|Paxton/, credit: 'Princeton Theological Seminary, Princeton Sermons, in Logos (Faithlife)', minRows: 15 },
+  // batch 5 (mw-qtu3zvz.26): the books with a preaching text (Sedgwick names 4 of 7, W. I. Evans 1 of 10); Calvin's are Portuguese
+  { id: 'sedgwick-logos', resource: 'THNKSGVNGSRMNWS|NARKADELUGE|NGLNDSPRJDGMNTS|NTRDNGRHRSS|HMNSVNTYCDVRSRS', param: 'off', preacher: /Sedgwick/, credit: "Obadiah Sedgwick, A Thanksgiving Sermon Preached before the Honourable House of Commons at Westminster, April 9, 1644; An Arke against a Deluge; Elisha, His Lamentation upon the Suddain Translation of Elijah; England's Preservation; Haman's Vanity; The Nature and Danger of Heresies, in Logos (Faithlife)", minRows: 4 },
+  { id: 'moberly-logos', resource: 'SRMNSBTTD', param: 'off', preacher: /Moberly/, credit: 'George Moberly, Sermons on the Beatitudes, with Others Mostly Preached before the University of Oxford, in Logos (Faithlife)', minRows: 15 },
+  { id: 'watson-logos', resource: 'SRMNSBTTDWATSON', param: 'off', preacher: /Watson/, credit: 'Alexander Watson, Jesus the Giver and the Fulfiller of the New Law: A Course of Eight Sermons on the Beatitudes, in Logos (Faithlife)', minRows: 8 },
+  { id: 'wi-evans-logos', resource: 'THSRVRMSTFLW', param: 'off', preacher: /Evans/, credit: 'W. I. Evans, This River Must Flow!, in Logos (Faithlife)', minRows: 1 },
+  { id: 'calvin-pt-logos', resource: 'SRMSSBRLRPRV', param: 'off', preacher: /Calvin/, credit: 'John Calvin, Sermões sobre Eleição e Reprovação (Portuguese), in Logos (Faithlife)', minRows: 13 },
 ];
-// the lists whose rows name no preaching text (Piper's, Bunyan's, Kuyper's, The World's Great Sermons' and McPherson's only cite passages; Jimmy Evans's have dates and series, and Strong's are addresses and essays, no Scripture):
+// the lists whose rows name no preaching text (Piper's, Bunyan's, Kuyper's, The World's Great Sermons' and McPherson's only cite passages; Jimmy Evans's have dates and series, and Strong's are addresses and essays, no Scripture;
+// batch 5's Eyton, Chapin, Pope and Smale print no text over their sermons):
 // bundled, Off, and on no verse (tests/unit/sermons-no-ref.test.ts)
-const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos', 'kuyper-logos', 'worlds-great-sermons-logos', 'mcpherson-logos', 'strong-logos'];
+const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos', 'kuyper-logos', 'worlds-great-sermons-logos', 'mcpherson-logos', 'strong-logos', 'eyton-logos', 'chapin-logos', 'pope-logos', 'smale-logos'];
 // every Logos list, in the index's order
-const ALL = ['greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos', 'spurgeon-sermon-notes-logos', 'wesley-logos', 'whitefield-logos', 'moody-logos', 'augustine-logos', 'chrysostom-logos', 'piper-logos', 'bunyan-logos', 'charles-wesley-logos', 'jimmy-evans-logos', 'shedd-logos', 'burroughs-logos', 'keach-logos', 'maclaren-logos', 'kuyper-logos', 'broadus-logos', 'worlds-great-sermons-logos', 'princeton-sermons-logos', 'mcpherson-logos', 'strong-logos'];
+const ALL = ['greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos', 'spurgeon-sermon-notes-logos', 'wesley-logos', 'whitefield-logos', 'moody-logos', 'augustine-logos', 'chrysostom-logos', 'piper-logos', 'bunyan-logos', 'charles-wesley-logos', 'jimmy-evans-logos', 'shedd-logos', 'burroughs-logos', 'keach-logos', 'maclaren-logos', 'kuyper-logos', 'broadus-logos', 'worlds-great-sermons-logos', 'princeton-sermons-logos', 'mcpherson-logos', 'strong-logos', 'sedgwick-logos', 'moberly-logos', 'eyton-logos', 'chapin-logos', 'watson-logos', 'pope-logos', 'smale-logos', 'wi-evans-logos', 'calvin-pt-logos'];
 
 describe('the Logos archives in the sermon bundle', () => {
   it('are listed in sources.json at a commit that has them', () => {
@@ -163,5 +170,23 @@ describe('the bundled Logos sources', () => {
     const everyOn = (key: string) => (key.startsWith('sermons.') || key === 'resource.logos' ? 'on' : undefined);
     expect(enabledSources(sources(), everyOn, new Set(['LLS:BTTDSTHRSRMNS'])).map((s) => s.id)).toContain('maclaren-logos');
     expect(enabledSources(sources(), everyOn, new Set()).map((s) => s.id)).not.toContain('maclaren-logos');
+  });
+
+  it('give Moberly’s Sermon I on Matthew 5:3 as a row that opens in Logos, Watson’s Sermon III beside it, and no batch 5 list is used until its switch and his library say so', async () => {
+    const moberly = logos().find((s) => s.id === 'moberly-logos')!;
+    const rows = await moberly.sermonsFor({ book: 'mat', chapter: 5, from: 3 });
+    expect(rows.map((r) => r.title)).toContain('Sermon I: Matthew 5:3');
+    for (const row of rows) expect(row).toMatchObject({ source: 'moberly-logos', opensIn: 'logos', preacher: 'George Moberly', open: { url: expect.stringMatching(/^https:\/\/ref\.ly\/logosres\/LLS:SRMNSBTTD\?off=/) } });
+    const watson = logos().find((s) => s.id === 'watson-logos')!;
+    expect((await watson.sermonsFor({ book: 'mat', chapter: 5, from: 3 })).map((r) => r.title)).toContain('Sermon III: A Heavenly Kingdom the Reward of the Poor in Spirit');
+    // Eyton's The Beatitudes prints no text over its sermons, so it is on no verse, Matthew 5:3 among them
+    const eyton = logos().find((s) => s.id === 'eyton-logos')!;
+    expect(await eyton.sermonsFor({ book: 'mat', chapter: 5, from: 3 })).toEqual([]);
+    const batch5 = ['sedgwick-logos', 'moberly-logos', 'eyton-logos', 'chapin-logos', 'watson-logos', 'pope-logos', 'smale-logos', 'wi-evans-logos', 'calvin-pt-logos'];
+    const logosOn = (key: string) => (key === 'resource.logos' ? 'on' : undefined);
+    expect(enabledSources(sources(), logosOn).map((s) => s.id).filter((id) => batch5.includes(id))).toEqual([]);
+    const everyOn = (key: string) => (key.startsWith('sermons.') || key === 'resource.logos' ? 'on' : undefined);
+    expect(enabledSources(sources(), everyOn, new Set(['LLS:SRMNSBTTD'])).map((s) => s.id)).toContain('moberly-logos');
+    expect(enabledSources(sources(), everyOn, new Set()).map((s) => s.id)).not.toContain('moberly-logos');
   });
 });

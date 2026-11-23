@@ -49,6 +49,15 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Princeton Sermons](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[McPherson's Healing Sermons](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[Strong's Philosophy and Religion](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Sedgwick's sermons](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Moberly's Sermons on the Beatitudes](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Eyton's The Beatitudes](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Chapin's Discourses on the Beatitudes](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Watson's sermons on the Beatitudes](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Pope's The Inward Witness](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Smale's The Pentecostal Blessing](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[W. I. Evans's This River Must Flow!](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
+- **[Calvin's sermons in Portuguese](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[Thompson Chain Topics](https://crosswire.org/study/fulllibrary.jsp?show=TCR)** (Frank Charles Thompson, 1934; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[Torrey's New Topical Textbook](https://crosswire.org/study/fulllibrary.jsp?show=Torrey)** (R. A. Torrey, 1897; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer: the clips for one-letter Greek words (ὁ, ἡ) on phones with no Greek voice. Licence: [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING); sound only. Changes: MP3.

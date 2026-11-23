@@ -1615,6 +1615,15 @@
                   "sermons.princeton-sermons-logos",
                   "sermons.mcpherson-logos",
                   "sermons.strong-logos",
+                  "sermons.sedgwick-logos",
+                  "sermons.moberly-logos",
+                  "sermons.eyton-logos",
+                  "sermons.chapin-logos",
+                  "sermons.watson-logos",
+                  "sermons.pope-logos",
+                  "sermons.smale-logos",
+                  "sermons.wi-evans-logos",
+                  "sermons.calvin-pt-logos",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -2183,6 +2192,60 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "sermons.strong-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sedgwick-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.moberly-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.eyton-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.chapin-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.watson-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.pope-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.smale-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.wi-evans-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.calvin-pt-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

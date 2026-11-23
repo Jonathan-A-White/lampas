@@ -52,12 +52,12 @@ Never claim a change the list does not have. For a setting the app lacks (a colo
 - `goal` — Goal. The passage you are working toward: a book, a chapter or a verse. Value: text, for example "1 John 1:1" ("" for none).
 - `grammarApproach` — Grammar approach. The order grammar is taught and tested in. Value: "ladder" (Lampas ladder).
 - `handwritingDrills` — Handwriting drills. Write letters by hand, as a memory aid. Automatic: on once a pen is seen. Value: "auto", "on", "off".
-- `greekKeyboard`, `hebrewKeyboard` — Greek keyboard, Hebrew keyboard. On once you have added a keyboard of that language to your phone.
+- `greekKeyboard`, `hebrewKeyboard` — On once you have added a keyboard of that language to your phone.
 - `handsFree` — Hands-free. A three-finger tap anywhere turns it On or Off.
 - `handsFreePause` — Pause before it acts. How long it waits after you stop speaking. Value: "1" (1 second), "1.5" (1.5 seconds), "2" to "4" (2 to 4 seconds).
 - `bibleVoice` — Bible voice. The MSB read by David, streamed, where Lampas has it; else the phone voice. Value: "msb-david" (Recording (David)), "msb-david-wifi" (Recording on Wi-Fi only), "phone" (Phone voice).
-- `englishVoice`, `greekVoice`, `hebrewVoice` — English voice, Greek voice, Hebrew voice. Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default".
-- `englishRate`, `greekRate`, `hebrewRate` — English speed, Greek speed, Hebrew speed. How fast that language is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
+- `englishVoice`, `greekVoice`, `hebrewVoice` — Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default".
+- `englishRate`, `greekRate`, `hebrewRate` — How fast that language is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
 - `pronunciation` — Pronunciation. How Greek and Hebrew are said and respelled, one choice for both. Modern says both the modern way. Value: "modern".
 - `pronunciationSeparate` — Set each language on its own. On shows a Greek pronunciation and a Hebrew pronunciation to choose on their own. Off puts both back on Pronunciation.
 - `greekPronunciation` — Greek pronunciation. How Greek is pronounced when it is read aloud. Value: "modern" (Modern Greek).
@@ -70,7 +70,7 @@ Never claim a change the list does not have. For a setting the app lacks (a colo
 - `maps.biblemapper` — Bible Mapper. The maps of Bible Mapper, shown in the app.
 - `maps.logosatlas` — Logos Atlas. Used only while Logos is On in Study resources.
 - `themes.themes-tcr1934`, `themes.themes-torrey` — Thompson Chain Topics, Torrey's New Topical Textbook. Verse topics.
-- `sermons.spurgeon-ccel`, `sermons.henry-sermons`, `sermons.greg-laurie-logos`, `sermons.jd-greear-logos`, `sermons.skip-heitzig-logos`, `sermons.spurgeon-sermon-notes-logos`, `sermons.wesley-logos`, `sermons.whitefield-logos`, `sermons.moody-logos`, `sermons.augustine-logos`, `sermons.chrysostom-logos`, `sermons.piper-logos`, `sermons.bunyan-logos`, `sermons.charles-wesley-logos`, `sermons.jimmy-evans-logos`, `sermons.shedd-logos`, `sermons.burroughs-logos`, `sermons.keach-logos`, `sermons.maclaren-logos`, `sermons.kuyper-logos`, `sermons.broadus-logos`, `sermons.worlds-great-sermons-logos`, `sermons.princeton-sermons-logos`, `sermons.mcpherson-logos`, `sermons.strong-logos` — One switch for each source of sermons, named by its key. In Settings > Study resources > Sermons > Sermon sources; a Logos list needs your import.
+- `sermons.spurgeon-ccel`,`sermons.henry-sermons`,`sermons.greg-laurie-logos`,`sermons.jd-greear-logos`,`sermons.skip-heitzig-logos`,`sermons.spurgeon-sermon-notes-logos`,`sermons.wesley-logos`,`sermons.whitefield-logos`,`sermons.moody-logos`,`sermons.augustine-logos`,`sermons.chrysostom-logos`,`sermons.piper-logos`,`sermons.bunyan-logos`,`sermons.charles-wesley-logos`,`sermons.jimmy-evans-logos`,`sermons.shedd-logos`,`sermons.burroughs-logos`,`sermons.keach-logos`,`sermons.maclaren-logos`,`sermons.kuyper-logos`,`sermons.broadus-logos`,`sermons.worlds-great-sermons-logos`,`sermons.princeton-sermons-logos`,`sermons.mcpherson-logos`,`sermons.strong-logos`,`sermons.sedgwick-logos`,`sermons.moberly-logos`,`sermons.eyton-logos`,`sermons.chapin-logos`,`sermons.watson-logos`,`sermons.pope-logos`,`sermons.smale-logos`,`sermons.wi-evans-logos`,`sermons.calvin-pt-logos` — Settings > Study resources > Sermons > Sermon sources.
 - `audioBible` — Audio Bible. The Word of Promise in Audible: the Verse view links to it. Value: "off", "word-of-promise" (The Word of Promise (NKJV), in Audible).
 - `readingPlan` — Reading plan. Read through the Bible a chapter at a time, with the audio Bible.
 - `dailyReview` — Review. Today holds your due cards.

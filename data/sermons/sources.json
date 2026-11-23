@@ -1,6 +1,6 @@
 {
   "repo": "https://github.com/Jonathan-A-White/sermon-index",
-  "commit": "94b519eb22b77668f595a4bb8ee1d419a3371144",
+  "commit": "6413baf1c24863f2a097ce9f5324e49c26929dac",
   "sources": [
     "spurgeon-ccel",
     "henry-sermons",
@@ -26,7 +26,16 @@
     "worlds-great-sermons-logos",
     "princeton-sermons-logos",
     "mcpherson-logos",
-    "strong-logos"
+    "strong-logos",
+    "sedgwick-logos",
+    "moberly-logos",
+    "eyton-logos",
+    "chapin-logos",
+    "watson-logos",
+    "pope-logos",
+    "smale-logos",
+    "wi-evans-logos",
+    "calvin-pt-logos"
   ],
   "themes": [
     "themes-tcr1934",
@@ -55,6 +64,15 @@
     "worlds-great-sermons-logos": "The World's Great Sermons (Logos library)",
     "princeton-sermons-logos": "Princeton Sermons (Logos library)",
     "mcpherson-logos": "McPherson's Healing Sermons (Logos library)",
-    "strong-logos": "Strong's Philosophy and Religion (Logos library)"
+    "strong-logos": "Strong's Philosophy and Religion (Logos library)",
+    "sedgwick-logos": "Sedgwick's sermons (Logos library)",
+    "moberly-logos": "Moberly's Sermons on the Beatitudes (Logos library)",
+    "eyton-logos": "Eyton's The Beatitudes (Logos library)",
+    "chapin-logos": "Chapin's Discourses on the Beatitudes (Logos library)",
+    "watson-logos": "Watson's sermons on the Beatitudes (Logos library)",
+    "pope-logos": "Pope's The Inward Witness (Logos library)",
+    "smale-logos": "Smale's The Pentecostal Blessing (Logos library)",
+    "wi-evans-logos": "W. I. Evans's This River Must Flow! (Logos library)",
+    "calvin-pt-logos": "Calvin's sermons in Portuguese (Logos library)"
   }
 }
