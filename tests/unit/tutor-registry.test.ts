@@ -35,8 +35,10 @@ describe('the facts', () => {
     expect((read as { value: unknown[] }).value.length).toBeGreaterThan(0);
   });
 
-  it('settings is what every setting holds now', async () => {
-    expect(await registry.read('settings')).toEqual({ ok: true, value: await currentSettings() });
+  it('settings is what every setting holds now, but for the sermon sources\' switches (mw-qtu3zvz.31: a new source costs the request nothing)', async () => {
+    const all = await currentSettings();
+    expect(Object.keys(all).some((key) => key.startsWith('sermons.'))).toBe(true);
+    expect(await registry.read('settings')).toEqual({ ok: true, value: Object.fromEntries(Object.entries(all).filter(([key]) => !key.startsWith('sermons.'))) });
   });
 
   it('where-he-is reads the reader address, the open screen and the sheets open', async () => {
