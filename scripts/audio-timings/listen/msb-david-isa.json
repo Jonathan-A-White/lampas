@@ -1,0 +1,7 @@
+{
+ "v":1,"edition":"msb-david","book":"isa","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"28:11","edge":"tail","reason":"the narrator reads on into verse 12: no quiet between 'people' and 'to'; cut at the quietest instant between them","room":0.0,"cut":112.31,"judge":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":-4.8,"heard":{"extra":"T","next":"TO","letters":"YOU WILL SPEAK TO THIS PEOPLE O","words":"speak to this people"}},{"kind":"tail-clipped","by":0.105,"readsOn":true,"level":-1.1,"heard":{"lost":"E","letters":"HE WILL SPEAK TO THIS PEOPLE","words":"speak to this people"}}]},
+  {"verse":"28:12","edge":"head","reason":"the narrator reads on from verse 11: no quiet between 'people' and 'to'; cut at the quietest instant between them","room":0.0,"cut":112.31,"judge":[{"kind":"head-extra","by":0.06,"readsOn":true,"level":-4.6,"heard":{"before":"PEOPLE","letters":"TO WHOM HE HAS SAID","words":"to whom he has"}},{"kind":"head-clipped","by":0.04,"readsOn":true,"level":-4.8,"heard":{"lost":"T","letters":"TO WHOM HE HAS SAID","words":"whom he has said"}}]}
+ ]
+}
