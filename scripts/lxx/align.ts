@@ -180,6 +180,20 @@ interface Pair {
 /** The two decimals a confidence is written with. */
 const round2 = (x: number): number => Math.round(x * 100) / 100;
 
+const KYRIOS = 'κύριος'.normalize('NFC');
+
+/**
+ * κύριος is 'Lord' where Swete writes it with a capital (God) and 'master' or 'lord' where he writes it with a small letter (Abraam's master, 'my lord'): Genesis 24:35 'the Lord has blessed my master' is
+ * Κύριος … τὸν κύριόν μου. Paired by 'lord' alone, the small-letter κύριόν took the English 'Lord' that was the capital Κύριος's and 'master' was left with no Greek word (mw-u2w5klk.349.27). So a
+ * small-letter form pairs 'master' best, a small 'lord' next and a capital 'Lord' after; a capital form pairs 'Lord' best and 'master' only weakly. Any other English word is the gloss's ('God', 'sir').
+ */
+function kyriosConfidence(word: GreekWord, token: Token): number | undefined {
+  const capital = /^\p{Lu}/u.test(word.t.normalize('NFC'));
+  if (token.stem === 'lord') return capital === token.capital ? 0.9 : 0.85;
+  if (token.stem === 'master') return capital ? 0.6 : 0.9;
+  return undefined;
+}
+
 /** The confidence of pairing Greek word `word` (with the stems of its lemma's gloss) to an English token, 0 when they do not pair. */
 function confidence(word: GreekWord, kind: Kind, stems: readonly string[], token: Token): number {
   if (token.letters === '') return 0;
@@ -189,6 +203,8 @@ function confidence(word: GreekWord, kind: Kind, stems: readonly string[], token
     const sim = nameSimilarity(word.tr, token.letters);
     return sim >= 0.7 ? round2(0.9 * sim) : 0;
   }
+  const kyrios = kind === 'content' && word.l.normalize('NFC') === KYRIOS ? kyriosConfidence(word, token) : undefined;
+  if (kyrios !== undefined) return kyrios;
   let best = 0;
   for (const stem of stems) best = Math.max(best, stemMatch(stem, token.stem));
   const curated = CURATED.get(word.l.normalize('NFC'))?.has(token.stem) ?? false;

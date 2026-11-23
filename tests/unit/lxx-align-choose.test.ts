@@ -477,6 +477,17 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
     expect(problems).toEqual([]);
   });
 
+  // Genesis 24:27, 24:35, 24:42 and 24:48 had 'master' with no Greek word because the aligner gave the small-letter κύριον the 'Lord' that was the capital Κύριος's (mw-u2w5klk.349.27, found by mw-u2w5klk.349.4).
+  it('leaves no English \'master\' without a Greek word in the Genesis it ships, and its sidecar names none', () => {
+    const expect_ = readExpect('gen')!;
+    const chapters = Object.keys(expect_.chapters).map(Number);
+    const measured = measureShipped(shippedDir, 'gen', chapters, (n) => expect_.chapters[String(n)]?.also ?? []);
+    const shippedMasters = [...measured.entries()].flatMap(([n, m]) => m.leftovers.filter((k) => /:master$/.test(k)).map((k) => `${n}:${k}`));
+    expect(shippedMasters).toEqual([]);
+    const named = Object.values(expect_.chapters).flatMap((c) => (c.leftovers ?? []).map(([k]) => k).filter((k) => /:master$/.test(k)));
+    expect(named).toEqual([]);
+  });
+
   it('has the file of each book it ships under docs/lxx-align, and each is what the ship gives (for the books whose Morpheus cache here is the one the file was written with)', () => {
     const problems: string[] = [];
     for (const { code } of shipped.books) {

@@ -14,7 +14,7 @@ Derived without a Morpheus cache: none.
 | Numbers 6 | 27 | 549 | 434 | 79.1% | 51.4% | — |
 | Numbers 7 | 89 | 1,391 | 1,253 | 90.1% | 62.0% | — |
 | Numbers 8 | 26 | 502 | 416 | 82.9% | 51.8% | — |
-| Numbers 9 | 23 | 508 | 361 | 71.1% | 42.5% | — |
+| Numbers 9 | 23 | 508 | 360 | 70.9% | 42.5% | — |
 | Numbers 10 | 36 | 613 | 492 | 80.3% | 52.9% | — |
 | Numbers 11 | 35 | 827 | 696 | 84.2% | 56.6% | — |
 | Numbers 12 | 15 | 277 | 233 | 84.1% | 60.3% | — |
@@ -45,4 +45,4 @@ Derived without a Morpheus cache: none.
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Numbers | 1,288 | 24,973 | 20,035 | 80.2% | 52.2% | — |
+| Numbers | 1,288 | 24,973 | 20,034 | 80.2% | 52.2% | — |

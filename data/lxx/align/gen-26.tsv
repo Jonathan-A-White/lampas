@@ -82,9 +82,9 @@ Gen.26:11	2	Every man that	8,9		0.80
 Gen.26:11	3	and	14	unsure	0.50
 Gen.26:11	4	wife shall be	15,16		0.80
 Gen.26:12	1	land,	4,5		0.80
-Gen.26:12	2	he	-		0.80
-Gen.26:12	3	one	-		0.80
-Gen.26:12	4	the	-		0.80
+Gen.26:12	2	one	-		0.80
+Gen.26:12	3	the	-		0.80
+Gen.26:12	4	him.	-		0.80
 Gen.26:13	1	exalted,	1		0.80
 Gen.26:13	2	he increased,	6		0.80
 Gen.26:13	2	till he	8,9		0.80
@@ -229,3 +229,5 @@ Gen.26:8	fix	time,	-		0.80
 Gen.26:8	fix	leaned to look	4		0.80
 Gen.26:14	fix	many tilled lands,	9,10		0.80
 Gen.26:14	fix	envied	11		0.80
+Gen.26:12	fix	he found	8		0.80
+Gen.26:12	fix	him.	17		0.80
