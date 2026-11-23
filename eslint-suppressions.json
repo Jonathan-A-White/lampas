@@ -314,16 +314,6 @@
       "count": 1
     }
   },
-  "tests/e2e/passage-typography.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "tests/e2e/placement-confirm.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "tests/e2e/placement-intro.spec.ts": {
     "local/no-real-time-wait": {
       "count": 2
@@ -344,11 +334,6 @@
       "count": 2
     }
   },
-  "tests/e2e/reading-plan-screenshot.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "tests/e2e/reference-card.spec.ts": {
     "local/no-real-time-wait": {
       "count": 2
@@ -364,11 +349,6 @@
       "count": 2
     }
   },
-  "tests/e2e/septuagint-weave-hold.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "tests/e2e/sermons.spec.ts": {
     "local/no-real-time-wait": {
       "count": 3
@@ -379,34 +359,9 @@
       "count": 2
     }
   },
-  "tests/e2e/share-sheet-top.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "tests/e2e/share-steady.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "tests/e2e/short-drill-confirm.spec.ts": {
     "local/no-real-time-wait": {
       "count": 4
-    }
-  },
-  "tests/e2e/speed-swipe.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "tests/e2e/talk-landscape.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "tests/e2e/talk-session.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
     }
   },
   "tests/e2e/tutor-door-absent.spec.ts": {
@@ -414,34 +369,14 @@
       "count": 3
     }
   },
-  "tests/e2e/tutor-door-overlays.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "tests/e2e/tutor-door.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "tests/e2e/update-banner.spec.ts": {
     "local/no-real-time-wait": {
       "count": 2
     }
   },
-  "tests/e2e/weave-space.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "tests/e2e/word-tip-overlap.spec.ts": {
     "local/no-real-time-wait": {
       "count": 2
-    }
-  },
-  "tests/e2e/your-requests.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
     }
   },
   "tests/support/fake-postern.ts": {

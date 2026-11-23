@@ -474,13 +474,18 @@ test('a double tap on the Adopted link opens one tab', async ({ page, context })
 
   // GitHub is not reached from the test: its tab is answered with nothing
   await context.route('https://github.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '' }));
-  const opened: string[] = [];
-  context.on('page', (tab) => opened.push(tab.url()));
+  const tabs: Page[] = [];
+  const probes = new Set<Page>();
+  const opened = { get length() { return tabs.filter((t) => !probes.has(t)).length; } };
+  context.on('page', (tab) => tabs.push(tab));
   await tapTwice(page, link, 120);
   await expect.poll(() => opened.length).toBeGreaterThan(0);
   await pageTime(page, SETTLE_MS + 100);
-  await page.waitForTimeout(500); // a second tab, if any, has opened by now
-  expect(opened).toHaveLength(1);
+  // a second tab, if any, has been announced by the browser before a page it makes after it: open one of our own and close it, then count (the browser makes its tabs in order)
+  const probe = await context.newPage();
+  probes.add(probe);
+  await probe.close();
+  expect(opened.length).toBe(1);
 
   // two taps further apart than the moment are two taps, so the guard holds back no deliberate one
   await tapTwice(page, link, SETTLE_MS + 100);

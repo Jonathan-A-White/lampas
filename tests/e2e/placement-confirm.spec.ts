@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { approachOf, orderOf } from '../../src/approaches';
 import { startPlacement } from '../../src/data/grammar/placement';
+import { untilStill } from '../support/settled';
 import { openUnlocked } from './unlocked';
 
 // mw-hqd5bz.34: the Start over question and both its answers are on screen without a scroll, sideways too, and only Keep my answers is filled.
@@ -45,7 +46,7 @@ async function openKept(page: Page, answers: number) {
   await page.evaluate((saved) => localStorage.setItem('lampas.placement', JSON.stringify(saved)), kept);
   await page.goto('/#/placement');
   await expect(page.getByRole('button', { name: 'Start over' })).toBeVisible();
-  await page.waitForTimeout(500);
+  await untilStill(page, 'main'); // the screen's own transitions have ended
 }
 
 // the filled accent buttons: a background that is not clear

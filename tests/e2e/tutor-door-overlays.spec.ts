@@ -30,6 +30,7 @@ import {
 } from './door-layers';
 import { openCheck, openHebrewGuide, openLetterDrill, openTryIt, openWriteIt } from './large-text-titles';
 import { TALK_SHEET, twoFingers } from './open-tutor';
+import { afterPageClock } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
@@ -324,7 +325,7 @@ for (const sheet of SHEETS) {
     await expect(floating(page)).toBeVisible();
     await shot(page, `sheet-door-${sheet.name.replace(/\W+/g, '-').toLowerCase()}`);
     // a click within 600 ms of a two-finger tap is dropped (src/tutor/doorTap.ts): wait it out before the tap on the ?
-    await page.waitForTimeout(700);
+    await afterPageClock(page, 700);
     await floating(page).click();
     const talk = await expectTalkInFront(page);
     await expect(talk).toHaveAccessibleName(`Ask the tutor: ${sheet.screen}`);

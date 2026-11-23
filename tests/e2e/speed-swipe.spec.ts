@@ -4,6 +4,7 @@
 // DevTools protocol, at 390x844.
 import { expect, test, type Page } from '@playwright/test';
 import { settledBox, swipe } from '../support/gesture';
+import { untilStill } from '../support/settled';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
@@ -23,10 +24,10 @@ const saved = (page: Page): Promise<Record<string, string>> =>
       }),
   );
 
-/** A finger drag as touch input to the browser, on the page's clock (tests/support/gesture.ts), then a moment for the browser to settle. */
+/** A finger drag as touch input to the browser, on the page's clock (tests/support/gesture.ts), then until the browser has settled. */
 async function touch(page: Page, from: { x: number; y: number }, to: { x: number; y: number }, steps: number): Promise<void> {
   await swipe(page, [from.x, from.y], [to.x, to.y], { with: 'touch', steps });
-  await page.waitForTimeout(400);
+  await untilStill(page, ['input[type="range"]']); // the fling has run out: the first slider on the screen stands still
 }
 
 // swipe times the drag on the page's clock, so it is installed before the page opens.

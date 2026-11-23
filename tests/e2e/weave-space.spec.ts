@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { afterFrames } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -32,7 +33,32 @@ async function putWords(page: Page, rows: Row[]) {
   );
 }
 
-async function openLuke(page: Page, learning: boolean, pauseMs = 0) {
+/**
+ * Lets the page's start-up reading of the saved settings run its course: a read-write transaction on the settings store waits for the reads made before it, and the frames after it draw what
+ * those reads (the saved Weave, written back into the address by src/nav/readerAddress.ts) changed. A look at the Reader after this is a look after the write-back, on a slow host as on a quick one.
+ */
+async function afterSettingsRead(page: Page): Promise<void> {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction('settings', 'readwrite');
+          tx.objectStore('settings').getAll();
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+  );
+  await afterFrames(page);
+}
+
+async function openLuke(page: Page, learning: boolean, settle = false) {
   await openUnlocked(page, { empty: true });
   await page.goto('/');
   await expect(page.locator('[data-reader]')).toBeVisible();
@@ -44,9 +70,9 @@ async function openLuke(page: Page, learning: boolean, pauseMs = 0) {
   // a fresh load of the address, not a hash change on the running page: that page writes its saved Weave (off) back into the address (src/nav/readerAddress.ts)
   await page.goto('about:blank');
   await page.goto('/#/?b=luk&c=20&weave=solid%2Blearning');
-  await page.waitForTimeout(pauseMs);
   const verse = page.locator('[data-verse="20"]');
   await expect(verse).toBeVisible();
+  if (settle) await afterSettingsRead(page);
   await verse.scrollIntoViewIfNeeded();
   return verse;
 }
@@ -72,9 +98,9 @@ test("Luke 20:20 in Weave, παραδοῦναι and αὐτὸν learning: a vi
 });
 
 // mw-5r3p30.1109: the address used to be set by a hash change on the page that was already running, which writes its saved Weave (off) back into the address within a few
-// tenths of a second; a reload that came after that read weave=off and the Weave was never on, so the first test failed on a slow host. The pause here is the slow host.
+// tenths of a second; a reload that came after that read weave=off and the Weave was never on, so the first test failed on a slow host. The wait here is for the page's own reading of its saved settings, which is where the slow host shows (afterSettingsRead).
 test('Luke 20:20 in Weave, the page left to settle after the address is set: the Weave the address asked for is still on', async ({ page }) => {
-  const verse = await openLuke(page, true, 600);
+  const verse = await openLuke(page, true, true);
   await expect(verse.locator('[data-chunk="12"]')).toHaveAttribute('data-learning', '');
 });
 

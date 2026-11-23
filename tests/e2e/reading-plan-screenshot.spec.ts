@@ -96,7 +96,7 @@ const readSheet = (page: Page) => page.getByRole('dialog', { name: 'Your screens
 
 /** Every button of `dialog` at least 44 px tall and inside the phone's width, and the sheet wholly on the screen. */
 async function fitsThePhone(page: Page, dialog: ReturnType<Page['getByRole']>): Promise<void> {
-  await page.waitForTimeout(400); // the slide-up has ended
+  await finishedSliding(page); // the slide-up has ended
   for (const box of await dialog.getByRole('button').evaluateAll((els) => els.map((el) => el.getBoundingClientRect()))) {
     expect(box.height).toBeGreaterThanOrEqual(43.5);
     expect(box.left).toBeGreaterThanOrEqual(0);

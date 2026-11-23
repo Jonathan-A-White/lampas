@@ -139,3 +139,13 @@ const TWO_FINGER_CLICK_GUARD_MS = 600;
 export async function afterTwoFingerTap(page: Page): Promise<void> {
   await page.waitForTimeout(TWO_FINGER_CLICK_GUARD_MS * 1.5); // a real-time wait: the Reader drops any click for 600 ms after a two-finger tap (src/immersive.ts CLICK_GUARD_MS), by the page's performance.now, and nothing on the page says when that ends
 }
+
+/**
+ * Waits until the page's own clock (performance.now, which a page.clock.install() fakes too, so it is the page's time, not the host's) has gone on `ms` from the moment of the call: for a guard the
+ * app times itself with performance.now and says nothing when it ends (the click guard after a two-finger tap, src/immersive.ts CLICK_GUARD_MS, 600 ms). Call it after the gesture, so the guard began
+ * no later than the call. It looks again with expect.poll, so a loaded host only lengthens it; it needs a clock that runs (a paused page.clock never gets there: use pageTime).
+ */
+export async function afterPageClock(page: Page, ms: number): Promise<void> {
+  const from = await page.evaluate(() => performance.now());
+  await expect.poll(() => page.evaluate(() => performance.now()), { message: `the page's clock goes on ${ms} ms` }).toBeGreaterThanOrEqual(from + ms);
+}
