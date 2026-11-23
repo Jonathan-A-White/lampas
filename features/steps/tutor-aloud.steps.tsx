@@ -17,6 +17,7 @@ import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { getReading } from '../../src/speech/readAloud';
 import { dropWaiting, waitingAnswer } from '../../src/speech/tutorWaiting';
+import * as tutorVoice from '../../src/speech/tutorVoice';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { typeQuestion } from '../../tests/support/composer';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
@@ -35,6 +36,8 @@ const ENGLISH_28 = verse28.e.map((c) => c.t.trim()).join(' ');
 
 afterAll(async () => {
   cleanup();
+  speakSpy?.mockRestore();
+  readSpy?.mockRestore();
   vi.unstubAllGlobals();
   await closeDatabase();
 });
@@ -56,13 +59,13 @@ async function open({ aloud, hash = '', reply }: { aloud: boolean; hash?: string
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = hash;
   visibility = 'visible';
-  slowSetting?.mockRestore();
-  slowSetting = null;
+  settingDelayMs = 0;
   dropWaiting();
   stubRecorder();
   stubRecognizer();
   FakeRecorder.denied = false;
   tutorTimings.pollMs = 20;
+  watchDecisions();
   fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: reply === 'reading' ? READING_ANSWER : SYNERGEI_ANSWER };
   synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
@@ -96,6 +99,7 @@ async function openVerse28(action: 'Read it aloud' | 'Ask the tutor'): Promise<v
 
 async function holdAndLetGo(): Promise<void> {
   FakeRecorder.durationMs = 2000;
+  watchDecisions();
   const bar = screen.getByRole('button', { name: 'Hold to read verse 28', exact: true });
   await user.pointer([
     { keys: '[MouseLeft>]', target: bar, coords: AT },
@@ -150,15 +154,41 @@ Object.defineProperty(document, 'hidden', { configurable: true, get: () => visib
 /** How long a loaded phone takes to read the 'Read the tutor's responses aloud' setting, which the app does after an answer is stored and before it decides to
  * speak it or hold it for his return (speakTutor): longer than the 150 ms the steps used to wait for silence, so a step that goes by that timer fails. */
 const SLOW_SETTING_MS = 400;
-let slowSetting: { mockRestore: () => void } | null = null;
+let settingDelayMs = 0;
 const slowSettingRead = () => {
-  slowSetting?.mockRestore();
-  const real = repositories.getReadTutor;
-  slowSetting = vi.spyOn(repositories, 'getReadTutor').mockImplementation(async () => {
-    await sleep(SLOW_SETTING_MS);
-    return real();
-  });
+  settingDelayMs = SLOW_SETTING_MS;
 };
+/** What the app decides about speaking a response is seen here: speakTutor is asked once per response, and reads the saved setting (a promise noted here)
+ * before it speaks or does not. A step that says nothing is spoken waits for that decision to be taken (decided), not for a pause (mw-qtu3zvz.273). */
+let speakCalls = 0;
+let settingReads: Promise<unknown>[] = [];
+let speakSpy: { mockRestore: () => void } | null = null;
+let readSpy: { mockRestore: () => void } | null = null;
+function watchDecisions(): void {
+  speakCalls = 0;
+  settingReads = [];
+  if (speakSpy) return;
+  const speak = tutorVoice.speakTutor;
+  speakSpy = vi.spyOn(tutorVoice, 'speakTutor').mockImplementation((...args: Parameters<typeof speak>) => {
+    speakCalls++;
+    speak(...args);
+  });
+  const real = repositories.getReadTutor;
+  readSpy = vi.spyOn(repositories, 'getReadTutor').mockImplementation(() => {
+    const read = (async () => {
+      if (settingDelayMs > 0) await sleep(settingDelayMs);
+      return real();
+    })();
+    settingReads.push(read);
+    return read;
+  });
+}
+/** Waits until a response has been put to speakTutor since watchDecisions and its read of the setting has come back, and the app has acted on it. */
+async function decided(): Promise<void> {
+  await waitFor(() => expect(speakCalls).toBeGreaterThan(0));
+  await Promise.all(settingReads);
+  await act(async () => {});
+}
 const setVisibility = (next: DocumentVisibilityState) => {
   visibility = next;
   act(() => {
@@ -214,17 +244,18 @@ describeFeature(feature, ({ Scenario }) => {
     When(holdRead, holdAndLetGo);
     Then('the verdict {string} is shown and nothing is spoken', async (_, heading: string) => {
       await waitFor(() => expect(screen.getByRole('region', { name: 'Reading check' })).toHaveTextContent(heading));
-      await sleep(150);
+      await decided();
       expect(synth.spoken).toHaveLength(0);
     });
     When('he asks the tutor {string} about verse 28 instead', async (_, question: string) => {
       fake.autoReply = { status: 'answered', answer: SYNERGEI_ANSWER };
       await screen.findByRole('region', { name: 'Verse view' });
+      watchDecisions();
       await ask(question);
     });
     Then('the answer is shown and nothing is spoken', async () => {
       await waitFor(() => expect(document.querySelectorAll('[data-talk-a]').length).toBe(1));
-      await sleep(150);
+      await decided();
       expect(synth.spoken).toHaveLength(0);
     });
   });
