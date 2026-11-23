@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.350
+_2026-11-23_
+- Fixed: In Genesis 49 and 50 of the Septuagint, a tap on an English word opens the Greek word it renders.
+
 ## 0.7.349
 _2026-11-23_
 - Fixed: In the Septuagint's Genesis 12 to 23, tapping 'it came to pass' and a number of other English words now opens the Greek word that renders them.
