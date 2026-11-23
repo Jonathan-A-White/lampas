@@ -10,6 +10,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { honestWake } from '../support/honest-fakes';
 import { setDisplayMode } from './installed';
+import { handleClicksLate } from './late-clicks';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -41,6 +42,8 @@ interface Box {
 const overlaps = (a: Box, b: Box): boolean => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
 test('a three-finger tap turns Hands-free on, the mic mark stands clear of the header and the text, and Settings has the row', async ({ page }) => {
+  // each press of the group is handled 1.5 s late, as a loaded host can: the reload must wait for the choice's aria-pressed (shown once the write landed)
+  await handleClicksLate(page, '[aria-label="Hands-free"] button');
   // Hands-free On listens for the wake word (mw-rl10piw.6): the kit's fake wake stands for it, as a headless browser has no microphone to give it
   await honestWake(page);
   await openUnlocked(page);
@@ -106,6 +109,7 @@ test('a three-finger tap turns Hands-free on, the mic mark stands clear of the h
 
   // Off in Settings takes the mark away; it stays Off after a reload
   await group.getByRole('button', { name: 'Off', exact: true }).click();
+  await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(mark).toHaveCount(0);
   await page.reload();
   // the page of the group is in the address: a reload comes back to it
