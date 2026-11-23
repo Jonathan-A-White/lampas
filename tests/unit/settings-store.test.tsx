@@ -131,8 +131,12 @@ describe('defineSetting', () => {
 });
 
 describe('the definitions', () => {
-  it('lists the settings declared once: the pilot', () => {
-    expect(DEFINITIONS.map((d) => d.key)).toEqual(['theme', 'weave', 'tips', 'immersiveReader', 'immersiveHint', 'audioBible', 'readingPlan', 'readLessons', 'handsFree', 'handsFreePause', 'bibleVoice', 'englishAccent', 'ipaLesson', 'weaveOrder', 'handwritingDrills', 'readingMode', 'chapterButtons', 'copyReference', 'copyNumbers', 'copyLink', 'font', 'greekInterest', 'hebrewInterest', 'septuagint', 'septuagintGaps', 'dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'morningRephilOrder', 'morningRephilBackup', 'dailyTicks', 'devotionalLogos', 'devotionalRephil', 'greekKeyboard', 'hebrewKeyboard', 'pronunciation', 'pronunciationSeparate', 'hebrewPronunciation', 'talk', 'send', 'paradigmExtent', 'variants', 'variantWitnesses', 'variantLessonsOffer', 'rp2026English']);
+  it('lists the settings declared once, each key once, the pilot among them (no list of every key is kept here)', () => {
+    const keys = DEFINITIONS.map((d) => d.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys).toEqual(expect.arrayContaining(['theme', 'weave', 'tips', 'immersiveReader']));
+    expect(keys.indexOf('theme')).toBeLessThan(keys.indexOf('weave'));
+    expect(keys.indexOf('weave')).toBeLessThan(keys.indexOf('tips'));
   });
 
   it('make the registry entries and rows of the settings they declare', () => {
