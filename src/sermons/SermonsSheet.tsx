@@ -27,6 +27,7 @@ import { closeSermons, useOpenSermons } from './openSermons';
 import { openSermon, videoOfRow } from './player';
 import { creditAddress, opensNewTab, OpenWebContext, useOpenWebIn, useReadsAloud, useRowHref, useWebHref } from './openWeb';
 import { openSermonText } from './sermonText';
+import { topicHeading } from './topicHeading';
 import type { SameTheme, SermonPlace, SermonRow, ThemeRow } from './types';
 import { rankHits, type FoundRankContext } from './foundRank';
 import { useArchives, useLatest, usePericope, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
@@ -196,8 +197,8 @@ function ThemesLine({ chips, onOpen }: { chips: ThemeChip[]; onOpen: (chip: Them
 /** One topic's sermons under its heading, 'On <topic>': the group of 'On the same theme' and of a theme opened from the Themes line. */
 function TopicGroup({ id, label, rows, online }: { id: string; label: string; rows: ReadonlyArray<LinkRow & { notes?: true; ref?: ThemeRow['ref'] }>; online: boolean }) {
   return (
-    <div role="group" aria-label={`On ${label}`} data-theme-topic={id} className="pb-3">
-      <h4 className="pb-1 text-sm font-semibold text-muted">{`On ${label}`}</h4>
+    <div role="group" aria-label={topicHeading(label)} data-theme-topic={id} className="pb-3">
+      <h4 className="pb-1 text-sm font-semibold text-muted">{topicHeading(label)}</h4>
       <div className="flex flex-col gap-2">
         {once(rows).map((row) => (
           <Row key={`${row.source}:${row.id}`} row={row} online={online} why={row.notes ? whyOf(row) : undefined} />
@@ -222,7 +223,7 @@ function ThemeView({ chip, online, onHide }: { chip: ThemeChip; online: boolean;
   );
 }
 
-/** 'On the same theme': a group for each topic, headed 'On <topic>', then how many more there were beyond the cut. */
+/** 'On the same theme': a group for each topic, headed 'On <topic>' in reader order (topicHeading: 'On Christ the Sinner's Friend', not the module's 'Sinner's Friend, Christ the'), then how many more there were beyond the cut. */
 export function SameThemeGroups({ same, online }: { same: SameTheme<ThemeRow>; online: boolean }) {
   if (same.groups.length === 0) return null;
   return (
