@@ -18,6 +18,7 @@ import { MAX_LINKS, type TalkScope } from './services/talk';
 import { armFallback } from './resources/openApp';
 import { openedRow, type LinkRow } from './sermons/merge';
 import { opensNewTab, readsAloud, rowHref, useOpenWebIn } from './sermons/openWeb';
+import { openSermon, videoOfRow } from './sermons/player';
 import { openSermonText } from './sermons/sermonText';
 import { onAndroid } from './openInApp';
 import { copyChip, hebrewLinkLemma, mapChip, placeOf, sermonChip, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
@@ -303,13 +304,19 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
                 aria-label={group.sermon.label}
                 data-fallback={group.sermon.open.fallback}
                 onClick={
-                  readsAloud(group.sermon.row, openWeb)
+                  videoOfRow(group.sermon.row) !== undefined
                     ? (event) => {
-                        // a text sermon of a served source is read aloud in Lampas's own sheet (mw-ecpivg5.4), as the Sermons sheet's row does; the link stays for a long press
+                        // a video plays in the app's own player, as the Sermons sheet's row does (mw-ecpivg5.8); the link stays for a long press
                         event.preventDefault();
-                        openSermonText((group.sermon as NonNullable<Group['sermon']>).row);
+                        openSermon((group.sermon as NonNullable<Group['sermon']>).row);
                       }
-                    : group.sermon.open.fallback
+                    : readsAloud(group.sermon.row, openWeb)
+                      ? (event) => {
+                          // a text sermon of a served source is read aloud in Lampas's own sheet (mw-ecpivg5.4), as the Sermons sheet's row does; the link stays for a long press
+                          event.preventDefault();
+                          openSermonText((group.sermon as NonNullable<Group['sermon']>).row);
+                        }
+                      : group.sermon.open.fallback
                       ? () => armFallback((group.sermon as NonNullable<Group['sermon']>).open.fallback)
                       : undefined
                 }
