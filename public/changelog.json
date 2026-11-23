@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.351",
+    "date": "2026-11-23",
+    "story": "mw-qtu3zvz.48",
+    "kind": "fixed",
+    "text": "a sermon's \"Opens on the web\" no longer breaks in the middle across two lines in the Sermons sheet."
+  },
+  {
     "version": "0.7.350",
     "date": "2026-11-23",
     "story": "mw-u2w5klk.349.51",

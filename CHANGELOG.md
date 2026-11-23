@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.351
+_2026-11-23_
+- Fixed: a sermon's "Opens on the web" no longer breaks in the middle across two lines in the Sermons sheet.
+
 ## 0.7.350
 _2026-11-23_
 - Fixed: In Genesis 49 and 50 of the Septuagint, a tap on an English word opens the Greek word it renders.
