@@ -15,7 +15,7 @@ import { openReader } from '../nav/route';
 import { isPlanNext, openInAudible, type SendOffTarget } from '../plan/useSendOff';
 import { audibleChapterLabel, audibleListen, audibleStartOf, audioBibleOf } from '../resources/audioBible';
 import { browserEnv, type OpenEnv } from '../resources/openApp';
-import { audioBibleSetting } from '../settings/definitions';
+import { audioBibleSetting } from '../settings/definitions/audioBible';
 import { getSetting } from '../settings/store';
 import { stopSound } from './playback';
 

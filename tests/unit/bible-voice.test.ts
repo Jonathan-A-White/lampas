@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fillChapter, type Chapter } from '../../src/data/chapter';
 import { forgetTimings, loadBookTimings } from '../../src/data/audioTimings';
 import { BOOKS } from '../../src/data/books';
-import { bibleVoiceSetting } from '../../src/settings/definitions';
+import { bibleVoiceSetting } from '../../src/settings/definitions/bibleVoice';
 import { setConnectionForTests, type ConnectionKind } from '../../src/speech/connection';
 import type { PlanVerse } from '../../src/speech/readAloud';
 import { recordingFor, resetRecordedVoice, setBibleVoice, wantsRecording } from '../../src/speech/recordedVoice';

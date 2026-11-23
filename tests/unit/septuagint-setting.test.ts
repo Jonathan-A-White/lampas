@@ -2,7 +2,7 @@
 // found by the settings search for 'Septuagint', and kept.
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
-import { septuagintSetting } from '../../src/settings/definitions';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { settingOf, ROWS, visibleRows, readValues } from '../support/settings';
 import { getSetting, setSetting } from '../../src/settings/store';
 import { septuagintView, septuagintWeaveNoted } from '../../src/reader/septuagint';

@@ -6,6 +6,7 @@ import { defineSetting } from '../define';
 export type HandsFreeValue = 'on' | 'off';
 
 export const handsFreeSetting = defineSetting<HandsFreeValue>({
+  order: 90,
   key: 'handsFree',
   default: 'off',
   allowed: {

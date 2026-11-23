@@ -16,7 +16,10 @@
 // English defaults are step 0 of both dials: one function.
 import { db } from '../db';
 import { publish } from '../../events/bus';
-import { handwritingSetting, readLessonsSetting, weaveOrderSetting, weaveSetting } from '../../settings/definitions';
+import { handwritingSetting } from '../../settings/definitions/handwriting';
+import { readLessonsSetting } from '../../settings/definitions/readLessons';
+import { weaveOrderSetting } from '../../settings/definitions/weaveOrder';
+import { weaveSetting } from '../../settings/definitions/weave';
 import {
   GREEK_TOP,
   greekInterestSetting,

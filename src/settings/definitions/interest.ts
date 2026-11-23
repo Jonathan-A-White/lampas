@@ -98,10 +98,11 @@ const chosen = (lang: InterestLang): Dependency => ({
 });
 
 /** The dial of a language: a choice of '0' to '5', section dial, drawn on the Settings home under 'Which languages?'. */
-export function interestSetting(lang: InterestLang) {
+export function interestSetting(lang: InterestLang, order?: number) {
   const steps = levelsOf(lang);
   const name = lang === 'grc' ? 'Greek' : 'Hebrew';
   return defineSetting<string>({
+    order,
     key: interestKeyOf(lang),
     default: String(startOf(lang)),
     allowed: { kind: 'choice', values: steps.map((l) => ({ value: String(l.level), label: l.name })) },

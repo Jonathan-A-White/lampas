@@ -17,7 +17,7 @@ vi.mock('../../src/settings/store', async (actual) => ({
 
 import { startAppearanceSync } from '../../src/appearance/appearanceSync';
 import { clearBus, latest, publish } from '../../src/events/bus';
-import { themeSetting } from '../../src/settings/definitions';
+import { themeSetting } from '../../src/settings/definitions/theme';
 import { announceSetting, toldSetting } from '../../src/settings/store';
 
 function deferred<T>() {

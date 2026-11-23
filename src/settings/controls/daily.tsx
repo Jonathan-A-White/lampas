@@ -8,7 +8,7 @@ import { ownedResources } from '../../data/repositories';
 import { openLibrary } from '../../nav/route';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting, todaysDevotionalSetting, ANOTHER } from '../definitions/daily';
 import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';

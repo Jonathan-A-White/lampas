@@ -6,6 +6,8 @@ import { depthFrom } from './interest';
 export type ReadLessons = 'on' | 'off';
 
 export const readLessonsSetting = defineSetting<ReadLessons>({
+  order: 80,
+  slot: 190,
   key: 'readLessons',
   default: 'off',
   allowed: {

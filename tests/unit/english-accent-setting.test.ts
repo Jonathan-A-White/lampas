@@ -11,7 +11,7 @@ import { ideaSound } from '../../src/data/grammar/lessons';
 import { settingsForTutor } from '../../src/settings/tutorSettings';
 import { buildReadingRequest } from '../../src/services/reading';
 import { buildTalkRequest } from '../../src/services/talk';
-import { englishAccentSetting } from '../../src/settings/definitions';
+import { englishAccentSetting } from '../../src/settings/definitions/englishAccent';
 import { ROWS, currentSettings, settingOf, writeSetting } from '../support/settings';
 import { getSetting } from '../../src/settings/store';
 import { ACCENTS, DEFAULT_ACCENT, accentOf, chooseAccent, chosenAccent, missingHints, soundWords } from '../../src/speech/accents';

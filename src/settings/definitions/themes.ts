@@ -28,6 +28,7 @@ export const themeSourceSetting = (source: Pick<ThemeSource, 'id' | 'name' | 'de
  * look after, as Open web sermons in is): a row of its own, rows.ts HIDDEN_THEMES_ROW.
  */
 export const hiddenThemesSetting = defineSetting<string>({
+  outside: 'a row of its own (rows.ts), the names are his own to hide and show',
   key: 'themesHidden',
   default: '',
   allowed: { kind: 'text', valid: () => true, example: 'Atonement\nGrace', note: 'the names of the hidden themes, one a line, or empty for none' },

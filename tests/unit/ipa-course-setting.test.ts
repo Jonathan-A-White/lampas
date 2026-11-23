@@ -5,7 +5,8 @@ import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
-import { DEFINITIONS, ipaCourseSetting } from '../../src/settings/definitions';
+import { DEFINITIONS } from '../../src/settings/definitions';
+import { ipaCourseSetting } from '../../src/settings/definitions/ipaCourse';
 import { applyChanges, currentSettings, settingOf, undoChange, writeSetting, readValues, visibleRows, type Values } from '../support/settings';
 import { getSetting } from '../../src/settings/store';
 

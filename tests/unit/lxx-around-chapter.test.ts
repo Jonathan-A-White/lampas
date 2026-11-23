@@ -10,7 +10,7 @@ import { septuagintNumber, septuagintTitle } from '../../src/reader/septuagint';
 import { notReadyNotice } from '../../src/data/lxxChapter';
 import { planOf } from '../../src/speech/readAloud';
 import { PREFACE_PARAGRAPHS } from '../../src/preface';
-import { septuagintSetting } from '../../src/settings/definitions';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { setSetting } from '../../src/settings/store';
 import { stubChapterFetch, type ChapterFetch } from '../support/chapter-fetch';
 import index from '../fixtures/data-lxx/index.json' with { type: 'json' };

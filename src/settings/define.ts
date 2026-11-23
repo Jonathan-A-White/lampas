@@ -2,7 +2,7 @@
 // is read back, and where it sits on the Settings screen (section, name, hint, help, what it depends on). The declaration itself, its checks and
 // its types are @pwa-kit/settings' (pwa-kit/settings); this file is Lampas's section ids and the one field the kit does not know, `store`.
 // src/settings/store.ts reads and saves it and tells the bus; src/settings/registry.ts and src/settings/rows.ts make its entry and its row from it.
-// A setting declared so is one file in src/settings/definitions/ and one line in its index.ts.
+// A setting declared so is one file in src/settings/definitions/, gathered by glob (src/settings/gather.ts): no list to edit (mw-6ww.175.105).
 import { defineSetting as declareSetting, type SettingDef as KitSettingDef, type SettingSpec as KitSettingSpec, type SettingValue } from 'pwa-kit/settings';
 
 export type { Allowed, Dependency, SettingValue } from 'pwa-kit/settings';
@@ -45,6 +45,12 @@ export type SectionId =
   | 'tools';
 
 export interface SettingStore {
+  /** where it sits in DEFINITIONS (src/settings/definitions/index.ts): lowest first, then by key; a new setting leaves it out and comes last */
+  order?: number;
+  /** where its registry entry sits in SETTINGS (the order the tutor is told them in): lowest first, then by key; a new setting leaves it out and comes last. A setting whose entry is made by hand in src/settings/entries/ has no slot, that entry has it */
+  slot?: number;
+  /** the reason a setting declared here is kept out of DEFINITIONS and SETTINGS (a row of its own in rows.ts, as Hand is) */
+  outside?: string;
   /** where the value is kept when it is not a row of the settings store (the devotional draw is on his shelf, src/data/repositories/library.ts): read gives the text, write keeps it */
   store?: { read(): Promise<string>; write(value: string): Promise<void> };
 }

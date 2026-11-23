@@ -5,6 +5,8 @@ import { defineSetting } from '../define';
 export type ReadingMode = 'scroll' | 'pages';
 
 export const readingModeSetting = defineSetting<ReadingMode>({
+  order: 160,
+  slot: 110,
   key: 'readingMode',
   default: 'scroll',
   allowed: {

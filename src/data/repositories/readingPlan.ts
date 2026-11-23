@@ -3,7 +3,7 @@
 // outside the settings registry (the switch 'readingPlan' is the registry's, src/settings/definitions/readingPlan.ts). A plan is a straight line of chapters, so what is
 // done is kept as the keys 'gen.1' of the chapters marked.
 import { AUDIO_BIBLES } from '../../resources/audioBible';
-import { audioBibleSetting } from '../../settings/definitions';
+import { audioBibleSetting } from '../../settings/definitions/audioBible';
 import { readingPlanSetting } from '../../settings/definitions/readingPlan';
 import { getSetting, setSetting } from '../../settings/store';
 import { localDate } from '../daily/dailyStore';

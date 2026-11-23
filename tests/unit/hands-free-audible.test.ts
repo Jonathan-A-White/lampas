@@ -9,7 +9,7 @@ import { TOUCH_TO_OPEN, TURN_ON_AUDIO_BIBLE, TOUCH_WINDOW_MS, audibleSeam, forge
 import { forgetRead } from '../../src/nav/readerRequest';
 import { AUDIO_BIBLES, audibleListen } from '../../src/resources/audioBible';
 import type { OpenEnv } from '../../src/resources/openApp';
-import { audioBibleSetting } from '../../src/settings/definitions';
+import { audioBibleSetting } from '../../src/settings/definitions/audioBible';
 import { setSetting } from '../../src/settings/store';
 import { ManualClock } from '../support/manual-clock';
 import { ASYNC_WAIT_MS } from '../support/timeouts';

@@ -4,7 +4,7 @@
 // that and nothing of its own; LAMPAS_TALK_SETTINGS is what it holds until he has chosen (and while the choice is being read).
 import { useMemo } from 'react';
 import type { ComposerSettings } from 'voice-kit/composer';
-import { sendSetting, talkSetting } from './settings/definitions';
+import { sendSetting, talkSetting } from './settings/definitions/talk';
 import { useSetting } from './settings/store';
 
 export const LAMPAS_TALK_SETTINGS = { talk: 'hold', send: 'release' } as const satisfies Partial<ComposerSettings>;

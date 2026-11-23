@@ -13,7 +13,7 @@ import type { KnownScore } from '../../scripts/lxx/known';
 import { parseArgs, runShip, type ShipOptions } from '../../scripts/lxx/ship';
 import { db } from '../../src/data/db';
 import { forgetChapters, loadChapter } from '../../src/data/chapter';
-import { septuagintSetting } from '../../src/settings/definitions';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { setSetting } from '../../src/settings/store';
 
 const FIXTURES = 'tests/fixtures/lxx';

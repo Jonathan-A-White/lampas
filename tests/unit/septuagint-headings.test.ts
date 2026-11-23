@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { loadChapter, type Chapter, type Verse, type VerseRef } from '../../src/data/chapter';
 import { withHeadings } from '../../src/data/lxxChapter';
-import { septuagintSetting } from '../../src/settings/definitions';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { setSetting } from '../../src/settings/store';
 import { stubChapterFetch } from '../support/chapter-fetch';
 

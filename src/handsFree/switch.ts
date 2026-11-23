@@ -1,7 +1,7 @@
 // src/handsFree/switch.ts — the Hands-free switch (mw-rl10piw.5): reading the setting and turning it On or Off. The Settings row (src/settings/controls/voice.tsx) and the three-finger tap
 // (src/handsFree/HandsFreeGate.tsx) both go through setHandsFree, so both write the one setting and both say 'Hands-free on' or 'Hands-free off' aloud, in the English voice, through the
 // app's own speech (src/speech/greek.ts speakText: beside a reading, if one is under way). Saying it is a plain sentence the phone speaks; this opens no microphone.
-import { handsFreeSetting } from '../settings/definitions';
+import { handsFreeSetting } from '../settings/definitions/handsFree';
 import { getSetting, setSetting, useSetting } from '../settings/store';
 import { SETTING_SAID_KEY, speakText } from '../speech/greek';
 import { getReading, resumeReading, subscribeReading } from '../speech/readAloud';

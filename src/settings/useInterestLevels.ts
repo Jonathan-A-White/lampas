@@ -1,6 +1,7 @@
 // src/settings/useInterestLevels.ts — both dials' steps (mw-gdcyf98.3), live: undefined until they have been read. A screen that draws a chapter reads the step of the chapter's own
 // language from them (levelOf in definitions/interest.ts), so a change made in Settings or by the tutor reaches the screen that is open.
-import { hebrewInterestSetting, greekInterestSetting } from './definitions';
+import { hebrewInterestSetting } from './definitions/hebrewInterest';
+import { greekInterestSetting } from './definitions/greekInterest';
 import { greekLevelOf } from './definitions/greekInterest';
 import { hebrewLevelOf } from './definitions/hebrewInterest';
 import { type InterestLevels } from './definitions/interest';

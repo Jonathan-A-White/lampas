@@ -22,7 +22,9 @@ import {
 } from '../../src/data/repositories';
 import { startWelcomeIfFirst, isExistingReader, showWelcomeAgain } from '../../src/data/repositories/welcome';
 import { getSetting, setSetting } from '../../src/settings/store';
-import { handwritingSetting, readLessonsSetting, weaveOrderSetting } from '../../src/settings/definitions';
+import { handwritingSetting } from '../../src/settings/definitions/handwriting';
+import { readLessonsSetting } from '../../src/settings/definitions/readLessons';
+import { weaveOrderSetting } from '../../src/settings/definitions/weaveOrder';
 import { GREEK_LEVELS, greekFrom, newWordsAt, placementOf, viewAt, weaveAt, type GreekLevel } from '../../src/settings/definitions/greekInterest';
 import { languagesOf } from '../../src/settings/definitions/interest';
 import { ROWS, TOOL_ROWS, visibleRows, type Values, settingOf } from '../support/settings';

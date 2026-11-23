@@ -28,7 +28,7 @@ import { settingsFor, useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
 import { isOrdered, rowAttrs } from '../reader/sourceText';
 import { cardForm, isSeptuagint, lampasNumber } from '../reader/septuagint';
-import { septuagintGapsSetting } from '../settings/definitions';
+import { septuagintGapsSetting } from '../settings/definitions/septuagintGaps';
 import { useSetting } from '../settings/store';
 import { textClass } from '../reader/textClass';
 import { MARGIN, WIDTH, spotFor, type Spot } from './cardSpot';

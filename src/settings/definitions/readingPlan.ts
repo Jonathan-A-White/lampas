@@ -6,6 +6,8 @@ import { defineSetting } from '../define';
 export type ReadingPlanSwitch = 'off' | 'on';
 
 export const readingPlanSetting = defineSetting<ReadingPlanSwitch>({
+  order: 70,
+  slot: 580,
   key: 'readingPlan',
   default: 'off',
   allowed: {

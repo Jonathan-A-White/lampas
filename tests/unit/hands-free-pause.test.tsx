@@ -21,7 +21,7 @@ import { db } from '../../src/data/db';
 import { HandsFreeGate } from '../../src/handsFree/HandsFreeGate';
 import { handsFreeSeam, resetHandsFree } from '../../src/handsFree/session';
 import { setHandsFree } from '../../src/handsFree/switch';
-import { handsFreePauseSetting } from '../../src/settings/definitions';
+import { handsFreePauseSetting } from '../../src/settings/definitions/handsFreePause';
 import { setSetting } from '../../src/settings/store';
 import { stopReading } from '../../src/speech/readAloud';
 import { FakeRecognizer, result, stubRecognizer } from '../support/fake-recognizer';

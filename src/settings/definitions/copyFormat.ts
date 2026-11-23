@@ -5,6 +5,8 @@ import { defineSetting } from '../define';
 import type { CopyReference, OnOffChoice } from '../../copy/format';
 
 export const copyReferenceSetting = defineSetting<CopyReference>({
+  order: 180,
+  slot: 130,
   key: 'copyReference',
   default: 'after',
   allowed: {
@@ -22,6 +24,8 @@ export const copyReferenceSetting = defineSetting<CopyReference>({
 });
 
 export const copyNumbersSetting = defineSetting<OnOffChoice>({
+  order: 190,
+  slot: 140,
   key: 'copyNumbers',
   default: 'on',
   allowed: {
@@ -38,6 +42,8 @@ export const copyNumbersSetting = defineSetting<OnOffChoice>({
 });
 
 export const copyLinkSetting = defineSetting<OnOffChoice>({
+  order: 200,
+  slot: 150,
   key: 'copyLink',
   default: 'on',
   allowed: {

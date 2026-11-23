@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { startPlan } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { readingPlanSetting } from '../../src/settings/definitions';
+import { readingPlanSetting } from '../../src/settings/definitions/readingPlan';
 import { setSetting } from '../../src/settings/store';
 import { Today } from '../../src/today/Today';
 

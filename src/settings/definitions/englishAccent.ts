@@ -6,6 +6,7 @@ import { ACCENTS, DEFAULT_ACCENT } from '../../speech/accents';
 import { defineSetting } from '../define';
 
 export const englishAccentSetting = defineSetting<string>({
+  order: 120,
   key: 'englishAccent',
   default: DEFAULT_ACCENT,
   allowed: { kind: 'choice', values: ACCENTS.map((a) => ({ value: a.id, label: a.label })) },

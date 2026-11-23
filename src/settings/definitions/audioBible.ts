@@ -4,6 +4,8 @@ import { AUDIO_BIBLES } from '../../resources/audioBible';
 import { defineSetting } from '../define';
 
 export const audioBibleSetting = defineSetting<string>({
+  order: 60,
+  slot: 570,
   key: 'audioBible',
   default: 'off',
   allowed: {

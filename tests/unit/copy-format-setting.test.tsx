@@ -8,7 +8,7 @@ import { COPY_DEFAULTS, sharePieces } from '../../src/copy/format';
 import { db } from '../../src/data/db';
 import { setGreekInterest, setReaderView } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { copyLinkSetting, copyNumbersSetting, copyReferenceSetting } from '../../src/settings/definitions';
+import { copyLinkSetting, copyNumbersSetting, copyReferenceSetting } from '../../src/settings/definitions/copyFormat';
 import { CopyFormatControl, readValues, ROWS, rowOf } from '../support/settings';
 import { DEFINITIONS } from '../../src/settings/definitions';
 import { stubChapterFetch } from '../support/chapter-fetch';

@@ -6,6 +6,8 @@ import { greekFrom } from './greekInterest';
 export type GreekKeyboard = 'on' | 'off';
 
 export const greekKeyboardSetting = defineSetting<GreekKeyboard>({
+  order: 380,
+  slot: 390,
   key: 'greekKeyboard',
   default: 'off',
   allowed: {

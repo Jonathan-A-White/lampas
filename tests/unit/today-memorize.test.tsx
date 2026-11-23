@@ -10,7 +10,7 @@ import { todayNow } from '../../src/data/learnerToday';
 import { memorize } from '../../src/data/repositories/memorize';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
-import { dailyMemorizeSetting } from '../../src/settings/definitions';
+import { dailyMemorizeSetting } from '../../src/settings/definitions/daily';
 import { getSetting, setSetting } from '../../src/settings/store';
 import { screenContextNow } from '../../src/tutor/screenContext';
 import { TodayChip } from '../../src/today/TodayChip';

@@ -5,7 +5,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { answerVariantLessonsOffer, getVariantLessonsOfferAnswered } from '../data/repositories';
 import { navigate } from '../nav/route';
-import { variantLessonsOfferSetting } from '../settings/definitions';
+import { variantLessonsOfferSetting } from '../settings/definitions/variants';
 import { useSetting } from '../settings/store';
 
 export function VariantLessonsOffer({ variantsOn }: { variantsOn: boolean }) {

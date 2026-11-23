@@ -6,7 +6,7 @@ import { planOf } from '../../src/data/plans';
 import { getReadingPlan, markDoneThrough, nextChapter, planProgress, restorePlan, setPlace, setPlaceAfter, startPlan } from '../../src/data/repositories';
 import { keyOf } from '../../src/data/repositories/readingPlan';
 import { readPlan } from '../../src/plan/usePlan';
-import { readingPlanSetting } from '../../src/settings/definitions';
+import { readingPlanSetting } from '../../src/settings/definitions/readingPlan';
 import { setSetting } from '../../src/settings/store';
 import { todayFacts } from '../../src/today/tutorFacts';
 

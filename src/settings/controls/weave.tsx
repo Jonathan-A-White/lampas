@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { getWeave, getWeaveGrammar } from '../../data/repositories';
-import { weaveOrderSetting } from '../definitions';
+import { weaveOrderSetting } from '../definitions/weaveOrder';
 import { getSetting } from '../store';
 import type { SettingsRow } from '../rows';
 import { ExtentChips } from './grammarExtent';

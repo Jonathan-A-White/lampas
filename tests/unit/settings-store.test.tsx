@@ -7,7 +7,10 @@ import { db } from '../../src/data/db';
 import { getTheme, getTips, getWeave, setTheme, setTips, setWeave } from '../../src/data/repositories';
 import { clearBus, latest, subscribe, type EventOf } from '../../src/events/bus';
 import { defineSetting } from '../../src/settings/define';
-import { DEFINITIONS, themeSetting, tipsSetting, weaveSetting } from '../../src/settings/definitions';
+import { DEFINITIONS } from '../../src/settings/definitions';
+import { themeSetting } from '../../src/settings/definitions/theme';
+import { tipsSetting } from '../../src/settings/definitions/tips';
+import { weaveSetting } from '../../src/settings/definitions/weave';
 import { SETTINGS, ROWS } from '../support/settings';
 import { getSetting, onSetting, setSetting, toldSetting, useSetting } from '../../src/settings/store';
 

@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react';
 import type { Chapter } from '../../data/chapter';
 import { ShownNumber } from '../ChapterText';
-import { septuagintGapsSetting } from '../../settings/definitions';
+import { septuagintGapsSetting } from '../../settings/definitions/septuagintGaps';
 import { useSetting } from '../../settings/store';
 import { isSeptuagint } from '../septuagint';
 import { rowAttrs } from '../sourceText';

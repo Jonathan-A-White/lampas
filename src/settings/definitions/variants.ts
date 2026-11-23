@@ -8,6 +8,8 @@ export type Variants = 'off' | 'english' | 'all';
 export type VariantWitnesses = 'byz' | 'na' | 'ecm';
 
 export const variantsSetting = defineSetting<Variants>({
+  order: 460,
+  slot: 280,
   key: 'variants',
   default: 'off',
   allowed: {
@@ -25,6 +27,8 @@ export const variantsSetting = defineSetting<Variants>({
 });
 
 export const variantWitnessesSetting = defineSetting<VariantWitnesses>({
+  order: 470,
+  slot: 290,
   key: 'variantWitnesses',
   default: 'ecm',
   allowed: {
@@ -45,6 +49,7 @@ export const variantWitnessesSetting = defineSetting<VariantWitnesses>({
 export type VariantLessonsOffer = 'on' | 'off';
 
 export const variantLessonsOfferSetting = defineSetting<VariantLessonsOffer>({
+  order: 480,
   key: 'variantLessonsOffer',
   default: 'on',
   allowed: {

@@ -18,7 +18,7 @@ import { isFormOf } from '../../src/data/quiz';
 import { numeralValue } from '../../src/data/numerals';
 import { weaveForTeaching, weaveWord } from '../../src/data/weave';
 import { findWord } from '../../src/nav/links';
-import { septuagintSetting } from '../../src/settings/definitions';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { setSetting } from '../../src/settings/store';
 import type { TalkScope } from '../../src/services/talk';
 import { stubChapterFetch } from '../support/chapter-fetch';

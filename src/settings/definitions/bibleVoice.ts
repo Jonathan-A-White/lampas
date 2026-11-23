@@ -18,6 +18,8 @@ export const BIBLE_VOICE_CREDIT = 'Recording: Majority Standard Bible, read by D
 export const NO_WIFI_SENSE = 'This phone cannot tell Wi-Fi from mobile data, so Recording on Wi-Fi only is not offered.';
 
 export const bibleVoiceSetting = defineSetting<BibleVoice>({
+  order: 110,
+  slot: 430,
   key: 'bibleVoice',
   default: 'msb-david-wifi',
   allowed: {

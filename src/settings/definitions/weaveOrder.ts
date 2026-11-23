@@ -6,6 +6,8 @@ import { defineSetting } from '../define';
 export type WeaveOrder = 'english' | 'greek';
 
 export const weaveOrderSetting = defineSetting<WeaveOrder>({
+  order: 140,
+  slot: 270,
   key: 'weaveOrder',
   default: 'english',
   allowed: {

@@ -44,4 +44,4 @@ export function placementOf(has: { view: 'english' | 'greek'; newWords: number; 
   return 0;
 }
 
-export const greekInterestSetting = interestSetting('grc');
+export const greekInterestSetting = interestSetting('grc', 220);

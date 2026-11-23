@@ -15,7 +15,7 @@ import { setReaderView, setSpeechRate, setWeave } from '../../src/data/repositor
 import { clearBus, latest, publish, subscribe } from '../../src/events/bus';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { recordingElement, resetRecordedVoice, wantsRecording } from '../../src/speech/recordedVoice';
-import { bibleVoiceSetting } from '../../src/settings/definitions';
+import { bibleVoiceSetting } from '../../src/settings/definitions/bibleVoice';
 import { setSetting } from '../../src/settings/store';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { stubMediaSession, type FakeMediaSession } from '../../tests/support/fake-media-session';

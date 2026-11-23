@@ -1,5 +1,6 @@
 // The Variants rows (Settings > Reading > Variants, mw-9ji6ek0.4): what to show of the manuscripts' differences, and whose readings count (drawn only while Variants is not Off), Offer the lessons (always drawn, mw-9ji6ek0.19) and Read as (always drawn, mw-9ji6ek0.25).
-import { rp2026EnglishSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting } from '../definitions';
+import { rp2026EnglishSetting } from '../definitions/rp2026English';
+import { variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting } from '../definitions/variants';
 import { ReadAs } from '../../reader/ReadingSetSheet';
 import { useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';

@@ -1,5 +1,6 @@
 // Settings > Learning > Keyboards (mw-5r3p30.1191, moved from Daily): Greek keyboard and Hebrew keyboard, each On | Off, beside Handwriting.
-import { greekKeyboardSetting, hebrewKeyboardSetting } from '../definitions';
+import { greekKeyboardSetting } from '../definitions/greekKeyboard';
+import { hebrewKeyboardSetting } from '../definitions/hebrewKeyboard';
 import { useSetting } from '../store';
 import { OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
