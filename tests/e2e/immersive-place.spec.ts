@@ -333,7 +333,7 @@ for (const licensed of [true, false]) {
     await expect(settingsHeading(page)).toBeVisible();
     await page.getByRole('button', { name: '‹ Reader' }).click();
     await expect.poll(top).toBeGreaterThan(at - 50);
-    // the saved place is back; the restore waits for the text to stay still before it lets go
+    // the saved place is back; the restore lets go (data-restoring goes) once the text has stayed still
     await afterRestore(page);
     await shown('after Settings');
     await shot(page, `immersive-return-${licensed ? 'licensed' : 'free'}`);
