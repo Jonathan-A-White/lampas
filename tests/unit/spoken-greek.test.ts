@@ -122,8 +122,13 @@ describe.each(['bible-talk'])('the %s grind tells the tutor about spoken Greek w
   });
 
   it('says to name the word it took in one short line, with the example, and not to ask first', () => {
-    expect(text).toContain('I took "Tech N9ne" as τεκνίον.');
+    expect(text).toContain('I took "Tech N9ne" as τεκνίον');
     expect(text).toContain('Do not ask which he meant first');
+  });
+
+  it('says every sound-alike stretch it took is named in that line and written in Greek, with a two-word example (mw-qtu3zvz.275)', () => {
+    expect(text).toMatch(/every (odd|sound-alike) stretch/i);
+    expect(text).toContain('I took "Tech N9ne" as τεκνίον and "technia" as τεκνία.');
   });
 
   it('keeps a scenario for it, with the request marked spoken', () => {
