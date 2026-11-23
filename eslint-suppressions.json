@@ -26,7 +26,7 @@
   },
   "features/steps/copy-format.steps.tsx": {
     "local/no-real-time-wait": {
-      "count": 6
+      "count": 1
     }
   },
   "features/steps/copy-hold.steps.tsx": {
@@ -96,7 +96,7 @@
   },
   "features/steps/maps.steps.tsx": {
     "local/no-real-time-wait": {
-      "count": 4
+      "count": 2
     }
   },
   "features/steps/offline-copy.steps.tsx": {
@@ -181,7 +181,7 @@
   },
   "features/steps/sermons-settings.steps.tsx": {
     "local/no-real-time-wait": {
-      "count": 2
+      "count": 1
     }
   },
   "features/steps/sermons.steps.tsx": {
@@ -204,11 +204,6 @@
       "count": 1
     }
   },
-  "features/steps/themes.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "features/steps/tips.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
@@ -222,11 +217,6 @@
   "features/steps/tutor-aloud.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 7
-    }
-  },
-  "features/steps/tutor-links.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
     }
   },
   "features/steps/tutor-works.steps.tsx": {
@@ -299,16 +289,6 @@
       "count": 1
     }
   },
-  "tests/e2e/drill-it.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 14
-    }
-  },
-  "tests/e2e/drill.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
   "tests/e2e/floating-tutor-once.spec.ts": {
     "local/no-real-time-wait": {
       "count": 1
@@ -322,16 +302,6 @@
   "tests/e2e/hear-any-word.spec.ts": {
     "local/no-real-time-wait": {
       "count": 2
-    }
-  },
-  "tests/e2e/idea-sheet-taps.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 5
-    }
-  },
-  "tests/e2e/library.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 3
     }
   },
   "tests/e2e/licence-tip.spec.ts": {
@@ -367,11 +337,6 @@
   "tests/e2e/placement-intro.spec.ts": {
     "local/no-real-time-wait": {
       "count": 2
-    }
-  },
-  "tests/e2e/placement-leave-steady.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 5
     }
   },
   "tests/e2e/quiz-goal-offer.spec.ts": {
@@ -426,7 +391,7 @@
   },
   "tests/e2e/sermons.spec.ts": {
     "local/no-real-time-wait": {
-      "count": 4
+      "count": 3
     }
   },
   "tests/e2e/settings-search-lands.spec.ts": {
@@ -442,11 +407,6 @@
   "tests/e2e/share-steady.spec.ts": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "tests/e2e/sheet-leave-steady.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 4
     }
   },
   "tests/e2e/short-drill-confirm.spec.ts": {
@@ -467,11 +427,6 @@
   "tests/e2e/talk-session.spec.ts": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "tests/e2e/turn-pages.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 8
     }
   },
   "tests/e2e/tutor-door-absent.spec.ts": {

@@ -77,7 +77,6 @@ test('Lexicons with 27 on: All on, two off, each of the three hit areas selects,
     await tapMiddle(page, group.getByRole('radio', { name: step, exact: true }));
     await expect(group.getByRole('radio', { name: step, exact: true })).toHaveAttribute('aria-checked', 'true');
     await expect(group.locator('[aria-checked="true"]')).toHaveCount(1);
-    await page.waitForTimeout(350);
   }
   // and the choice is kept
   await page.reload();
@@ -135,7 +134,6 @@ test('Commentaries, several hundred of them: All on, a search narrows them, the 
   const name = (await last.getAttribute('aria-label'))!;
   await last.getByRole('radio', { name: 'Pin', exact: true }).click();
   await expect(last.getByRole('radio', { name: 'Pin', exact: true })).toHaveAttribute('aria-checked', 'true');
-  await page.waitForTimeout(350);
   await page.reload();
   await expect(page.getByRole('radiogroup').first()).toHaveAttribute('aria-label', name);
   await page.locator('.screen').evaluate((box) => void (box.scrollTop = 0));
@@ -150,7 +148,6 @@ test('a fourth pin is refused with its line under the book', async ({ page }) =>
     await group.scrollIntoViewIfNeeded();
     await group.getByRole('radio', { name: 'Pin', exact: true }).click();
     await expect(group.getByRole('radio', { name: 'Pin', exact: true })).toHaveAttribute('aria-checked', 'true');
-    await page.waitForTimeout(350);
   }
   const edntGroup = page.getByRole('radiogroup', { name: 'EDNT', exact: true });
   await edntGroup.scrollIntoViewIfNeeded();
