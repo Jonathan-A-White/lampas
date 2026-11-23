@@ -18,7 +18,9 @@
     "previous-verse-44": "LXX2012's 44:5 'Why have you stolen my silver cup?' renders the end of the Greek verse 44:4 (ἵνα τί ἐκλέψατέ μου τὸ κόνδυ τὸ ἀργυροῦν), which has no English chunk of its own to point at (the like of Genesis 37:32) (mw-u2w5klk.349.49).",
     "hebrew-only-45": "45:4 'Joseph said to his brethren, Draw near to me; and they drew near; and he said,' is Brenton's from the Hebrew: Swete's Greek has only 'And he said, I am Joseph your brother' (mw-u2w5klk.349.49).",
     "other-verse-46-48": "LXX2012 carries English here whose Greek is in another verse: Genesis 46:13's 'of Phares were Esron, ... Jemuel. And the sons of' renders the end of the Greek verse 46:12 (ἐγένοντο δὲ υἱοὶ Φάρες Ἁσρὼμ καὶ Ἰεμουήλ), and 47:4 holds, after its own Greek ('we will dwell in the land of Gesem'), the English of the Greek verse 47:5 (Κατοικείτωσαν ἐν γῇ Γέσεμ ... ἤκουσεν Φαραώ): a chunk can point only at a Greek word of its own verse, so the 47:5 Greek words are left with no English and these words with no Greek (mw-u2w5klk.349.50).",
-    "added-46-48": "Brenton adds them to make English of a Greek phrase, or English the Greek does not have: 46:6 and 48:5 'the land of' Egypt (Swete: εἰς Αἴγυπτον, ἐν Αἰγύπτῳ), 46:7 'his daughters;' (Swete's second 'of his sons' is υἱῶν), 46:8 'with their father' (Swete: 'Jacob and his sons'), 46:27 'with Joseph' (Swete: 'who came into Egypt'), 47:18 'are indeed destitute.' (Swete ends 'and our land') and 48:11 'of seeing' (Swete: 'of your face') (mw-u2w5klk.349.50)."
+    "added-46-48": "Brenton adds them to make English of a Greek phrase, or English the Greek does not have: 46:6 and 48:5 'the land of' Egypt (Swete: εἰς Αἴγυπτον, ἐν Αἰγύπτῳ), 46:7 'his daughters;' (Swete's second 'of his sons' is υἱῶν), 46:8 'with their father' (Swete: 'Jacob and his sons'), 46:27 'with Joseph' (Swete: 'who came into Egypt'), 47:18 'are indeed destitute.' (Swete ends 'and our land') and 48:11 'of seeing' (Swete: 'of your face') (mw-u2w5klk.349.50).",
+    "other-verse-49-50": "LXX2012's 49:2 opens with the English of the Greek verse 49:1 ('Assemble yourselves, that I may tell you what shall happen to you in the last days.' renders Συνάχθητε, ἵνα ἀναγγείλω ὑμῖν τί ἀπαντήσει ὑμῖν ἐπ᾽ ἐσχάτων τῶν ἡμέρων), so those words of 49:1 have no English chunk to point at and these words have no Greek of their own verse: the like of Genesis 37:32 (mw-u2w5klk.349.51).",
+    "added-49-50": "Brenton adds them to make English of a Greek phrase, or English the Greek does not have: 50:6 'to Joseph,' (Swete: Εἶπεν Φαραώ Ἀνάβηθι), 50:15 'Let us take heed,' (Swete: Μή ποτε begins the speech), 50:20 'the matter' (Swete: ὅπως ἂν γενηθῇ ὡς σήμερον) and 50:26 'aged' (Swete: ἐτῶν ἑκατὸν δέκα, whose 'years' is the aligner's) (mw-u2w5klk.349.51)."
   },
   "chapters": {
     "1": { "gaps": 0, "model": 11 },
@@ -923,6 +925,29 @@
       "leftovers": [
         ["48:5:land","added-46-48"],
         ["48:11:seeing","added-46-48"]
+      ]
+    },
+    "49": {
+      "gaps": 0,
+      "model": 6,
+      "leftovers": [
+        ["49:2:assemble","other-verse-49-50"],
+        ["49:2:days","other-verse-49-50"],
+        ["49:2:happen","other-verse-49-50"],
+        ["49:2:last","other-verse-49-50"],
+        ["49:2:tell","other-verse-49-50"],
+        ["49:2:yourselves","other-verse-49-50"]
+      ]
+    },
+    "50": {
+      "gaps": 0,
+      "model": 5,
+      "leftovers": [
+        ["50:6:joseph","added-49-50"],
+        ["50:15:heed","added-49-50"],
+        ["50:15:take","added-49-50"],
+        ["50:20:matter","added-49-50"],
+        ["50:26:aged","added-49-50"]
       ]
     }
   }
