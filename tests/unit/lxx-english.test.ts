@@ -364,3 +364,38 @@ describe("LXX2012's Genesis 22, 31 and 37 and Psalm 149 stand at the Greek verse
     ]);
   });
 });
+
+// mw-u2w5klk.349.88: LXX2012's Genesis 47:4 holds, after its own Greek, the English of the first half of Swete's 47:5 ('And Pharao said to Joseph, Let them dwell ... heard of it.'), and Brenton's 47:5 is the second half.
+// A chunk can point only at a Greek word of its own verse, so the 21 content words of that half had no Greek and the Greek of 47:5 had no English. The English is cut where the Greek verse begins and the tail stands at 47:5.
+describe("LXX2012's Genesis 47:4, which runs on into the Greek verse 47:5", () => {
+  const book = parseUsfm(fixture('lxx2012-gen-47.usfm'));
+  const maps = buildMaps(parseTvtms(fixture('tvtms-genesis-slice.txt')));
+  const { byGreek, placedAt } = englishByGreekVerse(book, maps);
+  const words = (ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' ');
+
+  it('ends the English of 47:4 at its own Greek, and gives the Greek 47:5 the rest of Brenton\'s 47:4 before his 47:5', () => {
+    expect(words('gen 47:4')).toMatch(/^And they said to Pharao, We are come to sojourn/);
+    expect(words('gen 47:4')).toMatch(/now then, we will dwell in the land of Gesem\.$/);
+    expect(words('gen 47:5')).toBe(
+      'And Pharao said to Joseph, Let them dwell in the land of Gesem; and if you know that there are among them able men, make them overseers of my cattle. So Jacob and his sons came into Egypt, to Joseph; and Pharao, king of Egypt, heard of it. ' +
+        'And Pharao spoke to Joseph, saying, Your father, and your brethren, are come to you.',
+    );
+    // no word is lost or doubled: the two Greek verses hold Brenton's 4 and 5 and nothing else, and the verses around them are as they were
+    expect(`${words('gen 47:4')} ${words('gen 47:5')}`.split(/\s+/).length).toBe(
+      book.chapters[0].verses.filter((v) => v.verse === 4 || v.verse === 5).map((v) => v.text.split(/\s+/).length).reduce((a, b) => a + b, 0),
+    );
+    expect(words('gen 47:6')).toMatch(/^Behold, the land of Egypt is before you/);
+    expect(placedAt.get('gen 47:4')).toBe('gen 47:4');
+    expect(placedAt.get('gen 47:5')).toBe('gen 47:5');
+  });
+
+  it("moves the supplied words with their text: 'of it' (Brenton's brackets) are supplied in 47:5, and none is in 47:4", () => {
+    const supplied = (ref: string): string[] =>
+      (byGreek.get(ref) ?? []).flatMap((s) => {
+        const w = s.text.split(/\s+/);
+        return s.supplied.map((i) => w[i]);
+      });
+    expect(supplied('gen 47:4')).toEqual([]);
+    expect(supplied('gen 47:5')).toEqual(['of', 'it.']);
+  });
+});

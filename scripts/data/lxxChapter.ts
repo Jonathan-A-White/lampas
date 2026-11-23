@@ -126,11 +126,33 @@ interface Segment {
 }
 
 /**
+ * Brenton's verses whose English runs on into the next Greek verse (mw-u2w5klk.349.88): `verse` is cut before the words `at` (as the USFM has them, in one place of the verse) and the tail is the start of the English of the Greek verse `to`,
+ * ahead of the Brenton verse that stands there. A chunk can point only at a Greek word of its own verse, so English that renders Greek words of the verse after it had no Greek, and those Greek words had no English.
+ * - Gen 47:4: Brenton has, after the Greek 47:4 ('now then, we will dwell in the land of Gesem.'), the first half of the Greek 47:5 ('And Pharao said to Joseph, Let them dwell ... heard of it.'); his 47:5 is its second half ('And Pharao spoke to Joseph, saying, ...').
+ */
+export const ENGLISH_CUTS: ReadonlyArray<{ verse: string; at: string; to: string }> = [{ verse: 'gen 47:4', at: 'And Pharao said to Joseph,', to: 'gen 47:5' }];
+
+/** A segment cut before the words `at` into the segment before them and the one from them on; the supplied positions go to the half their words are in. It throws when `at` is not found once in the text (the source changed). */
+export function cutSegment(segment: Segment, at: string, ref: string): [Segment, Segment] {
+  const words = segment.text.split(/\s+/).filter(Boolean);
+  const cut = at.split(/\s+/).filter(Boolean);
+  const starts = words.map((_, i) => i).filter((i) => cut.every((w, k) => words[i + k] === w));
+  if (starts.length !== 1) throw new Error(`${ref}: the English cut "${at}" is found ${starts.length} times in the verse, not once`);
+  const at0 = starts[0];
+  return [
+    { text: words.slice(0, at0).join(' '), supplied: segment.supplied.filter((i) => i < at0) },
+    { text: words.slice(at0).join(' '), supplied: segment.supplied.filter((i) => i >= at0).map((i) => i - at0) },
+  ];
+}
+
+/**
  * The English of each Greek verse of a book, by the Greek reference ('psa 22:2'): LXX2012's verses (and a Psalm's title, which the Greek counts as verse 1) walked through
  * TVTMS from the USFM's numbers to the Greek's. A Brenton verse that answers several Greek verses stands at the first; one that answers a Greek verse of no
  * Swete book (its reference is not one of the Greek's verses) is in `unplaced`.
  */
 export function englishByGreekVerse(book: UsfmBook, maps: TvtmsMaps): { byGreek: Map<string, Segment[]>; placedAt: Map<string, string> } {
+  // a verse of ENGLISH_CUTS is cut where its words say, and the tail stands at the Greek verse it renders, before that verse's own English (the Brenton verse after it, which is walked next)
+  const cuts = new Map(ENGLISH_CUTS.filter((c) => c.verse.startsWith(`${book.code} `)).map((c) => [c.verse, c]));
   const byGreek = new Map<string, Segment[]>();
   const placedAt = new Map<string, string>();
   const put = (usfm: string, greek: readonly string[], segment: Segment): void => {
@@ -152,7 +174,15 @@ export function englishByGreekVerse(book: UsfmBook, maps: TvtmsMaps): { byGreek:
         const g = carriedAsGreek(book.code, verse.chapter, v);
         for (const ref of maps.lxx2012ToGreek(refOf(book.code, g.chapter, g.verse)).refs) if (!greek.includes(ref)) greek.push(ref);
       }
-      put(refOf(book.code, verse.chapter, verse.verse), greek, { text: verse.text, supplied: verse.supplied });
+      const ref = refOf(book.code, verse.chapter, verse.verse);
+      const cut = cuts.get(ref);
+      if (cut) {
+        const [head, tail] = cutSegment({ text: verse.text, supplied: verse.supplied }, cut.at, ref);
+        put(ref, greek, head);
+        const list = byGreek.get(cut.to);
+        if (list) list.push(tail);
+        else byGreek.set(cut.to, [tail]);
+      } else put(ref, greek, { text: verse.text, supplied: verse.supplied });
     }
   }
   return { byGreek, placedAt };
