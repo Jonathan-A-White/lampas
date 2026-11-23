@@ -11,7 +11,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { ASKING, questionAfterAsk, TUTOR_FAILED } from '../../src/handsFree/ask';
+import { ASKING, questionAfterAsk, STILL_ANSWERING, TUTOR_FAILED } from '../../src/handsFree/ask';
 import { handsFreeSeam, resetHandsFree } from '../../src/handsFree/session';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { forgetRead } from '../../src/nav/readerRequest';
@@ -237,6 +237,33 @@ describe('Hands-free ask', () => {
       // and the sermon the late answer named is not left held for a later answer to start
       expect(hasQueuedSermon()).toBe(false);
     });
+  });
+
+  it('a second ask while the first still waits is refused as busy, and the late answer to the first question is not spoken to the second command (mw-qtu3zvz.271)', async () => {
+    await openJohn3();
+    // the tutor holds its answer: a wake comes while it is waited for, and a second 'ask' is said before it arrives
+    fake.autoReply = undefined;
+    const first = await wakeUp();
+    await says(first, 'ask who was Nicodemus');
+    await waitFor(() => expect(spoken()).toContain(ASKING), { timeout });
+    act(() => synth.finish());
+    await waitFor(() => expect(wake.listening).toBe(true), { timeout });
+    const second = await wakeUp();
+    await says(second, 'ask who was Pilate');
+    // the second command is refused as busy (nothing more was sent): the tutor is still answering the first question
+    await waitFor(() => expect(spoken()).toEqual([ASKING, ASKING]), { timeout });
+    act(() => synth.finish());
+    await waitFor(() => expect(spoken()).toContain(STILL_ANSWERING), { timeout });
+    // the first request's answer arrives late; nobody may speak it as the answer to the second command
+    await fake.answer({ status: 'answered', answer: { answer: ANSWER, words: [] } });
+    // only the first question was ever sent
+    expect(fake.received).toHaveLength(1);
+    await waitFor(async () => expect(await db.talks.count()).toBeGreaterThan(0), { timeout });
+    // a real-time wait: a window in which nothing must happen (the late answer must not be spoken)
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(spoken().filter((text) => text.includes(ANSWER))).toEqual([]);
+    const turns = await db.talks.toArray();
+    expect(turns.map((turn) => turn.q)).toEqual(['who was Nicodemus']);
   });
 
   it("a tutor that cannot answer is said so with the Talk's own reason, and the session waits again with the Bible going on", async () => {
