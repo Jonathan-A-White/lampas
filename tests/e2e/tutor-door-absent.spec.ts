@@ -8,6 +8,7 @@ import { FLOATING, openTutor, twoFingers } from './open-tutor';
 import { shot } from './shot';
 import { openUnlicensed, openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
+import { afterPageClock } from '../support/settled';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -46,7 +47,7 @@ async function openRevelation(page: Page, how: 'licensed' | 'unlicensed' = 'lice
 async function twoFingersOnText(page: Page) {
   const text = (await page.locator('[data-verse="1"]').boundingBox())!;
   await twoFingers(page, { x: text.x + 40, y: text.y + text.height / 2 });
-  await page.waitForTimeout(800);
+  await afterPageClock(page, 800);
 }
 
 /** Puts rows into a store of the app's database (IndexedDB 'lampas'). */
@@ -126,13 +127,13 @@ test('the Verse view has no Ask the tutor action, no Talk about verse line and n
   await expect(view.getByRole('button', { name: 'Practise', exact: true })).toBeVisible();
   await expectOneDoor(page);
   await twoFingers(page);
-  await page.waitForTimeout(800);
+  await afterPageClock(page, 800);
   await expect(page.getByRole('dialog', { name: /^Talk about / })).toHaveCount(0);
   // the tap opens no tutor; on the Verse view it puts the ? away (mw-5r3p30.1006), and a second brings it back
   await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
   await twoFingers(page);
   await expectOneDoor(page);
-  await page.waitForTimeout(700); // the click guard of the tap (600 ms) drops a click on the ? sooner than this
+  await afterPageClock(page, 700); // the page's own clock: the click guard of the tap (600 ms) drops a click on the ? sooner than this
   await shot(page, 'tutor-door-absent-verse');
   await openTutor(page, { sheet: 'Talk about Revelation 1:1' });
 });

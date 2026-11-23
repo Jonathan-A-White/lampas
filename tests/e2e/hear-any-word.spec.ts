@@ -6,6 +6,7 @@ import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { holdFor } from '../support/hold';
+import { pageTime } from '../support/gesture';
 import { talkField } from './talk-field';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -34,8 +35,8 @@ async function openAnswer(page: Page) {
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
   const card = sheet.locator('[data-turn]');
   await expect(card).toContainText('ἀγαθόν');
-  // the answer is read aloud when it arrives: only what the press adds counts
-  await page.waitForTimeout(300);
+  // the answer is read aloud when it arrives: only what the press adds counts, so it is waited for until its reading has begun
+  await expect.poll(async () => (await spoken(page)).length, { message: 'the answer is being read aloud' }).toBeGreaterThan(0);
   return card;
 }
 
@@ -83,6 +84,6 @@ test('a long press on a Greek word and on an English word of the answer says eac
     { text: 'righteousness', lang: 'en-US' },
   ]);
   await hold(page, 'good', 150);
-  await page.waitForTimeout(200);
+  await pageTime(page, 1000); // clock: the page's own second, in which a long press would have spoken the word
   expect((await spoken(page)).length - before).toBe(2);
 });

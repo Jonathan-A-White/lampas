@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { afterFrames } from '../support/settled';
 
 // A miss in a short drill is a miss before (mw-74h98vg.3, docs/grammar.md 'Confirming a missed idea'): he misses a whole short drill of Your drill plan, finishes it, and gets the same drill right
 // on the repeat; the idea is then marked to confirm. The questions are the same each time (Math.random is held still while the drills open, as the Drill it specs fix a walk's seed),
@@ -76,7 +77,7 @@ async function playShortDrill(page: Page, know: Map<string, string>, answer: (op
     const options = await short.locator('[data-option]').allInnerTexts();
     const sig = `${prompt}||${[...options].sort().join('|')}`;
     const pick = answer(options, know.get(sig));
-    await page.waitForTimeout(150);
+    await expect(short.locator('[data-option]:not(:disabled)')).toHaveCount(options.length);
     await short.locator('[data-option]').filter({ hasText: new RegExp(`^${pick.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }).first().click();
     await expect(short.getByTestId('plan-drill-next')).toBeVisible();
     const right = await short.locator('[data-option][data-result="right"]').first().innerText();
@@ -87,7 +88,7 @@ async function playShortDrill(page: Page, know: Map<string, string>, answer: (op
     if (label === 'Finish') break;
   }
   await expect(short.getByTestId('plan-drill-result')).toBeVisible();
-  await page.waitForTimeout(400);
+  await expect(short.getByTestId('plan-drill-done')).toBeEnabled();
   await short.getByTestId('plan-drill-done').click();
   await expect(short).toHaveCount(0);
   return misses;
@@ -106,7 +107,8 @@ test('a short drill he misses, then gets right on the repeat, marks the idea to 
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The genitive case', exact: true }).click();
   const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
-  await page.waitForTimeout(500);
+  await expect(idea.getByRole('button', { name: 'Drill it', exact: true })).toBeEnabled();
+  await afterFrames(page);
 
   // Drill it, the first answer each time, to the result and Your drill plan
   await page.evaluate(() => ((window as unknown as { __fixed?: number }).__fixed = 0.3));
@@ -115,7 +117,7 @@ test('a short drill he misses, then gets right on the repeat, marks the idea to 
   for (;;) {
     const over = await Promise.race([drill.getByTestId('grammar-prompt').waitFor().then(() => false), drill.getByTestId('drill-result').waitFor().then(() => true)]);
     if (over) break;
-    await page.waitForTimeout(200);
+    await expect(drill.locator('[data-option]:not(:disabled)').first()).toBeVisible();
     await drill.locator('[data-option]:not(:disabled)').first().click();
     await expect(drill.getByTestId('drill-next')).toBeVisible();
     await drill.getByTestId('drill-next').click();

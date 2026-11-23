@@ -10,8 +10,12 @@ import { keepSettings } from './keep-settings';
 import { EVERY_LOGOS_SERMON, keepImport } from './keep-import';
 import { openVerseView } from './verse-view';
 import { turnLogosOn } from './settings-group';
+import { afterFrames } from '../support/settled';
 
 test.use({ viewport: { width: 390, height: 844 } });
+
+/** Frames the page draws before a spec that expects a sermon, theme or door NOT to appear looks: the lookups have no end signal on the screen. */
+const LOOKUP_FRAMES = 30;
 
 /** The sermon index service the build asks (src/config.ts SERMONS_URL, default). */
 const SERVICE = 'https://sermons.allmymind.org';
@@ -128,7 +132,7 @@ test('a chapter with no sermons in the index has no door', async ({ page }) => {
   await page.goto('/#/?b=2jn&c=1');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   const view = await openVerseView(page, 1);
-  await page.waitForTimeout(500);
+  await afterFrames(page, LOOKUP_FRAMES); // the browser's own frames, not a time: a loaded host draws them late, so the lookups have had as long as the host needed
   await expect(view.getByRole('button', { name: /^Sermons/ })).toHaveCount(0);
 });
 
@@ -272,7 +276,7 @@ test('a theme list turned Off in Settings leaves no Themes line', async ({ page 
   await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
   const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
   await expect(sheet.locator('h3').first()).toBeVisible();
-  await page.waitForTimeout(500);
+  await afterFrames(page, LOOKUP_FRAMES); // the browser's own frames, not a time: a loaded host draws them late, so the lookups have had as long as the host needed
   await expect(sheet.locator('[data-sermons-themes]')).toHaveCount(0);
   await expect(sheet.locator('[data-sermons-part="theme"]')).toHaveCount(0);
 });
@@ -293,7 +297,7 @@ test('his Logos sermon archives start Off: Genesis 1 lists none of them (mw-qtu3
   const sheet = await openGenesisOne(page);
   // the free sources answer, his archives do not
   await expect(sheet.locator('a[data-sermon-row]').first()).toBeVisible();
-  await page.waitForTimeout(500);
+  await afterFrames(page, LOOKUP_FRAMES); // the browser's own frames, not a time: a loaded host draws them late, so the lookups have had as long as the host needed
   await expect(sheet.getByText('Who Is Man')).toHaveCount(0);
   await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: /Greg Laurie|Greear|Heitzig/ })).toHaveCount(0);
 });
@@ -374,7 +378,7 @@ test('with no Library import kept, an archive switched On is still not offered: 
   const sheet = page.getByRole('dialog', { name: 'Sermons for Genesis 19' });
   await expect(sheet).toBeVisible();
   await expect(sheet.locator('a[data-sermon-row]').first()).toBeVisible();
-  await page.waitForTimeout(500); // a real-time wait: nothing must appear, so there is no condition to wait on
+  await afterFrames(page, LOOKUP_FRAMES);
   await expect(sheet.getByText('Genesis 19:15')).toHaveCount(0);
   await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'My Sermon Notes' })).toHaveCount(0);
 });
@@ -429,7 +433,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   await page.goto('/#/?b=rom&c=5');
   await expect(page.locator('[data-verse="8"]')).toBeVisible();
   const view = await openVerseView(page, 8);
-  await page.waitForTimeout(500); // a real-time wait: nothing must appear, so there is no condition to wait on
+  await afterFrames(page, LOOKUP_FRAMES);
   await expect(view.getByRole('button', { name: /^Sermons/ })).toHaveCount(0);
 });
 

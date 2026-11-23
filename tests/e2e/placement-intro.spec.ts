@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { afterFrames } from '../support/settled';
 
 // mw-86e9r1.20: the placement intro says what 'Start from the letters' is, and nothing it says hides a button, upright or sideways.
 
@@ -33,7 +34,8 @@ async function openIntro(page: Page, kept: number) {
   await putGoal(page, '1 John 1:1');
   await page.goto('/#/placement');
   await expect(page.getByTestId('placement-goal')).toBeVisible();
-  await page.waitForTimeout(500);
+  await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeEnabled();
+  await afterFrames(page);
   // kept answers are made the way he makes them: answer, then come back to the intro
   for (let i = 0; i < kept; i++) {
     if (i === 0) await page.getByRole('button', { name: 'Start', exact: true }).click();
@@ -44,8 +46,8 @@ async function openIntro(page: Page, kept: number) {
     await page.goto('/#/goal');
     await page.goto('/#/placement');
     await page.reload();
-    await expect(page.getByRole('button', { name: 'Go on' })).toBeVisible();
-    await page.waitForTimeout(500);
+    await expect(page.getByRole('button', { name: 'Go on' })).toBeEnabled();
+    await afterFrames(page);
   }
 }
 
