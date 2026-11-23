@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.354
+_2026-11-23_
+- New: The Septuagint now opens every chapter of Exodus, Psalms and Isaiah in the reader, where before some chapters were held back.
+
 ## 0.7.353
 _2026-11-23_
 - Fixed: The headings above a theme's sermons now read as plain English ("On Christ the Sinner's Friend") instead of the index's backwards names ("On Sinner's Friend, Christ the").
