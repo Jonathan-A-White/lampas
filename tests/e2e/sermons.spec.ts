@@ -362,7 +362,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   const section = page.locator('[data-section="sermons"]');
   await expect(section).toBeVisible();
   // the section is the door to the list, with its count, and Open web sermons in: no source has a row here
-  await expect(section.getByTestId('sources-count')).toHaveText('2 of 34 on');
+  await expect(section.getByTestId('sources-count')).toHaveText('2 of 50 on');
   await expect(section.getByRole('group', { name: 'Open web sermons in', exact: true })).toBeVisible();
   await expect(section.getByRole('group', { name: /Spurgeon/ })).toHaveCount(0);
   await section.getByRole('button', { name: /^Sermon sources/ }).click();
@@ -379,9 +379,11 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   for (const name of ['Shedd\'s sermons', 'Burroughs\'s sermons', 'Keach\'s sermons', 'Maclaren\'s sermons', 'Kuyper\'s Rooted & Grounded', 'Broadus\'s Sermons', 'The World\'s Great Sermons', 'Princeton Sermons', 'McPherson\'s Healing Sermons', 'Strong\'s Philosophy and Religion']) await on(name, 'Off');
   // his batch 5 books (mw-qtu3zvz.26), Eyton, Chapin, Pope and Smale among them, which name no passage; Calvin's are in Portuguese and his row says so
   for (const name of ['Sedgwick\'s sermons', 'Moberly\'s Sermons on the Beatitudes', 'Eyton\'s The Beatitudes', 'Chapin\'s Discourses on the Beatitudes', 'Watson\'s sermons on the Beatitudes', 'Pope\'s The Inward Witness', 'Smale\'s The Pentecostal Blessing', 'W. I. Evans\'s This River Must Flow!', 'Calvin\'s sermons in Portuguese']) await on(name, 'Off');
-  // thirty-four lists and no book: one group, so no heading; from eight sources up there is a search field
+  // his batch 6 books (mw-qtu3zvz.31): the eleven Sermon Outlines and the five Sermon Starters, each a list of its own (the Settings list has no group for a series), all Off
+  for (const name of ['Sermon Outlines: Evangelistic', 'Sermon Outlines: for Growing Christians', 'Sermon Outlines: for Seekers', 'Sermon Outlines: for Special Days', 'Sermon Outlines: on 1 Corinthians', 'Sermon Outlines: on Acts', 'Sermon Outlines: on Christian Living', 'Sermon Outlines: on Ephesians', 'Sermon Outlines: on Galatians-Ephesians-Philippians-Colossians', 'Sermon Outlines: on Romans', 'Sermon Outlines: on the Gospels', 'Sermon Starters, vol 1', 'Sermon Starters, vol 2', 'Sermon Starters, vol 3', 'Sermon Starters, vol 4', 'Sermon Starters, vol 5']) await on(name, 'Off');
+  // fifty lists and no book: one group, so no heading; from eight sources up there is a search field
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(0);
-  await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', 'Search 34 sermon sources');
+  await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', 'Search 50 sermon sources');
   await shot(page, 'sermons-settings');
 
   // Spurgeon and Henry Off: Romans 5:8 has no listed sermon, and so no door
@@ -389,7 +391,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
     await page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: 'Off', exact: true }).click();
     await on(name, 'Off');
   }
-  await expect(page.getByTestId('sources-line')).toHaveText('none of 34 on');
+  await expect(page.getByTestId('sources-line')).toHaveText('none of 50 on');
   await page.goto('/#/?b=rom&c=5');
   await expect(page.locator('[data-verse="8"]')).toBeVisible();
   const view = await openVerseView(page, 8);
@@ -397,15 +399,15 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   await expect(view.getByRole('button', { name: /^Sermons/ })).toHaveCount(0);
 });
 
-test('with Logos On and two sermon books On that hold no sermon by passage, the Sermons sheet has no In Logos group: Galatians 1:4 lists neither Sermon Outlines on Acts nor Sermon Outlines on 1 Corinthians (mw-qtu3zvz.239; The Beatitudes was one until batch 5 Eyton list stood for it, mw-qtu3zvz.26)', async ({ page }) => {
+test('with Logos On and two sermon books On that hold no sermon by passage, the Sermons sheet has no In Logos group: Galatians 1:4 lists neither Sermon Outlines: Soul Winning! Church Building! nor Things New and Old: Old and New Testament Studies (mw-qtu3zvz.239; The Beatitudes was one until batch 5 Eyton list stood for it, mw-qtu3zvz.26; Sermon Outlines on 1 Corinthians and on Acts were two until batch 6, mw-qtu3zvz.31)', async ({ page }) => {
   await openUnlocked(page);
   await turnLogosOn(page);
   // his import holds the archives and two books of sermons that no list stands for (mw-qtu3zvz.94)
-  await keepImport(page, [...EVERY_LOGOS_SERMON, 'LLS:SO1COR', 'LLS:SOACTS']);
+  await keepImport(page, [...EVERY_LOGOS_SERMON, 'LLS:NWOLDSCOFLD', 'LLS:SOSOULWIN']);
   // the two books On, from the one list of sermon sources: the only place a book of sermons is switched
   await page.goto('/#/settings?sources=sermons');
   await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
-  for (const name of ['Sermon Outlines on 1 Corinthians', 'Sermon Outlines on Acts']) {
+  for (const name of ['Things New and Old: Old and New Testament Studies', 'Sermon Outlines: Soul Winning! Church Building!']) {
     const group = page.getByRole('radiogroup', { name, exact: true });
     await expect(group.getByRole('radio', { name: 'Pin', exact: true })).toHaveCount(0);
     await group.getByRole('radio', { name: 'On', exact: true }).click();

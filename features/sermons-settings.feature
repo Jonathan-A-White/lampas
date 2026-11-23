@@ -42,10 +42,10 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
 
   Scenario: His sermon books are in the same list, a list standing for the book it is made from
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
-    Then the search field reads "Search 14 sermon sources"
-    And the status line reads "3 of 14 on"
+    Then the search field reads "Search 9 sermon sources"
+    And the status line reads "3 of 9 on"
     And the group "Listed by passage" reads "3 of 4 on" and holds "Test Laurie's sermons"
-    And the second group "Logos books, at the verse" reads "none of 10 on"
+    And the second group "Logos books, at the verse" reads "none of 5 on"
     And the list has no source "Greg Laurie Sermon Archive"
     And a sermon book his import lacks is not listed
     And no source has a Pin
@@ -54,21 +54,21 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
     When he turns the first sermon book to "On"
     Then that sermon book is "on" on his shelf
-    And the status line reads "4 of 14 on"
-    And the second group "Logos books, at the verse" reads "1 of 10 on"
+    And the status line reads "4 of 9 on"
+    And the second group "Logos books, at the verse" reads "1 of 5 on"
 
   Scenario: With a search typed the two buttons act on what is shown, and Undo puts it back
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
     When he types "test s" in the search
-    Then the status line reads "3 of 14 on · 2 shown"
+    Then the status line reads "3 of 9 on · 2 shown"
     And the two buttons read "These 0 on" and "These 2 off"
     When he taps the button "These 2 off"
-    Then the count under the search becomes "1 of 14 on · 2 shown"
+    Then the count under the search becomes "1 of 9 on · 2 shown"
     And the line "Turned off 2." stands with an Undo
     And the two buttons now read "These 2 on" and "These 0 off"
     And the source "sermons.testlogos", which the search does not show, is not written
     When he chooses "Undo"
-    Then the count is back at "3 of 14 on · 2 shown"
+    Then the count is back at "3 of 9 on · 2 shown"
     And the setting "sermons.testsecond" is kept as "on"
 
   Scenario: All off says no verse has a Sermons door, and Undo brings the sources back
@@ -83,30 +83,30 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
   Scenario: All on turns every source on, the books on his shelf too
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
     When he taps the button "All on"
-    Then the status line reads "14 of 14 on"
-    And the line "Turned on 11." stands with an Undo
+    Then the status line reads "9 of 9 on"
+    And the line "Turned on 6." stands with an Undo
     And ten sermon books are on his shelf
 
   Scenario: The count of those on is said once, under the search field, and the header holds no count
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
-    Then the status line reads "3 of 14 on"
+    Then the status line reads "3 of 9 on"
     And the header holds "‹ Study resources" and "Sermon sources" and nothing else
-    And the words "of 14 on" are on the page once
+    And the words "of 9 on" are on the page once
 
   Scenario: With a search typed each button counts the rows it would change, and one that would change none is dimmed
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
     When he types "test l" in the search
-    Then the status line reads "3 of 14 on · 2 shown"
+    Then the status line reads "3 of 9 on · 2 shown"
     And the two buttons read "These 1 on" and "These 1 off"
     When he taps the button "These 1 on"
-    Then the count under the search becomes "4 of 14 on · 2 shown"
+    Then the count under the search becomes "4 of 9 on · 2 shown"
     And the line "Turned on 1." stands with an Undo
     And the two buttons now read "These 0 on" and "These 2 off"
     And the button "These 0 on" is dimmed
     When he taps the dimmed button "These 0 on"
     Then the line "Turned on 1." still stands with an Undo
     When he chooses "Undo"
-    Then the count is back at "3 of 14 on · 2 shown"
+    Then the count is back at "3 of 9 on · 2 shown"
 
   Scenario: A tap that changes nothing leaves the Undo
     Given the page of sermon sources is open with Logos Off
@@ -143,10 +143,10 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
     When he types "test s" in the search
     And he taps the button "These 2 off" twice, 30 ms apart
-    Then the status line reads "1 of 14 on · 2 shown"
+    Then the status line reads "1 of 9 on · 2 shown"
     And the line "Turned off 2." stands with an Undo
     When he chooses "Undo"
-    Then the count is back at "3 of 14 on · 2 shown"
+    Then the count is back at "3 of 9 on · 2 shown"
 
   Scenario: All off and then All on, tapped with no wait, ends with every source On
     Given the page of sermon sources is open with Logos Off
@@ -160,11 +160,11 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
   Scenario: All on and then All off, tapped with no wait, ends with every source Off, the books too
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
     When he taps the button "All on" and then "All off" with no wait
-    Then the line "Turned off 14." stands with an Undo
-    And the status line reads "none of 14 on"
+    Then the line "Turned off 9." stands with an Undo
+    And the status line reads "none of 9 on"
     And no sermon book is on his shelf
     When he chooses "Undo"
-    Then the count is back at "14 of 14 on"
+    Then the count is back at "9 of 9 on"
     And ten sermon books are on his shelf
 
   Scenario: A search with no match offers Ask for a preacher
@@ -183,7 +183,7 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
   Scenario: Logos turned Off after sources were on
     Given the page of sermon sources is open with Logos Off and an import of ten sermon books, one of them On
     Then the list has no group heading
-    And the foot line reads "10 sources in your Logos library are not offered while Logos is off in Study resources. Your switches stay as they are."
+    And the foot line reads "5 sources in your Logos library are not offered while Logos is off in Study resources. Your switches stay as they are."
 
   Scenario: The old Library > Sermons address opens the one list
     Given Lampas is opened at "#/library?kind=sermons" with Logos On
