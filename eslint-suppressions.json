@@ -1,9 +1,4 @@
 {
-  "features/steps/ai-needs-licence.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "features/steps/appearance.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
@@ -27,11 +22,6 @@
   "features/steps/copy-format.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "features/steps/copy-hold.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
     }
   },
   "features/steps/fresh-install.steps.tsx": {
@@ -59,11 +49,6 @@
       "count": 3
     }
   },
-  "features/steps/hebrew-words.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
   "features/steps/immersive-hint.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
@@ -77,11 +62,6 @@
   "features/steps/in-logos.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "features/steps/listen.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
     }
   },
   "features/steps/long-press-speak.steps.tsx": {
@@ -99,24 +79,9 @@
       "count": 2
     }
   },
-  "features/steps/offline-copy.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
-  "features/steps/old-testament.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
   "features/steps/one-letter-greek-voice.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "features/steps/paradigm-drill.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
     }
   },
   "features/steps/paradigms.steps.tsx": {
@@ -129,11 +94,6 @@
       "count": 4
     }
   },
-  "features/steps/passage-view.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
   "features/steps/preface.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
@@ -142,11 +102,6 @@
   "features/steps/quick-round.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "features/steps/quick-test-after-answer.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
     }
   },
   "features/steps/read-lessons.steps.tsx": {
@@ -169,29 +124,9 @@
       "count": 1
     }
   },
-  "features/steps/reading-plan-sendoff.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
-  "features/steps/septuagint.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
-  "features/steps/sermons-settings.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "features/steps/sermons.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 3
-    }
-  },
-  "features/steps/share-references.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
     }
   },
   "features/steps/speaking-interruptions.steps.tsx": {

@@ -194,9 +194,11 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('no more chapters are fetched', async () => {
       // Nothing extra is saved and the run stopped before the fetches held back are let go
       await savedAs('offlineCopy', 'none');
+      // a real-time wait: nothing must happen in this window (the stopped run asks for nothing more before the held fetches are let go)
       await new Promise((resolve) => setTimeout(resolve, 20));
       await arrive();
       const count = fetched.length;
+      // a real-time wait: nothing must happen in this window (the stopped run asks for nothing more after the held fetches are let go)
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(fetched.length).toBe(count);
       expect(count).toBeLessThan(offlineUrls('nt').length - 1);

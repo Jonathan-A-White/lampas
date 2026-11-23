@@ -19,11 +19,11 @@ import { mulberry32 } from '../../src/data/quiz';
 import { setResourceOn } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton } from '../../tests/support/find-button';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 import { asSpoken } from '../../tests/support/lone-word';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
@@ -267,6 +267,7 @@ describeFeature(feature, ({ Scenario }) => {
   const noDoor = async (): Promise<void> => {
     await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
     // the door's reading of the index is asynchronous: wait for the note when it should be there, else give it a moment
+    // a real-time wait: nothing must happen in this window (no door is drawn; the door's read of the index ends with no event when there is none)
     await new Promise((resolve) => setTimeout(resolve, 100));
     expect(door()).toBeNull();
   };
@@ -410,8 +411,7 @@ describeFeature(feature, ({ Scenario }) => {
   // ---- a hold on the header's Greek / Hebrew button (mw-u2w5klk.293)
   const holds = async (_: unknown, name: string): Promise<void> => {
     const target = await waitFor(() => within(switchEl()).getByRole('button', { name }));
-    await user.pointer({ keys: '[MouseLeft>]', target });
-    await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
+    await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target }));
     await user.pointer({ keys: '[/MouseLeft]', target });
   };
   const settingIs = async (_: unknown, value: string): Promise<void> => {

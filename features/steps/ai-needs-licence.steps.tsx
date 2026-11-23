@@ -237,6 +237,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the mill is sent no tutor-weights grist and About has no Tutor tuned line', async () => {
       await screen.findByRole('heading', { name: 'About' });
       // the run is drawn at once and waits for nothing: give it the time it would need
+      // a real-time wait: nothing must happen in this window (the mill is asked nothing; the run is drawn at once and waits for nothing, so give it the time it would need)
       await new Promise((resolve) => setTimeout(resolve, 100));
       expect(fake.received).toEqual([]);
       expect(screen.queryByRole('button', { name: /^Tutor tuned/ })).toBeNull();

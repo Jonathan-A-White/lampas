@@ -338,6 +338,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Greek only offers no Hebrew new words on Genesis 1', ({ Given, Then }) => {
     Given('Lampas is opened on Genesis 1 with Greek chosen alone and 3 new words a day', () => openOn('Genesis 1', { greek: 5, hebrew: 0, newWords: 3 }));
     Then('the Reader shows no New words chip', async () => {
+      // a real-time wait: nothing must happen in this window (no New words chip is drawn; the chip's lists are read from the phone and nothing says that read is over, so a chip that wrongly comes does so after the chapter has drawn)
       await new Promise((resolve) => setTimeout(resolve, 300));
       expect(screen.queryByTestId('new-words')).toBeNull();
     });
@@ -346,6 +347,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('At English only there is no chip on Genesis 1', ({ Given, Then }) => {
     Given('Lampas is opened on Genesis 1 with English only and 3 new words a day', () => openOn('Genesis 1', { greek: 0, hebrew: 0, newWords: 3 }));
     Then('the Reader shows no New words chip', async () => {
+      // a real-time wait: nothing must happen in this window (no New words chip is drawn; the chip's lists are read from the phone and nothing says that read is over, so a chip that wrongly comes does so after the chapter has drawn)
       await new Promise((resolve) => setTimeout(resolve, 300));
       expect(screen.queryByTestId('new-words')).toBeNull();
     });

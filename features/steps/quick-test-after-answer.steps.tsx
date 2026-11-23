@@ -22,6 +22,7 @@ import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
+// a real-time wait: nothing must happen in this window (a wrong answer waits for Next; the Quick test has no timer of its own to run)
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 let synth: FakeSynth;
@@ -123,6 +124,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps a wrong gloss', () => tapGloss(false));
     Then('the word of the question is spoken once in Greek', expectSpokenOnce);
     And('the same question is still on screen with Next', sameQuestion);
+    // a real-time wait: nothing must happen in this window (the same question and Next stay)
     When('he waits a moment', () => sleep(800));
     Then('the same question is still on screen with Next', sameQuestion);
     When('he taps Next', async () => user.click(await screen.findByTestId('next')));

@@ -53,6 +53,7 @@ afterAll(async () => {
 Element.prototype.scrollIntoView = function scrollIntoView() {};
 
 const user = userEvent.setup();
+// a real-time wait: nothing must happen in the windows its callers say (a tap that wrongly wipes the Undo; a double tap's second tap)
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 

@@ -13,10 +13,10 @@ import { setGreekInterest, setReaderView, setWeave } from '../../src/data/reposi
 import { clearBus } from '../../src/events/bus';
 import { FLOATING_TUTOR_LABEL } from '../../src/AskTutor';
 import { ROW_MS } from '../../src/copy/useCopyHold';
-import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -44,10 +44,6 @@ const lastCopied = (): string => {
   return copied[copied.length - 1];
 };
 const row = (): HTMLElement => document.querySelector<HTMLElement>('[data-copy-row]')!;
-const sleep = (ms: number) =>
-  act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, ms)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
-  });
 
 // The row's ROW_MS timer on a clock the test moves (mw-indx1x6.25): 'after two seconds' and 'two more seconds' slept on the real clock, and a loaded
 // host outran the row's 3 s between the hold and the touch, so the row was gone before it was touched. Only a timer set for ROW_MS is held back
@@ -117,8 +113,7 @@ async function open(layout: 'paragraph' | 'verse', options: { refuses?: boolean 
 
 // A hold: the finger goes down on the target and stays past LONG_PRESS_MS (src/ui/longPress.ts); then it lifts, and the click that ends it is not a tap.
 const holdOn = async (target: HTMLElement) => {
-  await user.pointer({ keys: '[MouseLeft>]', target });
-  await sleep(LONG_PRESS_MS + 150);
+  await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target }));
   await user.pointer({ keys: '[/MouseLeft]', target });
 };
 const numberOf = (n: number) => document.querySelector<HTMLElement>(`[data-reader] [data-verse="${n}"] [data-verse-number]`)!;
