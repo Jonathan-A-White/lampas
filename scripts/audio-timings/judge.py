@@ -74,6 +74,7 @@ WORD_QUIET = 0.2  # the letters of one word are never this long a quiet apart: a
 LETTERLESS = 0.4  # more sound than this between a verse's edge letter and its gap, with no letter heard in it, and the edge is not settled by the letters
 MAKER_PAD = 0.02  # a sound the letters ear could not spell belongs to the verse the maker's alignment has it in, to within the two models' own difference in where a letter lies
 MAKER_AGREES = 0.05  # a verse's first or last word the letters did not hear is heard when its own sound begins or dies this close to where the maker's alignment has it
+STRAY_QUIET = 1.0  # a verse's own letters are never this long a quiet apart at its head with fewer before the quiet than after it: the few before it are the announcement's (Psalm 16, 50)
 BETWEEN_LETTERS = 4  # letters nobody owns between two verses are reported from this many: fewer is a word's first letter heard otherwise, not a heading read aloud
 EDGE_SECONDS = 1.5  # the cut clip's edge the letters model decodes for a flag's report
 # The words ear.
@@ -303,6 +304,20 @@ def measure(verses: list[dict], heard: list[list], sound: Sound, maker: dict[int
             heard_words.add((vi, wi))
             for k in best:
                 own[k] = vi
+    # The pairing may give a verse's first word (a one-letter 'A' of a Psalm's title) to look-alike letters of the announcement before it ('PSALM SIXTEEN', then 2 s of
+    # quiet, then 'A MICTUM OF DAVID': mw-zbgo4ep.65): the few letters of a verse that lie before a quiet of STRAY_QUIET or more, with more after it, are nobody's.
+    for vi in range(len(verses)):
+        mine = [k for k, o in enumerate(own) if o == vi]
+        for at, (a, b) in enumerate(zip(mine, mine[1:]), 1):
+            if sound.quiet_between(letters[a][2], letters[b][1], STRAY_QUIET):
+                if at < len(mine) - at:
+                    for k in mine[:at]:
+                        own[k] = None
+                    for wi in range(len(verses[vi]['words'])):
+                        got = matched.get((vi, wi), [])
+                        if got and all(k in mine[:at] for k in got):
+                            heard_words.discard((vi, wi))
+                break
     if maker:
         for vi, verse in enumerate(verses):
             span = maker.get(verse['n'])

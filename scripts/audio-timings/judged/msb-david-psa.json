@@ -3,11 +3,11 @@
  "judge":"4",
  "edition":"msb-david",
  "book":"psa",
- "timings":{"file":"public/data/audio/msb-david/psa.json","sha256":"e27e175c16c988f63da9959fc813728c0c693b9558b035836e1fbf73af96cdb7"},
+ "timings":{"file":"public/data/audio/msb-david/psa.json","sha256":"34aa7525a914f5ac930d3d5be948830951cc9911b2e1d1ab46cc3d2ca5f11d3b"},
  "slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
  "tolerance":0.02,
  "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
- "summary":{"verses":718,"ok":696,"flagged":22,"flags":{"head-extra":7,"head-clipped":10,"tail-extra":9,"tail-clipped":12,"text-differs":0}},
+ "summary":{"verses":752,"ok":730,"flagged":22,"flags":{"head-extra":7,"head-clipped":10,"tail-extra":9,"tail-clipped":12,"text-differs":0}},
  "chapters":{
   "1":{"announcement":"ORDYOUR BIBLE SOM ONE","between":[],"closing":"","speech":-17.7,"verses":[
    {"n":1,"verdict":"ok","sound":[2.225,4.335,11.71,12.74]},
@@ -191,6 +191,19 @@
    {"n":3,"verdict":"ok","sound":[19.755,20.33,27.255,27.78]},
    {"n":4,"verdict":"ok","sound":[27.255,27.78,34.23,34.685]},
    {"n":5,"verdict":"ok","sound":[34.23,34.685,43.165,null]}
+  ]},
+  "16":{"announcement":"DIEU O AUDIO BIBLE PSALM SIXTEEN","between":[],"closing":"","speech":-17.5,"verses":[
+   {"n":1,"verdict":"ok","sound":[5.03,7.605,14.06,14.625]},
+   {"n":2,"verdict":"ok","sound":[14.06,14.625,20.4,21.675]},
+   {"n":3,"verdict":"ok","sound":[20.4,21.675,26.665,27.26]},
+   {"n":4,"verdict":"ok","sound":[26.665,27.26,36.12,37.14]},
+   {"n":5,"verdict":"ok","sound":[36.12,37.14,42.635,43.4]},
+   {"n":6,"verdict":"ok","sound":[42.635,43.4,49.585,50.325]},
+   {"n":7,"verdict":"ok","sound":[49.585,50.325,55.365,55.815]},
+   {"n":8,"verdict":"ok","sound":[55.365,55.815,61.66,62.535]},
+   {"n":9,"verdict":"ok","sound":[61.66,62.535,68.72,69.545]},
+   {"n":10,"verdict":"ok","sound":[68.72,69.545,75.18,75.92]},
+   {"n":11,"verdict":"ok","sound":[75.18,75.92,83.675,null]}
   ]},
   "17":{"announcement":"OD YOUR BIBLE PSALM SEVENTEEN","between":[],"closing":"","speech":-16.4,"verses":[
    {"n":1,"verdict":"ok","sound":[2.67,4.735,13.58,14.09]},
@@ -822,6 +835,31 @@
    {"n":18,"verdict":"ok","sound":[115.2,115.725,120.77,121.285]},
    {"n":19,"verdict":"ok","sound":[120.77,121.285,126.215,126.995]},
    {"n":20,"verdict":"ok","sound":[126.215,126.995,132.265,null]}
+  ]},
+  "50":{"announcement":"AUDIO BIBLE PSALM FIFTY","between":[],"closing":"","speech":-18.0,"verses":[
+   {"n":1,"verdict":"ok","sound":[2.8,4.92,11.985,12.625]},
+   {"n":2,"verdict":"ok","sound":[11.985,12.625,16.385,16.985]},
+   {"n":3,"verdict":"ok","sound":[16.385,16.985,23.82,24.38]},
+   {"n":4,"verdict":"ok","sound":[23.82,24.38,28.565,29.55]},
+   {"n":5,"verdict":"ok","sound":[28.565,29.55,33.825,34.45]},
+   {"n":6,"verdict":"ok","sound":[33.825,34.45,39.86,40.69]},
+   {"n":7,"verdict":"ok","sound":[39.86,40.69,47.415,48.04]},
+   {"n":8,"verdict":"ok","sound":[47.415,48.04,53.305,54.075]},
+   {"n":9,"verdict":"ok","sound":[53.305,54.075,57.97,58.37]},
+   {"n":10,"verdict":"ok","sound":[57.97,58.37,63.09,63.94]},
+   {"n":11,"verdict":"ok","sound":[63.09,63.94,68.9,69.87]},
+   {"n":12,"verdict":"ok","sound":[68.9,69.87,75.57,76.295]},
+   {"n":13,"verdict":"ok","sound":[75.57,76.295,79.76,80.3]},
+   {"n":14,"verdict":"ok","sound":[79.76,80.3,85.485,86.235]},
+   {"n":15,"verdict":"ok","sound":[85.485,86.235,91.025,92.475]},
+   {"n":16,"verdict":"ok","sound":[91.025,92.475,100.17,101.015]},
+   {"n":17,"verdict":"ok","sound":[100.17,101.015,104.345,105.19]},
+   {"n":18,"verdict":"ok","sound":[104.345,105.19,110.015,110.655]},
+   {"n":19,"verdict":"ok","sound":[110.015,110.655,114.45,115.16]},
+   {"n":20,"verdict":"ok","sound":[114.45,115.16,119.515,120.135]},
+   {"n":21,"verdict":"ok","sound":[119.515,120.135,129.79,130.62]},
+   {"n":22,"verdict":"ok","sound":[129.79,130.62,138.295,139.03]},
+   {"n":23,"verdict":"ok","sound":[138.295,139.03,147.855,null]}
   ]}
  }
 }
