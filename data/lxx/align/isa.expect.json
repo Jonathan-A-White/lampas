@@ -1,0 +1,216 @@
+{
+  "reasons": {
+    "added-isa": "Brenton's English adds it to make a Greek phrase English (or from the Hebrew), and the Greek verse has no word for it ('works' of 2:8's 'the works which', 'yourselves' of 2:10, 'high' of 2:14, 'in order to' of 2:20, 'concerning' of 5:1, 'book' of 8:1, 'how to call' of 8:4, 'gates' of 13:2, 'a day of' of 13:9, 'ways; howl' of 15:3); each was read against its verse and no Greek word of a neighbouring chunk renders it (mw-u2w5klk.349.14).",
+    "other-verse-isa": "Brenton's English of the verse carries a clause whose Greek words are in the next or the verse before (Swete's verse division differs from LXX2012's): 3:9's 'Therefore now their glory has been brought low,' is the end of Swete's 3:8, 3:10's 'Woe to their soul, for they have devised an evil counsel against themselves,' the end of Swete's 3:9, 3:17's 'in that day' the start of 3:18, and 3:21 to 3:24 hold the English of Swete's 3:22 to 3:26 (the garments, the sweet smell and the girdle, the sword and the stores of ornaments) while the Greek words of those verses have no English chunk to point at; 6:8's 'said, Go, and say to this people,' is the first words of Swete's 6:9, and 18:3's 'the rivers of the land' the end of 18:2 (mw-u2w5klk.349.14).",
+    "pair-isa": "The Greek word that renders it is a pair the aligner made to another English word, which the model pass does not touch and no fix row could move without taking another word's Greek ('enter' of 3:13 on στήσει's 'stand', 'fire' of 3:14 on ἐνεπυρίσατε's 'set', 'king' and 'side' of 7:6 on βασιλεύσομεν's 'make' and ἡμᾶς's 'we', 'believe' of 7:9 on πιστεύσητε's 'neither', 'whoever' of 13:15 on ὃς's 'that', 'far off' of 6:12 beside 'remove' for the one word μακρυνεῖ) (mw-u2w5klk.349.14).",
+    "hebrew-13-21": "Brenton's last line of 13:21 ('and satyrs shall dwell there; and hedgehogs shall make their nests in their houses. It will come soon, and will not wait.') translates the Hebrew; Swete's Greek of the verse ends at 'and devils shall dance there' (mw-u2w5klk.349.14)."
+  },
+  "chapters": {
+    "2": {
+      "gaps": 0,
+      "model": 5,
+      "leftovers": [
+        ["2:6:land", "added-isa"],
+        ["2:8:works", "added-isa"],
+        ["2:10:yourselves", "added-isa"],
+        ["2:14:high", "added-isa"],
+        ["2:20:order", "added-isa"]
+      ]
+    },
+    "3": {
+      "gaps": 0,
+      "model": 78,
+      "leftovers": [
+        ["3:8:spoken", "added-isa"],
+        ["3:9:brought", "other-verse-isa"],
+        ["3:9:glory", "other-verse-isa"],
+        ["3:9:low", "other-verse-isa"],
+        ["3:9:therefore", "other-verse-isa"],
+        ["3:10:counsel", "other-verse-isa"],
+        ["3:10:devised", "other-verse-isa"],
+        ["3:10:evil", "other-verse-isa"],
+        ["3:10:soul", "other-verse-isa"],
+        ["3:10:woe", "other-verse-isa"],
+        ["3:13:enter", "pair-isa"],
+        ["3:14:fire", "pair-isa"],
+        ["3:14:why", "added-isa"],
+        ["3:16:trains", "added-isa"],
+        ["3:17:day", "other-verse-isa"],
+        ["3:21:borders", "other-verse-isa"],
+        ["3:21:couches", "other-verse-isa"],
+        ["3:21:coverings", "other-verse-isa"],
+        ["3:21:dresses", "other-verse-isa"],
+        ["3:21:earrings", "other-verse-isa"],
+        ["3:21:fine", "other-verse-isa"],
+        ["3:21:fine", "other-verse-isa"],
+        ["3:21:garments", "other-verse-isa"],
+        ["3:21:garments", "other-verse-isa"],
+        ["3:21:gold", "other-verse-isa"],
+        ["3:21:grounds", "other-verse-isa"],
+        ["3:21:house", "other-verse-isa"],
+        ["3:21:interwoven", "other-verse-isa"],
+        ["3:21:light", "other-verse-isa"],
+        ["3:21:linen", "other-verse-isa"],
+        ["3:21:linen", "other-verse-isa"],
+        ["3:21:made", "other-verse-isa"],
+        ["3:21:ones", "other-verse-isa"],
+        ["3:21:ones", "other-verse-isa"],
+        ["3:21:purple", "other-verse-isa"],
+        ["3:21:scarlet", "other-verse-isa"],
+        ["3:21:scarlet", "other-verse-isa"],
+        ["3:21:shawls", "other-verse-isa"],
+        ["3:21:spartan", "other-verse-isa"],
+        ["3:21:transparent", "other-verse-isa"],
+        ["3:21:worn", "other-verse-isa"],
+        ["3:22:account", "other-verse-isa"],
+        ["3:22:baldness", "other-verse-isa"],
+        ["3:22:dust", "other-verse-isa"],
+        ["3:22:gird", "other-verse-isa"],
+        ["3:22:gird", "other-verse-isa"],
+        ["3:22:girdle", "other-verse-isa"],
+        ["3:22:golden", "other-verse-isa"],
+        ["3:22:ground", "other-verse-isa"],
+        ["3:22:head", "other-verse-isa"],
+        ["3:22:instead", "other-verse-isa"],
+        ["3:22:instead", "other-verse-isa"],
+        ["3:22:instead", "other-verse-isa"],
+        ["3:22:instead", "other-verse-isa"],
+        ["3:22:ornament", "other-verse-isa"],
+        ["3:22:rope", "other-verse-isa"],
+        ["3:22:sackcloth", "other-verse-isa"],
+        ["3:22:scarlet", "other-verse-isa"],
+        ["3:22:smell", "other-verse-isa"],
+        ["3:22:sweet", "other-verse-isa"],
+        ["3:22:tunic", "other-verse-isa"],
+        ["3:22:works", "other-verse-isa"],
+        ["3:23:beautiful", "other-verse-isa"],
+        ["3:23:fall", "other-verse-isa"],
+        ["3:23:fall", "other-verse-isa"],
+        ["3:23:love", "other-verse-isa"],
+        ["3:23:men", "other-verse-isa"],
+        ["3:23:mighty", "other-verse-isa"],
+        ["3:23:most", "other-verse-isa"],
+        ["3:23:son", "other-verse-isa"],
+        ["3:23:sword", "other-verse-isa"],
+        ["3:23:sword", "other-verse-isa"],
+        ["3:24:alone", "other-verse-isa"],
+        ["3:24:ground", "other-verse-isa"],
+        ["3:24:left", "other-verse-isa"],
+        ["3:24:levelled", "other-verse-isa"],
+        ["3:24:mourn", "other-verse-isa"],
+        ["3:24:stores", "other-verse-isa"]
+      ]
+    },
+    "4": {
+      "gaps": 0,
+      "model": 4,
+      "leftovers": [
+        ["4:1:own", "added-isa"],
+        ["4:4:away", "added-isa"],
+        ["4:5:regard", "added-isa"],
+        ["4:6:weather", "added-isa"]
+      ]
+    },
+    "5": {
+      "gaps": 0,
+      "model": 7,
+      "leftovers": [
+        ["5:1:concerning", "added-isa"],
+        ["5:9:built", "added-isa"],
+        ["5:9:houses", "added-isa"],
+        ["5:9:things", "added-isa"],
+        ["5:19:one", "added-isa"],
+        ["5:22:ones", "added-isa"],
+        ["5:24:one", "added-isa"]
+      ]
+    },
+    "6": {
+      "gaps": 0,
+      "model": 5,
+      "leftovers": [
+        ["6:8:go", "other-verse-isa"],
+        ["6:8:people", "other-verse-isa"],
+        ["6:8:said", "other-verse-isa"],
+        ["6:8:say", "other-verse-isa"],
+        ["6:12:far", "pair-isa"]
+      ]
+    },
+    "7": {
+      "gaps": 0,
+      "model": 8,
+      "leftovers": [
+        ["7:1:son", "added-isa"],
+        ["7:3:forth", "added-isa"],
+        ["7:6:king", "pair-isa"],
+        ["7:6:side", "pair-isa"],
+        ["7:9:believe", "pair-isa"],
+        ["7:24:men", "added-isa"],
+        ["7:25:feed", "added-isa"],
+        ["7:25:whereon", "added-isa"]
+      ]
+    },
+    "8": {
+      "gaps": 0,
+      "model": 8,
+      "leftovers": [
+        ["8:1:book", "added-isa"],
+        ["8:1:concerning", "added-isa"],
+        ["8:4:how", "added-isa"],
+        ["8:4:one", "added-isa"],
+        ["8:5:saying", "added-isa"],
+        ["8:17:one", "added-isa"],
+        ["8:22:cant", "added-isa"],
+        ["8:22:one", "added-isa"]
+      ]
+    },
+    "12": {
+      "gaps": 0,
+      "model": 0,
+      "leftovers": []
+    },
+    "13": {
+      "gaps": 0,
+      "model": 15,
+      "leftovers": [
+        ["13:2:gates", "added-isa"],
+        ["13:3:bring", "added-isa"],
+        ["13:9:day", "added-isa"],
+        ["13:11:visit", "added-isa"],
+        ["13:15:together", "added-isa"],
+        ["13:15:whoever", "pair-isa"],
+        ["13:21:come", "hebrew-13-21"],
+        ["13:21:dwell", "hebrew-13-21"],
+        ["13:21:hedgehogs", "hebrew-13-21"],
+        ["13:21:houses", "hebrew-13-21"],
+        ["13:21:make", "hebrew-13-21"],
+        ["13:21:nests", "hebrew-13-21"],
+        ["13:21:satyrs", "hebrew-13-21"],
+        ["13:21:soon", "hebrew-13-21"],
+        ["13:21:wait", "hebrew-13-21"]
+      ]
+    },
+    "15": {
+      "gaps": 0,
+      "model": 4,
+      "leftovers": [
+        ["15:3:ways", "added-isa"],
+        ["15:3:yourselves", "added-isa"],
+        ["15:7:moab", "added-isa"],
+        ["15:8:gone", "added-isa"]
+      ]
+    },
+    "18": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["18:3:land", "other-verse-isa"],
+        ["18:3:rivers", "other-verse-isa"]
+      ]
+    },
+    "20": {
+      "gaps": 0,
+      "model": 0,
+      "leftovers": []
+    }
+  }
+}
