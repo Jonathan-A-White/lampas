@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlicensed } from './unlocked';
+import { afterPageClock } from '../support/settled';
 
 // The licence tip (mw-8m9dyu.6): a free reader is told once, on the third visit, what a licence adds, in one quiet line at the foot of the Reader;
 // Learn more opens the Licence page and Back returns; a Settings row's Needs a licence does the same and Back returns to that row.
@@ -172,7 +173,7 @@ test.describe('a double tap on the tip', () => {
     await expect(tip(page)).toBeVisible();
     await tapOverAWordTwice(page, 'Close');
     await expect(tip(page)).toHaveCount(0);
-    await page.waitForTimeout(600);
+    await afterPageClock(page, 600); // the page's own clock: a late click from the second tap would have come by now
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await shot(page, 'licence-tip-double-tap');
   });
@@ -183,7 +184,7 @@ test.describe('a double tap on the tip', () => {
     await expect(tip(page)).toBeVisible();
     await tapOverAWordTwice(page, 'Learn more');
     await expect(page.getByRole('heading', { name: 'Licence', exact: true, level: 1 })).toBeVisible();
-    await page.waitForTimeout(600);
+    await afterPageClock(page, 600); // the page's own clock: a late click from the second tap would have come by now
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 });

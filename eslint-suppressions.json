@@ -294,29 +294,9 @@
       "count": 1
     }
   },
-  "tests/e2e/hear-any-word.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
-  "tests/e2e/licence-tip.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
-  "tests/e2e/maps.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
   "tests/e2e/my-word.spec.ts": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "tests/e2e/placement-intro.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 2
     }
   },
   "tests/e2e/quiz-goal-offer.spec.ts": {
@@ -349,24 +329,9 @@
       "count": 2
     }
   },
-  "tests/e2e/sermons.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 3
-    }
-  },
   "tests/e2e/settings-search-lands.spec.ts": {
     "local/no-real-time-wait": {
       "count": 2
-    }
-  },
-  "tests/e2e/short-drill-confirm.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 4
-    }
-  },
-  "tests/e2e/tutor-door-absent.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 3
     }
   },
   "tests/e2e/update-banner.spec.ts": {

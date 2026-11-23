@@ -4,6 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
+import { afterFrames } from '../support/settled';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -99,7 +100,8 @@ test('the foot of a chapter has no door, Old Testament or New, and the place lin
   await page.goto('/#/?b=gen&c=10');
   await expect(page.getByRole('navigation', { name: 'Chapters', exact: true })).toBeAttached();
   await page.getByRole('navigation', { name: 'Chapters', exact: true }).scrollIntoViewIfNeeded();
-  await page.waitForTimeout(500);
+  await expect(page.locator('button[data-place-line]')).toBeVisible();
+  await afterFrames(page);
   await expect(page.getByRole('button', { name: /^Maps/ })).toHaveCount(0);
   await shot(page, 'maps-chapter-foot');
   // the place line is a way in: the whole chapter in the Verse view, which has the door
@@ -112,7 +114,8 @@ test('the foot of a chapter has no door, Old Testament or New, and the place lin
   await page.goto('/#/?b=act&c=27');
   await expect(page.getByRole('navigation', { name: 'Chapters', exact: true })).toBeAttached();
   await page.getByRole('navigation', { name: 'Chapters', exact: true }).scrollIntoViewIfNeeded();
-  await page.waitForTimeout(500);
+  await expect(page.locator('button[data-place-line]')).toBeVisible();
+  await afterFrames(page);
   await expect(page.getByRole('button', { name: /^Maps/ })).toHaveCount(0);
 });
 
