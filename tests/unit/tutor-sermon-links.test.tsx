@@ -9,6 +9,7 @@ import { db } from '../../src/data/db';
 import { sermonChip } from '../../src/resources/tutorLinks';
 import { TutorLinks } from '../../src/TutorLinks';
 import { setSermonSources } from '../../src/sermons';
+import { closeSermon, useOpenedSermon } from '../../src/sermons/player';
 import { closeSermonText, useOpenedText } from '../../src/sermons/sermonText';
 import { openWebSetting } from '../../src/settings/definitions/sermons';
 import { setSetting } from '../../src/settings/store';
@@ -32,6 +33,7 @@ beforeEach(async () => {
 afterEach(() => {
   cleanup();
   closeSermonText();
+  closeSermon();
   vi.restoreAllMocks();
   forgetTestSermons();
 });
@@ -145,9 +147,9 @@ describe('the sermon chip', () => {
       expect(onLeave).not.toHaveBeenCalled();
     });
 
-    it('keeps the web link for a video of the source and for a source the index serves no words of', async () => {
+    it('keeps the web link for a source the index serves no words of', async () => {
       await setSetting(openWebSetting, 'lampas');
-      for (const id of ['spurgeon-ccel:v1', 'henry-sermons:h1']) {
+      for (const id of ['henry-sermons:h1']) {
         draw(id);
         const chip = await screen.findByRole('link', { name: /^Sermon:/ });
         chip.addEventListener('click', (event) => event.preventDefault());
@@ -166,6 +168,33 @@ describe('the sermon chip', () => {
       await userEvent.click(chip);
       expect(screen.getByTestId('reader')).toHaveTextContent('none');
       expect(chip).toHaveAttribute('href', 'https://sermons.test/spurgeon-ccel/311');
+    });
+  });
+
+  describe('a video sermon (mw-ecpivg5.8)', () => {
+    const video = { ...row('videosource', 'v1', 'A Video One', ['rom', 5, 8, 8], 'Test Preacher'), open: { url: 'https://www.youtube.com/watch?v=abcdefghijk' } };
+    // what the player's host listens to: the sermon open in the player
+    const Player = () => <span data-testid="player">{useOpenedSermon()?.title ?? 'none'}</span>;
+
+    it.each(['lampas', 'browser', 'firefox'] as const)('plays in the in-app player under %s, as the Sermons sheet does, and does not follow the link or leave the Talk sheet', async (choice) => {
+      await setSetting(openWebSetting, choice);
+      setSermonSources([sourceOf('videosource', 'Video Sermons', { rom: [video] })]);
+      const onLeave = vi.fn();
+      render(
+        <>
+          <TutorLinks links={[{ kind: 'sermon', sermon: 'videosource:v1' }]} place={place} verse={8} onLeave={onLeave} />
+          <Player />
+        </>,
+      );
+      const chip = await screen.findByRole('link', { name: 'Sermon: A Video One ↗' });
+      const followed = vi.fn();
+      const see = (event: Event): void => followed(event.defaultPrevented);
+      document.addEventListener('click', see);
+      await userEvent.click(chip);
+      document.removeEventListener('click', see);
+      expect(screen.getByTestId('player')).toHaveTextContent('A Video One');
+      expect(followed).toHaveBeenCalledWith(true);
+      expect(onLeave).not.toHaveBeenCalled();
     });
   });
 
