@@ -3,6 +3,7 @@ import { openTutor } from './open-tutor';
 import { drag, swipe } from '../support/gesture';
 import { pauseNow } from '../support/hold';
 import { afterLastVerse } from './reader-foot';
+import { afterFrames, untilStill } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openSettings, settingsHeading } from './openSettings';
@@ -288,8 +289,7 @@ for (const look of [
     await dragText(page, 0.6, 0.4, 60);
     await expect.poll(() => at(page)).toBe(5);
     await dragText(page, 0.8, 0.45, 600);
-    await page.waitForTimeout(300);
-    expect(await at(page)).toBe(5);
+    await restsOn(page, 5); // the short drag springs back: its layer goes and the page is still 5
     await tapAt(page, 0.15);
     await expect.poll(() => at(page)).toBe(4);
     expect(await turnsSeen(page)).toEqual([]);
@@ -444,7 +444,7 @@ test('on Genesis 1 page 1 turns no further back, and on Revelation 22 the last p
   expect(await placeOf(page)).toMatchObject({ title: 'Genesis 1', at: 1 });
   await tapAt(page, 0.15);
   await swipeText(page, 'right');
-  await page.waitForTimeout(400);
+  await restsOn(page, 1);
   await expectOn(page, 'Genesis 1', 1);
   await expect(page.locator('[data-swipe-note]')).toHaveCount(0);
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
@@ -455,7 +455,7 @@ test('on Genesis 1 page 1 turns no further back, and on Revelation 22 the last p
   const of = await toLastPage(page);
   await tapAt(page, 0.85);
   await swipeText(page, 'left');
-  await page.waitForTimeout(400);
+  await restsOn(page, of);
   expect(await placeOf(page)).toEqual({ title: 'Revelation 22', at: of, of });
   await expect(page.locator('[data-swipe-note]')).toHaveCount(0);
   await expect(controls.getByRole('button', { name: 'Next page', exact: true })).toHaveAttribute('aria-disabled', 'true');
@@ -744,7 +744,7 @@ test('with Turn pages and the Immersive reader, each page fills down to the plac
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   // the place line is the lowest row now, with the phone's floor under it; the bars' slide is 200 ms
   await expect(place(page)).toHaveAttribute('data-floor', '');
-  await page.waitForTimeout(400);
+  await untilStill(page);
   await pagesFillToPlaceLine(page, 'Bars away');
 });
 
@@ -772,7 +772,7 @@ for (const size of [
     await expect(card).toBeHidden();
     await expect(page.locator('[data-floating-tutor]')).toHaveCount(0); // the immersive reader is the one screen without the floating ? (mw-5r3p30.934)
     // the slide is 200 ms, and the pages are cut afresh for the taller box: fewer of them
-    await page.waitForTimeout(400);
+    await untilStill(page);
     const b = await box(page);
     expect(b.bottom - b.top, `the text box is ${Math.round(b.bottom - b.top)} px of ${size.height}`).toBeGreaterThanOrEqual(size.height * 0.55);
     const lines = await page.evaluate(() => {
@@ -851,7 +851,7 @@ for (const size of [
     expect(before.next, 'some text begins on page 2').not.toBeNull();
     await tapAt(page, 0.85);
     await expect(page.locator('header').first()).toBeHidden();
-    await page.waitForTimeout(400);
+    await untilStill(page);
     await settled(page);
     const after = await onScreen(page);
     expect(after.shown.filter((piece) => !before.shown.includes(piece)).length, `text not on the screen before (it showed ${before.shown.length} pieces, now ${after.shown.length}, on page ${(await pageOf(page)).at})`).toBeGreaterThan(0);
@@ -884,7 +884,7 @@ for (const size of [
 
       await tapAt(page, 0.85);
       if (path.settings.immersiveReader === 'on') await expect(page.locator('header').first()).toBeHidden();
-      await page.waitForTimeout(400);
+      await untilStill(page);
       await settled(page);
       const turned = await pageOf(page);
       const turnedLines = Math.floor(await linesHeld(page));
@@ -1117,7 +1117,7 @@ test('with Scroll nothing changes: the text scrolls, a tap on the right third tu
 
   const before = await versesInView(page);
   await tapAt(page, 0.85);
-  await page.waitForTimeout(300);
+  await afterFrames(page); // a tap that turned a page would have drawn it by now
   // the place line is there in Scroll (Immersive Off, mw-5r3p30.1028) and a tap leaves it a percent, not a page
   await expect(place(page)).toHaveText(/^Mark 12 · \d+%$/);
   if (await page.getByTestId('sheet-backdrop').count()) await page.keyboard.press('Escape');
