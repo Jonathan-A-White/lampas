@@ -36,7 +36,6 @@ const FIXED_LATER: Record<string, number> = {
   // session 2
   'features/steps/in-logos.steps.tsx': 1,
   'features/steps/languages.steps.tsx': 1,
-  'features/steps/listen.steps.tsx': 1,
   'features/steps/long-question.steps.tsx': 1,
   'features/steps/maps.steps.tsx': 1,
   'features/steps/offline-copy.steps.tsx': 2,
@@ -44,7 +43,6 @@ const FIXED_LATER: Record<string, number> = {
   'features/steps/paradigm-drill.steps.tsx': 2,
   'features/steps/paradigms.steps.tsx': 1,
   'features/steps/passage-lesson.steps.tsx': 1,
-  'features/steps/passage-view.steps.tsx': 1,
   'features/steps/preface.steps.tsx': 1,
   'features/steps/quick-round.steps.tsx': 1,
   'features/steps/quick-test-after-answer.steps.tsx': 1,
@@ -58,7 +56,6 @@ const FIXED_LATER: Record<string, number> = {
   'features/steps/septuagint.steps.tsx': 1,
   'features/steps/sermons-settings.steps.tsx': 1,
   'features/steps/sermons.steps.tsx': 1,
-  'features/steps/share-references.steps.tsx': 2,
   'features/steps/speaking-interruptions.steps.tsx': 1,
   'features/steps/talk-pictures.steps.tsx': 1,
   'features/steps/tips.steps.tsx': 1,
