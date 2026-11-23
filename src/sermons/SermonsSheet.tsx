@@ -33,10 +33,24 @@ import { useArchives, useLatest, usePericope, useServiceSearch, useSermons, useT
 import { useHiddenThemes, useSameTheme, useThemeChips, useThemes, type ThemeChip } from './useThemes';
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
-/** The second line of a row: the preacher (else the source's `by`, the church, where the preacher is unknown: mw-qtu3zvz.89), the date, and where it opens (a web page needs the internet while the phone is offline). */
-function metaOf(row: LinkRow, online: boolean, by?: string, reads = false): string {
+/** The second line of a row, in two parts: the preacher (else the source's `by`, the church, where the preacher is unknown: mw-qtu3zvz.89) and the date, then where it opens (a web page needs the internet while the phone is offline). The phrase is kept whole on a line (mw-qtu3zvz.48). */
+function metaOf(row: LinkRow, online: boolean, by?: string, reads = false): { lead: string; opens: string } {
   const opens = row.opensIn === 'logos' ? 'Opens in Logos' : !online ? 'Needs the internet' : videoOfRow(row) ? 'Plays here' : reads ? 'Read aloud here' : 'Opens on the web';
-  return [row.preacher ? row.preacher : by, row.date === undefined ? undefined : plainDate(row.date), opens].filter((p) => p !== undefined && p !== '').join(' · ');
+  const lead = [row.preacher ? row.preacher : by, row.date === undefined ? undefined : plainDate(row.date)].filter((p) => p !== undefined && p !== '').join(' · ');
+  return { lead: lead === '' ? '' : `${lead} · `, opens };
+}
+
+/** The second line of a row: the lead wraps where it must, the phrase of where it opens moves to the next line as a unit (mw-qtu3zvz.48). */
+function MetaLine({ row, online, by, reads }: { row: LinkRow; online: boolean; by?: string; reads: boolean }) {
+  const { lead, opens } = metaOf(row, online, by, reads);
+  return (
+    <span data-sermon-meta className="block break-words text-sm font-normal text-muted">
+      {lead}
+      <span data-sermon-opens className="whitespace-nowrap">
+        {opens}
+      </span>
+    </span>
+  );
 }
 
 /** The line under a row that came in by the sermon notes (mw-qtu3zvz.59.2): where the sermon was preached, where the service gave a preaching text. */
@@ -79,9 +93,7 @@ function Row({ row: given, online, why }: { row: LinkRow; online: boolean; why?:
         <span data-sermon-title className="block break-words">
           {row.title}
         </span>
-        <span data-sermon-meta className="block break-words text-sm font-normal text-muted">
-          {metaOf(row, online, sourceOf(row)?.by, reads)}
-        </span>
+        <MetaLine row={row} online={online} by={sourceOf(row)?.by} reads={reads} />
         {why === undefined ? null : (
           <span data-sermon-why className="block break-words text-sm font-normal text-muted">
             {why}

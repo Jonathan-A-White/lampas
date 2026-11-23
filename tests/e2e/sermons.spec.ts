@@ -81,6 +81,34 @@ test('Romans 5:8 has Sermons · N; the sheet groups the sermons; a row is a link
   await expect(view).toBeVisible();
 });
 
+test('Romans 5:8: no row\'s second line splits its \'Opens on the web\' or \'Needs the internet\' across two lines, online or offline (mw-qtu3zvz.48)', async ({ page, context }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await keepSettings(page, { sermonsOpenWeb: 'browser' });
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  await expect(sheet).toBeVisible();
+  const rows = sheet.locator('a[data-sermon-row]');
+  const count = await rows.count();
+  expect(count).toBeGreaterThan(1);
+  /** each row's phrase, its own span, and how many line boxes it takes */
+  const phrases = async (said: string) => {
+    const spans = sheet.locator('a[data-sermon-row] [data-sermon-opens]');
+    await expect(spans).toHaveCount(count);
+    await expect(spans.first()).toHaveText(said);
+    return spans.evaluateAll((els) => els.map((el) => ({ text: el.textContent ?? '', rects: el.getClientRects().length })));
+  };
+  for (const { text, rects } of await phrases('Opens on the web')) expect(rects, `'${text}' on one line`).toBe(1);
+  await shot(page, 'sermons-meta-online');
+  await context.setOffline(true);
+  for (const { text, rects } of await phrases('Needs the internet')) expect(rects, `'${text}' on one line`).toBe(1);
+  await shot(page, 'sermons-meta-offline');
+  await context.setOffline(false);
+});
+
 test('the place line opens the whole chapter, and its sheet is headed with the chapter alone', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/?b=rom&c=5');
