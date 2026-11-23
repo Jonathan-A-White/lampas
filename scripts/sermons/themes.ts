@@ -37,9 +37,10 @@ export interface ThemeReport {
   rawBytes: number;
 }
 
-/** A label as a book file keeps it: the module's own trailing ',' ';' ':' and spaces at either end are dropped (a Themes line puts ' · ' after it; mw-qtu3zvz.51). */
+/** A label as a book file keeps it: the module's own trailing ',' ';' ':' and spaces at either end are dropped (a Themes line puts ' · ' after it; mw-qtu3zvz.51), and inside a label a run of
+ * ',' ';' ':' keeps its last mark (the module joined a part to its topic with ',:' or '::', where the join is one ':'; mw-qtu3zvz.61). */
 export function tidyLabel(label: string): string {
-  return label.replace(/[\s,;:]+$/, '').trim();
+  return label.replace(/\s*[,;:](?:\s*[,;:])+/g, (run) => run.trim().slice(-1)).replace(/[\s,;:]+$/, '').trim();
 }
 
 /** A link's reference as a book file writes it: '5.8', '23.1-6', '5.12-6.4'. */

@@ -150,7 +150,7 @@ test('Romans 5:8 names its themes under the title, and the sheet has the sermons
   await expect(line).toBeVisible();
   await expect(line).toContainText('Love-Hatred: Of God');
   // no label of the line ends in the module's stray comma before the ' · ' (mw-qtu3zvz.51)
-  expect(await line.textContent()).not.toMatch(/[,;:] ·|[,;:]\s*$/);
+  expect(await line.textContent()).not.toMatch(/[,;:] ·|[,;:]\s*$|[,;:]\s*[,;:]/);
   const title = await sheet.getByRole('heading', { level: 2 }).boundingBox();
   const lineBox = await line.boundingBox();
   expect(lineBox!.y).toBeGreaterThanOrEqual(title!.y + title!.height - 1);
