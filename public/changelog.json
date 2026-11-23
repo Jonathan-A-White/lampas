@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.352",
+    "date": "2026-11-23",
+    "story": "mw-u2w5klk.349.27",
+    "kind": "fixed",
+    "text": "In the Septuagint's Genesis 24, tapping \"master\" now opens the Greek word it renders (κύριος), and \"God\" opens θεός."
+  },
+  {
     "version": "0.7.351",
     "date": "2026-11-23",
     "story": "mw-qtu3zvz.48",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.352
+_2026-11-23_
+- Fixed: In the Septuagint's Genesis 24, tapping "master" now opens the Greek word it renders (κύριος), and "God" opens θεός.
+
 ## 0.7.351
 _2026-11-23_
 - Fixed: a sermon's "Opens on the web" no longer breaks in the middle across two lines in the Sermons sheet.
