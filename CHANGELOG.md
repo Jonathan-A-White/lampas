@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.344
+_2026-11-23_
+- Fixed: The tutor's sermon link for a video sermon now plays it inside the app instead of opening a web page.
+
 ## 0.7.343
 _2026-11-23_
 - New: Nine more of your Logos sermon books can be switched on to find sermons on a verse (Sedgwick, Moberly, Eyton, Chapin, Watson, Pope, Smale, W. I. Evans, and Calvin in Portuguese).

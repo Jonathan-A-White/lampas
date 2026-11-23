@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.344",
+    "date": "2026-11-23",
+    "story": "mw-ecpivg5.8",
+    "kind": "fixed",
+    "text": "The tutor's sermon link for a video sermon now plays it inside the app instead of opening a web page."
+  },
+  {
     "version": "0.7.343",
     "date": "2026-11-23",
     "story": "mw-qtu3zvz.26",
