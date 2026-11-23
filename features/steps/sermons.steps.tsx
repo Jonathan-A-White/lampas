@@ -35,6 +35,7 @@ afterAll(async () => {
 });
 
 const user = userEvent.setup();
+// a real-time wait: the helper of the one window below in which nothing must happen
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
@@ -226,9 +227,9 @@ describeFeature(feature, ({ Scenario }) => {
       expect(row.className).toContain('min-h-11');
     });
   };
+  // the step after Back waits for what Back shows (findBy / waitFor), so Back itself waits for nothing
   const back = async () => {
-    act(() => window.history.back());
-    await sleep(60);
+    await act(async () => window.history.back());
   };
 
   Scenario('A verse with sermons has the door on the Verse view', ({ Given, When, Then, And }) => {
@@ -290,7 +291,7 @@ describeFeature(feature, ({ Scenario }) => {
           return error;
         },
       );
-      await sleep(300);
+      await sleep(300); // a real-time wait: nothing must happen in it, the look must still be waiting on the held source, and the held source gives no signal that its look has gone by
       expect(ended).toBe(false);
       letSourceAnswer();
       const error = await looked;

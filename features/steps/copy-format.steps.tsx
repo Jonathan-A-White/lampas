@@ -1,7 +1,7 @@
 // features/steps/copy-format.steps.tsx — runs features/copy-format.feature (mw-9txn0x1.1): the Verse view's Copy gives the verse, passage or chapter in
 // the format of Settings > Reading > When you copy (src/copy/format.ts). The clipboard is a fake that keeps what was written.
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
@@ -13,7 +13,7 @@ import { db } from '../../src/data/db';
 import { setGreekInterest, setReaderView, setWeave, type ReaderView, type Weave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { passageUrl, referenceUrl } from '../../src/nav/links';
-import { LONG_PRESS_MS } from '../../src/ui/longPress';
+import { holdOn as holdOnTarget } from '../../tests/support/long-press';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton } from '../../tests/support/find-button';
@@ -231,13 +231,7 @@ describeFeature(feature, ({ Scenario }) => {
     And("the phone's clipboard ends with the link of Romans 8:1-39", () => endsWithLink(passageUrl('rom', 8, 1, 39)));
   });
   // A hold: the finger goes down on the target and stays past LONG_PRESS_MS (src/ui/longPress.ts); then it lifts, and the click that ends it is not a tap.
-  const holdOn = async (target: HTMLElement) => {
-    await user.pointer({ keys: '[MouseLeft>]', target });
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
-    });
-    await user.pointer({ keys: '[/MouseLeft]', target });
-  };
+  const holdOn = (target: HTMLElement) => holdOnTarget(user, target);
   const numberOf = (n: number) => document.querySelector<HTMLElement>(`[data-reader] [data-verse="${n}"] [data-verse-number]`)!;
   const headingButton = (text: string) => {
     const heading = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => squash(h.textContent) === text);

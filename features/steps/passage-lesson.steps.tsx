@@ -50,7 +50,6 @@ afterAll(async () => {
 
 const user = userEvent.setup();
 const chapterFile = (book: string, n: number) => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
 /** Every store empty but what the goal and his levels need: the ideas 1 John needs are solid but `frontier`; a licence and a fake Postern behind the tutor. */
@@ -145,9 +144,8 @@ describeFeature(feature, ({ Scenario }) => {
   const endCardSays = async (_: unknown, text: string) => {
     expect(await within(checkSheet()).findByRole('heading', { name: text })).toBeInTheDocument();
   };
-  // the sheet swallows taps for a moment as it opens and as the card changes (src/ui/settle.ts)
+  // the sheet swallows taps for a moment as it opens and as the card changes (src/ui/settle.ts); tests/setup.ts makes that moment 0, so the tap needs no wait
   const tapsOnCard = async (_: unknown, name: string) => {
-    await sleep(350);
     await user.click(within(checkSheet()).getByRole('button', { name, exact: true }));
   };
   const openSheet = async () => {
@@ -180,8 +178,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await db.passageLessons.count()).toBe(0);
     });
     When("he presses the phone's Back", async () => {
-      act(() => window.history.back());
-      await sleep(30);
+      await act(async () => window.history.back());
     });
     Then('the Goal screen is open', async () => {
       expect(await screen.findByTestId('goal-title')).toBeInTheDocument();
@@ -250,7 +247,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(fake.received[0].input.reference).toBe(reference);
       // the answer is shown and its usage kept before the scenario goes on, so nothing writes after the store closes
       await waitFor(() => expect(screen.getByRole('dialog', { name: `Quiz on ${reference}` }).querySelectorAll('[data-turn]')).toHaveLength(1));
-      await sleep(100);
+      await usageWritesSettled();
     });
     When('a day passes and he opens Review', async () => {
       const row = (await db.reviews.get(['lesson', KEY]))!;
