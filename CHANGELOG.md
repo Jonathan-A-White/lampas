@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.357
+_2026-11-23_
+- Fixed: The Themes line no longer shows a stray comma before a colon or a doubled colon inside a topic's name.
+- Fixed: Tapping some English words in the Septuagint's Genesis 30 to 36 (such as 'pillar.', 'offered', 'considered', 'jealous') now opens the Greek word that renders them, not a neighbour's.
+
 ## 0.7.356
 _2026-11-23_
 - New: David's recording now plays with the highlight following in Isaiah 1 to 33, except chapter 11.

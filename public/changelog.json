@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.357",
+    "date": "2026-11-23",
+    "story": "mw-qtu3zvz.61",
+    "kind": "fixed",
+    "text": "The Themes line no longer shows a stray comma before a colon or a doubled colon inside a topic's name."
+  },
+  {
+    "version": "0.7.357",
+    "date": "2026-11-23",
+    "story": "mw-u2w5klk.349.36",
+    "kind": "fixed",
+    "text": "Tapping some English words in the Septuagint's Genesis 30 to 36 (such as 'pillar.', 'offered', 'considered', 'jealous') now opens the Greek word that renders them, not a neighbour's."
+  },
+  {
     "version": "0.7.356",
     "date": "2026-11-23",
     "story": "mw-zbgo4ep.18",
