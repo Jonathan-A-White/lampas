@@ -1001,6 +1001,18 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
     }
   });
 
+  // Genesis 49 to 50 (mw-u2w5klk.349.51; `lxx:unpaired` listed them with English content words where a tap opened the Verse view): after the pass no remainder (y 'align?') is left, and the content words
+  // that sit in a chunk with no Greek word are the sidecar's leftovers (data/lxx/align/gen.expect.json, checked above with every other chapter).
+  it('leaves no remainder in Genesis 49 to 50 and links a content word of each kind (49:6 conspiracy, 49:11 garment, 49:19 plunder, 50:2 embalmed, 50:9 company, 50:21 families) to a Greek word the Reader links', () => {
+    for (const n of [49, 50]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
+    const chunkOf = (n: number, v: number, text: string): EnglishChunk => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t.split(/\s+/).includes(text))!;
+    for (const [n, v, text] of [[49, 6, 'conspiracy,'], [49, 11, 'garment'], [49, 19, 'plunder'], [50, 2, 'embalmed'], [50, 9, 'company.'], [50, 21, 'families:']] as const) {
+      const chunk = chunkOf(n, v, text);
+      expect(chunk, `${n}:${v} ${text}`).toBeDefined();
+      expect(septuagintChunkLinked(chunk), `${n}:${v} ${text}`).toBe(true);
+    }
+  });
+
   // mw-u2w5klk.349.50's sweep of the aligner's pairs in Genesis 46 to 48: a Greek word the aligner gave to a neighbouring English word, so the word that renders it had no Greek ('bring' of 46:4 sat beside ἀναβιβάσω on 'up',
   // 'born' of 46:20 on ἔτεκεν with 'bore' on πόλεως, 'wives' of 46:26 on μηρῶν, 'souls.' of 46:27 on πέντε, 'gladly' and 'die,' of 46:30 each on the other's word, 'herdsmen' of 46:34 on παῖδές, 'servants,' of 47:4 on ἐνίσχυσεν,
   // 'sold' of 47:20 on γῆν, 'presence?' of 47:15 on ἐκλέλοιπεν, 'it came to pass' of 48:1 on 'to', 'drew near' and 'brought them near' of 48:7, 48:10 and 48:13, 'Sicima' of 48:22 on 'portion'). Each is the chunk a fix row gives its own Greek word.
@@ -1080,6 +1092,149 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
     expect(greek(48, 19, 'shall be exalted,')).toEqual(['ὑψωθήσεται·']);
     expect(greek(48, 19, 'shall become a')).toEqual(['ἔσται', 'εἰς']);
     expect(greek(48, 22, 'Sicima, a select portion')).toEqual(['σίκιμα', 'ἐξαίρετον']);
+  });
+
+  // mw-u2w5klk.349.51's sweep of the aligner's pairs in Genesis 49 to 50: a Greek word the aligner gave to a neighbouring English word, so the word that renders it had no Greek or a neighbour's ('you went up' of 49:4 on
+  // the second ἀνέβης alone, 'sons' of 49:8 on a swapped σὲ and σοι, 'they killed' and 'they houghed' of 49:6 on αὐτῶν, 'the foal of his ass' of 49:11 on ἕλικι and the branch's article, 'he blessed' of 49:28 on πατήρ,
+  // 'commanded' of 50:2 on παισὶν, 'when' and 'were past,' of 50:4 on each other's word, 'a mourning' and 'they bewailed' of 50:10 on ἐκόψαντο and 'he' on αὐτοῦ, 'therefore he called' of 50:11, 'kindly' and 'to them.' of 50:21).
+  // Each is the chunk a fix row gives its own Greek word; 49:1's 'his sons,' and 'them,' are the pairs the Greek of 49:2's English left on αὐτοῖς and ἐπ᾽.
+  it('gives the English of Genesis 49 to 50 that the aligner paired to a neighbour its own Greek word: his sons, gather yourselves together, burst not forth, you went up, they killed, your brethren, the foal of his ass, the sinews of their arms, he blessed, commanded, when, they bewailed, therefore he called, kindly', () => {
+    const greek = (n: number, v: number, text: string): string[] => {
+      const verse = withModel.get(n)!.verses.find((x) => x.n === v)!;
+      const chunks = verse.e.filter((c) => c.t === text);
+      expect(chunks, `${n}:${v} '${text}' is one chunk`).toHaveLength(1);
+      return chunks[0].g.map((i) => verse.g[i].t);
+    };
+    expect(greek(49, 1, 'his sons,')).toEqual(['τοὺς', 'υἱοὺς', 'αὐτοῦ']);
+    expect(greek(49, 1, 'them,')).toEqual(['αὐτοῖς']);
+    expect(greek(49, 2, 'Gather yourselves together,')).toEqual(['συνάχθητε']);
+    expect(greek(49, 2, 'your father.')).toEqual(['τοῦ', 'πατρὸς', 'ὑμῶν.']);
+    expect(greek(49, 4, 'burst not forth with violence,')).toEqual(['μὴ', 'ἐκζέσῃς·']);
+    expect(greek(49, 4, 'you went up')).toEqual(['ἀνέβης']);
+    expect(greek(49, 4, 'of your father;')).toEqual(['τοῦ', 'πατρός', 'σου·']);
+    expect(greek(49, 4, 'then you defiled')).toEqual(['τότε', 'ἐμίανας']);
+    expect(greek(49, 4, 'you went up.')).toEqual(['ἀνέβης.']);
+    expect(greek(49, 6, 'their wrath')).toEqual(['τῷ', 'θυμῷ', 'αὐτῶν']);
+    expect(greek(49, 6, 'they killed')).toEqual(['ἀπέκτειναν']);
+    expect(greek(49, 6, 'their passion')).toEqual(['τῇ', 'ἐπιθυμίᾳ', 'αὐτῶν']);
+    expect(greek(49, 6, 'they houghed')).toEqual(['ἐνευροκόπησαν']);
+    expect(greek(49, 7, 'their wrath,')).toEqual(['ὁ', 'θυμὸς', 'αὐτῶν']);
+    expect(greek(49, 7, 'for it was willful,')).toEqual(['ὅτι', 'αὐθάδης,']);
+    expect(greek(49, 7, 'their anger,')).toEqual(['ἡ', 'μῆνις', 'αὐτῶν']);
+    expect(greek(49, 7, 'for it was cruel:')).toEqual(['ὅτι', 'ἐσκληρύνθη·']);
+    expect(greek(49, 8, 'your brethren have')).toEqual(['οἱ', 'ἀδελφοί', 'σου·']);
+    expect(greek(49, 8, 'praised you,')).toEqual(['σὲ', 'αἰνέσαισαν']);
+    expect(greek(49, 8, "your father's")).toEqual(["τοῦ", "πατρός", "σου."]);
+    expect(greek(49, 8, 'sons')).toEqual(['οἱ', 'υἱοὶ']);
+    expect(greek(49, 8, 'shall do you reverence.')).toEqual(['προσκυνήσουσίν', 'σοι']);
+    expect(greek(49, 9, 'you are gone up,')).toEqual(['ἀνέβης·']);
+    expect(greek(49, 9, 'stir him up?')).toEqual(['ἐγερεῖ', 'αὐτόν;']);
+    expect(greek(49, 10, 'until there come')).toEqual(['ἕως', 'ἂν', 'ἔλθῃ']);
+    expect(greek(49, 10, 'the things stored up')).toEqual(['τὰ', 'ἀποκείμενα']);
+    expect(greek(49, 11, 'his foal')).toEqual(['τὸν', 'πῶλον', 'αὐτοῦ,']);
+    expect(greek(49, 11, 'the foal of his ass')).toEqual(['τὸν', 'πῶλον', 'τῆς', 'ὄνου', 'αὐτοῦ·']);
+    expect(greek(49, 11, 'to the branch of it,')).toEqual(['τῇ', 'ἕλικι']);
+    expect(greek(49, 11, 'he shall wash')).toEqual(['πλυνεῖ']);
+    expect(greek(49, 11, 'his robe')).toEqual(['τὴν', 'στολὴν', 'αὐτοῦ,']);
+    expect(greek(49, 11, 'his garment')).toEqual(['τὴν', 'περιβολὴν', 'αὐτοῦ.']);
+    expect(greek(49, 14, 'between')).toEqual(['ἀνὰ', 'μέσον']);
+    expect(greek(49, 15, 'the resting place')).toEqual(['τὴν', 'ἀνάπαυσιν']);
+    expect(greek(49, 15, 'he subjected')).toEqual(['ὑπέθηκεν']);
+    expect(greek(49, 15, 'his shoulder')).toEqual(['τὸν', 'ὦμον', 'αὐτοῦ']);
+    expect(greek(49, 15, 'to labor,')).toEqual(['εἰς', 'τὸ', 'πονεῖν,']);
+    expect(greek(49, 16, 'his people,')).toEqual(['τὸν', 'ἑαυτοῦ', 'λαόν,']);
+    expect(greek(49, 17, 'in the way,')).toEqual(['ἐφ᾽', 'ὁδοῦ,']);
+    expect(greek(49, 17, 'besetting the path,')).toEqual(['ἐνκαθήμενος', 'ἐπὶ', 'τρίβου·']);
+    expect(greek(49, 17, 'backward),')).toEqual(['εἰς', 'τὰ', 'ὀπίσω,']);
+    expect(greek(49, 22, 'is a son increased;')).toEqual(['Υἱὸς', 'ηὐξημένος']);
+    expect(greek(49, 22, 'my dearly loved son is increased;')).toEqual(['υἱὸς', 'ηὐξημένος', 'μου', 'ζηλωτός·']);
+    expect(greek(49, 22, 'my youngest son,')).toEqual(['υἱός', 'μου', 'νεώτατος·']);
+    expect(greek(49, 23, 'men taking evil counsel')).toEqual(['διαβουλευόμενοι']);
+    expect(greek(49, 23, 'pressed hard upon him.')).toEqual(['ἐνεῖχον', 'αὐτῷ']);
+    expect(greek(49, 24, 'But their bow and arrows')).toEqual(['καὶ', 'τὰ', 'τόξα', 'αὐτῶν,']);
+    expect(greek(49, 24, 'the sinews of their arms')).toEqual(['τὰ', 'νεῦρα', 'βραχιόνων', 'χειρὸς', 'αὐτῶν,']);
+    expect(greek(49, 24, 'were slackened')).toEqual(['ἐξελύθη']);
+    expect(greek(49, 24, 'is he that strengthened')).toEqual(['ὁ', 'κατισχύσας']);
+    expect(greek(49, 24, 'of your father;')).toEqual(['τοῦ', 'πατρός', 'σου.']);
+    expect(greek(49, 25, 'all things,')).toEqual(['πάντα·']);
+    expect(greek(49, 26, 'your mother—it')).toEqual(['μητρός', 'σου·']);
+    expect(greek(49, 26, 'has prevailed above')).toEqual(['ὑπερίσχυσεν', 'ἐπ᾽']);
+    expect(greek(49, 26, 'the blessing')).toEqual(['εὐλογίαις']);
+    expect(greek(49, 26, 'of the lasting mountains,')).toEqual(['ὀρέων', 'μονίμων,']);
+    expect(greek(49, 27, 'in the morning,')).toEqual(['τὸ', 'πρωινὸν']);
+    expect(greek(49, 27, 'at evening')).toEqual(['εἰς', 'τὸ', 'ἑσπέρας']);
+    expect(greek(49, 28, 'their father')).toEqual(['ὁ', 'πατὴρ', 'αὐτῶν·']);
+    expect(greek(49, 28, 'these words')).toEqual(['ταῦτα']);
+    expect(greek(49, 28, 'to them,')).toEqual(['αὐτοῖς']);
+    expect(greek(49, 28, 'he blessed them;')).toEqual(['εὐλόγησεν', 'αὐτοὺς', 'ὁ', 'πατήρ,']);
+    expect(greek(49, 28, 'he blessed each')).toEqual(['ἕκαστον', 'εὐλόγησεν']);
+    expect(greek(49, 28, 'to his blessing.')).toEqual(['τὴν', 'εὐλογίαν', 'αὐτοῦ']);
+    expect(greek(49, 33, 'his feet')).toEqual(['τοὺς', 'πόδας', 'αὐτοῦ']);
+    expect(greek(49, 33, 'he died,')).toEqual(['ἐξέλιπεν']);
+    expect(greek(49, 33, 'to his people.')).toEqual(['πρὸς', 'τὸν', 'λαὸν', 'αὐτοῦ.']);
+    expect(greek(50, 2, 'commanded')).toEqual(['προσέταξεν']);
+    expect(greek(50, 2, 'servants')).toEqual(['τοῖς', 'παισὶν']);
+    expect(greek(50, 3, 'they fulfilled')).toEqual(['ἐπλήρωσεν']);
+    expect(greek(50, 3, 'for him,')).toEqual(['αὐτοὺς']);
+    expect(greek(50, 4, 'when')).toEqual(['Ἐπειδὴ']);
+    expect(greek(50, 4, 'were past,')).toEqual(['παρῆλθον']);
+    expect(greek(50, 5, 'adjured me,')).toEqual(['με', 'ὥρκισεν']);
+    expect(greek(50, 5, 'which I dug')).toEqual(['ᾧ', 'ὤρυξα']);
+    expect(greek(50, 5, 'you shall bury me;')).toEqual(['με', 'θάψεις.']);
+    expect(greek(50, 5, 'I will go up')).toEqual(['ἀναβὰς']);
+    expect(greek(50, 5, 'my father,')).toEqual(['τὸν', 'πατέρα', 'μου,']);
+    expect(greek(50, 6, 'Go up,')).toEqual(['Ἀνάβηθι,']);
+    expect(greek(50, 6, 'your father,')).toEqual(['τὸν', 'πατέρα', 'σου']);
+    expect(greek(50, 6, 'he constrained you to swear.')).toEqual(['ὥρκισέν', 'σε.']);
+    expect(greek(50, 7, 'went up to')).toEqual(['ἀνέβη']);
+    expect(greek(50, 7, 'his father;')).toEqual(['τὸν', 'πατέρα', 'αὐτοῦ·']);
+    expect(greek(50, 7, 'went up with')).toEqual(['συνανέβησαν', 'μετ᾽']);
+    expect(greek(50, 8, 'his kindred;')).toEqual(['ἡ', 'συγγενία', 'αὐτοῦ·']);
+    expect(greek(50, 8, 'they left behind')).toEqual(['ὑπελίποντο']);
+    expect(greek(50, 9, 'there went up with')).toEqual(['συνανέβησαν', 'μετ᾽']);
+    expect(greek(50, 10, 'threshing floor of')).toEqual(['ἅλωνα']);
+    expect(greek(50, 10, 'they bewailed')).toEqual(['ἐκόψαντο']);
+    expect(greek(50, 10, 'he made')).toEqual(['ἐποίησαν']);
+    expect(greek(50, 10, 'a mourning')).toEqual(['τὸ', 'πένθος']);
+    expect(greek(50, 10, 'for his father')).toEqual(['τῷ', 'πατρὶ', 'αὐτοῦ']);
+    expect(greek(50, 11, 'is a')).toEqual(['ἐστιν']);
+    expect(greek(50, 11, 'to the Egyptians;')).toEqual(['τοῖς', 'Αἰγυπτίοις·']);
+    expect(greek(50, 11, 'therefore')).toEqual(['διὰ', 'τοῦτο']);
+    expect(greek(50, 11, 'he called')).toEqual(['ἐκάλεσεν']);
+    expect(greek(50, 11, 'its name,')).toEqual(['τὸ', 'ὄνομα', 'αὐτοῦ']);
+    expect(greek(50, 12, 'did to')).toEqual(['ἐποίησαν', 'αὐτῷ']);
+    expect(greek(50, 12, 'his sons')).toEqual(['οἱ', 'υἱοὶ', 'αὐτοῦ,']);
+    expect(greek(50, 13, 'carried him up')).toEqual(['ἀνέλαβον', 'αὐτὸν']);
+    expect(greek(50, 13, 'his sons')).toEqual(['οἱ', 'υἱοὶ', 'αὐτοῦ']);
+    expect(greek(50, 14, 'those that had gone up with')).toEqual(['οἱ', 'συναναβάντες']);
+    expect(greek(50, 14, 'his father.')).toEqual(['τὸν', 'πατέρα', 'αὐτοῦ.']);
+    expect(greek(50, 15, 'lest at any time')).toEqual(['Μή', 'ποτε']);
+    expect(greek(50, 15, 'their father')).toEqual(['ὁ', 'πατὴρ', 'αὐτῶν']);
+    expect(greek(50, 15, 'they said,')).toEqual(['εἶπαν']);
+    expect(greek(50, 15, 'we have done against')).toEqual(['ἐνεδειξάμεθα']);
+    expect(greek(50, 15, 'to us')).toEqual(['ἡμῖν']);
+    expect(greek(50, 16, 'Your father')).toEqual(['Ὁ', 'πατήρ', 'σου']);
+    expect(greek(50, 17, 'say you⌃')).toEqual(['εἴπατε']);
+    expect(greek(50, 17, 'their injustice')).toEqual(['τὴν', 'ἀδικίαν']);
+    expect(greek(50, 17, 'their sin,')).toEqual(['τὴν', 'ἁμαρτίαν', 'αὐτῶν,']);
+    expect(greek(50, 17, 'forasmuch as they')).toEqual(['ὅτι']);
+    expect(greek(50, 17, 'have done')).toEqual(['ἐνεδείξαντο·']);
+    expect(greek(50, 17, 'of your')).toEqual(['τοῦ', 'σου.']);
+    expect(greek(50, 17, 'while they spoke')).toEqual(['λαλούντων', 'αὐτῶν']);
+    expect(greek(50, 19, 'I am')).toEqual(['ἐγὼ', 'εἰμί·']);
+    expect(greek(50, 19, 'to them,')).toEqual(['αὐτοῖς']);
+    expect(greek(50, 19, "God's.")).toEqual(["τοῦ", "θεοῦ"]);
+    expect(greek(50, 21, 'he comforted')).toEqual(['παρεκάλεσεν']);
+    expect(greek(50, 21, 'kindly')).toEqual(['εἰς', 'τὴν', 'καρδίαν.']);
+    expect(greek(50, 21, 'to them.')).toEqual(['αὐτῶν']);
+    expect(greek(50, 22, 'one hundred')).toEqual(['ἑκατὸν']);
+    expect(greek(50, 24, 'concerning which')).toEqual(['ἣν']);
+    expect(greek(50, 25, 'At the visitation')).toEqual(['Ἐν', 'τῇ', 'ἐπισκοπῇ']);
+    expect(greek(50, 25, 'with which')).toEqual(['ᾗ']);
+    expect(greek(50, 25, 'my bones')).toEqual(['τὰ', 'ὀστᾶ', 'μου']);
+    expect(greek(50, 26, 'one hundred')).toEqual(['ἑκατὸν']);
+    expect(greek(50, 26, 'they prepared his corpse,')).toEqual(['ἔθαψαν', 'αὐτὸν']);
+    expect(greek(50, 26, 'in a coffin')).toEqual(['ἐν', 'τῇ', 'σορῷ']);
   });
 
   it('Genesis 1 reads woven through weaveVerse with the model\'s chunks', () => {
