@@ -6,15 +6,15 @@ Written by `npm run lxx:report` (scripts/lxx/report.ts) between the markers belo
 
 <!-- lxx-report:start -->
 
-Derived without a Morpheus cache: 1ch, 1ki, 1sa, 2ch, 2ki, 2sa, amo, dan, ecc, est, exo, eze, ezr, hab, hag, hos, isa, jer, job, joe, lam, mal, mic, nah, neh, oba, pro, psa, rut, sol, zec, zep.
+Derived without a Morpheus cache: 1ch, 1ki, 1sa, 2ch, 2ki, 2sa, amo, dan, ecc, est, eze, ezr, hab, hag, hos, jer, job, joe, lam, mal, mic, nah, neh, oba, pro, rut, sol, zec, zep.
 
-Build 303. The bar (`scripts/lxx/bar.ts`): known-answer lemma at least 99% and full parsing at least 98% on each chapter below; no word pending; guesses at most 3% of the book's words; agreement breaks at most 5 per 1,000 words.
+Build 352. The bar (`scripts/lxx/bar.ts`): known-answer lemma at least 99% and full parsing at least 98% on each chapter below; no word pending; guesses at most 3% of the book's words; agreement breaks at most 5 per 1,000 words.
 
 The chapter is what ships: a Greek chapter with no word pending and breaks at most 5 per 1,000 of its words, under the known-answer lines and the book's guess line, goes into the annotation file and the app (`npm run lxx:ship`). Shipped chapters shows which.
 
 ### The known-answer chapters of this build
 
-second chapter Luk.15: no choices file; Rom.8 used (the known-answer lines are held against the chapters that have a choices file in `data/lxx/known`).
+second chapter Act.2: no choices file; Rom.8 used (the known-answer lines are held against the chapters that have a choices file in `data/lxx/known`).
 
 | Chapter | Book hidden | Words | Lemma right | Full parsing right | Pending, no choice | Choices |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -25,8 +25,8 @@ second chapter Luk.15: no choices file; Rom.8 used (the known-answer lines are h
 
 | Book | Words | Layer 1 | Layer 2 | Layer 2a | Layer 3 | Pending | Guesses | Breaks per 1,000 | Second pass differs | Morpheus agreed / differed / unknown | Shipped chapters | Bar |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Genesis (Gen) | 32,635 | 66.3% | 3.1% | 5.1% | 25.5% | 0 | 1.4% | 0.5 | 3.8% of 417 | 80 / 92 / 283 | all | SHIPPABLE |
-| Exodus (Exo) | 24,647 | 62.7% | 5.5% | 5.0% | 26.5% | 58 | 2.6% | 0.6 | 4.0% of 329 | — | 1, 6, 8, 14-15, 17-20, 22, 24-25, 27, 35, 37, 39-40 of 40 | NOT: pending: 58 |
+| Genesis (Gen) | 32,635 | 66.3% | 3.1% | 5.1% | 25.5% | 0 | 1.4% | 0.5 | 3.8% of 417 | 81 / 92 / 284 | all | SHIPPABLE |
+| Exodus (Exo) | 24,647 | 62.7% | 5.5% | 5.1% | 26.7% | 0 | 1.2% | 0.6 | 4.0% of 329 | 62 / 50 / 173 | all | SHIPPABLE |
 | Leviticus (Lev) | 19,042 | 62.2% | 4.6% | 6.7% | 26.6% | 0 | 0.7% | 0.3 | 0.8% of 253 | 32 / 20 / 83 | all | SHIPPABLE |
 | Numbers (Num) | 24,973 | 62.5% | 5.3% | 5.3% | 26.9% | 0 | 1.1% | 0.2 | 4.7% of 337 | 2 / 47 / 215 | all | SHIPPABLE |
 | Deuteronomy (Deu) | 22,501 | 69.6% | 3.8% | 5.0% | 21.5% | 5 | 1.1% | 0.5 | 3.3% of 243 | 57 / 36 / 147 | 1-14, 16-30, 32-34 of 34 | NOT: pending: 5 |
@@ -43,11 +43,11 @@ second chapter Luk.15: no choices file; Rom.8 used (the known-answer lines are h
 | Nehemiah (Neh) | 7,336 | 64.3% | 4.3% | 5.6% | 0.0% | 1,896 | 0.0% | 0.0 | — | — | none | NOT: pending: 1896 |
 | Esther (Est) | 5,830 | 62.7% | 4.9% | 6.0% | 0.0% | 1,544 | 0.0% | 0.2 | — | — | none | NOT: pending: 1544 |
 | Job (Job) | 13,509 | 63.7% | 5.5% | 2.1% | 0.0% | 3,875 | 0.0% | 0.4 | — | — | none | NOT: pending: 3875 |
-| Psalms (Psa) | 34,615 | 65.2% | 4.8% | 5.4% | 24.6% | 47 | 2.2% | 0.4 | 4.0% of 427 | — | 2-8, 11-13, 15-16, 18-19, 22-23, 25, 28-29, 31-33, 37-40, 42-43, 45-48, 50-71, 73, 75-88, 90-100, 104-105, 107, 109-112, 114-116, 119-120, 122-135, 137-139, 141, 143-151 of 151 | NOT: pending: 47 |
+| Psalms (Psa) | 34,615 | 65.2% | 4.8% | 5.4% | 24.6% | 0 | 1.1% | 0.4 | 4.0% of 427 | 96 / 80 / 204 | all | SHIPPABLE |
 | Proverbs (Pro) | 11,091 | 61.1% | 6.9% | 2.5% | 0.0% | 3,273 | 0.0% | 0.3 | — | — | none | NOT: pending: 3273 |
 | Ecclesiastes (Ecc) | 4,518 | 64.9% | 3.7% | 4.6% | 0.0% | 1,215 | 0.0% | 0.0 | — | — | none | NOT: pending: 1215 |
 | Song of Solomon (Sol) | 1,994 | 60.5% | 8.9% | 4.0% | 0.0% | 531 | 0.0% | 1.0 | — | — | none | NOT: pending: 531 |
-| Isaiah (Isa) | 26,953 | 66.8% | 4.4% | 4.0% | 24.5% | 64 | 2.4% | 0.6 | 7.5% of 333 | — | 2-8, 12, 15, 18, 23-26, 28-29, 31, 37-38, 40-41, 46, 52, 55-56, 63-64 of 66 | NOT: pending: 64 |
+| Isaiah (Isa) | 26,953 | 66.8% | 4.4% | 4.1% | 24.7% | 0 | 1.0% | 0.6 | 7.5% of 333 | 71 / 65 / 127 | all | SHIPPABLE |
 | Jeremiah (Jer) | 28,775 | 68.8% | 4.2% | 4.4% | 0.0% | 6,522 | 0.0% | 0.3 | — | — | none | NOT: pending: 6522 |
 | Lamentations (Lam) | 2,463 | 62.7% | 6.6% | 2.4% | 0.0% | 697 | 0.0% | 0.0 | — | — | none | NOT: pending: 697 |
 | Ezekiel (Eze) | 29,364 | 65.2% | 4.8% | 5.1% | 0.0% | 7,314 | 0.0% | 0.0 | — | — | none | NOT: pending: 7314 |
@@ -65,6 +65,6 @@ second chapter Luk.15: no choices file; Rom.8 used (the known-answer lines are h
 | Zechariah (Zec) | 4,952 | 67.0% | 3.9% | 4.8% | 0.0% | 1,205 | 0.0% | 0.0 | — | — | none | NOT: pending: 1205 |
 | Malachi (Mal) | 1,408 | 68.0% | 4.1% | 3.7% | 0.0% | 340 | 0.0% | 0.0 | — | — | none | NOT: pending: 340 |
 
-476,129 words in 39 books; 6 SHIPPABLE, 15 with at least one chapter that ships. A book is SHIPPABLE when it fails none of the bar's lines, as a whole; `npm run lxx:release -- --book <code>` writes the rows of its shippable chapters.
+476,129 words in 39 books; 9 SHIPPABLE, 15 with at least one chapter that ships. A book is SHIPPABLE when it fails none of the bar's lines, as a whole; `npm run lxx:release -- --book <code>` writes the rows of its shippable chapters.
 
 <!-- lxx-report:end -->

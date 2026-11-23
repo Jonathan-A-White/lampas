@@ -357,7 +357,7 @@ Psa.9:18#7	A-NPN	πᾶς		0.80
 Psa.9:18#8	T-NPN	ὁ		0.80	
 Psa.9:18#9	N-NPN	ἔθνος		0.80	
 Psa.9:18#10	T-NPN	ὁ		0.80	
-Psa.9:18#11	V-PNP-NPN	ἐπιλανθάνω		0.80	
+Psa.9:18#11	V-PNP-NPN	ἐπιλανθάνω	guess	0.40	guess: the model chose outside the candidates
 Psa.9:19#4	N-ASN	τέλος		0.80	
 Psa.9:19#5	V-FPI-3S	ἐπιλανθάνομαι	unsure	0.50	model: unsure
 Psa.9:19#10	T-GPM	ὁ		0.80	

@@ -350,7 +350,7 @@ Isa.44:21#3	N-VSM	Ἰακώβ		0.80
 Isa.44:21#5	N-VSM	Ἰσραήλ		0.80	
 Isa.44:21#7	N-NSM	παῖς		0.80	
 Isa.44:21#17	N-VSM	Ἰσραήλ		0.80	
-Isa.44:21#19	V-PNM-2S	ἐπιλανθάνω		0.80	
+Isa.44:21#19	V-PNM-2S	ἐπιλανθάνω	guess	0.40	guess: the model chose outside the candidates
 Isa.44:22#3	V-AAI-1S	ἀπαλείφω		0.80	
 Isa.44:22#15	V-2APM-2S	ἐπιστρέφω		0.80	
 Isa.44:22#19	V-FMI-1S	λυτρόω		0.80	

@@ -198,7 +198,7 @@ Exo.11:3#31	T-GPM	ὁ		0.80
 Exo.11:3#32	N-GPM	θεράπων		0.80	
 Exo.11:3#33	P-GSM	αὐτός		0.80	
 Exo.11:4#4	D-APN	ὅδε, ἥδε		0.80	
-Exo.11:4#11	V-PPI-1S	εἰσπορεύω	unsure	0.50	model: unsure
+Exo.11:4#11	V-PPI-1S	εἰσπορεύω	guess	0.40	guess: the model chose outside the candidates
 Exo.11:4#13	A-ASN	μέσος		0.80	
 Exo.11:5#3	A-NSN	πᾶς		0.80	
 Exo.11:5#4	A-NSN	πρωτότοκος	guess	0.40	guess: the model chose outside the candidates
@@ -538,7 +538,7 @@ Exo.13:3#7	V-PAM-2P	μνημονεύω		0.80
 Exo.13:3#19	N-GSF	δουλεία		0.80	
 Exo.13:3#23	A-DSF	κραταιός		0.80	
 Exo.13:3#30	V-FPI-3S	βιβρώσκω		0.80	
-Exo.13:4#6	V-PPI-2P	ἐκπορεύω	unsure	0.50	model: unsure
+Exo.13:4#6	V-PPI-2P	ἐκπορεύω	guess	0.40	guess: the model chose outside the candidates
 Exo.13:4#9	T-GPN	ὁ	unsure	0.50	model: unsure
 Exo.13:4#10	A-GPN	νέος	unsure	0.50	model: unsure
 Exo.13:5#14	T-GPM	ὁ		0.80	

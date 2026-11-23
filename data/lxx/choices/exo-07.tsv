@@ -310,7 +310,7 @@ Exo.28:26#4	T-ASN	ὁ		0.80
 Exo.28:26#5	N-ASN	λόγιον		0.80	
 Exo.28:26#18	N-GSM	Ἀαρών		0.80	
 Exo.28:26#19	CONJ	ὅταν		0.80	
-Exo.28:26#20	V-PPS-3S	εἰσπορεύω	unsure	0.50	model: unsure
+Exo.28:26#20	V-PPS-3S	εἰσπορεύω	guess	0.40	guess: the model chose outside the candidates
 Exo.28:26#22	T-ASN	ὁ		0.80	
 Exo.28:26#23	A-ASN	ἅγιος		0.80	
 Exo.28:26#24	PREP	ἐναντίον		0.80	
@@ -427,7 +427,7 @@ Exo.29:1#7	V-FAI-2S	ἁγιάζω		0.80
 Exo.29:1#13	V-FDI-2S	λαμβάνω		0.80	
 Exo.29:1#15	N-ASN	μοσχάριον		0.80	
 Exo.29:1#18	A-ASN	εἷς		0.80	
-Exo.29:2#4	V-RNP-APM	φυράω	unsure	0.50	model: unsure
+Exo.29:2#4	V-RNP-APM	φυράω	guess	0.40	guess: the model chose outside the candidates
 Exo.29:2#8	N-APN	λάγανον		0.80	
 Exo.29:2#9	A-APN	ἄζυμος		0.80	
 Exo.29:2#10	V-RPP-APN	χρίω		0.80	

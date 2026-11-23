@@ -245,7 +245,7 @@ Psa.102:1#16	T-ASN	ὁ		0.80
 Psa.102:1#17	A-ASN	ἅγιος		0.80	
 Psa.102:1#18	P-GSM	αὐτός		0.80	
 Psa.102:2#1	V-PAM-2S	εὐλογέω		0.80	
-Psa.102:2#9	V-PNM-2S	ἐπιλανθάνω		0.80	
+Psa.102:2#9	V-PNM-2S	ἐπιλανθάνω	guess	0.40	guess: the model chose outside the candidates
 Psa.102:2#13	P-GSM	αὐτός		0.80	
 Psa.102:5#4	A-DPN	ἀγαθός		0.80	
 Psa.102:6#6	N-ASN	κρίμα		0.80	
