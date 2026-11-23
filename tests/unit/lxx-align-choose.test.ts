@@ -1237,6 +1237,76 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
     expect(greek(50, 26, 'in a coffin')).toEqual(['ἐν', 'τῇ', 'σορῷ']);
   });
 
+  // mw-u2w5klk.349.84 (from .81, found by .47): a function word the aligner gave to a neighbour's Greek word in Genesis 37 to 39: 'his' and 'him' of 37:4 on each other's αὐτοῦ and αὐτὸν, 'I' of 37:16 on μου, 'he' of
+  // 38:11 on αὐτῆς, 'he' of 39:3 on αὐτοῦ, and the like in 37:9, 37:14, 37:26, 37:27, 37:32, 38:9, 38:12 to 38:16, 38:20, 38:25, 38:28 to 38:30, 39:4, 39:8, 39:13, 39:15, 39:18 and 39:21 (a 'he', 'she' or 'it' on the αὐτοῦ
+  // of the 'his X' after it). Each is the chunk a fix row of gen-37.tsv, gen-38.tsv or gen-39.tsv gives its own Greek word; a no-Greek 'he', 'it' or 'they' reads joined to the chunk after it (joinSupplied), so its row is that chunk's.
+  it("gives each function word of Genesis 37 to 39 that sat on a neighbour's Greek word its own: his father and loved him (37:4), I am seeking (37:16), for he said and of her father (38:11), his hands (39:3), and the 'he', 'she' and 'it' of 37:9 to 39:21 that took the αὐτοῦ of the word after", () => {
+    const greek = (n: number, v: number, text: string): string[] => {
+      const verse = withModel.get(n)!.verses.find((x) => x.n === v)!;
+      const chunks = verse.e.filter((c) => c.t === text);
+      expect(chunks, `${n}:${v} '${text}' is one chunk`).toHaveLength(1);
+      return chunks[0].g.map((i) => verse.g[i].t);
+    };
+    expect(greek(37, 9, 'he dreamed another dream,')).toEqual(['ἴδεν', 'ἐνύπνιον', 'ἕτερον,']);
+    expect(greek(37, 4, 'his father')).toEqual(['ὁ', 'πατὴρ', 'αὐτοῦ']);
+    expect(greek(37, 4, 'loved him')).toEqual(['αὐτὸν', 'ἐφίλει']);
+    expect(greek(37, 16, 'I am seeking')).toEqual(['ζητῶ·']);
+    expect(greek(37, 16, 'my brethren;')).toEqual(['Τοὺς', 'ἀδελφούς', 'μου']);
+    expect(greek(37, 9, 'to his father,')).toEqual(['τῷ', 'πατρὶ', 'αὐτοῦ']);
+    expect(greek(37, 14, 'to him,')).toEqual(['αὐτῷ']);
+    expect(greek(37, 14, 'he sent')).toEqual(['ἀπέστειλεν']);
+    expect(greek(37, 26, 'it if')).toEqual(['ἐὰν']);
+    expect(greek(37, 26, 'his blood?')).toEqual(['τὸ', 'αἷμα', 'αὐτοῦ;']);
+    expect(greek(37, 27, 'he is')).toEqual(['ἐστίν.']);
+    expect(greek(37, 27, 'to these Ismaelites,')).toEqual(['τοῖς', 'Ἰσμαηλίταις', 'τούτοις,']);
+    expect(greek(37, 32, 'to their father,')).toEqual(['τῷ', 'πατρὶ', 'αὐτῶν,']);
+    expect(greek(37, 32, 'if it')).toEqual(['εἰ']);
+    expect(greek(38, 25, 'they were bringing')).toEqual(['ἀγομένη']);
+    expect(greek(38, 9, 'his—it came to pass')).toEqual(['αὐτῷ', 'ἐγίνετο,']);
+    expect(greek(38, 11, 'for he said,')).toEqual(['εἶπεν', 'γάρ']);
+    expect(greek(38, 11, 'of her father.')).toEqual(['τοῦ', 'πατρὸς', 'αὐτῆς.']);
+    expect(greek(38, 9, 'when he')).toEqual(['ὅταν']);
+    expect(greek(38, 9, "seed to his brother's")).toEqual(['σπέρμα', 'τῷ', 'ἀδελφῷ', 'αὐτοῦ.']);
+    expect(greek(38, 9, 'he should')).toEqual([]);
+    expect(greek(38, 12, 'them')).toEqual([]);
+    expect(greek(38, 12, 'his sheep,')).toEqual(['τὰ', 'πρόβατα', 'αὐτοῦ,']);
+    expect(greek(38, 12, 'himself')).toEqual(['αὐτὸς']);
+    expect(greek(38, 13, 'it')).toEqual([]);
+    expect(greek(38, 13, 'his sheep.')).toEqual(['τὰ', 'πρόβατα', 'αὐτοῦ.']);
+    expect(greek(38, 15, 'her,')).toEqual(['αὐτὴν']);
+    expect(greek(38, 15, 'he thought')).toEqual(['ἔδοξεν']);
+    expect(greek(38, 15, 'her face,')).toEqual(['τὸ', 'πρόσωπον', 'αὐτῆς,']);
+    expect(greek(38, 15, 'he knew')).toEqual(['ἐπέγνω']);
+    expect(greek(38, 16, 'she was')).toEqual(['ἐστίν.']);
+    expect(greek(38, 16, 'his daughter-in-law;')).toEqual(['ἡ', 'νύμφη', 'αὐτοῦ']);
+    expect(greek(38, 20, 'of his shepherd')).toEqual(['τοῦ', 'ποιμένος', 'αὐτοῦ']);
+    expect(greek(38, 20, 'he found')).toEqual(['εὗρεν']);
+    expect(greek(38, 25, 'she sent')).toEqual(['αὐτὴ', 'ἀπέστειλεν']);
+    expect(greek(38, 28, 'it, bound')).toEqual(['ἔδησεν']);
+    expect(greek(38, 28, 'his hand')).toEqual(['τὴν', 'χεῖρα', 'αὐτοῦ']);
+    expect(greek(38, 29, 'he drew back')).toEqual(['ἐπισυνήγαγεν']);
+    expect(greek(38, 29, 'his name,')).toEqual(['τὸ', 'ὄνομα', 'αὐτοῦ']);
+    expect(greek(38, 29, 'his brother;')).toEqual(['ὁ', 'ἀδελφὸς', 'αὐτοῦ.']);
+    expect(greek(38, 29, 'she said,')).toEqual(['εἶπεν']);
+    expect(greek(38, 30, 'whose hand')).toEqual(['ᾧ', 'χεῖρα', 'αὐτοῦ']);
+    expect(greek(38, 30, 'she called')).toEqual(['ἐκάλεσεν']);
+    expect(greek(39, 3, 'he happens to do.')).toEqual(['ποιῇ,']);
+    expect(greek(39, 3, 'his hands')).toEqual(['ταῖς', 'χερσὶν', 'αὐτοῦ.']);
+    expect(greek(39, 4, 'his house,')).toEqual(['τοῦ', 'οἴκου', 'αὐτοῦ,']);
+    expect(greek(39, 4, 'he had')).toEqual(['ἦν', 'αὐτῷ']);
+    expect(greek(39, 4, 'he gave')).toEqual(['ἔδωκεν']);
+    expect(greek(39, 8, 'his house,')).toEqual(['τῷ', 'οἴκῳ', 'αὐτοῦ,']);
+    expect(greek(39, 8, 'he would')).toEqual(['ἤθελεν,']);
+    expect(greek(39, 13, 'his clothes')).toEqual(['τὰ', 'ἱμάτια', 'αὐτοῦ']);
+    expect(greek(39, 13, 'he had left')).toEqual(['κατέλειπεν']);
+    expect(greek(39, 15, 'his clothes')).toEqual(['τὰ', 'ἱμάτια', 'αὐτοῦ']);
+    expect(greek(39, 15, 'he fled,')).toEqual(['ἔφυγεν']);
+    expect(greek(39, 18, 'his clothes')).toEqual(['τὰ', 'ἱμάτια', 'αὐτοῦ']);
+    expect(greek(39, 18, 'he fled')).toEqual(['ἔφυγεν']);
+    expect(greek(39, 21, 'upon him;')).toEqual(['αὐτοῦ']);
+    expect(greek(39, 21, 'he gave')).toEqual(['ἔδωκεν']);
+  });
+
   it('Genesis 1 reads woven through weaveVerse with the model\'s chunks', () => {
     const gen1 = withModel.get(1)!;
     const known = new Set(gen1.verses.flatMap((v) => v.g.map((w) => w.l.normalize('NFC'))));
