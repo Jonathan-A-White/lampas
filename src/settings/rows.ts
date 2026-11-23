@@ -6,7 +6,8 @@
 // to another screen. The tutor may change every row but the last two kinds (tests/unit/settings-registry.test.tsx).
 // The searching, hiding and ordering are the kit's (pwa-kit/settings: rowsInOrder, visibleRows, neededFor, rowsAt, visibleGroups, searchSettings); what is here is Lampas's own: its
 // sections, groups, links and the rows that are not settings, and the same functions with Lampas's list and its Markdown-to-words (helpText.ts) already given.
-// A new setting is one entry in the registry (with its section) plus its control in src/settings/controls/ (the file names the rows it draws with `draws`, and CONTROLS, index.ts, gathers them); a test fails until both.
+// A new setting is one file of src/settings/definitions/ (its registry entry and its row are made from it; it names its section, and for a section no page holds yet its `page` and `sectionTitle`) plus its control in src/settings/controls/ (the file names the rows it draws with `draws`, and CONTROLS, index.ts, gathers them); a test fails until both.
+// The rows that are not settings and the doors of the home are files of src/settings/extraRows/, gathered the same way (mw-6ww.175.107).
 import {
   foldText,
   groupOf as groupIn,
@@ -18,37 +19,38 @@ import {
   visibleRows as visibleRowsIn,
   type SearchOptions,
   type SettingsGroup as KitGroup,
-  type SettingsRow as KitRow,
   type SettingsSection as KitSection,
   type Values,
 } from 'pwa-kit/settings';
 import { getDeveloper, ownedResources } from '../data/repositories';
-import { SCRIPTS } from '../script/scripts';
 import { resourceOf } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
+import { DEFINITION_MODULES } from './definitions';
 import { greekLevelOf, type GreekLevel } from './definitions/greekInterest';
 import { hebrewLevelOf } from './definitions/hebrewInterest';
-import { DEPTH_KEY, depthFrom } from './definitions/interest';
+import { DEPTH_KEY } from './definitions/interest';
 import { SEPARATE_KEYS } from './definitions/pronunciation';
 import { LOGOS_RANDOM_KEY, LOGOS_REPHIL_KEY } from './definitions/daily';
 import { MORNING_REPHIL_ID, RANDOM } from '../data/daily/devotionals';
-import { handSetting } from './hand';
-import { openWebSetting } from './definitions/sermons';
-import { hiddenThemesSetting } from './definitions/themes';
+import { EXTRA_MODULES } from './extraRows';
+import { doorsOf, extraRowsOf, layoutOf, rowsWith } from './gather';
 import { helpPlain } from './helpText';
+import type { GroupId } from './define';
+import type { HomeDoor, SettingsRow } from './row';
 import { forgetGrownSermonEntries, growSermonEntries, isGrownSermon, SETTINGS, settingOf, type SectionId } from './registry';
 import { knownSermonSources, onKnownSermonSources } from '../sermons/known';
 import { OWNS_PREFIX, ownsKey, sourceOffered } from '../sermons/enabled';
 import { SOURCES as SERMON_SOURCES } from '../sermons/sources';
 import type { KnownSermonSource } from '../data/repositories/sermonSources';
 
+export type { GroupId, HomeDoor, SettingsRow };
 export type SettingsSection = KitSection<SectionId>;
 
 export { foldText };
 export type { Values };
 
-/** The sections, in the order the screen draws them (a group's page draws its own, in this order). */
-export const SECTIONS: readonly SettingsSection[] = [
+/** The sections the app lists, in the order the screen draws them; a section a setting brings (define.ts `page`, `sectionTitle`) comes after them (SECTIONS). */
+const LISTED_SECTIONS: readonly SettingsSection[] = [
   { id: 'dial', title: 'Your languages' },
   { id: 'appearance', title: 'Appearance' },
   { id: 'layout', title: 'Layout' },
@@ -90,16 +92,24 @@ export const HOME_SECTIONS: readonly SectionId[] = ['dial'];
 /** Whether a row is drawn on the home (the dial), not on a group's page. */
 export const isHomeRow = (row: Pick<SettingsRow, 'section'>): boolean => HOME_SECTIONS.includes(row.section);
 
-export type GroupId = 'reading' | 'greek' | 'tutor' | 'listening' | 'daily' | 'study' | 'account' | 'developer';
-
 /** A page of Settings (mw-3ased2.1): the home lists the groups and each opens as a page of its own holding its sections. */
 export type SettingsGroup = KitGroup<SectionId, GroupId>;
 
-/** The groups, in the order the home lists them, and the one table that says which group a section is in (a unit test fails on a section in none or two).
+/** The groups the app lists, in the order the home lists them, and the one table that says which group a section is in (a unit test fails on a section in none or two); a section a setting brings is added to its `page`'s.
  *  PROVISIONAL: the grouping is the Builder's, to be amended by the Governor. */
-export const GROUPS: readonly SettingsGroup[] = [
-  { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave', 'variants'] },
-  { id: 'greek', title: 'Learning', hint: 'New words, how much of a paradigm table, your goal, the grammar approach, handwriting, keyboards and Hebrew in the tutor.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting', 'keyboards', 'hebrew'] },
+const LISTED_GROUPS: readonly SettingsGroup[] = [
+  {
+    id: 'reading',
+    title: 'Reading',
+    hint: 'Theme, text size, layout, headings and the Immersive reader.',
+    sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave', 'variants'],
+  },
+  {
+    id: 'greek',
+    title: 'Learning',
+    hint: 'New words, how much of a paradigm table, your goal, the grammar approach, handwriting, keyboards and Hebrew in the tutor.',
+    sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting', 'keyboards', 'hebrew'],
+  },
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how the talk bars work, tips and your study way.', sections: ['readTutor', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily', 'devotionalSources'] },
@@ -108,172 +118,52 @@ export const GROUPS: readonly SettingsGroup[] = [
   { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
 ];
 
+const LAYOUT = layoutOf(LISTED_SECTIONS, LISTED_GROUPS, DEFINITION_MODULES, HOME_SECTIONS);
+
+/** The sections, in the order the screen draws them (a group's page draws its own, in this order): the listed ones, then those the settings bring. */
+export const SECTIONS: readonly SettingsSection[] = LAYOUT.sections;
+
+/** The groups, in the order the home lists them, each with the sections its page draws. */
+export const GROUPS: readonly SettingsGroup[] = LAYOUT.pages;
+
 export const groupById = (id: string): SettingsGroup | undefined => GROUPS.find((g) => g.id === id);
 
-/** What Lampas has counted (mw-6ww.175.87, his words: "This should be behind a tap. Not off the main settings."): a row of the home that opens a page of its own (src/tips/UsageCounted.tsx), drawn in the list of groups
- *  last before Developer (homeEntries). A door, not a group: it holds no section, no row and no setting, so the tutor and the tests that count the groups do not see it; the Settings search finds it all the same (foundDoors, mw-6ww.175.103).
- *  PROVISIONAL: its own row on the home, and where it sits, are the Mayor's reading of 'behind a tap', the Governor to confirm. */
-export const COUNTED_DOOR = { id: 'counted', title: 'What Lampas has counted', hint: 'How often you opened each screen.' } as const;
+/** The doors of the home (mw-6ww.175.107): rows of the home that open a page of their own and hold no section, row or setting, gathered from src/settings/extraRows/ (What Lampas has counted, mw-6ww.175.87). */
+export const DOORS: readonly HomeDoor[] = doorsOf(EXTRA_MODULES);
+
+/** What Lampas has counted: the door of the home that opens #/settings?page=counted (src/settings/extraRows/counted.ts). */
+export const COUNTED_DOOR: HomeDoor = DOORS.find((d) => d.id === 'counted') as HomeDoor;
 
 /** The group a section is in. */
 export const groupOf = (section: SectionId): SettingsGroup => groupIn(GROUPS, section, HOME_SECTIONS);
 
-/** A row of Settings (the kit's, over Lampas's sections): `key` is a setting's ('weave'), a resource switch's ('resource.logos') or a link's ('link.words'). */
-export type SettingsRow = KitRow<SectionId> & {
-  /** the row sets how the tutor works (the AI: what is sent to the mill): with no licence it is drawn off and greyed, with 'Needs a licence' (mw-8m9dyu.3) */
-  ai?: boolean;
-  /** the row is not drawn at all without a licence, not even greyed: the Hand row (mw-5r3p30.880: with no licence no tutor door exists, "none of it should show up") */
-  licenceOnly?: boolean;
-};
-
-/** The settings that only matter to the tutor. A new setting for the tutor is listed here, so an unlicensed phone sees it off with 'Needs a licence'. */
-const AI_KEYS: ReadonlySet<string> = new Set(['tips', 'readTutor', 'quizGoal', ...SCRIPTS.map((s) => s.settingKey)]);
-
-const LINKS: readonly SettingsRow[] = [
-  { key: 'link.variantLessons', label: 'Lessons on variant readings', hint: 'Five short lessons on where the manuscripts differ and how to read it.', section: 'variants' },
-  { key: 'link.aboutyou', label: 'About you', hint: 'Your age, pace and how you learn, so the tutor meets you where you are.', section: 'aboutYou' },
-  { key: 'link.memory', label: 'Memory', hint: 'The notes Lampas keeps about you on this phone: read, edit, export and import them.', section: 'memory' },
-  { key: 'link.studyway', label: 'My study way', hint: 'The lines you kept about how the tutor quizzes you.', section: 'studyWay' },
-  { key: 'link.goal', label: 'Goal', hint: 'Where you are on the grammar of the language you are learning, and what to learn next.', section: 'goal', dependsOn: depthFrom(3) },
-  {
-    key: 'link.askmore',
-    label: 'Ask for more',
-    hint: 'Ask for an approach, a study resource, a text or a translation Lampas lacks.',
-    help: 'Each short form sends the makers what you type in it, and nothing goes until you tap its Send; Let the tutor do it fills the fields as you answer and still ends with a Send you tap. Include my memorizing evidence adds, only when you turn it on and only with that ask, your record of recalls of the verses you memorize (the day, how much was hidden, the words you missed, the days between). When the tutor offers to pass on something Lampas cannot do, Send this to the makers (or your yes) sends what you asked, its one-line summary and any pictures you attached.',
-    section: 'more',
-  },
-  {
-    key: 'link.conversations',
-    label: 'Conversations',
-    hint: 'Every talk you have kept with the tutor: search them and carry one on.',
-    help: 'Every talk is kept on this phone, and a question on its way is kept until its answer is stored. Each ask goes through the mill to the tutor with the screen you are on, any pictures you attach, the last ten turns of the talk and a short summary of the older ones (the tutor writes it and your phone keeps it), the passages it asked for earlier (read by your phone from Lampas\'s own text), and what bears on the answer: what you chose in About you, your progress and Today list, and your Memory notes, which the tutor may change or remove only when you ask it to.',
-    section: 'more',
-  },
-  { key: 'link.requests', label: 'Your requests', hint: 'What became of the things you asked the factory for.', section: 'more' },
-  { key: 'link.help', label: 'Help', hint: 'A short page on each piece of the app, and the tutor to ask.', section: 'more' },
-  { key: 'link.about', label: 'About', hint: 'Where the text comes from, and its licences.', section: 'more' },
-];
-
-/** The rows that send a request to the factory (Ask for a devotional opens Ask for a book): a door, not a setting, so the tutor does not read or change them. */
-const REQUESTS: readonly SettingsRow[] = [
-  {
-    key: 'request.devotional',
-    label: 'Ask for a devotional',
-    hint: 'Ask for another devotional to be added to Which devotional.',
-    help: 'Search your Logos list for the devotional, or type its title, and Send. The makers add it to the list when they find its Logos id; Your requests follows it. It goes to the factory through the tutor\'s mill, so it needs a licence.',
-    section: 'daily',
-    dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
-  },
-];
-
-/** Your Logos library (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8): the one line that says how many books are on and opens the Library, where the lexicons, grammar books, commentaries and
- *  the rest are chosen, and his Verse lists are reached. A row of Study resources directly under the Logos switch with Bible in Logos (mw-5r3p30.837; mw-5r3p30.752 had put it on the Settings home),
- *  drawn only while Logos is On (mw-rfjjzd.23: the Logos switch governs everything Logos), no licence needed. A door, not a setting: the tutor does not read or change it (isTalkable) and learns the shelf as `works`, never as settings. */
-const LIBRARY_ROW: SettingsRow = {
-  key: 'library',
-  label: 'Your Logos library',
-  hint: 'The books of your Logos library that Lampas opens, and which are on.',
-  help: 'Lampas cannot see your Logos library, so you say which books to use. Open it to tick them by hand or to import your list. The word sheet, the idea sheet and the tutor use the ones that are on; the devotionals that are on are the ones Daily draws from. It shows only while Logos is On. Import reads the list Logos saves (Library > Save as Spreadsheet) on the phone and keeps only each book\'s id, title, series, languages and passages; only links to a book or verse are built, and no text of any book is kept, shown or sent. Ask for a book sends the makers the title you type, or the book you pick with its Resource ID, type, series and passages, and Ask the makers about these sends once, when you tap it, how many books you have of each Logos type and a file of the titles Lampas does not open yet; nothing else of your library leaves the phone.',
-  section: 'tools',
-  dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
-};
-
-/** Bible in Logos for the Old Testament, the Apocrypha and the Septuagint (mw-5r3p30.841, mw-u2w5klk.266): the New Testament's is the setting `logosBible` (registry.ts), these are rows of the same section drawn after it. The Old Testament's follows
- *  the New Testament's until it is picked; the Apocrypha's starts as the NRSV; the Septuagint's starts as Swete's Greek and is the one a chapter of the Septuagint Lampas has not shipped opens in. Doors to a value the screen keeps, not settings: the tutor does not read or change them (isTalkable) and its Settings request does not carry them. */
-const PART_ROWS: readonly SettingsRow[] = [
-  { key: 'logosBibleOt', part: 'Old Testament' },
-  { key: 'logosBibleApocrypha', part: 'Apocrypha' },
-  { key: 'logosBibleSeptuagint', part: 'Septuagint' },
-].map(({ key, part }) => ({
-  key,
-  label: `${part} Bible in Logos`,
-  hint: part === 'Septuagint' ? 'The Septuagint that a chapter Lampas has not shipped opens in, in Logos.' : `The Bible that ${part} verses open in, in Logos.`,
-  help:
-    part === 'Septuagint'
-      ? 'The Septuagint in your Logos library that a chapter of the Septuagint Lampas has not shipped yet opens in (Old Testament in Greek (Septuagint) On), by the door "Read it in Logos". It lists your Logos Septuagints and starts as Swete\'s Greek, the text Lampas reads. It shows only while Logos is On.'
-      : `The Bible in your Logos library that ${part} verses open in. ${part === 'Apocrypha' ? 'It lists only Bibles that have the Apocrypha, and starts as the NRSV.' : "It is the New Testament's Bible until you pick one."} It shows only while Logos is On. Library > Bibles sets all three at once.`,
-  section: 'resources',
-  dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
-}));
-
-/** Read as (mw-9ji6ek0.25): which reading set the Reader reads and the sets he named (src/reader/ReadingSetSheet.tsx). A row of the Variants section, not a setting: the set in force and his sets
- *  live in the readingSets table (repositories/readingSets.ts), so the tutor does not read or change it here (isTalkable; its Settings request is full) and the tutor learns the set from the talk. */
-const READING_SET_ROW: SettingsRow = {
-  key: 'readingSet',
-  label: 'Read as',
-  hint: 'Which reading the Reader lays in each place: Byzantine, NA, ECM or a set of your own.',
-  help: 'Byzantine reads the text as it stands. NA reads Nestle-Aland where the apparatus gives it, and ECM the Editio Critica Maior where it gives that (18 places in Acts), else NA. Read this on a variant sheet starts Mine from the set you read; Save as… keeps a copy of the set you read under a name, to switch back to, and Rename and Delete change one of yours. The built-in sets never change.',
-  section: 'variants',
-};
-
-/** Keep on this phone (mw-lcv9z3g.2): which chapters the offline copy keeps (src/data/offlineCopy.ts) and how the copy stands (src/settings/OfflineCopyRow.tsx). A row of the Reading section, not a setting:
- *  the scope is the offline copy's own key in the settings store, so the tutor does not read or change it here (isTalkable; its Settings request is full). */
-const OFFLINE_COPY_ROW: SettingsRow = {
-  key: 'offlineCopy',
-  label: 'Keep on this phone',
-  hint: 'Keep the chapters on this phone, to read with no signal.',
-  help: "Nothing extra keeps only what you have opened. Old Testament: Hebrew keeps every Old Testament chapter in Hebrew with its English, Old Testament: Septuagint every Septuagint chapter there is so far, in Swete's Greek with Brenton's English, New Testament all 260 chapters in Greek with the English, and All keeps the three. The megabytes are what each fetches, and the Septuagint's grows as books are added. Each is kept as it stands today. Keep the app open while it fetches: it waits while the phone is offline and goes on when it is back. Choosing Nothing extra stops the fetching and deletes nothing.",
-  section: 'reading',
-};
-
-/** Developer mode is found, not set (seven taps on About's version number): its switch is drawn only once it is no longer 'hidden'. */
-const DEVELOPER: SettingsRow = {
-  key: 'developer',
-  label: 'Developer mode',
-  hint: "For finding faults: On shows Download my recording under a reading check's result.",
-  help: "For finding faults. On shows Download my recording under a reading check's result, to save the clip as it was recorded, and Show the welcome again, which puts the English defaults back and brings the tutor's welcome round again for the demo.",
-  section: 'developer',
-  dependsOn: { key: 'developerMode', shown: (value) => value === 'on' || value === 'off' },
-};
-
-const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
+export const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
   key: s.key,
   label: s.label,
   hint: s.hint,
   help: s.help,
   section: s.section,
   dependsOn: s.dependsOn,
-  ai: AI_KEYS.has(s.key) || undefined,
+  ai: s.ai || undefined,
 });
 
-/** Hand (mw-5r3p30.879): the row of a setting declared once (hand.ts) that is kept out of the registry and DEFINITIONS, so the tutor does not read or change it and its Settings request (full),
- *  src/tutor/knows.ts and the bible-talk instructions do not carry it (isTalkable). Hand is a row of Layout that any screen reads (hand.ts); the floating ? sits on its side. The Tutor door row is gone (mw-5r3p30.882): the floating ? is the one door. */
-const rowOfDefinition = (def: typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, licenceOnly: true });
-const HAND_ROW: SettingsRow = rowOfDefinition(handSetting);
-/** Open web sermons in (mw-qtu3zvz.16, openWebSetting): kept out of the registry and DEFINITIONS like Hand, so the tutor does not read or change it (isTalkable). No licence needed. */
-/** Sermon sources (mw-qtu3zvz.92, docs/design/sermon-sources.md): the one row of the Sermons section that stands for every sermon source, with how many are on; it opens the page that lists them
- *  (src/sermons/SermonSourcesPage.tsx). A door, not a setting: the tutor does not read or change it (isTalkable), and the switches it does change are still the settings `sermons.<id>`, whose rows are kept for the
- *  search and the tutor and are not drawn on the Study resources page (isSermonSourceRow). Its key has no dot: 'sermons.<id>' is a source's switch. */
-export const SERMON_SOURCES_ROW: SettingsRow = {
-  key: 'sermonSources',
-  label: 'Sermon sources',
-  hint: 'Every list and book of sermons the Sermons door draws on, each Off or On.',
-  help: 'One list holds every sermon source: the lists of sermons by passage, and the books of sermons in your Logos library that your import holds. A source that is on gives the Sermons door its sermons at a verse; a Logos book that is on is a link under In Logos on the Sermons sheet. A book that is only sermons is switched here and not in Your Logos library.',
-  section: 'sermons',
-};
-/** Whether a row is a sermon source's own switch ('sermons.<id>'): found by the search and changed by the tutor, drawn on the page of sermon sources and not on the Study resources page. */
-export const isSermonSourceRow = (row: Pick<SettingsRow, 'key'>): boolean => row.key.startsWith('sermons.');
-/** Hidden themes (mw-qtu3zvz.91, hiddenThemesSetting): the list of themes he hid from a verse's Themes line, each with 'Show again'; kept out of the registry like Open web sermons in, so the tutor does not read or change it (isTalkable). It follows the theme lists' own switches. */
-export const HIDDEN_THEMES_ROW: SettingsRow = { key: hiddenThemesSetting.key, label: hiddenThemesSetting.label, hint: hiddenThemesSetting.hint, help: hiddenThemesSetting.help, section: hiddenThemesSetting.section };
-const OPEN_WEB_ROW: SettingsRow = { key: openWebSetting.key, label: openWebSetting.label, hint: openWebSetting.hint, help: openWebSetting.help, section: openWebSetting.section };
-// Study resources reads: the switches, then the three Bibles in Logos (PART_ROWS follow the setting's own row)
-const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, HIDDEN_THEMES_ROW, SERMON_SOURCES_ROW, OPEN_WEB_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
+/** The rows that are not settings (a link, a door, a request box, the rows kept outside the registry: Hand, Hidden themes, Sermon sources, Open web sermons in, Read as, Keep on this phone, Developer mode, the Tools doors),
+ *  gathered from src/settings/extraRows/ (mw-6ww.175.107): each group at its `place`, after the rows made from the settings, or directly after the row it names. The tutor neither reads nor changes any of them (isTalkable). */
+const EXTRAS = extraRowsOf(EXTRA_MODULES);
+const EVERY: readonly SettingsRow[] = rowsWith(SETTINGS.map(rowOfSetting), EXTRAS);
+const EXTRA_KEYS: ReadonlySet<string> = new Set(EXTRAS.flatMap((g) => g.rows.map((r) => r.key)));
 
 /** The Tools screen's doors (mw-5r3p30.754, his words of 2026-10-24: "things that interact with the Bible but are not the Bible themselves", not settings): the Library, his Verse lists, Memorize, Paradigms, Words and Review, in the order
- *  the screen draws them. They are rows of the section 'tools', which no Settings group holds, so no Settings page draws them and the tutor neither reads nor changes them (isTalkable); they stay rows so that the same
+ *  the screen draws them (src/settings/extraRows/tools.ts). They are rows of the section 'tools', which no Settings group holds, so no Settings page draws them and the tutor neither reads nor changes them (isTalkable); they stay rows so that the same
  *  `dependsOn` hides them (Words and Review below the Curious step, Paradigms below All in, the library while Logos is Off) and the Settings search finds them (visibleToolRows), `ToolsScreen.tsx` draws them
  *  and src/tools.ts says where each opens. */
-export const TOOL_ROWS: readonly SettingsRow[] = [
-  LIBRARY_ROW,
-  { key: 'link.lists', label: 'Verse lists', hint: 'Lists of verses you keep, to read, listen to and memorize.', section: 'tools' },
-  { key: 'link.memorize', label: 'Memorize', hint: 'Learn verses by heart, the one that is due first.', section: 'tools' },
-  { key: 'link.paradigms', label: 'Paradigms', hint: 'Tables of endings, opened as you learn the grammar.', section: 'tools', dependsOn: depthFrom(5) },
-  { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'tools', dependsOn: depthFrom(1) },
-  { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'tools', dependsOn: depthFrom(1) },
-];
+export const TOOL_ROWS: readonly SettingsRow[] = EVERY.filter((r) => r.section === 'tools');
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
-export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
+export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(
+  SECTIONS,
+  EVERY.filter((r) => r.section !== 'tools'),
+);
 
 /** The rows to draw with the study-resource switches (`resource.<id>`) in the order the Greek dial gives (resourcesForLevel: English and 'both' first between Just English and All in), each
  *  in the place of one of the switches; every other row stays where it is. Hiding a Greek switch at Just English is the row's dependsOn (registry.ts), through the same selector. */
@@ -294,8 +184,12 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
   });
 }
 
-/** Whether the tutor is told the row as a row of its own: a setting or a resource switch, not a link, a sermon source's switch (sermons.<id>: the tutor is told ONE summary line for all of them, tutorSettings.ts, mw-qtu3zvz.236), a request box, the door to his library, the door to the sermon sources, Read as, Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && key !== SERMON_SOURCES_ROW.key && key !== OPEN_WEB_ROW.key && key !== HIDDEN_THEMES_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isSermonSourceRow({ key });
+/** Whether a row is a sermon source's own switch ('sermons.<id>'): found by the search and changed by the tutor, drawn on the page of sermon sources and not on the Study resources page. */
+export const isSermonSourceRow = (row: Pick<SettingsRow, 'key'>): boolean => row.key.startsWith('sermons.');
+
+/** Whether the tutor is told the row as a row of its own: a setting or a resource switch, not a row that is no setting (src/settings/extraRows/: a link, a request box, the door to his library, the door to the sermon sources, Read as,
+ *  Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos, Developer mode) and not a sermon source's switch (sermons.<id>: the tutor is told ONE summary line for all of them, tutorSettings.ts, mw-qtu3zvz.236). */
+export const isTalkable = (key: string): boolean => !EXTRA_KEYS.has(key) && !key.startsWith('link.') && !key.startsWith('request.') && !isSermonSourceRow({ key });
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 
@@ -422,21 +316,23 @@ export const visibleToolRows = (values: Values, query: string): SettingsRow[] =>
 /** The groups the home lists: those with a row drawn, given the values read. Developer is not listed until Developer mode is found (its only row hides until then). */
 export const visibleGroups = (values: Values, rows: readonly SettingsRow[] = ROWS): SettingsGroup[] => visibleGroupsIn(rows, GROUPS, values, HOME_SECTIONS);
 
-/** What the home lists under the dials, in order: the groups with a row drawn, and the door to What Lampas has counted last before Developer (last of all until Developer mode is found). */
-export function homeEntries(values: Values, rows: readonly SettingsRow[] = ROWS): (SettingsGroup | typeof COUNTED_DOOR)[] {
-  const groups = visibleGroups(values, rows);
-  const at = groups.findIndex((g) => g.id === 'developer');
-  return at < 0 ? [...groups, COUNTED_DOOR] : [...groups.slice(0, at), COUNTED_DOOR, ...groups.slice(at)];
+/** What the home lists under the dials, in order: the groups with a row drawn, and each door of the home before the group it names (What Lampas has counted: last before Developer), last when that group is not listed (last of all until Developer mode is found). */
+export function homeEntries(values: Values, rows: readonly SettingsRow[] = ROWS, doors: readonly HomeDoor[] = DOORS): (SettingsGroup | HomeDoor)[] {
+  const entries: (SettingsGroup | HomeDoor)[] = [...visibleGroups(values, rows)];
+  for (const door of doors) {
+    const at = door.before === undefined ? -1 : entries.findIndex((e) => e.id === door.before);
+    entries.splice(at < 0 ? entries.length : at, 0, door);
+  }
+  return entries;
 }
 
-/** The doors of the home the Settings search finds for `query` (mw-6ww.175.103): What Lampas has counted when its title or its hint holds it, ignoring capitals and accents as a row's
+/** The doors of the home the Settings search finds for `query` (mw-6ww.175.103): a door whose title or hint holds it, ignoring capitals and accents as a row's
  *  name and hint are searched. It is no row of ROWS, so visibleRows never answers it. Nothing for an empty query. PROVISIONAL: the Tester's suggestion, released by the Mayor, the Governor to confirm. */
-export function foundDoors(query: string): (typeof COUNTED_DOOR)[] {
+export function foundDoors(query: string): HomeDoor[] {
   const q = foldText(query.trim());
-  return q !== '' && [COUNTED_DOOR.title, COUNTED_DOOR.hint].some((text) => foldText(text).includes(q)) ? [COUNTED_DOOR] : [];
+  return q === '' ? [] : DOORS.filter((door) => [door.title, door.hint].some((text) => foldText(text).includes(q)));
 }
 
 /** The settings (the rows with a link, src/settings/link.ts) whose name, hint or help holds `query`, ignoring capitals and accents, for the search that is
  *  one tap away from every screen. A detail that is hidden while its setting is off is found too: its link says what to turn on first. Nothing for an empty query. */
-export const searchSettings = (query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] =>
-  searchIn(rows, query, { ...SEARCH, only: (row) => settingOf(row.key) !== undefined });
+export const searchSettings = (query: string, rows: readonly SettingsRow[] = ROWS): SettingsRow[] => searchIn(rows, query, { ...SEARCH, only: (row) => settingOf(row.key) !== undefined });

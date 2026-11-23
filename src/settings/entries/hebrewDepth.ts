@@ -20,6 +20,7 @@ export const depthSlot = slotted(
       },
       {
         section: 'hebrew',
+        ai: true,
         dependsOn: hebrewFrom(1),
         help: `How deep into ${script.label} the tutor goes when it writes a ${script.label} word:\n\n${DEPTHS.map((d) => `- **${d.label}** (${d.id}) writes it like ${script.examples[d.id]}`).join('\n')}\n\n${DEPTHS.find((d) => d.id === DEFAULT_DEPTH)?.label} by default.`,
       },

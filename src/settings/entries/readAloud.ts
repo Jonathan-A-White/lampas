@@ -40,6 +40,7 @@ export const readTutorSlot = slotted(
     },
     {
       section: 'readTutor',
+      ai: true,
       help: "Whether the tutor's responses are spoken the moment they arrive, with no tap: the reading check's verdict (its heading, its note and each word to fix with its tip, never the verse itself) and the answers to what he asks. On by default; Off speaks nothing by itself (the speaker on an answer still reads it).",
     },
   ),

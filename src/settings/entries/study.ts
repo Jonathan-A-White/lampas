@@ -152,6 +152,7 @@ export const grammarApproachSlot = slotted(
 
 const quizGoalEntry: SettingEntry = {
   section: 'studyWay',
+  ai: true,
   dependsOn: depthFrom(3),
   key: 'quizGoal',
   label: 'Quiz goal',
