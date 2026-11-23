@@ -128,7 +128,7 @@ Psa.118:44#2	V-FAI-1S	φυλάσσω		0.80
 Psa.118:44#7	A-GSM	πᾶς		0.80	
 Psa.118:46#2	V-IAI-1S	λαλέω		0.80	
 Psa.118:46#7	PREP	ἐναντίον		0.80	
-Psa.118:46#11	V-INI-1S	αἰσχύνω		0.80	
+Psa.118:46#11	V-INI-1S	αἰσχύνω	guess	0.40	guess: the model chose outside the candidates
 Psa.118:48#2	V-AAI-1S	αἴρω		0.80	
 Psa.118:48#14	V-IAI-1S	ἀδολεσχέω		0.80	
 Psa.118:49#8	R-DSM	ὅς, ἥ		0.80	
@@ -210,7 +210,7 @@ Psa.118:78#10	V-FAI-1S	ἀδολεσχέω		0.80
 Psa.118:79#1	V-AAM-3P	ἐπιστρέφω		0.80	
 Psa.118:79#8	T-APN	ὁ		0.80	
 Psa.118:79#9	N-APN	μαρτύριον		0.80	
-Psa.118:80#13	V-AOS-1S	αἰσχύνω		0.80	
+Psa.118:80#13	V-AOS-1S	αἰσχύνω	guess	0.40	guess: the model chose outside the candidates
 Psa.118:81#3	T-ASN	ὁ		0.80	
 Psa.118:81#4	N-ASN	σωτήριον		0.80	
 Psa.118:82#1	V-2AAI-3P	ἐκλείπω		0.80	

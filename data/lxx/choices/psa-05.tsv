@@ -589,7 +589,7 @@ Psa.64:6#1	A-NSM	θαυμαστός		0.80
 Psa.64:6#13	A-GPN	πᾶς		0.80	
 Psa.64:7#2	N-APN	ὄρος		0.80	
 Psa.64:7#5	N-DSF	ἰσχύς		0.80	
-Psa.64:7#7	V-RMP-NSM	περιζώννυμι		0.80	
+Psa.64:7#7	V-RMP-NSM	περιζώννυμι	guess	0.40	guess: the model chose outside the candidates
 Psa.64:7#9	N-DSF	δυναστεία		0.80	
 Psa.64:8#3	T-ASN	ὁ		0.80	
 Psa.64:8#4	N-ASN	ὕδωρ, ὕδατος		0.80	

@@ -353,7 +353,7 @@ Psa.34:12#1	V-IAI-3P	ἀνταποδίδωμι		0.80
 Psa.34:12#3	A-APN	πονηρός		0.80	
 Psa.34:12#5	A-GPN	καλός		0.80	
 Psa.34:13#4	T-DSN	ὁ		0.80	
-Psa.34:13#8	V-INI-1S	ἐνδύω	unsure	0.50	model: unsure
+Psa.34:13#8	V-INI-1S	ἐνδύω	guess	0.40	guess: the model chose outside the candidates
 Psa.34:13#11	V-IAI-1S	ταπεινόω		0.80	
 Psa.34:13#13	N-DSF	νηστεία		0.80	
 Psa.34:13#24	V-2FPI-3S	ἀποστρέφω		0.80	

@@ -187,7 +187,7 @@ Exo.14:28#4	N-NSN	ὕδωρ, ὕδατος		0.80
 Exo.14:28#6	T-APN	ὁ		0.80	
 Exo.14:28#7	N-APN	ἅρμα		0.80	
 Exo.14:28#15	N-GSM	Φαραώ		0.80	
-Exo.14:28#17	V-RMP-APM	εἰσπορεύω	unsure	0.50	model: unsure
+Exo.14:28#17	V-RMP-APM	εἰσπορεύω	guess	0.40	guess: the model chose outside the candidates
 Exo.14:28#18	PREP	ὀπίσω		0.80	
 Exo.14:28#19	P-GPM	αὐτός		0.80	
 Exo.14:28#27	P-GPM	αὐτός		0.80	

@@ -609,7 +609,7 @@ Psa.26:13#4	T-APN	ὁ		0.80
 Psa.26:13#5	A-APN	ἀγαθός		0.80	
 Psa.26:13#9	V-PAP-GPM	ζάω		0.80	
 Psa.26:14#1	V-AAM-2S	ὑπομένω		0.80	
-Psa.26:14#4	V-PNM-2S	ἀνδρίζω		0.80	
+Psa.26:14#4	V-PNM-2S	ἀνδρίζω	guess	0.40	guess: the model chose outside the candidates
 Psa.26:14#6	V-PPM-3S	κραταιόω		0.80	
 Psa.26:14#11	V-AAM-2S	ὑπομένω		0.80	
 Psa.27:1#1	T-GSM	ὁ		0.80	

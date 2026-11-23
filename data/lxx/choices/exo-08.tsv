@@ -443,7 +443,7 @@ Exo.32:21#6	I-ASN	τίς		0.80
 Exo.32:21#13	V-2AAI-2S	ἐπάγω		0.80	
 Exo.32:22#3	N-NSM	Ἀαρών		0.80	
 Exo.32:22#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
-Exo.32:22#7	V-PNM-2S	ὀργίζω		0.80	
+Exo.32:22#7	V-PNM-2S	ὀργίζω	guess	0.40	guess: the model chose outside the candidates
 Exo.32:22#11	V-RAI-2S	εἴδω		0.80	
 Exo.32:22#12	T-ASN	ὁ		0.80	
 Exo.32:22#13	N-ASN	ὅρμημα		0.80	

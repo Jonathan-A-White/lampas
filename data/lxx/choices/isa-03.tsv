@@ -209,7 +209,7 @@ Isa.16:2#10	N-GSM	Μωάβ		0.80
 Isa.16:2#12	D-APN	ὅδε, ἥδε		0.80	
 Isa.16:2#13	N-GSM	Ἀρνών	unsure	0.50	model: unsure
 Isa.16:2#14	A-APN-C	πλείων, πλεῖον	unsure	0.50	model: unsure
-Isa.16:3#1	V-PNM-2S	βουλεύω	unsure	0.50	model: unsure
+Isa.16:3#1	V-PNM-2S	βουλεύω	guess	0.40	guess: the model chose outside the candidates
 Isa.16:3#2	V-PAM-2P	ποιέω		0.80	
 Isa.16:3#7	A-GSN	πᾶς		0.80	
 Isa.16:3#11	V-PAI-3P	φεύγω		0.80	
@@ -561,7 +561,7 @@ Isa.20:2#19	T-APN	ὁ		0.80
 Isa.20:2#20	N-APN	σανδάλιον		0.80	
 Isa.20:2#22	V-AMM-2S	ὑπολύω		0.80	
 Isa.20:2#33	A-NSM	ἀνυπόδετος		0.80	
-Isa.20:3#6	V-RMI-3S	πορεύω	unsure	0.50	model: unsure
+Isa.20:3#6	V-RMI-3S	πορεύω	guess	0.40	guess: the model chose outside the candidates
 Isa.20:3#10	N-NSM	Ἡσαΐας		0.80	
 Isa.20:3#13	A-NSM	ἀνυπόδετος		0.80	
 Isa.20:3#14	A-APN	τρεῖς, τρία		0.80	
