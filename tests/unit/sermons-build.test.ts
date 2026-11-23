@@ -11,7 +11,7 @@ import { parseToml } from '../../scripts/sermons/toml';
 import type { SermonBookFile, SermonIndex } from '../../src/data/sermonIndex';
 import type { ThemeBookFile, ThemeIndex } from '../../src/data/themeIndex';
 import { rawUrl, runSermonsBuild, sourceFingerprint, themeLicence } from '../../scripts/sermons-build';
-import { buildTheme } from '../../scripts/sermons/themes';
+import { buildTheme, tidyLabel } from '../../scripts/sermons/themes';
 
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as { books: Array<{ code: string; verses: number[] }> };
 const verses = (code: string): readonly number[] | undefined => index.books.find((b) => b.code === code)?.verses;
@@ -404,5 +404,25 @@ describe('themeLicence: the licence line index.json keeps', () => {
   it('is the module\'s DistributionLicense line alone, so the About line\'s trademark stays out of the files the app reads', () => {
     expect(themeLicence('DistributionLicense=Public Domain\nAbout=A history, under the trademark of "X".')).toBe('DistributionLicense=Public Domain');
     expect(themeLicence('Public domain, said in a sentence.')).toBe('Public domain, said in a sentence.');
+  });
+});
+
+// A label is kept as a sentence reads (mw-qtu3zvz.51 the ends, mw-qtu3zvz.61 the middle): the module joined a part to its topic with a comma and a colon, and a colon and a colon.
+describe('tidyLabel', () => {
+  it('drops the module\'s ending , ; : and spaces', () => {
+    expect(tidyLabel('Fear of God,')).toBe('Fear of God');
+    expect(tidyLabel('  Faith ;: ')).toBe('Faith');
+  });
+
+  it('keeps one colon where a comma or colon came before it inside a label', () => {
+    expect(tidyLabel('Fear of God,: Enjoined')).toBe('Fear of God: Enjoined');
+    expect(tidyLabel('Gifts, Divine,: Diversity of')).toBe('Gifts, Divine: Diversity of');
+    expect(tidyLabel('Examples of afflicted Saints:: Apostles')).toBe('Examples of afflicted Saints: Apostles');
+    expect(tidyLabel('Afflictions;: Of Ministers')).toBe('Afflictions: Of Ministers');
+  });
+
+  it('leaves a lone comma or colon, and a clean label, as it is', () => {
+    expect(tidyLabel('Gifts, Divine: Diversity of')).toBe('Gifts, Divine: Diversity of');
+    expect(tidyLabel('Love of God')).toBe('Love of God');
   });
 });

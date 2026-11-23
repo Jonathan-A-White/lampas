@@ -134,13 +134,13 @@ describe('the bundled sources: one for each source of public/themes/index.json',
     expect(names.every((n) => !/Chain.Reference/i.test(n))).toBe(true);
   });
 
-  it('carry no topic or part label that ends in , ; or : or has a space at either end (mw-qtu3zvz.51)', () => {
+  it('carry no topic or part label that ends in , ; or : or has a space at either end, or a , ; or : directly before another (mw-qtu3zvz.51, mw-qtu3zvz.61)', () => {
     const bad: string[] = [];
     for (const id of readdirSync('public/themes').filter((d) => d !== 'index.json')) {
       for (const file of readdirSync(`public/themes/${id}`)) {
         const book = JSON.parse(readFileSync(`public/themes/${id}/${file}`, 'utf8')) as { topics: Array<{ label: string; parts: Array<{ label: string }> }> };
         for (const topic of book.topics) {
-          for (const label of [topic.label, ...topic.parts.map((p) => p.label)]) if (/[,;:]$/.test(label) || label !== label.trim() || label === '') bad.push(`${id}/${file}: '${label}'`);
+          for (const label of [topic.label, ...topic.parts.map((p) => p.label)]) if (/[,;:]$/.test(label) || /[,;:]\s*[,;:]/.test(label) || label !== label.trim() || label === '') bad.push(`${id}/${file}: '${label}'`);
         }
       }
     }
