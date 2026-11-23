@@ -373,6 +373,58 @@ describe('a fix row moves a Greek word the aligner paired to the wrong English w
   });
 });
 
+/**
+ * A fix cuts inside a model chunk that renders no Greek word (mw-u2w5klk.349.40), Genesis 17:13 in miniature: the run's chunk 'money shall' holds the 'money' that ἀργυρώνητος renders, so the fix
+ * 'he that is bought with money' ends inside it, and the 'shall' it leaves is a chunk of its own (joinSupplied then joins it to its verb). A chunk that renders a Greek word is never cut.
+ */
+describe('a fix row may begin or end inside a chunk that renders no Greek word', () => {
+  const G = [word('ὁ', 'ho', 'ὁ', 'T-NSM'), word('ἀργυρώνητος', 'argyrōnētos', 'ἀργυρώνητος', 'A-NSM'), word('ἔσται', 'estai', 'εἰμί', 'V-FMI-3S')];
+  const chunks = (): EnglishChunk[] => [
+    { t: 'he that is bought', g: [0], c: 0.85, y: 'align' },
+    { t: 'with', g: [1], c: 0.85, y: 'align' },
+    { t: 'money shall', g: [], s: [1], c: 0.8, y: 'model' },
+    { t: 'be', g: [2], c: 0.85, y: 'align' },
+  ];
+  const chapter = (e: EnglishChunk[]): Chapter => {
+    const g = G.map((w) => ({ ...w }));
+    e.forEach((chunk, i) => chunk.g.forEach((k) => (g[k].e = i)));
+    return { code: 'gen', book: 'Genesis', chapter: 17, verses: [{ n: 13, g, e }] } as Chapter;
+  };
+  const row = (text: string, g: number[]): Parameters<typeof applyFixes>[1][number] => ({ ref: 'Gen.17:13', run: FIX_RUN, text, g, mark: '' as const, confidence: 0.8 });
+  const apply = (rows: Array<ReturnType<typeof row>>, e: EnglishChunk[] = chunks()): ReturnType<typeof applyFixes> => applyFixes(chapter(e), rows);
+
+  it('ends inside the chunk that renders no Greek word: the words it leaves are a chunk of their own, with the supplied word still marked', () => {
+    const done = apply([row('he that is bought with money', [0, 1])]);
+    expect(done.stale).toEqual([]);
+    const verse = done.chapter.verses[0];
+    expect(verse.e.map((c) => [c.t, c.g, c.y])).toEqual([['he that is bought with money', [0, 1], 'model'], ['shall', [], 'model'], ['be', [2], 'align']]);
+    expect(verse.e[1].s).toEqual([0]);
+    expect(verse.e[0].s).toBeUndefined();
+    expect(verse.g.map((w) => w.e)).toEqual([0, 0, 2]);
+    expect(septuagintChunkLinked(verse.e[0])).toBe(true);
+  });
+
+  it('begins inside it too, and gives the words that come before it a chunk of their own', () => {
+    const done = apply([row('money', [])], [{ t: 'the money', g: [], y: 'model', c: 0.8 }]);
+    expect(done.stale).toEqual([]);
+    expect(done.chapter.verses[0].e.map((c) => [c.t, c.g])).toEqual([['the', []], ['money', []]]);
+  });
+
+  it('never cuts a chunk that renders a Greek word: the fix then finds no such chunks and the verse is kept', () => {
+    const was = chapter(chunks()).verses[0];
+    const done = apply([row('he that', [0])]);
+    expect(done.chapter.verses[0]).toEqual(was);
+    expect(done.stale.join(' ')).toContain('finds no such chunks');
+  });
+
+  it('keeps reading a fix whose words are whole chunks as it did, even when the same word sits inside another chunk that could be cut', () => {
+    const e: EnglishChunk[] = [{ t: 'of a', g: [], y: 'model', c: 0.8 }, { t: 'of', g: [0], y: 'align', c: 0.85 }];
+    const done = apply([row('of', [0])], e);
+    expect(done.stale).toEqual([]);
+    expect(done.chapter.verses[0].e.map((c) => [c.t, c.g])).toEqual([['of a', []], ['of', [0]]]);
+  });
+});
+
 // the real Genesis with the model pass (the chapters that have a file in data/lxx/align): when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
 // the gate's log says in one line when it is skipped and why. Sources found elsewhere than the cwd are given to runShip, so no symlink is needed.
 // Genesis 20 is his own report (2026-11-10, mw-u2w5klk.349.2: a tap on 'removed' in Genesis 20:1 opened the Verse view). The chapters of the model pass are the files of data/lxx/align, so a pass adds no line here; what a pass
@@ -528,6 +580,20 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
   it("links Genesis 16:9's 'Return' to Ἀποστράφηθι and 'mistress,' to κυρίαν, each to its own", () => {
     expect(greekOf(16, 9, chunkWith(16, 9, 'Return'))).toEqual(['Ἀποστράφηθι']);
     expect(greekOf(16, 9, chunkWith(16, 9, 'mistress,'))).toEqual(['κυρίαν']);
+  });
+
+  // Genesis 17:13 (mw-u2w5klk.349.40): the model's chunk 'money shall' held the 'money' that renders ἀργυρώνητος, which the aligner had paired to 'with'; the fix row cuts inside the chunk (applyFixes), and the
+  // 'shall' it leaves joins 'be' (joinSupplied)
+  it("links Genesis 17:13's 'money' to ἀργυρώνητος, in the one chunk that holds 'he that is bought with money', and leaves 'shall be' its own", () => {
+    const chunk = chunkWith(17, 13, 'money');
+    expect(chunk.t).toBe('he that is bought with money');
+    expect(greekOf(17, 13, chunk)).toEqual(['ὁ', 'ἀργυρώνητος.']);
+    expect(septuagintChunkLinked(chunk)).toBe(true);
+    const verse = withModel.get(17)!.verses.find((x) => x.n === 13)!;
+    expect(verse.e.filter((c) => c.g.some((i) => verse.g[i].t === 'ἀργυρώνητος.'))).toHaveLength(1);
+    expect(verse.e.some((c) => c.t === 'shall be' && c.g.length > 0)).toBe(true);
+    // 17:12's 'bought with money,' is the same Greek word, a whole chunk (17:27 and 17:23 too)
+    expect(greekOf(17, 12, chunkWith(17, 12, 'money,'))).toEqual(['ἀργυρώνητος']);
   });
 
   it("links Genesis 22:13's 'lifted' to ἀναβλέψας and 'offered' to ἀνήνεγκεν, and 'whole burnt offering' to ὁλοκάρπωσιν; the same 'lifted up' in 18:2 and 22:4", () => {

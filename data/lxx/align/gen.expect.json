@@ -100,13 +100,11 @@
     },
     "17": {
       "gaps": 0,
-      "model": 8,
+      "model": 6,
       "leftovers": [
         ["17:7:god","paired-or-added-12-23"],
         ["17:12:born","paired-or-added-12-23"],
-        ["17:12:money","paired-or-added-12-23"],
         ["17:12:old","paired-or-added-12-23"],
-        ["17:13:money","paired-or-added-12-23"],
         ["17:17:bear","paired-or-added-12-23"],
         ["17:17:old","paired-or-added-12-23"],
         ["17:19:god","paired-or-added-12-23"]
