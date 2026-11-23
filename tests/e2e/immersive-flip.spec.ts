@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { swipe } from '../support/gesture';
 import { honestMic } from '../support/honest-fakes';
+import { afterFrames, untilStill } from '../support/settled';
 import { openUnlocked } from './unlocked';
 
 // Flipping to the next or previous chapter with the Immersive reader On keeps the bars as he had them (mw-5r3p30.318): away stays away on the new
@@ -102,7 +103,8 @@ for (const [button, chapter] of [
     await expect(page.locator('[data-place-line]')).toHaveText(new RegExp(`^Ephesians ${chapter} · `));
     await expectAll(page, 'hidden');
     // and they stay away (nothing brings them back by itself)
-    await page.waitForTimeout(700);
+    await untilStill(page);
+    await afterFrames(page);
     await expectAll(page, 'hidden');
 
     await twoFingerTap(page);
@@ -117,7 +119,8 @@ test('with the bars shown, flipping to the next chapter shows them on the new ch
   await flipTo(page, 'Ephesians 3 ›', 3);
   await expect(page.getByRole('heading', { name: 'Ephesians 3', level: 1 })).toBeVisible();
   await expectAll(page, 'visible');
-  await page.waitForTimeout(700);
+  await untilStill(page);
+  await afterFrames(page);
   await expectAll(page, 'visible');
 });
 
@@ -172,7 +175,8 @@ for (const [name, from, to, chapter] of [
     await swipe(page, from, to, { with: 'touch' });
     await expect(page).toHaveURL(new RegExp(`c=${chapter}`));
     await expect(page.locator('[data-place-line]')).toHaveText(new RegExp(`^Ephesians ${chapter} · `));
-    await page.waitForTimeout(500);
+    await untilStill(page);
+    await afterFrames(page);
     expect(await frames(page)).toEqual([]);
   });
 }
@@ -182,7 +186,8 @@ test('with the bars away, the foot button never draws the bars or the Reader wit
   await scrollText(page, 400);
   await watchFrames(page, 'away');
   await flipTo(page, 'Ephesians 3 ›', 3);
-  await page.waitForTimeout(500);
+  await untilStill(page);
+  await afterFrames(page);
   expect(await frames(page)).toEqual([]);
 });
 
@@ -197,7 +202,8 @@ test('with the bars shown, a chapter chosen in the picker never draws the Reader
   await picker.locator('[data-chapter="4"]').click();
   await expect(page).toHaveURL(/c=4/);
   await expect(page.getByRole('heading', { name: 'Ephesians 4', level: 1 })).toBeVisible();
-  await page.waitForTimeout(500);
+  await untilStill(page);
+  await afterFrames(page);
   expect(await frames(page)).toEqual([]);
 });
 
@@ -209,6 +215,7 @@ test('with the bars away, Back to the earlier chapter never draws the bars or th
   await page.goBack();
   await expect(page).toHaveURL(/c=2/);
   await expect(page.locator('[data-place-line]')).toHaveText(/^Ephesians 2 · /);
-  await page.waitForTimeout(500);
+  await untilStill(page);
+  await afterFrames(page);
   expect(await frames(page)).toEqual([]);
 });

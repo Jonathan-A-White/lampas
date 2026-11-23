@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openUnlocked } from './unlocked';
+import { afterFrames, untilStill } from '../support/settled';
 import { openSettings, settingsHeading } from './openSettings';
 
 // The Immersive reader keeps the screen awake while the Reader is open (mw-5r3p30.309): it holds a screen wake lock, lets it go on leaving the Reader
@@ -96,7 +97,8 @@ test('with Immersive reader On the Reader holds a screen wake lock, and leaving 
 
 test('with Immersive reader Off the Reader holds no wake lock', async ({ page }) => {
   await openReader(page, 'off');
-  await page.waitForTimeout(600);
+  await untilStill(page);
+  await afterFrames(page);
   expect(await wake(page)).toEqual({ requests: 0, released: 0, held: 0 });
 });
 
