@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.349
+_2026-11-23_
+- Fixed: In the Septuagint's Genesis 12 to 23, tapping 'it came to pass' and a number of other English words now opens the Greek word that renders them.
+- New: Sixteen more of your Logos sermon books (eleven Sermon Outlines and five Sermon Starters) can be switched on in Settings.
+
 ## 0.7.348
 _2026-11-23_
 - Fixed: Saying the wake word now pauses a sermon video that is playing, so it does not drown out your command, and it plays on again afterwards.
