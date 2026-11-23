@@ -28,6 +28,7 @@ import {
   parseAlignChooseArgs,
   runAlignChoose,
 } from '../../scripts/lxx/align-choose';
+import { OLD_TESTAMENT } from '../../scripts/lxx/report';
 import { runShip, type Shipped } from '../../scripts/lxx/ship';
 import { lxxRealData } from '../support/lxx-real-data';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
@@ -1393,5 +1394,88 @@ describe('alignVerse without a model is as it was', () => {
   it('leaves y "align?" for the model pass', () => {
     const out = alignVerse(verseOf('Hail, and farewell.', [word('ἀμήν', 'amēn', 'ἀμήν', 'PRT')]), () => '').verse;
     expect(out.e[0].y).toBe('align?');
+  });
+});
+
+// Isaiah with the model pass (story mw-u2w5klk.349.14: his report 'I tap removed and get this', the pairing pass of Isaiah, Isaiah 2 to 20): the same sources as Genesis above, shipped without a Morpheus cache
+// (the book's file under docs/lxx-align says so), with and without the rows of data/lxx/align/isa-NN.tsv. The chapters are the files of the directory, so a later batch of Isaiah adds no line here.
+describe.skipIf(!haveSources)('Isaiah with the model pass', () => {
+  const ISA = alignFileChapters('isa');
+  const dirs: string[] = [];
+  const base = new Map<number, Chapter>();
+  const withModel = new Map<number, Chapter>();
+  let stale: string[] = [];
+  beforeAll(async () => {
+    const a = mkdtempSync(join(tmpdir(), 'lampas-lxx-isa-a-'));
+    const b = mkdtempSync(join(tmpdir(), 'lampas-lxx-isa-b-'));
+    dirs.push(a, b);
+    const log: string[] = [];
+    const books = OLD_TESTAMENT.filter(([code]) => code.toLowerCase() === 'isa');
+    await runShip(['--out', a, '--no-morpheus'], { ...sources, books, alignDir: '', log: () => undefined });
+    await runShip(['--out', b, '--no-morpheus'], { ...sources, books, log: (l) => log.push(l) });
+    for (const n of ISA) {
+      base.set(n, JSON.parse(readFileSync(join(a, 'isa', `${n}.json`), 'utf8')) as Chapter);
+      withModel.set(n, JSON.parse(readFileSync(join(b, 'isa', `${n}.json`), 'utf8')) as Chapter);
+    }
+    stale = log.filter((l) => /model pass/.test(l) && /stale|kept/.test(l));
+  }, 10 * HOOK_TIMEOUT_MS);
+  afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
+
+  it('has a model file for each chapter it ships that its sidecar names, and none of the runs or fix rows is stale', () => {
+    expect(ISA.length).toBeGreaterThan(0);
+    expect(withModel.size).toBe(ISA.length);
+    expect(stale).toEqual([]);
+  });
+
+  it('re-chooses every remainder: no chunk is left y "align?", every model chunk has c and its Greek positions are real, free and used once', () => {
+    for (const [n, chapter] of withModel) {
+      for (const verse of chapter.verses) {
+        expect(verse.e.filter((c) => c.y === 'align?'), `Isa ${n}:${verse.n}`).toEqual([]);
+        const used = verse.e.flatMap((c, i) => c.g.filter((g) => verse.g[g].e === i));
+        expect(new Set(used).size).toBe(used.length);
+        for (const chunk of verse.e) {
+          chunk.g.forEach((g) => expect(g >= 0 && g < verse.g.length, `Isa ${n}:${verse.n} g ${g}`).toBe(true));
+          if (chunk.y === 'model') {
+            expect(chunk.c).toBeGreaterThan(0);
+            expect(chunk.c).toBeLessThanOrEqual(1);
+          }
+        }
+        verse.g.forEach((w, k) => w.e !== undefined && expect(verse.e[w.e].g).toContain(k));
+      }
+    }
+  });
+
+  it("drops no word and no English: the chunks joined are Brenton's whole verse as the aligner had it, the Greek words are the same, and an aligned chunk is untouched but those a fix row names", () => {
+    for (const [n, chapter] of withModel) {
+      const was = base.get(n)!;
+      expect(chapter.verses).toHaveLength(was.verses.length);
+      const fixes = readModelRows(readFileSync(join(ALIGN_CHOICES_DIR, alignChoicesName('isa', n)), 'utf8')).filter((r) => r.run === FIX_RUN);
+      chapter.verses.forEach((verse, i) => {
+        const prior = was.verses[i];
+        expect(joined(verse), `Isa ${n}:${verse.n}`).toBe(joined(prior));
+        expect(verse.g.map((w) => w.t)).toEqual(prior.g.map((w) => w.t));
+        const supplied = (v: Verse): number => v.e.reduce((a, c) => a + (c.s?.length ?? 0), 0);
+        expect(supplied(verse)).toBe(supplied(prior));
+        const fixText = fixes.filter((r) => r.ref === `Isa.${n}:${verse.n}`).map((r) => r.text.split(/\s+/));
+        const unmeant = alignedDiffs(prior, verse).filter((d) => !fixText.some((words) => d.split('|')[0].split(/\s+/).some((w) => words.includes(w))));
+        expect(unmeant, `Isa ${n}:${verse.n}`).toEqual([]);
+      });
+    }
+  });
+
+  it('settles more of the Greek: more words have English than the aligner alone gave, in every chapter', () => {
+    const paired = (c: Chapter): number => c.verses.reduce((a, v) => a + v.g.filter((w) => w.e !== undefined).length, 0);
+    for (const [n, chapter] of withModel) expect(paired(chapter), `Isa ${n}`).toBeGreaterThan(paired(base.get(n)!));
+  });
+
+  it("links content words that sat where a tap opened the Verse view to a Greek word, as 'removed' of Genesis 20:1 now does (Isaiah 2:4 'spears', 2:12 'brought down;', 5:11 'follow strong drink;', 8:8 'shall fill')", () => {
+    const chunkWith = (n: number, v: number, w: string): EnglishChunk => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t.split(/\s+/).includes(w))!;
+    const greekOf = (n: number, v: number, chunk: EnglishChunk): string[] => chunk.g.map((i) => withModel.get(n)!.verses.find((x) => x.n === v)!.g[i].t);
+    for (const [n, v, w] of [[2, 4, 'spears'], [2, 12, 'down;'], [5, 11, 'follow'], [8, 8, 'fill'], [13, 17, 'regard'], [20, 2, 'sandals']] as const) {
+      const chunk = chunkWith(n, v, w);
+      expect(chunk, `${n}:${v} ${w}`).toBeDefined();
+      expect(septuagintChunkLinked(chunk), `${n}:${v} ${w}`).toBe(true);
+    }
+    expect(greekOf(2, 4, chunkWith(2, 4, 'spears'))).toEqual(['τὰς', 'ζιβύνας']);
   });
 });
