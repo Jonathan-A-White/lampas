@@ -374,6 +374,20 @@ async function openChapter(page: Page, hash: string, title: string) {
   await settled(page);
 }
 
+/** Opens a chapter by a link that names `verse` (`#/?ref=John.5.25`), with its pages cut and the page that verse is on shown. The link is met once, by the page that loads it: the
+ * LinkOpener files the request on the bus (in memory) and rewrites the address to the plain chapter, so openChapter's goto then reload loses it whenever the opener finishes before the
+ * reload starts (a loaded host: the chapter opened on page 1). This loads the link as a document of its own, with no reload. The jump is not done when the chapter is drawn either: the
+ * Reader meets the request once the settings are read and the verse is in the box, and says so on the box (data-brought-verse, src/reader/useBringVerse.ts), so wait on that sign, then on
+ * the pages being cut for good. */
+async function openLinkedVerse(page: Page, hash: string, title: string, verse: number) {
+  await page.goto('about:blank'); // a hash change inside the page already open is not a load
+  await page.goto(hash);
+  await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-paging', 'pages');
+  await expect(page.locator('[data-reader]'), `the Reader has brought verse ${verse} to its page`).toHaveAttribute('data-brought-verse', String(verse));
+  await settled(page);
+}
+
 /** Turns forward by a tap on the right third to the last page of the chapter shown. */
 async function toLastPage(page: Page) {
   const { of } = await placeOf(page);
@@ -1252,7 +1266,7 @@ test('with Turn pages, a link to John 5:25, rotate to landscape and back, is sti
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await keep(page, { readingMode: 'pages' });
-  await openChapter(page, '#/?ref=John.5.25', 'John 5');
+  await openLinkedVerse(page, '#/?ref=John.5.25', 'John 5', 25);
   expect(await verseBeginsHere(page, 25), 'verse 25 is on the page the link opens').toBe(true);
   const before = await placeOf(page);
 
