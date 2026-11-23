@@ -14,6 +14,7 @@ import { chapterFingerprint } from '../../scripts/data/chapterWriter';
 import {
   alignChapter, alignReportFile, SUPPLIED_FOR_VERB, alignVerse, renderAlignReport, renderBookReport, runAlign, type AlignShare, type AlignSink,
 } from '../../scripts/lxx/align';
+import { readModelRows } from '../../scripts/lxx/align-choose';
 import { deriveBook, type DeriveInput } from '../../scripts/lxx/derive';
 import type { KnownScore } from '../../scripts/lxx/known';
 import { runShip, type ShipOptions } from '../../scripts/lxx/ship';
@@ -352,6 +353,71 @@ describe('the model pass and the words supplied for a verb', () => {
     const verse = out.chapter.verses[0];
     expect(verse.e.map((c) => [c.t, c.g, c.y])).toEqual([['And', [0], 'align'], ['there was', [1], 'align'], ['light.', [2], 'align']]);
     expect(verse.g[1].e).toBe(1);
+  });
+});
+
+// Genesis 24:27, 35, 42 and 48 (mw-u2w5klk.349.27): the English 'master' renders a κύριος word, but the aligner (one Greek word, one English word, in the order of both verses) gave the κύριος word to 'Lord' or 'God'
+// ('Lord has blessed my master': 'Lord' to κύριον, 'master' to nothing; 'the God of my master': 'God' to κυρίου), and the model pass, which re-chooses remainders and not pairs, found no Greek for 'master'.
+// The fixture holds those four verses as the build makes them (Swete's Greek words with their lemmas and parsings, Brenton's English, the lexicon's gloss of each lemma); the rows are the committed data/lxx/align/gen-24.tsv.
+describe("the Greek word of 'master' and 'Lord' where the aligner gave a κύριος word to the other (mw-u2w5klk.349.27)", () => {
+  interface LordsFixture { lexicon: Record<string, string>; verses: Array<{ n: number; text: string; g: GreekWord[] }> }
+  const lords = JSON.parse(fixture('gen-24-lords.json')) as LordsFixture;
+  const lordGloss = (lemma: string): string => lords.lexicon[lemma] ?? '';
+  const chapter24 = { code: 'gen', book: 'Genesis', chapter: 24, verses: lords.verses.map((v) => ({ n: v.n, g: v.g, e: [{ t: v.text, g: v.g.map((_, i) => i) }] })) } as Chapter;
+  const rows = readModelRows(readFileSync('data/lxx/align/gen-24.tsv', 'utf8')).filter((r) => lords.verses.some((v) => r.ref === `Gen.24:${v.n}`));
+  const out = alignChapter(chapter24, lordGloss, rows);
+  const verseN = (n: number): Verse => out.chapter.verses.find((v) => v.n === n)!;
+  /** the Greek words (as printed) a chunk of the verse is paired to: `[chunk text, its Greek words]` for each chunk whose text has the word */
+  const greekOf = (n: number, english: string): string[][] => {
+    const verse = verseN(n);
+    return verse.e.filter((c) => c.t.replace(/[^A-Za-z' ]/g, '').split(/\s+/).includes(english)).map((c) => c.g.map((k) => verse.g[k].t.replace(/[,·.;]/g, '')));
+  };
+
+  it('keeps the model\'s rows held to the aligner\'s runs: none is stale', () => {
+    expect(out.stale).toEqual([]);
+  });
+
+  it('Gen 24:35: "the Lord has blessed my master": Κύριος is the Lord and κύριόν is the master', () => {
+    expect(greekOf(35, 'Lord')).toEqual([['Κύριος']]);
+    expect(greekOf(35, 'master')).toEqual([['κύριόν']]);
+  });
+
+  it('Gen 24:42: "Lord God of my master": κύριε is the Lord, θεὸς is God and κυρίου is the master', () => {
+    expect(greekOf(42, 'Lord')).toEqual([['Κύριε']]);
+    expect(greekOf(42, 'God')).toEqual([['θεὸς']]);
+    expect(greekOf(42, 'master')).toEqual([['κυρίου']]);
+  });
+
+  it('Gen 24:48: "I blessed the Lord the God of my master": κυρίου is the master, θεὸν is God, and the two Lords keep Κυρίῳ and Κύριον', () => {
+    expect(greekOf(48, 'Lord')).toEqual([['Κυρίῳ'], ['Κύριον']]);
+    expect(greekOf(48, 'God')).toEqual([['θεὸν']]);
+    expect(greekOf(48, 'master')).toEqual([['κυρίου']]);
+  });
+
+  it('Gen 24:27: the lower-case κυρίου are the two masters and "my lord"; the capital Κύριος are the two Lords; God is θεὸς', () => {
+    expect(greekOf(27, 'Lord')).toEqual([['Κύριος'], ['Κύριος']]);
+    expect(greekOf(27, 'God')).toEqual([['θεὸς']]);
+    expect(greekOf(27, 'master')).toEqual([['κυρίου'], ['κυρίου']]);
+    expect(greekOf(27, 'lord')).toEqual([['κυρίου']]);
+  });
+
+  it('gives each Greek word one chunk: every word points at a chunk that holds it, and the verse is still Brenton\'s whole verse', () => {
+    for (const verse of out.chapter.verses) {
+      verse.g.forEach((w, k) => w.e !== undefined && expect(verse.e[w.e].g, `24:${verse.n} word ${k}`).toContain(k));
+      const used = verse.e.flatMap((c, i) => c.g.filter((k) => verse.g[k].e === i));
+      expect(new Set(used).size).toBe(used.length);
+      expect(joined(verse)).toBe(lords.verses.find((v) => v.n === verse.n)!.text);
+    }
+  });
+
+  it('leaves a verse alone where every κύριος word already has its English: the same chunks come out with or without the pass for a verse that has no master without Greek', () => {
+    const verse = verseOf('And the Lord has blessed Abraam', [word('Κύριος', 'Kyrios', 'κύριος', 'N-NSM'), word('εὐλόγησεν', 'eulogēsen', 'εὐλογέω', 'V-AAI-3S'), word('Ἀβραάμ', 'Abraam', 'Ἀβραάμ', 'N-ASM')]);
+    const one = { code: 'gen', book: 'Genesis', chapter: 24, verses: [verse] } as Chapter;
+    const gl = (l: string): string => ({ κύριος: 'lord, God', εὐλογέω: 'to bless', Ἀβραάμ: 'Abraham' })[l] ?? '';
+    const none = alignChapter(one, gl).chapter.verses[0];
+    const modelled = alignChapter(one, gl, [{ ref: 'Gen.24:1', run: 1, text: 'And the', g: [], mark: '' as const, confidence: 0.8 }]).chapter.verses[0];
+    expect(modelled.e.filter((c) => c.t === 'Lord').map((c) => c.g)).toEqual(none.e.filter((c) => c.t === 'Lord').map((c) => c.g));
+    expect(modelled.e.find((c) => c.t === 'Lord')!.g).toEqual([0]);
   });
 });
 
