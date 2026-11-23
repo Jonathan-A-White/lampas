@@ -2,7 +2,7 @@
 // Morning RePhil episodes it lists are marked Seen (dailyStore.ts markManySeen, the device's own heard set). An entry is {title: 'Watched <title>', titleUrl: 'https://www.youtube.com/watch?v=<id>'}.
 // An episode is matched by its YouTube video id where the list has one (Episode.youtube), else by its exact title. The file is never stored and never sent: only the matched episodes' ids are kept.
 import { getHeard, localDate, markManySeen } from './dailyStore';
-import { EPISODES, type Episode } from './morningRephil';
+import { currentEpisodes, type Episode } from './morningRephil';
 
 export interface WatchEntry {
   /** the video's id from the entry's address, when it has one */
@@ -59,7 +59,7 @@ export function readWatchHistory(text: string): WatchEntry[] {
 }
 
 /** The episodes of `list` that `entries` watched: by video id where the episode has one, else by exact title (an entry whose id no episode has still matches by its title). */
-export function watchedEpisodes(entries: readonly WatchEntry[], list: readonly Episode[] = EPISODES): Episode[] {
+export function watchedEpisodes(entries: readonly WatchEntry[], list: readonly Episode[] = currentEpisodes()): Episode[] {
   const byId = new Map(list.filter((e) => e.youtube).map((e) => [e.youtube as string, e]));
   const byTitle = new Map(list.map((e) => [e.title, e]));
   const found = new Set<Episode>();
@@ -71,7 +71,7 @@ export function watchedEpisodes(entries: readonly WatchEntry[], list: readonly E
 }
 
 /** Marks the episodes of `list` that the watch-history.json `text` lists as Seen. Rejects with NotWatchHistory for a file that is not one. */
-export async function importWatchHistory(text: string, list: readonly Episode[] = EPISODES): Promise<ImportResult> {
+export async function importWatchHistory(text: string, list: readonly Episode[] = currentEpisodes()): Promise<ImportResult> {
   const matched = watchedEpisodes(readWatchHistory(text), list);
   const heard = await getHeard();
   const marked = await markManySeen(localDate(new Date()), matched.filter((e) => !heard.has(e.id)).map((e) => e.id));

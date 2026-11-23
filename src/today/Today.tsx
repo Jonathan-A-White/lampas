@@ -8,6 +8,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type ReactNode } from 'react';
 import { DEFAULT_BACKUP, MORNING_REPHIL_ID, RANDOM, canDrawAnother, tickedDevotionals } from '../data/daily/devotionals';
 import { clearHeard, getDay, getExplained, getHeard, localDate, markHeard, markOpened, markSeen, noteExplained, pickAnotherDevotional, pinEpisode, unmarkSeen, type SeenBefore } from '../data/daily/dailyStore';
+import { useEpisodes } from './useEpisodes';
 import { DEFAULT_ORDER, anotherEpisode, devotionalToday, episodeDate, hasUnheard, type Episode, type EpisodeOrder, type TodaysDevotional } from '../data/daily/morningRephil';
 import { dailyReadings, heldInLampas } from '../data/daily/psalmsProverbs';
 import { dayProgress, getLogosBibles, markChapterRead, ownedResources, unmarkChaptersRead } from '../data/repositories';
@@ -538,11 +539,12 @@ export function Today() {
   const devotionalDraw = useSetting(devotionalDrawSetting);
   const rephilOrder = useSetting(morningRephilOrderSetting) ?? DEFAULT_ORDER;
   const rephilBackup = useSetting(morningRephilBackupSetting) ?? DEFAULT_BACKUP;
+  const episodes = useEpisodes();
   // the devotional is a Logos book (drawn only while Logos is On, what he set is kept; mw-rfjjzd.23) or Morning RePhil, a web page that needs no Logos (mw-r9xo1pj.2). The Psalms and Proverbs read in Lampas, so Logos does not govern them
   const todays =
     devotionalChoice === undefined || devotionalDraw === undefined || sources === undefined || day === undefined || heard === undefined
       ? undefined
-      : devotionalToday({ choice: devotionalChoice, ticked: tickedDevotionals(devotionalDraw), date: today, pick: day.devotional, kept: day.rephil, heard, order: rephilOrder, backup: rephilBackup, logosOn: sources.logos, rephilOn: sources.rephil });
+      : devotionalToday({ choice: devotionalChoice, ticked: tickedDevotionals(devotionalDraw), date: today, pick: day.devotional, kept: day.rephil, heard, order: rephilOrder, backup: rephilBackup, logosOn: sources.logos, rephilOn: sources.rephil, list: episodes });
   const devotionalRead = kept.devotional !== undefined && devotionalChoice !== undefined && devotionalDraw !== undefined && sources !== undefined && day !== undefined && heard !== undefined;
   const devotional = !devotionalRead ? undefined : todays === undefined ? 'off' : kept.devotional;
   const scrollRef = useScrollMemory('today');

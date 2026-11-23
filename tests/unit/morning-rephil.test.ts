@@ -1,9 +1,11 @@
 // Morning RePhil (Brookfield First's devotional with Pastor Phil) as a devotional beside the Logos ones (mw-qtu3zvz.15): the bundled episode list, the pure choice of the
 // day's episode in each order against a heard set, Random drawing it only while an episode is unheard, and the heard set kept on the device.
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL, MORNING_REPHIL_ID, RANDOM, anotherDevotional, devotionalForDay, devotionalOf, pickableDevotionals } from '../../src/data/daily/devotionals';
-import { EPISODES, anotherEpisode, devotionalToday, episodeForDay, episodeDate, nextEpisode, orderedEpisodes, type Episode } from '../../src/data/daily/morningRephil';
+import { EPISODES, anotherEpisode, currentEpisodes, devotionalToday, episodeForDay, episodeDate, mergeEpisodes, nextEpisode, orderedEpisodes, serviceEpisodes, type Episode } from '../../src/data/daily/morningRephil';
+import { forgetEpisodes, refreshEpisodes } from '../../src/services/rephilFeed';
+import { setSermonsUrl } from '../../src/services/sermons';
 import { clearHeard, getDay, getHeard, markHeard, markSeen, pinEpisode, setDevotionalPick } from '../../src/data/daily/dailyStore';
 
 afterAll(() => db.close());
@@ -235,5 +237,127 @@ describe('the picker with Logos Off', () => {
     const every = DEVOTIONALS.map((d) => d.id);
     expect(pickableDevotionals(every, SPURGEON, new Set(every), { logos: false, rephil: true }).map((d) => d.id)).toEqual([SPURGEON, MORNING_REPHIL_ID]);
     expect(pickableDevotionals(every, MORNING_REPHIL_ID, new Set(every), { logos: false, rephil: true }).map((d) => d.id)).toEqual([MORNING_REPHIL_ID]);
+  });
+});
+
+// --- The episodes from the sermon index service when online (mw-r9xo1pj.24) -----------------------------------------------------------------
+
+describe('the episodes from the sermon index service', () => {
+  const BASE = 'https://sermons.test';
+  let asked: string[];
+  // GET /v1/rephil as the live service answers it: a bare array, oldest first; a new episode may have no Subsplash share link yet, only its YouTube video id
+  const FEED = [
+    { number: 478, title: 'Morning RePhil #478', date: '2026-11-10', share: 'https://brookfieldfirst.subspla.sh/b2kbz4b', video: '4YqdCRD8OsY' },
+    { number: 479, title: 'Morning RePhil #479', date: '2026-11-13', share: 'https://brookfieldfirst.subspla.sh/fnnh79c', video: 'yGY16nh3_ow' },
+    { number: 480, title: 'Morning RePhil #480', date: '2026-11-20', share: null, video: 'a1x_g9kP71M' },
+    { number: 481, title: 'Morning RePhil', date: '2026-11-23', share: 'https://brookfieldfirst.subspla.sh/new481x', video: null },
+  ];
+  const serve = (body: unknown, status = 200) =>
+    vi.stubGlobal('fetch', (input: RequestInfo | URL) => {
+      asked.push(String(input));
+      return Promise.resolve(new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }));
+    });
+  const allBundled = () => new Set(EPISODES.map((e) => e.id));
+
+  beforeEach(() => {
+    asked = [];
+    forgetEpisodes();
+    setSermonsUrl(BASE);
+  });
+  afterEach(() => {
+    forgetEpisodes();
+    setSermonsUrl(undefined);
+    vi.unstubAllGlobals();
+  });
+
+  it('shows #480 in the list and in Today\'s draw once the service has answered', async () => {
+    serve(FEED);
+    expect(currentEpisodes().some((e) => e.number === 480)).toBe(false);
+    await refreshEpisodes(new Date(2026, 10, 23));
+    expect(asked).toEqual([`${BASE}/v1/rephil`]);
+    const list = currentEpisodes();
+    expect(list.map((e) => e.number).filter((n) => n !== null).slice(-3)).toEqual([478, 479, 480]);
+    expect(list.find((e) => e.number === 480)).toMatchObject({ title: 'Morning RePhil #480', date: '2026-11-20', youtube: 'a1x_g9kP71M' });
+    // every bundled episode heard: the new ones are what Today offers
+    const heard = allBundled();
+    const today = devotionalToday({ ...base, heard, list: undefined });
+    expect(today).toMatchObject({ devotional: { id: MORNING_REPHIL_ID }, episode: { number: 480 } });
+    expect(devotionalToday({ ...base, heard, list: undefined, order: 'newest' })?.episode?.id).toBe(list[list.length - 1].id);
+    expect(devotionalToday({ ...base, choice: RANDOM, ticked: [], heard, list: undefined })?.devotional.id).toBe(MORNING_REPHIL_ID);
+    expect(nextEpisode('oldest', heard)?.number).toBe(480);
+  });
+
+  it('opens a new episode with no Subsplash link at its YouTube video, and one with a link at the link', async () => {
+    serve(FEED);
+    await refreshEpisodes(new Date(2026, 10, 23));
+    expect(currentEpisodes().find((e) => e.number === 480)?.share).toBe('https://www.youtube.com/watch?v=a1x_g9kP71M');
+    expect(currentEpisodes().find((e) => e.title === 'Morning RePhil' && e.date === '2026-11-23')).toMatchObject({ id: 'new481x', number: null, share: 'https://brookfieldfirst.subspla.sh/new481x' });
+  });
+
+  it('merges by episode: the service\'s row wins over the bundled one of the same episode, with no episode twice', async () => {
+    serve(FEED);
+    await refreshEpisodes(new Date(2026, 10, 23));
+    const list = currentEpisodes();
+    expect(new Set(list.map((e) => e.id)).size).toBe(list.length);
+    expect(list.filter((e) => e.id === 'b2kbz4b')).toEqual([expect.objectContaining({ number: 478, title: 'Morning RePhil #478' })]);
+    expect(list.length).toBe(EPISODES.length + 2);
+    expect(list.map((e) => e.date)).toEqual([...list.map((e) => e.date)].sort());
+  });
+
+  it('merges pure: newest wins, the bundled list is the rest, and a row with no link keeps a bundled one of its number', () => {
+    const bundled = [ep('a', '2026-01-01', 1), ep('b', '2026-01-04', 2)];
+    const rows = serviceEpisodes([
+      { number: 2, title: 'Morning RePhil #2 (again)', date: '2026-01-04', share: 'https://brookfieldfirst.subspla.sh/b', video: null },
+      { number: 1, title: 'Morning RePhil #1', date: '2026-01-01', share: null, video: 'vid00000001' },
+      { number: 3, title: 'Morning RePhil #3', date: '2026-01-08', share: null, video: 'vid00000003' },
+      { number: 4, title: 'no date', date: 'soon', share: null, video: 'vid00000004' },
+      { number: 5, title: 'no way to open', date: '2026-01-11', share: null, video: null },
+    ]);
+    expect(rows.map((e) => e.number)).toEqual([2, 1, 3]);
+    const merged = mergeEpisodes(bundled, rows);
+    expect(merged.map((e) => e.number)).toEqual([1, 2, 3]);
+    expect(merged[0]).toMatchObject({ id: 'a', share: 'https://brookfieldfirst.subspla.sh/a', youtube: 'vid00000001' });
+    expect(merged[1].title).toBe('Morning RePhil #2 (again)');
+    expect(merged[2].id).toBe('yt:vid00000003');
+    expect(serviceEpisodes('not a list')).toEqual([]);
+  });
+
+  it('is the bundled list, with nothing erroring, when the fetch fails, the answer is bad or there is no service', async () => {
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('Failed to fetch')));
+    await expect(refreshEpisodes(new Date(2026, 10, 23))).resolves.toBeUndefined();
+    expect(currentEpisodes()).toEqual(EPISODES);
+    forgetEpisodes();
+    serve({ error: 'down' }, 503);
+    await expect(refreshEpisodes(new Date(2026, 10, 23))).resolves.toBeUndefined();
+    expect(currentEpisodes()).toEqual(EPISODES);
+    forgetEpisodes();
+    serve({ not: 'a list' });
+    await refreshEpisodes(new Date(2026, 10, 23));
+    expect(currentEpisodes()).toEqual(EPISODES);
+    forgetEpisodes();
+    setSermonsUrl('');
+    asked = [];
+    serve(FEED);
+    await refreshEpisodes(new Date(2026, 10, 23));
+    expect(asked).toEqual([]);
+    expect(currentEpisodes()).toEqual(EPISODES);
+    expect(devotionalToday({ ...base, heard: allBundled(), list: undefined })).toEqual({ devotional: devotionalOf(SPURGEON), backup: true });
+  });
+
+  it('asks at most once a day: the answer is kept on the device and read again offline', async () => {
+    serve(FEED);
+    await refreshEpisodes(new Date(2026, 10, 23, 8));
+    await refreshEpisodes(new Date(2026, 10, 23, 20));
+    expect(asked).toHaveLength(1);
+    // a fresh page load the same day: the kept answer, no call
+    forgetEpisodes();
+    await refreshEpisodes(new Date(2026, 10, 23, 21));
+    expect(asked).toHaveLength(1);
+    expect(currentEpisodes().some((e) => e.number === 480)).toBe(true);
+    // the next day it asks again; and when that fails, the kept answer still stands
+    forgetEpisodes();
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('offline')));
+    await refreshEpisodes(new Date(2026, 10, 24));
+    expect(currentEpisodes().some((e) => e.number === 480)).toBe(true);
   });
 });
