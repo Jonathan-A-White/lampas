@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.347
+_2026-11-23_
+- Fixed: When he says two Greek words aloud, the tutor now names and writes both in Greek instead of only the first.
+
 ## 0.7.346
 _2026-11-23_
 - Fixed: In Genesis 17:12 and 17:13 a tap on money in bought with money now opens the Greek word that means it (ἀργυρώνητος).
