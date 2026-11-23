@@ -43,4 +43,9 @@ export default defineConfig([
     plugins: { local },
     rules: { 'local/no-layer-inversion': 'error' },
   },
+  {
+    // A control file exports its controls and, beside each, the rows it draws (src/settings/controls/types.ts `draws`), which src/settings/controls/index.ts gathers by glob (mw-6ww.175.106); it is not a fast-refresh boundary.
+    files: ['src/settings/controls/*.tsx', 'tests/fixtures/settings-controls*/**/*.tsx', 'tests/fixtures/settings-controls*.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ]);

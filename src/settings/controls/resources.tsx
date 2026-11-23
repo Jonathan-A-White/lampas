@@ -15,7 +15,7 @@ import { writeSetting } from '../registry';
 import type { SettingsRow } from '../rows';
 import { useSetting } from '../store';
 import { ON_COLOUR, OnOff, RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 /** One study resource: its switch (a 44 px row), what it adds, and the field it asks for, if any (kept as he types).
  *  A web page cannot see which native apps a phone has, so turning an app On only turns it On: nothing is opened or checked, and it stays On.
@@ -196,3 +196,9 @@ export const ReadingPlanControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const resourceControlDraws = draws(ResourceControl, { prefixes: ['resource.'] });
+export const logosBibleControlDraws = draws(LogosBibleControl, 'logosBible', 'logosBibleOt', 'logosBibleApocrypha', 'logosBibleSeptuagint');
+export const audioBibleControlDraws = draws(AudioBibleControl, 'audioBible');
+export const readingPlanControlDraws = draws(ReadingPlanControl, 'readingPlan');

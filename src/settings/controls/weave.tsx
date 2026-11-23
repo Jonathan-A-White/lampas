@@ -5,6 +5,7 @@ import { getSetting } from '../store';
 import type { SettingsRow } from '../rows';
 import { ExtentChips } from './grammarExtent';
 import { ChipRow, SettingRow } from './SettingRow';
+import { draws } from './types';
 
 type WeaveKey = 'weave' | 'weaveGrammar' | 'weaveOrder';
 
@@ -31,3 +32,6 @@ export function WeaveControl({ row }: { row: SettingsRow }) {
     </SettingRow>
   );
 }
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const weaveControlDraws = draws(WeaveControl, 'weave', 'weaveGrammar', 'weaveOrder');

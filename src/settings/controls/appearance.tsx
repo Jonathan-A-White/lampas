@@ -20,7 +20,7 @@ import { useSetting } from '../store';
 import { LAYOUTS } from '../../layout/layouts';
 import { writeSetting } from '../registry';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 function ThemeChoice({ theme }: { theme: Theme }) {
   return (
@@ -239,3 +239,14 @@ export const CopyFormatControl: Control = ({ row }) => {
     </>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const appearanceControlDraws = draws(AppearanceControl, 'theme', 'textSize');
+export const fontControlDraws = draws(FontControl, 'font');
+export const layoutControlDraws = draws(LayoutControl, 'layout');
+export const readingModeControlDraws = draws(ReadingModeControl, 'readingMode');
+export const chapterButtonsControlDraws = draws(ChapterButtonsControl, 'chapterButtons');
+export const copyFormatControlDraws = draws(CopyFormatControl, 'copyReference', 'copyNumbers', 'copyLink');
+export const headingsControlDraws = draws(HeadingsControl, 'sectionHeadings');
+export const immersiveControlDraws = draws(ImmersiveControl, 'immersiveReader');
+export const immersiveHintControlDraws = draws(ImmersiveHintControl, 'immersiveHint');

@@ -8,7 +8,7 @@ import { countLine, onCount } from '../../sermons/sourceList';
 import { useSourceList } from '../../sermons/useSourceList';
 import { Chips } from '../../ui/Chips';
 import { RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 /** 'Sermon sources  17 of 120 on ›': the count is of the sources listed for him, live. */
 export const SermonSourcesControl: Control = ({ row }) => {
@@ -49,3 +49,7 @@ export const OpenWebControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const sermonSourcesControlDraws = draws(SermonSourcesControl, 'sermonSources');
+export const openWebControlDraws = draws(OpenWebControl, 'sermonsOpenWeb');

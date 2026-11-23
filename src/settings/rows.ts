@@ -6,7 +6,7 @@
 // to another screen. The tutor may change every row but the last two kinds (tests/unit/settings-registry.test.tsx).
 // The searching, hiding and ordering are the kit's (pwa-kit/settings: rowsInOrder, visibleRows, neededFor, rowsAt, visibleGroups, searchSettings); what is here is Lampas's own: its
 // sections, groups, links and the rows that are not settings, and the same functions with Lampas's list and its Markdown-to-words (helpText.ts) already given.
-// A new setting is one entry in the registry (with its section) plus its control in src/settings/controls/ (CONTROLS, index.ts); a test fails until both.
+// A new setting is one entry in the registry (with its section) plus its control in src/settings/controls/ (the file names the rows it draws with `draws`, and CONTROLS, index.ts, gathers them); a test fails until both.
 import {
   foldText,
   groupOf as groupIn,

@@ -4,7 +4,7 @@ import { variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting } 
 import { ReadAs } from '../../reader/ReadingSetSheet';
 import { useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 export const VariantsControl: Control = ({ row }) => {
   const variants = useSetting(variantsSetting);
@@ -54,3 +54,10 @@ export const ReadingSetControl: Control = ({ row }) => (
     <ReadAs name={row.label} />
   </SettingRow>
 );
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const variantsControlDraws = draws(VariantsControl, 'variants');
+export const variantWitnessesControlDraws = draws(VariantWitnessesControl, 'variantWitnesses');
+export const rp2026EnglishControlDraws = draws(Rp2026EnglishControl, 'rp2026English');
+export const variantLessonsOfferControlDraws = draws(VariantLessonsOfferControl, 'variantLessonsOffer');
+export const readingSetControlDraws = draws(ReadingSetControl, 'readingSet');

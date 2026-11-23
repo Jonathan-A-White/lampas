@@ -2,7 +2,7 @@
 import { handSetting, setHand, useHand, type Hand } from '../hand';
 import { Chips } from '../../ui/Chips';
 import { RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 const handOptions = handSetting.allowed.kind === 'choice' ? handSetting.allowed.values.map((v) => [v.value, v.label] as const) : [];
 
@@ -15,3 +15,6 @@ export const HandControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const handControlDraws = draws(HandControl, 'hand');

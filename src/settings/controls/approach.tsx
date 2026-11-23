@@ -14,7 +14,7 @@ import { listPassageLessons } from '../../data/repositories/passageLessons';
 import { useGoalProgress } from '../../useGoalProgress';
 import { writeSetting } from '../registry';
 import { SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 /** The credit line, with the source's name a link when the approach has its address. */
 function CreditLine({ approach }: { approach: GrammarApproach }) {
@@ -211,3 +211,6 @@ export const ApproachControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const approachControlDraws = draws(ApproachControl, 'grammarApproach');

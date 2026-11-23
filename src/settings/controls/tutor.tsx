@@ -8,7 +8,7 @@ import { tipsSetting } from '../definitions/tips';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { ChipRow, ON_COLOUR, OnOff, RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 function ScriptDepthChoice({ script, depth }: { script: TutorScript; depth: Depth }) {
   return (
@@ -96,3 +96,11 @@ export const ReadLessonsControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const tipsControlDraws = draws(TipsControl, 'tips');
+export const readTutorControlDraws = draws(ReadTutorControl, 'readTutor');
+export const readLessonsControlDraws = draws(ReadLessonsControl, 'readLessons');
+export const talkControlDraws = draws(TalkControl, 'talk');
+export const sendControlDraws = draws(SendControl, 'send');
+export const scriptDepthControlDraws = draws(ScriptDepthControl, ...SCRIPTS.map((s) => s.settingKey));

@@ -6,7 +6,7 @@ import { useHiddenThemes } from '../../sermons/useThemes';
 import { showTheme } from '../../themes';
 import { settingOf } from '../registry';
 import { OnOff, RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 export const ThemesControl: Control = ({ row }) => {
   const current = useLiveQuery(async () => String(await settingOf(row.key)?.read()), [row.key]);
@@ -58,3 +58,7 @@ export const HiddenThemesControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const themesControlDraws = draws(ThemesControl, { prefixes: ['themes.'] });
+export const hiddenThemesControlDraws = draws(HiddenThemesControl, 'themesHidden');

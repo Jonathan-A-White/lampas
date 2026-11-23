@@ -20,7 +20,7 @@ import { PRONUNCIATION_FAMILIES } from '../definitions/pronunciation';
 import { PHONE_VOICE, writeSetting } from '../registry';
 import { getSetting, useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
-import type { Control } from './types';
+import { draws, type Control } from './types';
 
 function ReadSpanChoice({ span }: { span: PlayTo }) {
   return (
@@ -383,3 +383,16 @@ export const HandsFreePauseControl: Control = ({ row }) => {
     </SettingRow>
   );
 };
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const readSpanControlDraws = draws(ReadSpanControl, 'readSpan');
+export const handsFreeControlDraws = draws(HandsFreeControl, 'handsFree');
+export const handsFreePauseControlDraws = draws(HandsFreePauseControl, 'handsFreePause');
+export const bibleVoiceControlDraws = draws(BibleVoiceControl, 'bibleVoice');
+export const voiceControlDraws = draws(VoiceControl, 'englishVoice', 'greekVoice', 'hebrewVoice');
+export const speedControlDraws = draws(SpeedControl, 'englishRate', 'greekRate', 'hebrewRate');
+export const familyControlDraws = draws(FamilyControl, 'pronunciation');
+export const pronunciationSeparateControlDraws = draws(PronunciationSeparateControl, 'pronunciationSeparate');
+export const pronunciationControlDraws = draws(PronunciationControl, 'greekPronunciation', 'hebrewPronunciation');
+export const englishAccentControlDraws = draws(EnglishAccentControl, 'englishAccent');
+export const ipaLessonControlDraws = draws(IpaLessonControl, 'ipaLesson');

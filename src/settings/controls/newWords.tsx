@@ -5,6 +5,7 @@ import { usePace } from '../../usePace';
 import type { SettingsRow } from '../rows';
 import { ExtentChips } from './grammarExtent';
 import { ChipRow, SettingRow } from './SettingRow';
+import { draws } from './types';
 
 // New words at is a grammar extent (src/settings/definitions/grammarExtent.ts, mw-irpgqi.2): its chips are the shared ExtentChips, its options the one table's
 const NEW_WORDS = {
@@ -38,3 +39,6 @@ export function NewWordsControl({ row }: { row: SettingsRow }) {
     </SettingRow>
   );
 }
+
+/** The rows each control above draws (src/settings/controls/index.ts gathers them by glob): a new control names its rows here and no list is edited. */
+export const newWordsControlDraws = draws(NewWordsControl, 'newWordsADay', 'pickerGrammar', 'grammarMove');
