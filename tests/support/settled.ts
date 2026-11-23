@@ -97,15 +97,13 @@ export async function untilPlaceKept(page: Page, min: number): Promise<void> {
     .toBe(true);
 }
 
-/** How long the Reader keeps its saved place put back: once the text is at the place it must stay unchanged this long (QUIET_MS in src/nav/scrollMemory.ts), and nothing on the page says when it is over. */
-const RESTORE_QUIET_MS = 400;
-
 /**
- * Lets the Reader's put-back of a saved place run its course, then looks once more at the frames after it, for a spec that holds that the bars did not move in that window. Nothing on the page
- * says when the put-back is over (it ends on a timer of the page's, 400 ms after the text last changed), so this is the one real-time hold of the Immersive specs: 2.25 times that timer.
+ * Lets the Reader's put-back of a saved place run its course, then looks once more at the frames after it, for a spec that holds that the bars did not move in that window. The Reader's box
+ * carries data-restoring while the saved place is being put back (src/nav/scrollMemory.ts: from the place being asked for until the text has stayed unchanged for QUIET_MS), so this waits for it
+ * to be gone. Call it once the place has been seen back (a poll on the box's scrollTop): the attribute is set before the box is moved, so it is on the page by then.
  */
 export async function afterRestore(page: Page): Promise<void> {
-  await page.waitForTimeout(RESTORE_QUIET_MS * 2.25); // a real-time wait: the put-back of a saved place ends on the page's own 400 ms timer (src/nav/scrollMemory.ts QUIET_MS), the bars must not move in that window and nothing on the page says it is over
+  await expect(page.locator('[data-reader]'), 'the Reader has put the saved place back').not.toHaveAttribute('data-restoring', /.*/);
   await afterFrames(page);
 }
 

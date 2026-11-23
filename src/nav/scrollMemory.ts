@@ -166,7 +166,11 @@ export function useScrollMemory(slot: string): (el: HTMLElement | null) => void 
     // Until the box reaches the remembered offset (its content may still be arriving), its own
     // scroll events are not him moving it, so they are not remembered.
     let restoring = target !== undefined;
-    if (restoring) restoringBoxes.add(box);
+    if (restoring) {
+      restoringBoxes.add(box);
+      // said on the box itself, so a browser spec waits on it rather than holding real time for the put-back (tests/support/settled.ts afterRestore, mw-fnvjof.17.255)
+      box.setAttribute('data-restoring', '');
+    }
     let observer: ResizeObserver | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let quiet: ReturnType<typeof setTimeout> | undefined;
@@ -174,6 +178,7 @@ export function useScrollMemory(slot: string): (el: HTMLElement | null) => void 
     const settle = () => {
       restoring = false;
       restoringBoxes.delete(box);
+      box.removeAttribute('data-restoring');
       observer?.disconnect();
       clearTimeout(timer);
       clearTimeout(quiet);

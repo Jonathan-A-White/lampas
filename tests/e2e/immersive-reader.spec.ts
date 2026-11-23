@@ -240,7 +240,7 @@ async function shownAtAScrolledPlace(page: Page): Promise<number> {
   return at;
 }
 
-/** After a return the saved place is put back and the page is given time to react to it (the restore waits 400 ms for the text to stay still: afterRestore). */
+/** After a return the saved place is put back and the page is given time to react to it (the Reader shows data-restoring until the text has stayed still: afterRestore waits for it to go). */
 async function expectStillShown(page: Page, at: number, what: string) {
   await expect.poll(() => scrollTop(page), { message: `${what}: the saved place comes back` }).toBeGreaterThan(at - 50);
   await afterRestore(page);
