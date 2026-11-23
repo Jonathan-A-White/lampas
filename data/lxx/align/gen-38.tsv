@@ -204,7 +204,7 @@ Gen.38:8	fix	marry her as her brother-in-law,	13,14		0.80
 Gen.38:18	fix	she conceived by	33,34,35,36		0.80
 Gen.38:24	fix	daughter-in-law has grievously played the	10,11		0.80
 Gen.38:24	fix	harlot,	8		0.80
-Gen.38:25	fix	were bringing	2		0.80
+Gen.38:25	fix	they were bringing	2		0.80
 Gen.38:25	fix	by the man	9,10,11		0.80
 Gen.38:25	fix	whose these things are;	12,13,14		0.80
 Gen.38:25	fix	am with child	16,17,18		0.80
@@ -224,7 +224,34 @@ Gen.38:29	fix	came forth	7		0.80
 Gen.38:29	fix	through because of	16		0.80
 Gen.38:30	fix	came forth	3		0.80
 Gen.38:1	fix	it came to pass	0		0.80
-Gen.38:9	fix	his—it came to pass	9		0.80
+Gen.38:9	fix	his—it came to pass	5,9		0.80
 Gen.38:24	fix	it came to pass	0		0.80
 Gen.38:27	fix	it came to pass	0		0.80
 Gen.38:27	fix	her womb.	9,10,11		0.80
+Gen.38:11	fix	for he said,	22,23		0.80
+Gen.38:11	fix	of her father.	40,41,42		0.80
+Gen.38:9	fix	when he	10		0.80
+Gen.38:9	fix	seed to his brother's	25,26,27,28		0.80
+Gen.38:9	fix	he should	-		0.80
+Gen.38:12	fix	them	-		0.80
+Gen.38:12	fix	his sheep,	17,18,19		0.80
+Gen.38:12	fix	himself	20		0.80
+Gen.38:13	fix	it	-		0.80
+Gen.38:13	fix	his sheep.	15,16,17		0.80
+Gen.38:15	fix	her,	2		0.80
+Gen.38:15	fix	he thought	4		0.80
+Gen.38:15	fix	her face,	10,11,12		0.80
+Gen.38:15	fix	he knew	15		0.80
+Gen.38:16	fix	she was	21		0.80
+Gen.38:16	fix	his daughter-in-law;	18,19,20		0.80
+Gen.38:20	fix	of his shepherd	9,10,11		0.80
+Gen.38:20	fix	he found	22		0.80
+Gen.38:25	fix	she sent	0,3		0.80
+Gen.38:28	fix	it, bound	15		0.80
+Gen.38:28	fix	his hand	17,18,19		0.80
+Gen.38:29	fix	he drew back	2		0.80
+Gen.38:29	fix	his name,	21,22,23		0.80
+Gen.38:29	fix	his brother;	8,9,10		0.80
+Gen.38:29	fix	she said,	13		0.80
+Gen.38:30	fix	whose hand	8,12,13		0.80
+Gen.38:30	fix	she called	17		0.80
