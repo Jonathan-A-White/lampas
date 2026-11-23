@@ -531,7 +531,10 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
         expect(supplied(verse)).toBe(supplied(prior));
         // an aligner chunk a fix row names (mw-u2w5klk.349.32) is one the fix changed on purpose; every other aligned chunk is untouched
         const fixText = fixRows(n).filter((r) => r.ref === `Gen.${n}:${verse.n}`).map((r) => r.text.split(/\s+/));
-        const unmeant = alignedDiffs(prior, verse).filter((d) => !fixText.some((words) => d.split('|')[0].split(/\s+/).some((w) => words.includes(w))));
+        // and so is one settleLords moved (mw-u2w5klk.349.27): in a verse with a κύριος word and an English 'lord' or 'master' the aligner left in a remainder, the 'Lord', 'lord', 'master' and 'God' take the word that renders them
+        const lordsHere = verse.g.some((w) => w.l.normalize('NFC') === 'κύριος') && prior.e.some((c) => c.g.length === 0 && c.t.split(/\s+/).some((w) => ['lord', 'master'].includes(lettersOf(w))));
+        const moved = (d: string): boolean => lordsHere && d.split('|')[0].split(/\s+/).some((w) => ['lord', 'master', 'god'].includes(lettersOf(w)));
+        const unmeant = alignedDiffs(prior, verse).filter((d) => !fixText.some((words) => d.split('|')[0].split(/\s+/).some((w) => words.includes(w))) && !moved(d));
         expect(unmeant, `Gen ${n}:${verse.n}`).toEqual([]);
       });
     }
