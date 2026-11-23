@@ -184,6 +184,8 @@ for (const [name, from, to, chapter] of [
 test('with the bars away, the foot button never draws the bars or the Reader without Immersive', async ({ page }) => {
   await openEphesians2(page, 'on');
   await scrollText(page, 400);
+  // the bars are away before the foot button's scroll to the end: both scrolls inside one frame are one scroll event, to a place too near the end to hide them
+  await expectAll(page, 'hidden');
   await watchFrames(page, 'away');
   await flipTo(page, 'Ephesians 3 ›', 3);
   await untilStill(page);
@@ -210,7 +212,10 @@ test('with the bars shown, a chapter chosen in the picker never draws the Reader
 test('with the bars away, Back to the earlier chapter never draws the bars or the Reader without Immersive', async ({ page }) => {
   await openEphesians2(page, 'on');
   await scrollText(page, 400);
+  // the bars are away before the foot button's scroll to the end (both scrolls inside one frame are one scroll event, to a place too near the end to hide them): only bars away are carried to the new Reader, and the place line is drawn only with them away
+  await expectAll(page, 'hidden');
   await flipTo(page, 'Ephesians 3 ›', 3);
+  await expect(page.locator('[data-place-line]')).toHaveText(/^Ephesians 3 · /);
   await watchFrames(page, 'away');
   await page.goBack();
   await expect(page).toHaveURL(/c=2/);

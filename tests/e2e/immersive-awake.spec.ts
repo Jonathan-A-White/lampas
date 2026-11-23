@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openUnlocked } from './unlocked';
-import { afterFrames, untilStill } from '../support/settled';
+import { afterFrames, untilSettled, untilStill } from '../support/settled';
 import { openSettings, settingsHeading } from './openSettings';
 
 // The Immersive reader keeps the screen awake while the Reader is open (mw-5r3p30.309): it holds a screen wake lock, lets it go on leaving the Reader
@@ -106,6 +106,13 @@ test('where the phone has no wake lock the Reader still works', async ({ page })
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await openReader(page, 'on', false);
+  // the heading is up before the chapter's text is: a scroll of 400 px on a box that does not yet reach that far (and 320 px more, HIDE_AFTER_PX and NEAR_END_PX of src/immersive.ts) is clamped to near the end,
+  // where scrolling hides nothing, and no later scroll event comes. So the text is given its room first.
+  await untilSettled(
+    () => page.evaluate(() => { const box = document.querySelector('[data-reader]') as HTMLElement; return box.scrollHeight - box.clientHeight; }),
+    (room) => (room < 400 + 320 + 100 ? `the text scrolls ${room} px: not yet room for a scroll of 400` : null),
+  );
+  await untilStill(page);
   await page.evaluate(() => {
     (document.querySelector('[data-reader]') as HTMLElement).scrollTop += 400;
   });
