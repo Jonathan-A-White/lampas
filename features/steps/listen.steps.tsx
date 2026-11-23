@@ -23,6 +23,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../te
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings } from '../../tests/support/settings-pages';
 import { findButton } from '../../tests/support/find-button';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
@@ -46,7 +47,6 @@ interface RawVerse {
 const ROMANS_8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as { verses: RawVerse[] };
 const englishOf = (n: number): string => ROMANS_8.verses.find((v) => v.n === n)?.e.map((c) => c.t.trim()).join(' ') ?? '';
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 interface Options {
   tutor?: boolean;
@@ -261,8 +261,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the phone finishes speaking until verse {int} is being read', untilVerse);
     And('he long presses the first word of verse {int} in the passage', async (_, n: number) => {
       const word = within(passageVerse(n)).getAllByRole('button')[0];
-      await user.pointer({ keys: '[MouseLeft>]', target: word, coords: { clientX: 100, clientY: 100 } });
-      await sleep(650);
+      await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target: word, coords: { clientX: 100, clientY: 100 } }));
       await user.pointer({ keys: '[/MouseLeft]', target: word, coords: { clientX: 100, clientY: 100 } });
     });
     Then('the passage is paused at verse {int}', pausedAt);

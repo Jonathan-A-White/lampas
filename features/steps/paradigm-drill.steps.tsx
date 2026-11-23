@@ -351,6 +351,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
     Then('the review {string} {string} still has {int} lapse', async (_, kind: string, id: string, lapses: number) => {
       // the cell is graded before the row is read: a write that was going to come has come
+      // a real-time wait: nothing must happen in this window (a write the grading would wrongly make comes by now, and no event says there is none)
       await new Promise((resolve) => setTimeout(resolve, 50));
       const row = await db.reviews.get([kind, id]);
       expect(row?.lapses).toBe(lapses);
@@ -368,6 +369,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
     When('he taps the cell {string} and then {string}', tapAndGrade);
     Then('the schedule holds no {string} row', async (_, kind: string) => {
+      // a real-time wait: nothing must happen in this window (a write the grading would wrongly make comes by now, and no event says there is none)
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(await db.reviews.where('kind').equals(kind).count()).toBe(0);
     });

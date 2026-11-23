@@ -101,7 +101,6 @@ const bar = () => {
   expect(bars()).toHaveLength(1);
   return bars()[0];
 };
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const headingEl = (text: string): HTMLElement => {
   const found = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((h) => squash(h.textContent) === text);
   if (!found) throw new Error(`no heading ${text}`);
@@ -122,8 +121,11 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const closed = () => waitFor(() => expect(queryView()).toBeNull());
   const back = async () => {
+    // Back is done when the browser's popstate has come and the app has taken it in
+    const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
     act(() => window.history.back());
-    await sleep(30);
+    await popped;
+    await act(async () => {});
   };
   const choose = async (_: unknown, action: string) => {
     await user.click(await findButton(action, viewEl));

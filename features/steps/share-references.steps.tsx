@@ -3,7 +3,7 @@
 // a row in Dexie as the worker parks it; the app is the whole App, so a tapped link opens the Reader. The mill is the fake Postern of tests/support/fake-postern.ts,
 // the canvas the image seam of src/images/shrink.ts.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi, type MockInstance } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -305,8 +305,10 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps Open on the card', openOnCard);
     Then('the Reader is open at Romans 8 with verse 28 brought to the top', readerAtEight);
     When('he goes Back', async () => {
-      window.history.back();
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
+      act(() => window.history.back());
+      await popped;
+      await act(async () => {});
     });
     Then('the sheet {string} is there', async (_, name: string) => {
       expect(await screen.findByRole('dialog', { name })).toBeInTheDocument();
@@ -352,8 +354,10 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect((dialog.textContent ?? '').replace(/\s+/g, ' ')).toMatch(new RegExp(line)));
     });
     When('he goes Back', async () => {
-      window.history.back();
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
+      act(() => window.history.back());
+      await popped;
+      await act(async () => {});
     });
     Then('the sheet {string} is not there', (_, name: string) => {
       expect(screen.queryByRole('dialog', { name })).toBeNull();

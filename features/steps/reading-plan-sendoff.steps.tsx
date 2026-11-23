@@ -231,6 +231,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he comes back to Lampas', comeBack);
     Then('there is no return sheet', async () => {
+      // a real-time wait: nothing must happen in this window (no return sheet is drawn after he comes back; a sheet that wrongly comes does so on the page's next tasks)
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(screen.queryByRole('dialog', { name: 'Where did you get to?' })).toBeNull();
     });
@@ -268,6 +269,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he comes back to Lampas', comeBack);
     Then('there is no return sheet', async () => {
+      // a real-time wait: nothing must happen in this window (no return sheet is drawn after he comes back; a sheet that wrongly comes does so on the page's next tasks)
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(screen.queryByRole('dialog', { name: 'Where did you get to?' })).toBeNull();
     });

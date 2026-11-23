@@ -9,6 +9,7 @@ import Dexie from 'dexie';
 import { afterAll, expect, vi } from 'vitest';
 import { typeQuestion } from '../../tests/support/composer';
 import { findButton } from '../../tests/support/find-button';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
@@ -23,7 +24,6 @@ import { audibleStartOf } from '../../src/resources/audioBible';
 import { englishDictionaryLink } from '../../src/resources/logos';
 import { browserEnv } from '../../src/resources/openApp';
 import { getReading, stopReading } from '../../src/speech/readAloud';
-import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -423,8 +423,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given(phone, () => openOn('Jonah 1', {}, true));
     When('he long presses the chunk {string} of verse {int}', async (_, text: string, verse: number) => {
       const target = chunkEl(verse, text);
-      await user.pointer({ keys: '[MouseLeft>]', target });
-      await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
+      await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target }));
       await user.pointer({ keys: '[/MouseLeft]', target });
     });
     Then('the phone says {string} in {string}', (_, text: string, lang: string) => {
@@ -525,6 +524,7 @@ describeFeature(feature, ({ Scenario }) => {
   const judges = (logos: boolean, audio: boolean) => () => openOn('Judges 3', { ...withLogos(logos), ...withAudio(audio) });
   const footBare = async (): Promise<void> => {
     await nav();
+    // a real-time wait: nothing must happen in this window (the foot's links are read from the settings after the chapter has drawn, and no event says the read is over)
     await new Promise((resolve) => setTimeout(resolve, 100));
     expect(foot()).toBeNull();
     expect(screen.queryByRole('link', { name: /Read in Logos|Listen in Audible/ })).toBeNull();
