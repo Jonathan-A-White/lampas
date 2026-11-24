@@ -8,6 +8,8 @@ import { branches, schemasAt, type FieldCheck } from '../support/grind-examples'
 import type { Schema } from '../support/schema-validate';
 import { resolveRef } from '../support/schema-validate';
 import { PARADIGMS } from '../../src/data/paradigms';
+import '../support/grinds-in-graph';
+import '../support/grind-examples-in-graph';
 
 const readJson = <T>(rel: string): T => JSON.parse(readFileSync(rel, 'utf8')) as T;
 
