@@ -40,15 +40,29 @@
       "leftovers": [
         ["12:1:come","paired-or-added-12-23"],
         ["12:20:forward","paired-or-added-12-23"]
+      ],
+      "placePairs": [
+        ["12:4 departed @8","read"],
+        ["12:5 they had got @25","read"],
+        ["12:6 Chananites @18","read"],
+        ["12:7 appeared @22","read"],
+        ["12:8 he departed @1","read"],
+        ["12:9 went @4","read"],
+        ["12:9 wilderness. @8","read"],
+        ["12:10 sojourn @11","read"],
+        ["12:15 princes @4","read"],
+        ["12:16 calves, @12","read"],
+        ["12:16 menservants, @15","read"],
+        ["12:16 women-servants, @17","read"],
+        ["12:18 tell @12","read"]
       ]
     },
     "13": {
       "gaps": 0,
-      "model": 11,
+      "model": 10,
       "leftovers": [
         ["13:3:place","paired-or-added-12-23"],
         ["13:6:land","paired-or-added-12-23"],
-        ["13:7:cattle","paired-or-added-12-23"],
         ["13:9:go","paired-or-added-12-23"],
         ["13:9:go","paired-or-added-12-23"],
         ["13:9:go","paired-or-added-12-23"],
@@ -57,6 +71,25 @@
         ["13:11:chanaan","next-verse-12-23"],
         ["13:11:land","next-verse-12-23"],
         ["13:11:lived","next-verse-12-23"]
+      ],
+      "placePairs": [
+        ["13:1 wilderness. @20","read"],
+        ["13:2 cattle, @5","read"],
+        ["13:4 first, @9","read"],
+        ["13:5 oxen, @9","read"],
+        ["13:5 tents. @11","read"],
+        ["13:7 Chananites @22","read"],
+        ["13:7 Pherezites @25","read"],
+        ["13:8 herdmen @17","read"],
+        ["13:10 Lord, @28","read"],
+        ["13:10 observed @6","read"],
+        ["13:12 lived @8","read"],
+        ["13:14 seaward; @33","read"],
+        ["13:15 ever. @16","read"],
+        ["13:16 dust @15","read"],
+        ["13:16 dust @7","read"],
+        ["13:17 ever. @23","read"],
+        ["13:18 lived @4","read"]
       ]
     },
     "14": {
@@ -64,6 +97,24 @@
       "model": 1,
       "leftovers": [
         ["14:22:lord","added-14"]
+      ],
+      "placePairs": [
+        ["14:1 Elam, @16","read"],
+        ["14:1 Thargal @18","read"],
+        ["14:4 they revolted. @9","read"],
+        ["14:4 they served @2","read"],
+        ["14:5 Ommaeans @28","read"],
+        ["14:7 princes @15","read"],
+        ["14:9 Elam, @3","read"],
+        ["14:12 lived @17","read"],
+        ["14:13 Hebrew; @8","read"],
+        ["14:13 lived @11","read"],
+        ["14:16 cavalry @4","read"],
+        ["14:16 he recovered @1","read"],
+        ["14:17 Saby; @26","read"],
+        ["14:19 made @13","read"],
+        ["14:20 tithe @16","read"],
+        ["14:22 made @16","read"]
       ]
     },
     "15": {
@@ -72,6 +123,18 @@
       "leftovers": [
         ["15:2:heir","added-15-23"],
         ["15:3:grieved","added-15-23"]
+      ],
+      "placePairs": [
+        ["15:3 shall succeed @12","read"],
+        ["15:9 pigeon. @16","read"],
+        ["15:13 shall surely @4","read"],
+        ["15:16 they shall return @3","read"],
+        ["15:17 set, @6","read"],
+        ["15:20 Raphaim, @8","read"],
+        ["15:21 Amorites, @2","read"],
+        ["15:21 Chananites, @5","read"],
+        ["15:21 Evites, @8","read"],
+        ["15:21 Jebusites. @14","read"]
       ]
     },
     "16": {
@@ -81,6 +144,17 @@
         ["16:1:children","paired-or-added-12-23"],
         ["16:13:appeared","paired-or-added-12-23"],
         ["16:13:god","paired-or-added-12-23"]
+      ],
+      "placePairs": [
+        ["16:1 Agar. @15","read"],
+        ["16:3 handmaid, @11","read"],
+        ["16:4 Agar, @3","read"],
+        ["16:5 injured @5","read"],
+        ["16:6 she fled @24","read"],
+        ["16:7 wilderness, @14","read"],
+        ["16:8 Agar, @6","read"],
+        ["16:10 I will surely @6","read"],
+        ["16:12 wild @2","read"]
       ]
     },
     "17": {
@@ -93,6 +167,16 @@
         ["17:17:bear","paired-or-added-12-23"],
         ["17:17:old","paired-or-added-12-23"],
         ["17:19:god","paired-or-added-12-23"]
+      ],
+      "placePairs": [
+        ["17:2 will establish @1","read"],
+        ["17:6 I will increase @1","read"],
+        ["17:14 male, @2","read"],
+        ["17:16 shall become @13","read"],
+        ["17:19 will establish @22","read"],
+        ["17:20 I have heard @4","read"],
+        ["17:20 I will make @20","read"],
+        ["17:20 will increase @10","read"]
       ]
     },
     "18": {
@@ -110,6 +194,21 @@
         ["18:30:sake","paired-or-added-12-23"],
         ["18:31:able","paired-or-added-12-23"],
         ["18:31:find","paired-or-added-12-23"]
+      ],
+      "placePairs": [
+        ["18:5 I will bring @1","read"],
+        ["18:7 dress @19","read"],
+        ["18:7 kine, @3","read"],
+        ["18:7 servant, @15","read"],
+        ["18:16 towards @7","read"],
+        ["18:19 justice @19","read"],
+        ["18:23 wicked, @8","read"],
+        ["18:23 wicked? @15","read"],
+        ["18:24 spare @10","read"],
+        ["18:25 right? @27","read"],
+        ["18:26 there should @4","read"],
+        ["18:27 I have begun @5","read"],
+        ["18:29 he continued @1","read"]
       ]
     },
     "19": {
@@ -120,11 +219,36 @@
         ["19:20:one","added-15-23"],
         ["19:27:go","added-15-23"],
         ["19:38:saying","added-15-23"]
+      ],
+      "placePairs": [
+        ["19:4 compassed @10","read"],
+        ["19:8 you⌃ use @14","read"],
+        ["19:11 wearied @17","read"],
+        ["19:12 sons-in-law, @10","read"],
+        ["19:17 stay @19","read"],
+        ["19:19 escape @26","read"],
+        ["19:22 anything @9","read"],
+        ["19:22 escape @3","read"],
+        ["19:23 risen @2","read"],
+        ["19:25 lived @17","read"],
+        ["19:26 pillar @10","read"],
+        ["19:28 smoke @23","read"],
+        ["19:28 towards @3","read"],
+        ["19:28 towards @9","read"],
+        ["19:30 lived @23","read"],
+        ["19:30 lived @6","read"],
+        ["19:31 younger, @6","read"],
+        ["19:33 lay @14","read"],
+        ["19:34 yesternight @13","read"],
+        ["19:34 younger, @10","read"],
+        ["19:35 arose. @28","read"],
+        ["19:37 present @21","read"],
+        ["19:38 present @22","read"]
       ]
     },
     "20": {
       "gaps": 0,
-      "model": 12,
+      "model": 11,
       "also": ["yes"],
       "leftovers": [
         ["20:2:sake","'for her sake' (δι᾽ αὐτήν): both Greek words are the aligner's, paired to 'for' and 'her'"],
@@ -134,18 +258,51 @@
         ["20:9:ought","'which no one ought to do': the aligner paired 'no one' with μή τι, and οὐδεὶς has no English left to take it"],
         ["20:11:why","Brenton's 'Why' has no Greek word"],
         ["20:11:worship","'the worship of God': θεοσέβεια is the aligner's, paired to 'God'"],
-        ["20:16:countenance","'the price of your countenance': the aligner paired 'price' with προσώπου, and τιμήν has no English left"],
         ["20:16:speak","'speak the truth' renders ἀλήθευσον, the aligner's, paired to 'truth'"],
         ["20:16:things","'in all things' renders πάντα, the aligner's, paired to 'all'"],
         ["20:16:women","'to all the women': ταῖς is the aligner's, paired to 'the'"],
         ["20:17:children","'they bore children' renders ἔτεκον, the aligner's, paired to 'bore'"],
         ["20:17:wife","'his wife' renders γυναῖκα, the aligner's, paired to 'women'"]
+      ],
+      "placePairs": [
+        ["20:1 lived @9","read"],
+        ["20:1 sojourned @18","read"],
+        ["20:6 suffered @28","read"],
+        ["20:13 you shall perform @19","read"],
+        ["20:14 calves, @7","read"],
+        ["20:14 servants, @9","read"]
       ]
     },
     "21": {
       "gaps": 0,
       "model": 0,
-      "leftovers": []
+      "leftovers": [],
+      "placePairs": [
+        ["21:7 child @12","read"],
+        ["21:7 say @3","read"],
+        ["21:9 Agar @5","read"],
+        ["21:9 sporting @12","read"],
+        ["21:12 bondwoman; @19","read"],
+        ["21:14 Agar, @13","read"],
+        ["21:14 loaves @7","read"],
+        ["21:15 she cast @8","read"],
+        ["21:17 Agar @18","read"],
+        ["21:17 Agar? @27","read"],
+        ["21:19 filled @15","read"],
+        ["21:19 she went @13","read"],
+        ["21:20 lived @10","read"],
+        ["21:20 wilderness, @13","read"],
+        ["21:21 he lived @1","read"],
+        ["21:21 wilderness, @4","read"],
+        ["21:23 have performed @22","read"],
+        ["21:23 have sojourned. @33","read"],
+        ["21:23 injure @7","read"],
+        ["21:23 shall deal @25","read"],
+        ["21:25 servants @13","read"],
+        ["21:27 calves, @5","read"],
+        ["21:30 dug @17","read"],
+        ["21:32 they returned @24","read"]
+      ]
     },
     "22": {
       "gaps": 0,
@@ -170,6 +327,22 @@
         ["22:22:bathuel","paired-or-added-12-23"],
         ["22:22:begot","paired-or-added-12-23"],
         ["22:22:rebecca","paired-or-added-12-23"]
+      ],
+      "placePairs": [
+        ["22:2 go @13","read"],
+        ["22:3 servants, @14","read"],
+        ["22:5 far, @18","read"],
+        ["22:5 will proceed @16","read"],
+        ["22:6 laid @8","read"],
+        ["22:7 son? @15","read"],
+        ["22:8 will provide @5","read"],
+        ["22:9 laid @15","read"],
+        ["22:9 laid @24","read"],
+        ["22:10 kill @9","read"],
+        ["22:13 Sabec; @14","read"],
+        ["22:17 enemies. @34","read"],
+        ["22:19 servants, @5","read"],
+        ["22:20 things, @4","read"]
       ]
     },
     "23": {
@@ -180,6 +353,19 @@
         ["23:15:land","added-15-23"],
         ["23:15:nay","added-15-23"],
         ["23:15:worth","added-15-23"]
+      ],
+      "placePairs": [
+        ["23:2 lament @20","read"],
+        ["23:2 valley, @10","read"],
+        ["23:10 Chettite @12","read"],
+        ["23:10 children @6","read"],
+        ["23:10 entered @23","read"],
+        ["23:10 sitting @2","read"],
+        ["23:13 price @20","read"],
+        ["23:16 didrachmas @21","read"],
+        ["23:16 he mentioned @13","read"],
+        ["23:17 opposite @14","read"],
+        ["23:18 entered @11","read"]
       ]
     },
     "24": {

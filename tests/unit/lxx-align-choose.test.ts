@@ -726,6 +726,26 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
     [23, 6, 'from you,', ['ἀπὸ', 'σοῦ,']],
     [23, 6, 'you should not', []],
     [23, 6, 'your dead there.', ['νεκρόν', 'σου', 'ἐκεῖ.']],
+    // mw-u2w5klk.349.91: the pairs by place of Genesis 12 to 23 read one by one against their verses (the sidecar's placePairs); these were on a neighbour's Greek word or on a numeral's other half
+    [12, 4, 'seventy-five', ['ἑβδομήκοντα', 'πέντε']],
+    [12, 4, 'years old,', ['ἐτῶν']],
+    [12, 5, 'they went forth', ['ἐξήλθοσαν', 'πορευθῆναι']],
+    [12, 13, 'am his', ['εἰμί,']],
+    [12, 13, 'be', ['γένηται']],
+    [12, 13, 'on account of', ['διὰ']],
+    [13, 7, 'herdmen', ['ποιμένων']],
+    [13, 7, "of Abram's cattle,", ['κτηνῶν', 'τοῦ', 'Ἀβρὰμ']],
+    [14, 14, 'three hundred', ['τριακοσίους']],
+    [14, 14, 'eighteen,', ['δέκα', 'ὀκτώ,']],
+    [16, 14, 'of him whom I have', ['οὗ']],
+    [16, 14, 'openly', ['ἐνώπιον']],
+    [17, 1, 'ninety-nine', ['ἐνενήκοντα', 'ἐννέα,']],
+    [17, 1, 'years old,', ['ἐτῶν']],
+    [19, 19, 'perhaps the calamity overtake me', ['καταλάβῃ', 'τὰ', 'κακὰ']],
+    [19, 21, 'about this thing, that I should', ['ῥήματι', 'τούτῳ', 'τοῦ']],
+    [19, 28, 'surrounding country,', ['γῆς', 'περιχώρου,']],
+    [20, 16, 'price', ['τιμὴν']],
+    [20, 16, 'countenance,', ['προσώπου']],
   ];
   const chunkTexted = (n: number, v: number, text: string): EnglishChunk | undefined => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t === text);
 
