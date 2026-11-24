@@ -2,7 +2,7 @@
 // (so Back brings the sheet back, src/talkReturn.ts) and opens that table on the Paradigms screen. An id the screen lacks draws nothing and raises nothing; a stored talk without the kind loads as ever.
 import '@testing-library/jest-dom/vitest';
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { instructionsOf } from '../../scripts/grind-parts';
@@ -12,9 +12,16 @@ import { db, type AnswerLink } from '../../src/data/db';
 import { PARADIGMS, paradigmById } from '../../src/data/paradigms';
 import { addTurn, listTurns } from '../../src/data/repositories';
 import { paradigmOf } from '../support/routes';
+import { afterTurns } from '../support/turns';
 import { isTalkAnswer, type TalkScope } from '../../src/services/talk';
 import { TutorLinks } from '../../src/TutorLinks';
 import { dropHeldTalk, heldTalk, tableIsFromTalk } from '../../src/talkReturn';
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 const scope: TalkScope = { title: 'Drill it', chapter: NO_CHAPTER, verse: null, screen: { name: 'Drill it', facts: [] }, kept: 'screen.drill-it.7' };
 
@@ -60,7 +67,7 @@ describe('the paradigm chip', () => {
 
   it('draws nothing, and raises nothing, for an id no table has; nothing at all when it is the only link', async () => {
     render(<TutorLinks links={[{ kind: 'paradigm', table: 'no-such-table' }]} onLeave={() => undefined} scope={scope} />);
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await letItRun();
     expect(screen.queryByRole('button', { name: /^Table:/ })).toBeNull();
     expect(document.querySelector('[data-tutor-links]')).toBeNull();
   });

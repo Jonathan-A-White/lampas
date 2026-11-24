@@ -9,6 +9,7 @@ import { closeSermons } from '../../src/sermons/openSermons';
 import { setSermonSources } from '../../src/sermons';
 import { row, sourceOf, TEST_ROWS } from '../support/sermon-sources';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
+import { afterTurns } from '../support/turns';
 
 afterEach(() => {
   cleanup();
@@ -16,7 +17,11 @@ afterEach(() => {
   forgetTestSermons();
 });
 
-const settle = (ms = 50) => act(() => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const settle = () =>
+  act(async () => {
+    await afterTurns();
+  });
 
 describe('the Sermons door', () => {
   beforeEach(() => registerTestSermons());

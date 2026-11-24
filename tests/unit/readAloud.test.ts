@@ -10,6 +10,7 @@ import { weaveVerse } from '../../src/data/weave';
 import { continueReading, getReading, pauseReading, planOf, resumeReading, runsOf, startReading, stopReading } from '../../src/speech/readAloud';
 import { chosenPronunciation, speakWord } from '../../src/speech/greek';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
+import { afterTurns } from '../support/turns';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse = (n: number): Verse => {
@@ -200,7 +201,8 @@ describe('the span of a reading (Play to and the shorter readings)', () => {
       'fetch',
       vi.fn(async () => new Response(JSON.stringify(next), { status: 200, headers: { 'Content-Type': 'application/json' } })),
     );
-  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+  // what is queued has run (the chapter fetch, the plan it makes): turns of the task queue, not time (tests/support/turns.ts)
+  const settle = () => afterTurns();
   const spokenVerses: number[] = [];
   beforeEach(() => {
     forgetChapters();

@@ -2,7 +2,7 @@
 // the study tools followed the chapter's language (mw-u2w5klk.15, the Septuagint epic's R5). tests/fixtures/septuagint-off-pages.json holds each page's text and HTML (ids stripped) as the code of 0.7.136 drew them;
 // RECORD_PAGES=1 writes it afresh (only ever on code that has not changed those pages). The two Diagram pages were re-recorded in batch 426: the Reader header now draws a Menu button where the Settings gear stood (mw-5r3p30.1111). They were again in mw-fnvjof.17.32: the Verse view's tools line became one row that scrolls sideways (only its markup changed). And again for mw-u2w5klk.293: the header's Hebrew / Greek button takes a hold, so it carries the no-select classes. And again for mw-fnvjof.17.55: the Reader header title draws its name and chapter as pieces in one row, so the wrapper spans of the title went. And again for mw-fnvjof.17.116: the chips row's wrapper carries data-reader-chips-wrap (only that attribute changed). And again in batch 544: the English poetry lines (mw-5r3p30.1164) and the Reader chips' wrapper met in the two Diagram pages' markup; only markup changed, the text is the same. And again for mw-5r3p30.1166: Romans 8:36, a verse of poetry, is drawn in its Greek lines, so its row in the Diagram page carries the lines' flex classes; only markup changed, the text is the same. And again for mw-fnvjof.17.157: the Verse view's tools line sits in a wrapper of its own (the sideways cue's chevron needs the row's own edge); only markup changed, the text is the same. And again for mw-5r3p30.1228: the tools line takes whitespace-nowrap and a no-shrink rule for the In Logos doors; only markup changed, the text is the same.
 import 'fake-indexeddb/auto';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -19,6 +19,7 @@ import { stubChapterFetch } from '../support/chapter-fetch';
 import { findButton } from '../support/find-button';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../support/fake-postern';
 import { seedHisWords } from '../support/his-words';
+import { afterTurns } from '../support/turns';
 
 const FILE = 'tests/fixtures/septuagint-off-pages.json';
 const RECORD = process.env.RECORD_PAGES === '1';
@@ -44,11 +45,13 @@ const take = (name: string): void => {
   pages[name] = { text: (document.body.textContent ?? '').replace(/\s+/g, ' ').trim(), html };
 };
 
-/** Waits until the screen has not changed for a moment: the pages draw from live queries and a loaded host takes longer than a fixed wait. */
+/** Waits until the screen has not changed over a stretch of turns of the task queue: the pages draw from live queries and a loaded host takes longer than a fixed wait. */
 async function stillScreen(): Promise<void> {
   let last = '';
   for (let tries = 0; tries < 100; tries += 1) {
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await act(async () => {
+      await afterTurns(); // turns of the task queue, not time (tests/support/turns.ts): the same on a quiet host and a loaded one
+    });
     const now = document.body.innerHTML;
     if (now === last) return;
     last = now;

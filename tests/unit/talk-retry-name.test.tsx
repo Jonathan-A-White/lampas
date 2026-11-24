@@ -45,10 +45,11 @@ describe('a Retry of a first turn whose ask failed', () => {
     expect(first.talk).toBe(`${REF}@${first.tapAt}`);
 
     // the Retry comes later: a time of its own would be a different name
-    await new Promise((done) => setTimeout(done, 20));
+    const later = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 20_000); // clock: the clock moves 20 s on
     asked.mockImplementationOnce(answers);
     act(() => result.current.say(scope, 'Why?'));
     await waitFor(async () => expect(await listTurns(REF)).toHaveLength(1));
+    later.mockRestore();
     expect((asked.mock.calls[1][1] as AskOptions).talk).toBe(first.talk);
     expect((await listTurns(REF))[0].when).toBe(first.tapAt);
 

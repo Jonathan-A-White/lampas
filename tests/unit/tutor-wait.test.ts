@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { CONTACT_LOST_MS, OFFLINE_MESSAGE, TUTOR_OFFLINE_MESSAGE, TutorError, askGrind, tutorTimings } from '../../src/services/tutor';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
+import { onTheFakeClock } from '../support/fake-clock-delay';
 
 const key = Uint8Array.from(Utils.toArray('00'.repeat(31) + '09', 'hex'));
 const isAnswer = (value: unknown): value is { verdict: string } => typeof value === 'object' && value !== null && 'verdict' in value;
@@ -25,7 +26,7 @@ beforeEach(() => {
     const how = behave(url.pathname, (init?.method ?? 'GET').toUpperCase());
     if (how?.unreachable) throw new TypeError('Failed to fetch');
     if (how?.hang) return new Promise<Response>(() => undefined);
-    if (how?.delayMs) await new Promise((resolve) => setTimeout(resolve, how.delayMs));
+    if (how?.delayMs) await onTheFakeClock(how.delayMs);
     return postern.fetch(input, init);
   });
 });

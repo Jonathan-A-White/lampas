@@ -6,6 +6,7 @@ import { SERMON_INDEX, sermonBookUrl, type SermonIndex } from '../../src/data/se
 import { db } from '../../src/data/db';
 import { DATA_CACHE } from '../../src/dataCache';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
+import { afterTurns, oneTurn } from '../support/turns';
 import {
   OFFLINE_CONCURRENCY,
   getOfflineScope,
@@ -76,7 +77,8 @@ const LXX_CHAPTERS = ['/data-lxx/gen/1.json?v=aaaaaaaaaaaa', '/data-lxx/gen/3.js
 const deps = (s: Setup) => ({ caches: s.caches, fetcher: s.fetcher, events: s.events, isOnline: () => true, sermons: NO_SERMONS, lxx: LXX });
 
 const timeout = ASYNC_WAIT_MS;
-const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+// what is queued has run: turns of the task queue, not time (tests/support/turns.ts)
+const tick = () => afterTurns();
 
 beforeEach(async () => {
   await db.settings.clear();
@@ -240,7 +242,7 @@ describe('runOfflineCopy', () => {
     const s = setup(async () => {
       flying++;
       most = Math.max(most, flying);
-      await tick();
+      await oneTurn(); // the fetch is in flight for a turn of the task queue
       flying--;
     });
     await runOfflineCopy('nt', deps(s));

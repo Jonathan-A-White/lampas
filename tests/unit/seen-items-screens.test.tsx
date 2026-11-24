@@ -1,13 +1,14 @@
 // The Drill it screens serve a kept item (mw-indx1x6.1, docs/grammar.md 'More items from the mill'): Drill it and the short drill ask a kept item of the idea in place of one built question,
 // once, note what they ask (tests/unit/seen-items.test.ts), and with nothing kept ask built questions from the phone alone.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { buildDrillItemsRequest, checkedItems, type AnsweredItem, type DrillItemsAnswer, type DrillItemsRequest } from '../../src/data/grammar/fetchedItems';
 import { shortDrill } from '../../src/data/grammar/drillPlan';
+import { afterTurns } from '../support/turns';
 import { ideaOf } from '../../src/data/grammar/ladder';
 import type { GrammarQuestion } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
@@ -57,7 +58,10 @@ describe('the Drill it screens', () => {
     // used up: the next Drill it asks built questions only
     render(<DrillItScreen ideaId={IDEA} mode="practice" passage={passage} onResult={noop} onClose={noop} />);
     await screen.findByTestId('grammar-prompt');
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // nothing is to change, and no event ends the wait: what is queued has run and React has drawn it (tests/support/turns.ts)
+    await act(async () => {
+      await afterTurns();
+    });
     expect(promptShown()).not.toBe(TAP.prompt);
   });
 

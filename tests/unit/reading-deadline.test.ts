@@ -7,6 +7,7 @@ import { askGrind, OFFLINE_MESSAGE, TUTOR_OFFLINE_MESSAGE, TutorError, tutorTimi
 import { askVerseRead, buildReadingRequest, isVerseReadAnswer, READING_TOO_LONG_MESSAGE, READING_UPLOAD_TOO_SLOW_MESSAGE, readingDeadlineMs, scorerLimitMs, uploadTimeoutMs } from '../../src/services/reading';
 import type { Recording } from '../../src/audio/recorder';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
+import { onTheFakeClock } from '../support/fake-clock-delay';
 
 const key = Uint8Array.from(Utils.toArray('00'.repeat(31) + '09', 'hex'));
 const ANSWER = { status: 'answered', answer: { verdict: 'well-read', note: 'Well read.', focus_words: [] } } as const;
@@ -38,7 +39,7 @@ beforeEach(() => {
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = new URL(typeof input === 'string' ? input : input.toString());
     const delay = delayOf(url.pathname, (init?.method ?? 'GET').toUpperCase());
-    if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+    if (delay) await onTheFakeClock(delay);
     return postern.fetch(input, init);
   });
 });

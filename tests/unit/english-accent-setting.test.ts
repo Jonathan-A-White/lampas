@@ -3,7 +3,7 @@
 // holds 'English accent' (American | British | IPA (the standard)), kept on the device; it sets the accent every 'as in' hint is said in, and every tutor
 // grist carries it as `english_accent`, with the grinds' instructions saying to give sound examples and respellings for it.
 import { readFileSync } from 'node:fs';
-import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import type { Verse } from '../../src/data/chapter';
 import { ideaOf } from '../../src/data/grammar/ladder';
@@ -22,6 +22,9 @@ import { startSpeechSettingsSync } from '../../src/speech/settingsSync';
 import type { Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
 import '../support/grinds-in-graph';
+import { ASYNC_WAIT_MS } from '../support/timeouts';
+
+const timeout = ASYNC_WAIT_MS;
 
 const modern = pronunciationOf('modern');
 
@@ -75,11 +78,7 @@ describe('the setting', () => {
     await db.settings.put({ key: 'englishAccent', value: 'british' });
     const stop = startSpeechSettingsSync();
     try {
-      await new Promise<void>((resolve, reject) => {
-        const until = performance.now() + 5000;
-        const check = () => (chosenAccent().id === 'british' ? resolve() : performance.now() > until ? reject(new Error('never loaded')) : setTimeout(check, 10));
-        check();
-      });
+      await vi.waitFor(() => expect(chosenAccent().id).toBe('british'), { timeout });
     } finally {
       stop();
     }
