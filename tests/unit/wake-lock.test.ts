@@ -33,7 +33,10 @@ afterEach(() => {
   delete (navigator as unknown as { wakeLock?: unknown }).wakeLock;
 });
 
-const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+// the lock's whole chain (request, then the sentinel kept) is promises only: draining the microtask queue lets it finish, with no clock
+const settle = async () => {
+  for (let i = 0; i < 20; i += 1) await Promise.resolve();
+};
 
 describe('wake lock holders', () => {
   it('asks for the lock when a holder wants it, once for two holders, and releases it on the last one letting go', async () => {
