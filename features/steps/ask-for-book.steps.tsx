@@ -19,7 +19,7 @@ import { askAboutLibrary, askedLine, libraryRefusal } from '../../src/services/b
 import { readExport } from '../../src/library/parseExport';
 import type { ListedRow } from '../../src/library/usableRows';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { openRequests } from '../../src/nav/route';
+import { openRequests } from '../../tests/support/routes';
 import { CATALOGUE, CATALOGUE_VERSION } from '../../src/resources/catalogue';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';

@@ -11,7 +11,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { ESSAY_PATH, type Route } from '../../src/nav/route';
+import { ESSAY_PATH, type Route } from '../support/routes';
 import { forgetScrolls, restoreScrolls } from '../../src/nav/scrollMemory';
 import { stubChapterFetch } from '../support/chapter-fetch';
 

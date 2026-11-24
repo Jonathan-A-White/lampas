@@ -17,7 +17,7 @@ import { goOnNow } from '../../src/handsFree/playback';
 import { handsFreeSeam, resetHandsFree, runHandsFree } from '../../src/handsFree/session';
 import { cardOf } from '../../src/markdown/verseLinks';
 import { answerReadHere, forgetRead, pendingRead } from '../../src/nav/readerRequest';
-import { readerOf } from '../../src/nav/route';
+import { readerOf } from '../support/routes';
 import { getPassagePlayer, playPassages, stopPassage } from '../../src/speech/passagePlayer';
 import { getReading, pauseReading, planOf, startReading, stopReading } from '../../src/speech/readAloud';
 import { resetRecordedVoice } from '../../src/speech/recordedVoice';

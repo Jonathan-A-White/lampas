@@ -2,7 +2,7 @@
 // when going on, the last (a page past the end) going back. jsdom has no layout, so the page shown is proven by tests/e2e/turn-pages.spec.ts.
 import { beforeEach, expect, it } from 'vitest';
 import { keptPage, forgetScrolls } from '../../src/nav/scrollMemory';
-import { readerOf } from '../../src/nav/route';
+import { readerOf } from '../support/routes';
 import { crossChapter } from '../../src/reader/crossChapter';
 
 beforeEach(() => {

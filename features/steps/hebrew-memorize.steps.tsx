@@ -14,7 +14,7 @@ import { clearBus } from '../../src/events/bus';
 import { MemorizeScreen } from '../../src/memorize/MemorizeScreen';
 import { memorizeTarget } from '../../src/memorize/target';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { openMemorizeSession } from '../../src/nav/route';
+import { openMemorizeSession } from '../../tests/support/routes';
 import { hebrewKeyboardSetting } from '../../src/settings/definitions/hebrewKeyboard';
 import { setSetting } from '../../src/settings/store';
 import { stopReading } from '../../src/speech/readAloud';

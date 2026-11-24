@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { holdStillWanted, holdIdea, dropHeldIdea } from '../../src/ideaReturn';
-import { sameScreenAddress } from '../../src/nav/route';
+import { sameScreenAddress } from '../support/routes';
 import { holdTalkStillWanted, holdTalk, dropHeldTalk } from '../../src/talkReturn';
 import { holdWord, holdWordStillWanted, dropHeldWord } from '../../src/wordReturn';
 import type { Chapter } from '../../src/data/chapter';

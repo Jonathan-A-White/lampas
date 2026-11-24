@@ -11,7 +11,7 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
-import { readerOf } from '../../src/nav/route';
+import { readerOf } from '../../tests/support/routes';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { closeDatabase } from './close-database';

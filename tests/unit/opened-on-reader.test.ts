@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 async function routeModuleLoadedAt(hash: string) {
   window.history.replaceState(null, '', `/${hash}`);
   vi.resetModules();
-  return import('../../src/nav/route');
+  return import('../support/routes');
 }
 
 afterEach(() => window.history.replaceState(null, '', '/'));

@@ -10,7 +10,7 @@ import { listMemorized, memorize, recordRecall } from '../../src/data/repositori
 import { clearBus } from '../../src/events/bus';
 import * as commands from '../../src/memorize/commands';
 import { verseTextOf } from '../../src/memorize/verseText';
-import { isTutorGo } from '../../src/nav/route';
+import { isTutorGo } from '../support/routes';
 import { lampasRegistry, placeNameOf } from '../../src/tutor/registry';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { ASYNC_WAIT_MS } from '../support/timeouts';

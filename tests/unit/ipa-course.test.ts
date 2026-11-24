@@ -239,7 +239,7 @@ describe('the main path never requires or counts the course', () => {
 
 describe('nothing but the Optional entry points to the course', () => {
   // the files that may name the course: its own folder, the route, the entry on the Goal screen and what the app tells the tutor of a screen
-  const ALLOWED = [/^src\/ipa\//, /^src\/GoalScreen\.tsx$/, /^src\/App\.tsx$/, /^src\/nav\/(route|lastRoute)\.ts$/, /^src\/tutor\/screen\.ts$/, /^src\/data\/repositories\/(ipaCourse|index)\.ts$/, /^src\/speech\//, /^src\/data\/grammar\/lessons\.ts$/, /^src\/settings\//];
+  const ALLOWED = [/^src\/ipa\//, /^src\/GoalScreen\.tsx$/, /^src\/screens\/ipa\.tsx$/, /^src\/nav\/(route|lastRoute)\.ts$/, /^src\/tutor\/screen\.ts$/, /^src\/data\/repositories\/(ipaCourse|index)\.ts$/, /^src\/speech\//, /^src\/data\/grammar\/lessons\.ts$/, /^src\/settings\//];
   const files = execSync('git ls-files src grinds', { encoding: 'utf8' }).split('\n').filter((f) => /\.(ts|tsx|md|json)$/.test(f) && !f.startsWith('grinds/examples/'));
 
   it('names the course, or opens its address, in no other file of src/ or grinds/ (no nudge, badge, tip or tutor push)', () => {

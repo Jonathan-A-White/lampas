@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { libraryHash, libraryOf, paradigmHash, paradigmOf, placementCardHash, placementCardOf, placementOriginOf, readerHash, readerOf, routeOf, variantLessonHash, variantLessonOf, verseListHash, verseListOf } from '../../src/nav/route';
+import { libraryHash, libraryOf, paradigmHash, paradigmOf, placementCardHash, placementCardOf, placementOriginOf, readerHash, readerOf, routeOf, variantLessonHash, variantLessonOf, verseListHash, verseListOf } from '../support/routes';
 
 describe('the address', () => {
   it('says where the placement was started from', () => {

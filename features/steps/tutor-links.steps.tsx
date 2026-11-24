@@ -11,7 +11,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { setLogosBible, setReaderView, setResourceOn, setWeave, setWorks } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { readerOf } from '../../src/nav/route';
+import { readerOf } from '../../tests/support/routes';
 import { RESOURCES } from '../../src/resources';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';

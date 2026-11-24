@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { navigate, openParadigm, openVerse, replaceHash, useRoute } from '../../src/nav/route';
+import { navigate, openParadigm, openVerse, replaceHash, useRoute } from '../support/routes';
 import { settle, SETTLE_MS } from '../../src/ui/settle';
 import { screenOf, useTapGuard } from '../../src/ui/tapGuard';
 

@@ -11,7 +11,7 @@ import { LESSON_STEPS, LESSON_TITLE } from '../../src/diagram/lesson';
 import { EXPECTED_TERMS } from '../../tests/fixtures/diagrams/lesson-steps';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { navigate, readerOf } from '../../src/nav/route';
+import { navigate, readerOf } from '../../tests/support/routes';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { closeDatabase } from './close-database';
 

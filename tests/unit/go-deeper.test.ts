@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { VARIANTS_FILES, VARIANTS_TAG } from '../../scripts/data/variants';
 import { CATALOGUE } from '../../src/resources/catalogue';
-import { LESSONS_PATH } from '../../src/nav/route';
+import { LESSONS_PATH } from '../support/routes';
 import { APPARATUS_LABEL, EDITION_2005, GO_DEEPER_ENTRIES, LESSONS_LABEL, apparatusUrl, goDeeperPlace } from '../../src/reader/goDeeper';
 
 describe('the apparatus link', () => {

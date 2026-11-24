@@ -11,7 +11,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { readerOf } from '../../src/nav/route';
+import { readerOf } from '../../tests/support/routes';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton } from '../../tests/support/find-button';

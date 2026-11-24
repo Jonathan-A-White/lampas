@@ -9,7 +9,7 @@ import {
   saveLastRoute,
   saveScrolls,
 } from '../../src/nav/lastRoute';
-import { navigate } from '../../src/nav/route';
+import { navigate } from '../support/routes';
 
 const visit = (hash: string) => {
   window.history.pushState(null, '', `/${hash}`);

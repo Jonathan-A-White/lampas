@@ -10,7 +10,7 @@ import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { clearBus } from '../../src/events/bus';
 import { ReferenceLink } from '../../src/markdown/ReferenceCard';
 import { pendingRequest } from '../../src/nav/readerRequest';
-import { readerOf } from '../../src/nav/route';
+import { readerOf } from '../support/routes';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 

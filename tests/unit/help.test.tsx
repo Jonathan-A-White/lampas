@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { HelpScreen } from '../../src/HelpScreen';
 import { HELP_MAX_PAGES, HELP_MAX_WORDS, HELP_PAGES, helpPageById, wordsOf } from '../../src/help';
-import { routeOf } from '../../src/nav/route';
+import { routeOf } from '../support/routes';
 import { ESSAY_ORIGINAL_NOTE, ESSAY_RELEASE, PREFACE_LINKS, PREFACE_PARAGRAPHS } from '../../src/preface';
 import { Preface } from '../../src/Preface';
 import { FACT_VALUE_MAX, fitScreen, SCREEN_NAMES, suggestionsFor } from '../../src/tutor/screen';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Verse } from '../../src/data/chapter';
 import { passageAt, passageVerse, passagesOf, unitId, unitName, unitReference } from '../../src/data/passage';
-import { readerHash, readerOf } from '../../src/nav/route';
+import { readerHash, readerOf } from '../support/routes';
 import { passageUrl } from '../../src/nav/links';
 
 const verse = (n: number, h?: string): Verse => ({

@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearBus } from '../../src/events/bus';
-import * as route from '../../src/nav/route';
+import { routeModule as route } from '../support/routes';
 
 const counted: string[] = [];
 vi.mock('../../src/data/repositories', async (original) => ({

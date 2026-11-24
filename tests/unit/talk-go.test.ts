@@ -5,7 +5,7 @@ import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { createElement, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { latest } from '../../src/events/bus';
-import { routeOf } from '../../src/nav/route';
+import { routeOf } from '../support/routes';
 import { readGo, readTarget } from '../../src/talk/go';
 import { lampasRegistry } from '../../src/tutor/registry';
 import { leaveSheetForTutor, useSheetBack } from '../../src/ui/sheetBack';

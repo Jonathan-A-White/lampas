@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter, GreekWord } from '../../src/data/chapter';
 import { PARADIGMS, cellName, paradigmById, paradigmOfWord, tableFor } from '../../src/data/paradigms';
-import { paradigmHash, paradigmOf } from '../../src/nav/route';
+import { paradigmHash, paradigmOf } from '../support/routes';
 
 const jn2 = JSON.parse(readFileSync('public/data/2jn/1.json', 'utf8')) as Chapter;
 const words = jn2.verses.flatMap((v) => v.g);

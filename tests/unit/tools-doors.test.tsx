@@ -8,7 +8,7 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { clearBus } from '../../src/events/bus';
-import { navigate, type Route } from '../../src/nav/route';
+import { navigate, type Route } from '../support/routes';
 import { usageWritesSettled } from '../../src/tips/usageLog';
 import { TOOL_SCREENS } from '../../src/tools';
 import { lampasRegistry, placeNameOf } from '../../src/tutor/registry';
