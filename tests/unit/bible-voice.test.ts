@@ -118,13 +118,16 @@ describe("the real timings of the recorded voice (public/data/audio/msb-david, m
     forgetTimings();
   });
 
-  it('offers John 3 the recording and Revelation 1 none', async () => {
+  // Every book is timed now (mw-zbgo4ep.29 was the last), so no real book is left untimed: a book whose timings are not loaded, and a chapter asked for a verse the recording lacks, get none.
+  it('offers John 3 the recording, and a book not loaded or a verse the recording lacks none', async () => {
     await loadBookTimings('jhn');
-    await loadBookTimings('rev');
     const john = chapterOf('jhn/3');
     const rev = chapterOf('rev/1');
     expect(recordingFor('jhn', john, english(john))?.audio).toMatch(/^https:\/\/openbible\.com\//);
-    expect(recordingFor('rev', rev, english(rev))).toBeUndefined();
+    expect(recordingFor('rev', rev, english(rev))).toBeUndefined(); // Revelation's timings are not loaded
+    await loadBookTimings('rev');
+    expect(recordingFor('rev', rev, english(rev))).toBeDefined();
+    expect(recordingFor('rev', rev, [...english(rev), { n: 999, runs: [{ text: 'x', language: 'english' as const }] }])).toBeUndefined();
   });
 
   it("offers Genesis 1 the recording: David's Genesis chapter 1 file, though Genesis's source is Hebrew (mw-zbgo4ep.38)", async () => {
