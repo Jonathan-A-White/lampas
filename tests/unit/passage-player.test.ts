@@ -228,14 +228,12 @@ function holdChapter(path: string): { requested: () => boolean; release: () => v
 
 /** Lets the voice finish what it says until `done()`, the player fetching the next reference in between. */
 async function finishUntil(done: () => boolean): Promise<void> {
-  await vi.waitFor(
-    () => {
-      if (done()) return;
-      if (synth.speaking) synth.finishAll();
-      expect(done()).toBe(true);
-    },
-    { timeout, interval: 1 },
-  );
+  const finishWhatIsSaid = () => {
+    if (done()) return;
+    if (synth.speaking) synth.finishAll();
+    expect(done()).toBe(true);
+  };
+  await vi.waitFor(finishWhatIsSaid, { timeout, interval: 1 });
 }
 
 // Nothing is to happen here, and no event ends the wait: the work already queued (the held chapter's answer, the player's reading of it) is let run, counted in turns of the task queue (tests/support/turns.ts).
