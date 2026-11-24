@@ -45,7 +45,6 @@ const FIXED_LATER: Record<string, number> = {
   'features/steps/read-lessons.steps.tsx': 1,
   // session 3
   'features/steps/read-span.steps.tsx': 1,
-  'features/steps/reading-drill.steps.tsx': 1,
   'features/steps/reading-plan-sendoff.steps.tsx': 2,
   'features/steps/recorded-voice.steps.tsx': 1,
   'features/steps/rephil-youtube-history.steps.ts': 1,
@@ -53,19 +52,11 @@ const FIXED_LATER: Record<string, number> = {
   'features/steps/sermons-settings.steps.tsx': 1,
   'features/steps/sermons.steps.tsx': 1,
   'features/steps/speaking-interruptions.steps.tsx': 1,
-  'features/steps/talk-pictures.steps.tsx': 1,
-  'features/steps/tips.steps.tsx': 1,
-  'features/steps/turn-pages.steps.tsx': 1,
   'features/steps/tutor-aloud.steps.tsx': 1,
-  'features/steps/tutor-works.steps.tsx': 1,
   // session 4
   'features/steps/unsent-draft.steps.tsx': 2,
   'features/steps/variants-reader.steps.tsx': 1,
   'features/steps/verse-view.steps.tsx': 1,
-  'features/steps/voice-offers.steps.tsx': 1,
-  'features/steps/welcome-back.steps.tsx': 1,
-  'features/steps/whats-new.steps.tsx': 1,
-  'features/steps/word-tip.steps.tsx': 1,
   'tests/support/fake-postern.ts': 1,
   'tests/support/gesture.ts': 1,
 };
