@@ -27,6 +27,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Spurgeon's sermons, from CCEL](https://ccel.org/ccel/spurgeon)** (Christian Classics Ethereal Library): titles, passages, links, and words to read aloud (fetched, not kept). Public domain; CCEL's [terms](https://ccel.org/about/copyright.html): "may be used for personal, educational, or non-profit purposes." Changes: split by book.
 - **[Matthew Henry's sermons](https://archive.org)**, from the Internet Archive's scans: titles, passages and links for the Sermons sheet. Public domain; the Archive's [terms](https://archive.org/about/terms.php).
 - **[Life Bible Ministry's Through the Bible](https://www.lifebibleministry.com/through-the-bible)** (Pastor Paul LeBoutillier): titles, passages, links and videos. Stated terms: none; free. Changes: none.
+- **[Bible Thinker](https://biblethinker.org/mark/)** (Mike Winger's book-by-book series): titles, passages, links and videos. Stated terms: none. Changes: none.
 - **[Greg Laurie Sermon Archive](https://www.logos.com)** (Harvest Ministries), in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[J. D. Greear Sermon Archive](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[Skip Heitzig Sermon Archive](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.

@@ -52,7 +52,8 @@
     "sermon-starters-volume-3-logos",
     "sermon-starters-volume-4-logos",
     "sermon-starters-volume-5-logos",
-    "lifebible-ttb"
+    "lifebible-ttb",
+    "biblethinker"
   ],
   "themes": [
     "themes-tcr1934",
@@ -107,6 +108,7 @@
     "sermon-starters-volume-3-logos": "Sermon Starters, vol 3 (Logos library)",
     "sermon-starters-volume-4-logos": "Sermon Starters, vol 4 (Logos library)",
     "sermon-starters-volume-5-logos": "Sermon Starters, vol 5 (Logos library)",
-    "lifebible-ttb": "Life Bible Ministry's Through the Bible"
+    "lifebible-ttb": "Life Bible Ministry's Through the Bible",
+    "biblethinker": "Mike Winger's Bible Thinker series"
   }
 }

@@ -91,8 +91,9 @@ describe('the registered sources and the registry of settings', () => {
     }
     expect(ids(enabledOf(SOURCES, reader({})))).toEqual(SOURCES.filter((s) => s.default === 'on' && !s.needs).map((s) => s.id));
     // every bundled source that is not a Logos archive starts On, but Life Bible Ministry's Through the Bible (mw-qtu3zvz.280.3)
-    expect(SOURCES.filter((s) => !s.id.endsWith('-logos') && s.id !== 'lifebible-ttb').every((s) => s.default === 'on')).toBe(true);
+    expect(SOURCES.filter((s) => !s.id.endsWith('-logos') && s.id !== 'lifebible-ttb' && s.id !== 'biblethinker').every((s) => s.default === 'on')).toBe(true);
     expect(SOURCES.find((s) => s.id === 'lifebible-ttb')?.default).toBe('off'); // its source.toml says on_by_default = false: not started until he switches it On
+    expect(SOURCES.find((s) => s.id === 'biblethinker')?.default).toBe('off'); // its source.toml says on_by_default = false (mw-qtu3zvz.280.4)
   });
 });
 
