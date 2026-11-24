@@ -328,10 +328,5 @@
     "local/no-real-time-wait": {
       "count": 1
     }
-  },
-  "tests/unit/wake-lock.test.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
   }
 }
