@@ -209,11 +209,6 @@
       "count": 1
     }
   },
-  "tests/unit/chapter-buttons.test.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
   "tests/unit/clip-player.test.ts": {
     "local/no-real-time-wait": {
       "count": 1
@@ -222,11 +217,6 @@
   "tests/unit/diagram-logos-links.test.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "tests/unit/door-two-finger.test.tsx": {
-    "local/no-real-time-wait": {
-      "count": 5
     }
   },
   "tests/unit/download-double-tap.test.tsx": {
@@ -274,11 +264,6 @@
       "count": 1
     }
   },
-  "tests/unit/passage-player.test.ts": {
-    "local/no-real-time-wait": {
-      "count": 4
-    }
-  },
   "tests/unit/read-check-failed.test.tsx": {
     "local/no-real-time-wait": {
       "count": 1
@@ -324,29 +309,9 @@
       "count": 1
     }
   },
-  "tests/unit/tutor-copy-chip.test.tsx": {
-    "local/no-real-time-wait": {
-      "count": 3
-    }
-  },
-  "tests/unit/tutor-door.test.tsx": {
-    "local/no-real-time-wait": {
-      "count": 5
-    }
-  },
-  "tests/unit/tutor-map-links.test.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
   "tests/unit/tutor-paradigm-links.test.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "tests/unit/tutor-sermon-links.test.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
     }
   },
   "tests/unit/tutor-setting-links.test.tsx": {
@@ -362,11 +327,6 @@
   "tests/unit/usage-settle.test.ts": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "tests/unit/voice-offers.test.ts": {
-    "local/no-real-time-wait": {
-      "count": 2
     }
   },
   "tests/unit/wake-lock.test.ts": {

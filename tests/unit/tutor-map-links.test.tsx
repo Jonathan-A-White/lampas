@@ -2,13 +2,15 @@
 // lacks draws nothing.
 import '@testing-library/jest-dom/vitest';
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
+import { mapsFor } from '../../src/maps';
 import { MapsHost } from '../../src/maps/MapsSheet';
 import { closeMaps } from '../../src/maps/openMaps';
 import { TutorLinks } from '../../src/TutorLinks';
+import { afterTurns } from '../support/turns';
 import { forgetTestMaps, registerTestMaps } from '../support/test-maps';
 
 const place = { book: 'gen', chapter: 10 };
@@ -23,6 +25,12 @@ beforeEach(async () => {
   await db.settings.clear();
   registerTestMaps();
 });
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 afterEach(() => {
   cleanup();
@@ -70,14 +78,15 @@ describe('the map chip', () => {
 
   it('is not drawn for an id the chapter lacks, and nothing at all is drawn when it is the only link', async () => {
     render(<TutorLinks links={[{ kind: 'map', map: 'NoSuchMap' }]} place={place} onLeave={() => undefined} />);
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await mapsFor(place); // the very read the chip waits on: it has answered, and no card is the id
+    await letItRun();
     expect(screen.queryByRole('button', { name: /^Map:/ })).toBeNull();
     expect(document.querySelector('[data-tutor-links]')).toBeNull();
   });
 
   it('is not drawn in a talk with no place (a talk from a screen)', async () => {
     render(<TutorLinks links={[{ kind: 'map', map: 'SodomAndGomorrah' }]} onLeave={() => undefined} />);
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await letItRun(); // no place: nothing is read, and nothing is left to wait for
     expect(screen.queryByRole('button', { name: /^Map:/ })).toBeNull();
   });
 });

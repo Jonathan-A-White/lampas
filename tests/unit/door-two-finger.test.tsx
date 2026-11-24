@@ -11,6 +11,7 @@ import { DOOR_BACK_LINE, resetDoorAway } from '../../src/tutor/doorHidden';
 import { setCurrentLicence } from '../../src/services/licenceNow';
 import { setHand } from '../../src/settings/hand';
 import { useDoorTarget } from '../../src/tutor/door';
+import { afterTurns } from '../support/turns';
 import { TWO_FINGERS } from '../support/two-finger';
 
 const FLOATING = 'Ask the tutor about what is on screen';
@@ -33,7 +34,10 @@ beforeEach(async () => {
   await setHand('right');
 });
 
-afterEach(() => resetDoorAway());
+afterEach(() => {
+  resetDoorAway();
+  vi.restoreAllMocks();
+});
 
 function Phone({ children }: { children: ReactNode }) {
   setCurrentLicence('licensed');
@@ -76,10 +80,13 @@ const door = () => document.querySelector('[data-floating-tutor]');
 // store; findByRole can answer in between, and a tap sent then is heard by no one. A loaded host shows it (mw-5r3p30.1038), so every test waits for the ? and then lets the effects run.
 async function theDoorIsReady(): Promise<void> {
   await screen.findByRole('button', { name: FLOATING });
-  await act(async () => {
-    await new Promise((r) => setTimeout(r, 0));
-  });
+  await letItRun();
 }
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 // the screens named in the story: Today, Settings, a drill and a word sheet are all a screen that registers a door target; the ? is the app shell's
 const SCREENS = ['Today', 'Settings', 'A drill', 'A word sheet'];
@@ -123,7 +130,7 @@ describe('the rule', () => {
         <Screen name="Settings" onTap={() => undefined} />
       </Phone>,
     );
-    await new Promise((r) => setTimeout(r, 30));
+    await letItRun();
     expect(door()).toBeNull();
     twoFingerTap();
     expect(await screen.findByRole('button', { name: FLOATING })).toBeTruthy();
@@ -160,7 +167,7 @@ describe('the rule', () => {
     );
     await theDoorIsReady();
     twoFingerTap(screen.getByTestId('own'));
-    await new Promise((r) => setTimeout(r, 30));
+    await letItRun();
     expect(door()).not.toBeNull();
   });
 
@@ -176,7 +183,7 @@ describe('the rule', () => {
     );
     await theDoorIsReady();
     twoFingerTap(screen.getByText('text'));
-    await new Promise((r) => setTimeout(r, 30));
+    await letItRun();
     expect(door()).not.toBeNull();
   });
 
@@ -208,9 +215,11 @@ describe('the rule', () => {
     await theDoorIsReady();
     twoFingerTap();
     await waitFor(() => expect(door()).toBeNull());
-    // the click guard of the tap (600 ms) is over by the time a keyboard reaches the button
-    await new Promise((r) => setTimeout(r, 700));
+    // the click guard of the tap (600 ms of performance.now, src/immersive.ts) is over by the time a keyboard reaches the button
+    const now = performance.now();
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(now + 700); // clock: the page's clock moves 700 ms on
     act(() => screen.getByRole('button', { name: 'Bring back the tutor button' }).click());
+    clock.mockRestore();
     expect(await screen.findByRole('button', { name: FLOATING })).toBeTruthy();
   });
 
