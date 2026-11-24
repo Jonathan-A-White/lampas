@@ -13,7 +13,7 @@ import { DAY } from '../../src/data/schedule';
 import { mulberry32 } from '../../src/data/quiz';
 import { LESSON } from '../../src/review/kinds';
 import { drawReviewRound } from '../../src/review/round';
-import { openVerseRange, readerHash, readerOf } from '../../src/nav/route';
+import { openVerseRange, readerHash, readerOf } from '../support/routes';
 import { parseReference, resolveReference } from '../../src/nav/links';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
 

@@ -13,7 +13,7 @@ import { judgeReading, judgeSaid, judgeTyped } from '../../src/memorize/judge';
 import { MemorizeScreen } from '../../src/memorize/MemorizeScreen';
 import type { Token } from '../../src/memorize/target';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { openMemorizeSession } from '../../src/nav/route';
+import { openMemorizeSession } from '../support/routes';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { FakeRecognizer, result, stubRecognizer } from '../support/fake-recognizer';

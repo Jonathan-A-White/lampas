@@ -16,7 +16,7 @@ import { MemorizeScreen } from '../../src/memorize/MemorizeScreen';
 import type { MemorizeLang } from '../../src/memorize/languages';
 import { versesOf } from '../../src/memorize/refs';
 import { memorizeTarget, tokensOf } from '../../src/memorize/target';
-import { memorizeSessionOf, openMemorizeSession, routeOf } from '../../src/nav/route';
+import { memorizeSessionOf, openMemorizeSession, routeOf } from '../support/routes';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';

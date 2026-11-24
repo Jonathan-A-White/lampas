@@ -11,7 +11,7 @@ import { NO_CHAPTER } from '../../src/data/chapter';
 import { db, type AnswerLink } from '../../src/data/db';
 import { PARADIGMS, paradigmById } from '../../src/data/paradigms';
 import { addTurn, listTurns } from '../../src/data/repositories';
-import { paradigmOf } from '../../src/nav/route';
+import { paradigmOf } from '../support/routes';
 import { isTalkAnswer, type TalkScope } from '../../src/services/talk';
 import { TutorLinks } from '../../src/TutorLinks';
 import { dropHeldTalk, heldTalk, tableIsFromTalk } from '../../src/talkReturn';

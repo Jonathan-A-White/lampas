@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { openHash, openVerseAt } from '../../src/nav/route';
+import { openHash, openVerseAt } from '../support/routes';
 import { leaveSheetsThen, useSheetBack } from '../../src/ui/sheetBack';
 
 const HOME = '/#/?b=exo&c=2';

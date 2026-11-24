@@ -31,7 +31,7 @@ import { learnLabel, lessonsForSheet } from '../../src/hardSounds/lessons';
 import { IdeaSheetWithWord } from '../../src/IdeaSheetWithWord';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { OverRun } from '../../src/overRun';
-import { paradigmHash } from '../../src/nav/route';
+import { paradigmHash } from '../../tests/support/routes';
 import { PlanDrillScreen } from '../../src/PlanDrillScreen';
 import { LEXICONS } from '../../src/resources/logos';
 import { releaseRound } from '../../src/review/heldRound';

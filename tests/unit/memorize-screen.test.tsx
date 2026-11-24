@@ -11,7 +11,7 @@ import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import * as commands from '../../src/memorize/commands';
 import { MemorizeScreen } from '../../src/memorize/MemorizeScreen';
-import { memorizeSessionOf } from '../../src/nav/route';
+import { memorizeSessionOf } from '../support/routes';
 import { screenContextNow } from '../../src/tutor/screenContext';
 import { stubChapterFetch } from '../support/chapter-fetch';
 

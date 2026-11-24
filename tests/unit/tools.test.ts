@@ -6,7 +6,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { isKeptHash } from '../../src/nav/lastRoute';
-import { routeOf, ROUTES } from '../../src/nav/route';
+import { routeOf, ROUTES } from '../support/routes';
 import { movedTool, settingKeyOf, settingLink } from '../../src/settings/link';
 import { GROUPS, isTalkable, ROWS, SECTIONS, TOOL_ROWS, visibleRows, visibleToolRows, writeSetting } from '../support/settings';
 import { TOOL_SCREENS } from '../../src/tools';

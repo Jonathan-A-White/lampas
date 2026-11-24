@@ -22,7 +22,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { paradigmOf } from '../../src/nav/route';
+import { paradigmOf } from '../../tests/support/routes';
 import { releaseRound } from '../../src/review/heldRound';
 import { GRAMMAR, grammarRandom, gradedVersesOf } from '../../src/review/kinds';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';

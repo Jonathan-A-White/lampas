@@ -13,7 +13,7 @@ import { db } from '../../src/data/db';
 import { getRequestsCursor, keepRequest, listRequests } from '../../src/data/repositories/requests';
 import { clearBus } from '../../src/events/bus';
 import { RequestsScreen } from '../../src/RequestsScreen';
-import { useRoute } from '../../src/nav/route';
+import { useRoute } from '../../tests/support/routes';
 import { requestTimings } from '../../src/services/requestStatus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';

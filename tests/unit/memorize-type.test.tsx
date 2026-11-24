@@ -12,7 +12,7 @@ import { MemorizeScreen } from '../../src/memorize/MemorizeScreen';
 import type { MemorizeLang } from '../../src/memorize/languages';
 import { memorizeTarget } from '../../src/memorize/target';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { openMemorizeSession } from '../../src/nav/route';
+import { openMemorizeSession } from '../support/routes';
 import { stopReading } from '../../src/speech/readAloud';
 import { greekKeyboardSetting } from '../../src/settings/definitions/greekKeyboard';
 import { settingKeyOf } from '../../src/settings/link';

@@ -15,7 +15,7 @@ import { ALWAYS_NEEDED, LADDER } from '../../src/data/grammar/ladder';
 import { passageNeeds, progressToward, type Level } from '../../src/data/grammar/needs';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
-import { readerOf } from '../../src/nav/route';
+import { readerOf } from '../../tests/support/routes';
 import { parseGoal } from '../../src/data/goal';
 import { setGoal } from '../../src/data/repositories/settings';
 import { markPassed } from '../../src/data/repositories/passageLessons';

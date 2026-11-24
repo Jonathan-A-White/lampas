@@ -1,4 +1,4 @@
-// src/nav/route.ts — thirty screens (ROUTES), told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — the screens (ROUTES, gathered from the files of src/screens/, src/nav/screen.ts), told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -14,15 +14,15 @@ import type { CourseLanguage } from '../ipa/course';
 import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
 import { pathOf } from './path';
+import { hashIn, routeIn, routeTableOf, type Route, type ScreenAddress } from './screen';
+import { SCREEN_FILES } from './screenFiles';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'diagram-lesson' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'help' | 'about' | 'preface' | 'essay' | 'lessons' | 'library' | 'lists' | 'memorize' | 'settings' | 'tools' | 'share' | 'unlock';
+export type { Route };
 
-const ROUTE_TABLE: Record<Route, true> = {
-  home: true, words: true, import: true, test: true, drill: true, review: true, today: true, paradigms: true, placement: true, goal: true, path: true, ipa: true, 'diagram-lesson': true, sounds: true, studyway: true,
-  aboutyou: true, memory: true, requests: true, conversations: true, askmore: true, help: true, about: true, preface: true, essay: true, lessons: true, library: true, lists: true, memorize: true, settings: true, tools: true, share: true, unlock: true,
-};
+/** Every screen of the app by name, gathered from the names of the files of src/screens/ (src/nav/screen.ts): a new screen is one new file there. A Route has an entry in it or its file fails typecheck. */
+export const ROUTE_TABLE: Readonly<Record<Route, ScreenAddress>> = routeTableOf(SCREEN_FILES);
 
-/** Every screen of the app, once: the table the tutor's places are checked against (src/tutor/registry.ts, tests/unit/tutor-registry.test.ts). A new Route fails typecheck until it is listed here. */
+/** Every screen of the app, once: the list the tutor's places are checked against (src/tutor/registry.ts, tests/unit/tutor-registry.test.ts). */
 export const ROUTES = Object.keys(ROUTE_TABLE) as Route[];
 
 /** What the history entry of a place the tutor took him to carries (mw-t3xu9a.4): a pushed entry, so Back returns to where he was; the Talk sheet beneath it comes back with Back (src/ui/sheetBack.ts leaveSheetForTutor). */
@@ -62,53 +62,19 @@ export function watchAddress(listener: () => void): () => void {
 
 export { pathOf };
 
-export function routeOf(hash: string): Route {
-  const path = pathOf(hash);
-  if (path === '#/words') return 'words';
-  if (path === '#/import') return 'import';
-  if (path === '#/test') return 'test';
-  if (path === '#/drill') return 'drill';
-  if (path === '#/review') return 'review';
-  if (path === '#/today') return 'today';
-  if (path === '#/paradigms') return 'paradigms';
-  if (path === '#/placement') return 'placement';
-  if (path === '#/goal') return 'goal';
-  if (path === '#/path') return 'path';
-  if (path === '#/ipa') return 'ipa';
-  if (path === '#/diagram-lesson') return 'diagram-lesson';
-  if (path === '#/sounds') return 'sounds';
-  if (path === '#/studyway') return 'studyway';
-  if (path === '#/aboutyou') return 'aboutyou';
-  if (path === '#/memory') return 'memory';
-  if (path === '#/requests') return 'requests';
-  if (path === '#/conversations') return 'conversations';
-  if (path === '#/askmore') return 'askmore';
-  if (path === '#/help') return 'help';
-  if (path === '#/about') return 'about';
-  if (path === '#/preface') return 'preface';
-  if (path === ESSAY_PATH) return 'essay';
-  if (path === LESSONS_PATH || path.startsWith(`${LESSONS_PATH}/`)) return 'lessons';
-  if (path === '#/library') return 'library';
-  if (path === LISTS_PATH || path.startsWith(`${LISTS_PATH}/`)) return 'lists';
-  if (path === MEMORIZE_PATH || path.startsWith(`${MEMORIZE_PATH}/`)) return 'memorize';
-  if (path === '#/settings') return 'settings';
-  if (path === '#/tools') return 'tools';
-  if (path === '#/share') return 'share';
-  if (path === '#/unlock') return 'unlock';
-  return 'home';
-}
+export const routeOf = (hash: string): Route => routeIn(ROUTE_TABLE, hash);
 
 /** The Verse lists screen (src/lists/); one list is `#/lists/<id>`. */
-export const LISTS_PATH = '#/lists';
+export const LISTS_PATH = ROUTE_TABLE.lists.path;
 
 /** The Memorize screen (src/memorize/); one session is `#/memorize/<canonical reference>/<en|el|he|weave>`, and the bare address opens the next verse that is due. */
-export const MEMORIZE_PATH = '#/memorize';
+export const MEMORIZE_PATH = ROUTE_TABLE.memorize.path;
 
 /** The in-app copy of Robinson's essay (src/Essay.tsx), a page under the Preface. */
-export const ESSAY_PATH = '#/preface/robinson';
+export const ESSAY_PATH = ROUTE_TABLE.essay.path;
 
 /** The lessons on variant readings (src/lessons/VariantLessons.tsx): the list, and one page is `#/lessons/variants/<n>`, n from 1. */
-export const LESSONS_PATH = '#/lessons/variants';
+export const LESSONS_PATH = ROUTE_TABLE.lessons.path;
 
 const pageOpenedOnReader = typeof window === 'undefined' || routeOf(window.location.hash) === 'home';
 
@@ -117,7 +83,7 @@ const pageOpenedOnReader = typeof window === 'undefined' || routeOf(window.locat
  * over the saved setting (src/reader/useReaderSettings.ts, mw-5r3p30.658). */
 export const openedOnReader = (): boolean => pageOpenedOnReader;
 
-export const hashFor = (route: Route) => (route === 'home' ? '#/' : route === 'essay' ? ESSAY_PATH : route === 'lessons' ? LESSONS_PATH : `#/${route}`);
+export const hashFor = (route: Route): string => hashIn(ROUTE_TABLE, route);
 
 const wholeNumber = (text: string | null): number | undefined => (text !== null && /^[1-9]\d{0,3}$/.test(text) ? Number(text) : undefined);
 

@@ -2,53 +2,23 @@ import { useEffect, useLayoutEffect } from 'react';
 import { noteDailyChange } from './data/daily/dailyStore';
 import { subscribe } from './events/bus';
 import { startBackgroundWrites } from './data/startupWrites';
-import { About } from './About';
-import { Essay } from './Essay';
-import { VariantLessons } from './lessons/VariantLessons';
 import { HandsFreeGate } from './handsFree/HandsFreeGate';
-import { HelpScreen } from './HelpScreen';
-import { Preface } from './Preface';
 import { AskTutor, FloatingTutor } from './AskTutor';
 import { startAppearanceSync } from './appearance/appearanceSync';
-import { DrillScreen } from './DrillScreen';
-import { ImportScreen } from './ImportScreen';
 import type { Random } from './data/quiz';
-import { UnlockPage } from './gate/UnlockPage';
 import { saveLastRoute } from './nav/lastRoute';
 import { startReaderAddressSync } from './nav/readerAddress';
 import { routeOf, useAddress } from './nav/route';
-import { Reader } from './Reader';
-import { GoalScreen } from './GoalScreen';
-import { HardSoundLesson } from './hardSounds/HardSoundLesson';
-import { DiagramLesson } from './diagram/DiagramLesson';
-import { IpaCourse } from './ipa/IpaCourse';
+import { RENDERERS } from './screens';
 import { MapsHost } from './maps/MapsSheet';
 import { SermonsHost } from './sermons/SermonsSheet';
 import { SermonPlayerHost } from './sermons/SermonPlayer';
 import { SermonReaderHost } from './sermons/SermonReader';
-import { LadderGraph } from './LadderGraph';
-import { LibraryScreen } from './library/LibraryScreen';
-import { VerseListsScreen } from './lists/VerseListsScreen';
-import { MemorizeScreen } from './memorize/MemorizeScreen';
 import { watchForPen } from './handwriting/penWatch';
 import { IdeaReturn } from './IdeaReturn';
 import { WordReturn } from './WordReturn';
 import { TalkReturn } from './TalkReturn';
-import { ParadigmsScreen } from './ParadigmsScreen';
 import { WhereDidYouGetTo } from './plan/WhereDidYouGetTo';
-import { RequestsScreen } from './RequestsScreen';
-import { Conversations } from './Conversations';
-import { AskMoreScreen } from './settings/AskMoreScreen';
-import { StudyWayScreen } from './StudyWayScreen';
-import { AboutYouScreen } from './AboutYouScreen';
-import { MemoryScreen } from './MemoryScreen';
-import { PlacementScreen } from './PlacementScreen';
-import { QuizScreen } from './QuizScreen';
-import { ShareScreen } from './share/ShareScreen';
-import { ReviewScreen } from './ReviewScreen';
-import { Today } from './today/Today';
-import { SettingsScreen } from './SettingsScreen';
-import { ToolsScreen } from './ToolsScreen';
 import { BarSlot, LampasSpeakingBar } from './speech/SpeakingBarSlot';
 import { LiveRegion } from './ui/LiveRegion';
 import { startSpeechSettingsSync } from './speech/settingsSync';
@@ -63,7 +33,6 @@ import { UpdateBanner } from './UpdateBanner';
 import { Welcome } from './Welcome';
 import { WelcomeBack } from './WelcomeBack';
 import { WhatsNewOnUpdate } from './whatsNew/WhatsNewOnUpdate';
-import { WordsScreen } from './WordsScreen';
 
 /** `newRandom` makes the random source of each Quick test round and Parsing drill; tests pass a seeded one. */
 export function App({ newRandom }: { newRandom?: () => Random } = {}) {
@@ -112,71 +81,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       <WhatsNewOnUpdate />
       {/* a long press on any word of prose says it (src/ui/HearAnyWord.tsx) */}
       <HearAnyWord />
-      {route === 'words' ? (
-        <WordsScreen />
-      ) : route === 'import' ? (
-        <ImportScreen />
-      ) : route === 'test' ? (
-        <QuizScreen newRandom={newRandom} />
-      ) : route === 'drill' ? (
-        <DrillScreen newRandom={newRandom} />
-      ) : route === 'review' ? (
-        <ReviewScreen newRandom={newRandom} />
-      ) : route === 'today' ? (
-        <Today />
-      ) : route === 'paradigms' ? (
-        <ParadigmsScreen />
-      ) : route === 'placement' ? (
-        <PlacementScreen newRandom={newRandom} />
-      ) : route === 'goal' ? (
-        <GoalScreen />
-      ) : route === 'path' ? (
-        <LadderGraph />
-      ) : route === 'ipa' ? (
-        <IpaCourse />
-      ) : route === 'diagram-lesson' ? (
-        <DiagramLesson />
-      ) : route === 'sounds' ? (
-        <HardSoundLesson />
-      ) : route === 'studyway' ? (
-        <StudyWayScreen />
-      ) : route === 'aboutyou' ? (
-        <AboutYouScreen />
-      ) : route === 'memory' ? (
-        <MemoryScreen />
-      ) : route === 'requests' ? (
-        <RequestsScreen />
-      ) : route === 'conversations' ? (
-        <Conversations />
-      ) : route === 'askmore' ? (
-        <AskMoreScreen />
-      ) : route === 'help' ? (
-        <HelpScreen />
-      ) : route === 'about' ? (
-        <About />
-      ) : route === 'preface' ? (
-        <Preface />
-      ) : route === 'essay' ? (
-        <Essay />
-      ) : route === 'lessons' ? (
-        <VariantLessons />
-      ) : route === 'library' ? (
-        <LibraryScreen />
-      ) : route === 'lists' ? (
-        <VerseListsScreen />
-      ) : route === 'memorize' ? (
-        <MemorizeScreen />
-      ) : route === 'settings' ? (
-        <SettingsScreen />
-      ) : route === 'tools' ? (
-        <ToolsScreen />
-      ) : route === 'share' ? (
-        <ShareScreen />
-      ) : route === 'unlock' ? (
-        <UnlockPage />
-      ) : (
-        <Reader />
-      )}
+      {/* the screen the address names, drawn by its own file of src/screens/ (src/nav/screen.ts): a new screen edits nothing here */}
+      {RENDERERS[route]({ newRandom })}
       {/* back from Audible with a listening session open: 'Where did you get to?' (mw-umv8sp.3); not over the Licence page its 'Needs a licence' opens (mw-umv8sp.4) */}
       <WhereDidYouGetTo hidden={route === 'unlock'} />
       {/* the idea sheet he left for a table comes back on Back (mw-svw421.5) */}

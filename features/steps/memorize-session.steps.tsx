@@ -12,7 +12,7 @@ import { RARE_STEP } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { MemorizeScreen } from '../../src/memorize/MemorizeScreen';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { openMemorizeSession } from '../../src/nav/route';
+import { openMemorizeSession } from '../../tests/support/routes';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';

@@ -9,7 +9,7 @@ import { setLogosBible, setResourceOn } from '../../src/data/repositories';
 import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { Markdown } from '../../src/markdown/Markdown';
 import { pendingRequest } from '../../src/nav/readerRequest';
-import { readerOf } from '../../src/nav/route';
+import { readerOf } from '../../tests/support/routes';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 

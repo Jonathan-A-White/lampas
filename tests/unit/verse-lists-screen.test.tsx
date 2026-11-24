@@ -12,7 +12,7 @@ import { LibraryScreen } from '../../src/library/LibraryScreen';
 import { ToolsScreen } from '../../src/ToolsScreen';
 import { VerseListsScreen } from '../../src/lists/VerseListsScreen';
 import { UNDO_MS } from '../../src/lists/deleted';
-import { routeOf } from '../../src/nav/route';
+import { routeOf } from '../support/routes';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
 beforeEach(async () => {

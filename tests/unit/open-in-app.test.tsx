@@ -14,7 +14,7 @@ import { DISMISSED_KEY, handedHref, handOverHref, verseOnTop } from '../../src/o
 import { oneTap, SETTLE_MS, settle } from '../../src/ui/settle';
 import { bringVerse, pendingRequest, takeRequest } from '../../src/nav/readerRequest';
 import { linkOf } from '../../src/nav/links';
-import { readerOf } from '../../src/nav/route';
+import { readerOf } from '../support/routes';
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
 const DESKTOP = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';

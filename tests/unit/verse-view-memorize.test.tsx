@@ -8,7 +8,7 @@ import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { setGreekInterest } from '../../src/data/repositories';
 import { listMemorized } from '../../src/data/repositories/memorize';
-import { memorizeSessionOf } from '../../src/nav/route';
+import { memorizeSessionOf } from '../support/routes';
 import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';

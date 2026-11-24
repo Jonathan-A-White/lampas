@@ -3,7 +3,7 @@
 // A new route fails here until it is added to both lists or excluded, so the next one cannot be missed.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { ROUTES } from '../../src/nav/route';
+import { ROUTES } from '../support/routes';
 
 /** The strings of the `const SCREENS = [...]` array of a spec file. */
 function screensOf(file: string): string[] {

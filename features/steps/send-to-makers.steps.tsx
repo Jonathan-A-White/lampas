@@ -14,7 +14,7 @@ import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { imageSeam } from '../../src/images/shrink';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { openRequests } from '../../src/nav/route';
+import { openRequests } from '../../tests/support/routes';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
