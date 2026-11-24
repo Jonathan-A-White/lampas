@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
-import { tapTwice } from '../support/gesture';
+import { pageTime, tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
@@ -163,7 +163,7 @@ test('a quick second tap on the reference leaves its card on screen', async ({ p
   const card = page.getByRole('dialog', { name: 'Ecclesiastes 12:13' });
   // the second tap, 150 ms of the page's clock after the first, lands on the link again once the card it opened is up
   await tapTwice(page, link, 150, { between: () => expect(card).toBeVisible() });
-  await page.waitForTimeout(300);
+  await pageTime(page, 300); // the page's own clock: a tap outside the card, if the second one counted as that, would have closed it by now
   await expect(card).toBeVisible();
   await expect(sheet).toBeVisible();
   await shot(page, 'reference-card-second-tap');
@@ -204,7 +204,9 @@ test('Open in Logos with no Logos app keeps the Lampas page on screen', async ({
   const pagesBefore = context.pages().length;
 
   await card.getByRole('link', { name: 'Open in Logos' }).click();
-  await page.waitForTimeout(2500);
+  // the fallback is the page's own 1.5 s timer: wait for what it does, the https link asked for and its new tab
+  await expect.poll(() => refly.length, { message: 'the https fallback was asked for' }).toBeGreaterThan(0);
+  await expect.poll(() => context.pages().length - pagesBefore, { message: 'a new tab holds the fallback' }).toBeGreaterThan(0);
 
   expect(page.url(), 'Lampas is still the page in front').toBe(lampas);
   await expect(card).toBeVisible();

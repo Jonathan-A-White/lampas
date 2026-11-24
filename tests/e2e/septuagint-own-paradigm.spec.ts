@@ -223,8 +223,11 @@ test('Genesis 1:1 ΑΡΧΗ, the lemma file slow: Noun endings reports a working 
   await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.goto('/#/?b=gen&c=1&view=greek');
   await page.reload();
+  // the lemma file's response is held until the spec lets it go (a slow connection that the spec ends, not a sleep)
+  let arrive!: () => void;
+  const held = new Promise<void>((resolve) => (arrive = resolve));
   await page.route('**/lemma-forms/*', async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await held;
     await route.fallback();
   });
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'ΑΡΧΗ', exact: true }).first().click();
@@ -233,10 +236,10 @@ test('Genesis 1:1 ΑΡΧΗ, the lemma file slow: Noun endings reports a working 
   const button = sheet.getByTestId('sheet-paradigm').getByRole('button');
   await expect(button).not.toHaveAttribute('aria-busy', 'true');
   await button.click();
-  // the forms are held 2 s: half a second on, the button says it is working
-  await page.waitForTimeout(500);
+  // the forms are held: the button says it is working
   await expect(sheet.getByTestId('sheet-paradigm').getByRole('button')).toHaveAttribute('aria-busy', 'true');
   await shot(page, 'septuagint-own-paradigm-capitals-working');
+  arrive();
   await expect(page.getByRole('heading', { name: 'Noun endings', level: 1 })).toBeVisible();
   await expect(sheet).toBeHidden();
 });
