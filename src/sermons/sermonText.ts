@@ -11,6 +11,18 @@ import { videoOf } from './video';
  */
 export const TEXT_SOURCES: readonly string[] = ['spurgeon-ccel'];
 
+/** Sources a test says the service serves the words of (serveTextOf): the build's TEXT_SOURCES is the one list, and a source joins it by being added there; this is the seam for a source that is not there yet (Enduring Word's commentary, mw-1l901so.3). */
+const servedByTest = new Set<string>();
+
+/** The test seam: the service serves (or no longer serves) the words of `source`, so the reader asks for them. */
+export function serveTextOf(source: string, on = true): void {
+  if (on) servedByTest.add(source);
+  else servedByTest.delete(source);
+}
+
+/** Whether the reader asks the service for the words of a source (and so reads them aloud); a source it does not serve opens on the web at once, with no call. */
+export const textServed = (source: string): boolean => TEXT_SOURCES.includes(source) || servedByTest.has(source);
+
 /** Whether Lampas can read a row aloud: a web row (not Logos) of a source the index serves text for, that is not a video (a video has its own player, src/sermons/player.ts). */
 export function readsHere(row: LinkRow): boolean {
   if (row.opensIn !== 'web' || !TEXT_SOURCES.includes(row.source)) return false;
@@ -86,6 +98,18 @@ export function readPlace(source: string, id: string, count: number): number {
   if (saved === null || !/^\d+$/.test(saved)) return 0;
   return Math.min(Number(saved), Math.max(0, count - 1));
 }
+
+/** Whether he has a place kept in this sermon (he stopped somewhere): a commentary opens at its section only where he has none. */
+export function hasPlace(source: string, id: string): boolean {
+  try {
+    return localStorage.getItem(placeKey(source, id)) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/** The sermon the reader has open, for a command that must know whether it is the commentary (not a hook: read at the moment of a spoken command). */
+export const openedText = (): OpenedText | null => current;
 
 /** Keeps the paragraph he is at. */
 export function keepPlace(source: string, id: string, at: number): void {

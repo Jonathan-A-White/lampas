@@ -12,22 +12,20 @@ import { hasGreekVoice, hasVoice, onSpeechRefused, warmVoices } from '../speech/
 import { pageRuns } from '../speech/pageRuns';
 import { getReading, pauseReading, resumeReading, startReading, stopReading, useListenCompleted, useReading, type PlanVerse } from '../speech/readAloud';
 import { Icon } from '../speech/SpeakButton';
-import { ENDURING_WORD_CREDIT, ENDURING_WORD_HOME, ENDURING_WORD_SOURCE } from '../resources/enduringWord';
+import { ENDURING_WORD_CREDIT, ENDURING_WORD_HOME, ENDURING_WORD_SOURCE, NO_COMMENTARY_NOTICE, sectionOfUrl, sectionStart } from '../resources/enduringWord';
 import { useNoDoor } from '../tutor/door';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { oneTap } from '../ui/settle';
 import { webHref } from './openWeb';
 import { registerSermonControls } from './voiceControls';
-import { TEXT_SOURCES, closeSermonText, forgetPlace, keepPlace, minutesLeft, parseText, readPlace, stepParagraph, timeLeftLine, useOpenedText, type OpenedText, type SermonText } from './sermonText';
+import { closeSermonText, forgetPlace, hasPlace, keepPlace, minutesLeft, parseText, readPlace, stepParagraph, textServed, timeLeftLine, useOpenedText, type OpenedText, type SermonText } from './sermonText';
 
 /** The id the sermon's reading goes under (reading.answer): far below any stored answer's, a page's (PageActions) or a named one's (ReadAloud), so no Talk turn takes it for its own. */
 export const SERMON_READING_ID = -2_500_000_000;
 
 /** What the sheet says when the text cannot be had; the sermon opens on the web at the same time. */
 export const NO_TEXT_NOTICE = 'Lampas could not get the words of this sermon, so it opens on the web.';
-/** The same, for Enduring Word's commentary on a chapter (mw-1l901so.1): the page opens on the web. */
-export const NO_COMMENTARY_NOTICE = 'Lampas could not get the words of this commentary, so it opens on the web.';
 
 const BUTTON_BASE = 'inline-flex min-w-12 items-center justify-center gap-1 rounded-xl border border-line px-3 text-accent';
 /** the small buttons, Restart and Stop (and the link): 48 px; the three above them, Back, Play / Pause and Forward, are 64 px */
@@ -87,13 +85,21 @@ function Frame({ title, credit, children }: { title: string; credit?: string; ch
 function Reading({ opened, text }: { opened: OpenedText; text: SermonText }) {
   const { source, id } = opened;
   const count = text.paragraphs.length;
+  const commentary = source === ENDURING_WORD_SOURCE;
   const listenKey = `sermon:${source}:${id}`;
   const reading = useReading();
   const completed = useListenCompleted();
   const mine = reading.status !== 'idle' && reading.answer === SERMON_READING_ID;
   const paused = mine && reading.status === 'paused';
   const finished = !mine && completed === listenKey;
-  const [at, setAt] = useState(() => readPlace(source, id, count));
+  // his place, where he stopped; a commentary he has no place in opens at the section its address names (mw-1l901so.3: the verse he asked from)
+  const [at, setAt] = useState(() => {
+    if (hasPlace(source, id) || !commentary) return readPlace(source, id, count);
+    const section = sectionOfUrl(opened.url);
+    return (section === undefined ? undefined : sectionStart(text.paragraphs, section)) ?? 0;
+  });
+  /** the commentary's credit line is said once, at the start of what is read when the sheet opens (the site asks for it with what is quoted; the sheet shows it too) */
+  const creditPending = useRef(commentary);
   const [rate, setRate] = useState(1);
   const [refused, setRefused] = useState(false);
   const [help, setHelp] = useState<string | null>(null);
@@ -137,7 +143,10 @@ function Reading({ opened, text }: { opened: OpenedText; text: SermonText }) {
       return;
     }
     // a phone with no Greek voice would say Greek in the English one: the Greek is left out, as ReadAloud does
-    const say = hasGreekVoice() === false ? plan.map((p) => ({ ...p, runs: p.runs.filter((run) => run.language !== 'greek') })) : plan;
+    const spoken = hasGreekVoice() === false ? plan.map((p) => ({ ...p, runs: p.runs.filter((run) => run.language !== 'greek') })) : plan;
+    const credit = creditPending.current;
+    creditPending.current = false;
+    const say = credit ? spoken.map((p, i) => (i === from ? { ...p, runs: [{ text: ENDURING_WORD_CREDIT, language: 'english' as const }, ...p.runs] } : p)) : spoken;
     startReading({ chapter: 0, plan: say, from: from + 1, continuous: true, answer: SERMON_READING_ID, listen: listenKey, title: false });
   };
   const beginRef = useRef(begin);
@@ -295,7 +304,7 @@ function Reading({ opened, text }: { opened: OpenedText; text: SermonText }) {
 /** The sheet for the sermon being read: it asks the service for the text, then reads it; when the text cannot be had it opens the sermon on the web and says so. */
 function ReaderSheet({ opened }: { opened: OpenedText }) {
   // a source the index serves no words of (Enduring Word's commentary: not public domain) is not asked: the service answers it 404 or, unreachable, only after TEXT_WAIT_MS, and the page should open at the tap
-  const served = TEXT_SOURCES.includes(opened.source);
+  const served = textServed(opened.source);
   const [load, setLoad] = useState<Load>(served ? { status: 'loading' } : { status: 'failed' });
   const failedOnce = useRef(false);
   useEffect(() => {

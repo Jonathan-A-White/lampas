@@ -13,6 +13,9 @@ export const ENDURING_WORD_NAME = 'Enduring Word (David Guzik)';
 /** The credit line the site asks to be kept with what is quoted from it; shown wherever its text is shown (the reader sheet). Never changed. */
 export const ENDURING_WORD_CREDIT = '(c)1996-present The Enduring Word Bible Commentary by David Guzik - enduringword.com';
 
+/** What the reader says when the words of a chapter's commentary cannot be had (the page opens on the web), and what Hands-free says of it (mw-1l901so.1, .3). */
+export const NO_COMMENTARY_NOTICE = 'Lampas could not get the words of this commentary, so it opens on the web.';
+
 export const ENDURING_WORD_HOME = 'https://enduringword.com/';
 
 /** The id the reader sheet knows this commentary by (OpenedText.source): not a source of the sermon index; the service is asked and, answering no text, the page opens on the web. */
@@ -139,6 +142,26 @@ export function enduringWordUrl(book: string, chapter: number, verse?: number): 
   const ranges = verse === undefined ? undefined : ENDURING_WORD_SECTIONS[`${slug}-${chapter}`];
   const section = ranges === undefined || verse === undefined ? undefined : enduringWordSectionOf(ranges, verse);
   return section === undefined ? url : `${url}#section-${section}`;
+}
+
+/** The section a commentary's address names (`…/john-3/#section-6` is 6); undefined for the chapter's top. */
+export function sectionOfUrl(url: string): number | undefined {
+  const m = /#section-(\d+)$/.exec(url);
+  return m ? Number(m[1]) : undefined;
+}
+
+/**
+ * The paragraph (its index) where section N starts in the words the reader holds of a chapter: the Nth paragraph that is an outline heading (`6. (16) God's gift`, headingRange names its verses), in the page's order as the
+ * ids section-N are. undefined where the words have no such heading (the reader starts at the top then).
+ */
+export function sectionStart(paragraphs: readonly string[], section: number): number | undefined {
+  let seen = 0;
+  for (let i = 0; i < paragraphs.length; i += 1) {
+    if (headingRange(paragraphs[i] ?? '') === undefined) continue;
+    seen += 1;
+    if (seen === section) return i;
+  }
+  return undefined;
 }
 
 /** The row the chooser lists, in the place of a DGCB volume he does not have: a web page, so no Logos Resource ID. */

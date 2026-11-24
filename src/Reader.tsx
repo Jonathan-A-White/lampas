@@ -461,7 +461,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const { plan, readFrom, listenTo, listenVerse, listenedView } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit, sheetView ? { view: sheetView, woven: sheetWoven } : undefined);
   // Hands-free's 'play' with nothing paused (src/handsFree/commands.ts, mw-rl10piw.6) is answered here, by the same start as the header's Play, from where he is; it asks
   // no question that needs a tap (the data question waits for one: the decision's notice says which voice reads instead)
-  useEffect(() => answerReadHere((verse) => readFrom(verse ?? selected ?? 1, true, false), BOOK, CHAPTER), [readFrom, selected, BOOK, CHAPTER]);
+  useEffect(() => answerReadHere((verse) => readFrom(verse ?? selected ?? 1, true, false), BOOK, CHAPTER, selected ?? undefined), [readFrom, selected, BOOK, CHAPTER]);
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
   const headerButtons = chapterReading && !reading.onBar;
