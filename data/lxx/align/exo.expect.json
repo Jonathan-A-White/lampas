@@ -1,0 +1,155 @@
+{
+  "reasons": {
+    "particle-exo": "Brenton adds a particle ('forth', 'away') to make a Greek verb English ('send forth', 'let go away'); the Greek verse has only the verb, which is the chunk before it, so the particle has no Greek word of its own (mw-u2w5klk.349.8).",
+    "added-exo": "Brenton's English adds it to turn a Greek phrase into English (a noun or verb the Greek leaves understood: 'dry land' for ξηρόν, 'father' of 18:3, 'a time' of 8:9, 'own', 'one', 'come', 'go', 'way', 'part'), and each was read against its verse: no free Greek word renders it (mw-u2w5klk.349.8).",
+    "pair-exo": "The Greek word that renders it is a pair the aligner made to another English word (6:7 ἐξαγαγὼν on 'out', 8:23 γῆς on 'Lord', 14:20 ὅλην on 'during', 15:17 κατηρτίσω on 'O', 18:16 διακρίνω on 'judgment', 19:21 διαμάρτυραι on 'solemnly'), which the model pass does not touch (mw-u2w5klk.349.8).",
+    "other-verse-exo": "The Greek words are in the verse before or after, which has no chunk to point at: Exodus 6:17 ends with the English of the Greek verse 6:18's first words, 11:9 begins with the English of the Greek verse 11:8's last words ('Moses went forth from Pharao with wrath'), and 18:17 ends with the English of 18:18's first words (mw-u2w5klk.349.8)."
+  },
+  "chapters": {
+    "1": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["1:5:born", "added-exo"],
+        ["1:12:grew", "pair-exo"]
+      ]
+    },
+    "6": {
+      "gaps": 0,
+      "model": 13,
+      "leftovers": [
+        ["6:1:forth", "particle-exo"],
+        ["6:5:affliction", "added-exo"],
+        ["6:6:forth", "particle-exo"],
+        ["6:7:brought", "pair-exo"],
+        ["6:8:concerning", "added-exo"],
+        ["6:11:forth", "particle-exo"],
+        ["6:13:charge", "pair-exo"],
+        ["6:13:forth", "particle-exo"],
+        ["6:16:one", "added-exo"],
+        ["6:17:caath", "other-verse-exo"],
+        ["6:17:sons", "other-verse-exo"],
+        ["6:22:misael", "added-exo"],
+        ["6:25:one", "added-exo"]
+      ]
+    },
+    "8": {
+      "gaps": 0,
+      "model": 17,
+      "leftovers": [
+        ["8:1:forth", "particle-exo"],
+        ["8:2:forth", "particle-exo"],
+        ["8:5:forth", "particle-exo"],
+        ["8:6:forth", "particle-exo"],
+        ["8:8:away", "particle-exo"],
+        ["8:9:time", "added-exo"],
+        ["8:10:god", "added-exo"],
+        ["8:12:forth", "particle-exo"],
+        ["8:16:forth", "particle-exo"],
+        ["8:20:away", "particle-exo"],
+        ["8:20:forth", "particle-exo"],
+        ["8:23:land", "pair-exo"],
+        ["8:25:lord", "added-exo"],
+        ["8:27:lord", "added-exo"],
+        ["8:29:away", "particle-exo"],
+        ["8:29:forth", "particle-exo"],
+        ["8:32:away", "particle-exo"]
+      ]
+    },
+    "11": {
+      "gaps": 0,
+      "model": 9,
+      "leftovers": [
+        ["11:1:forth", "particle-exo"],
+        ["11:1:forth", "particle-exo"],
+        ["11:8:forth", "particle-exo"],
+        ["11:9:forth", "particle-exo"],
+        ["11:9:moses", "other-verse-exo"],
+        ["11:9:pharao", "other-verse-exo"],
+        ["11:9:went", "other-verse-exo"],
+        ["11:9:wrath", "other-verse-exo"],
+        ["11:10:forth", "particle-exo"]
+      ]
+    },
+    "14": {
+      "gaps": 0,
+      "model": 16,
+      "leftovers": [
+        ["14:5:go", "added-exo"],
+        ["14:16:forth", "particle-exo"],
+        ["14:16:land", "added-exo"],
+        ["14:20:camp", "added-exo"],
+        ["14:20:near", "added-exo"],
+        ["14:20:one", "added-exo"],
+        ["14:20:whole", "pair-exo"],
+        ["14:21:forth", "particle-exo"],
+        ["14:22:hand", "added-exo"],
+        ["14:22:land", "added-exo"],
+        ["14:24:forth", "particle-exo"],
+        ["14:26:coming", "added-exo"],
+        ["14:26:forth", "particle-exo"],
+        ["14:27:forth", "particle-exo"],
+        ["14:29:hand", "added-exo"],
+        ["14:29:land", "added-exo"]
+      ]
+    },
+    "15": {
+      "gaps": 0,
+      "model": 9,
+      "leftovers": [
+        ["15:7:forth", "particle-exo"],
+        ["15:7:pieces", "added-exo"],
+        ["15:10:forth", "particle-exo"],
+        ["15:12:forth", "particle-exo"],
+        ["15:15:away", "particle-exo"],
+        ["15:15:hold", "added-exo"],
+        ["15:17:prepared", "pair-exo"],
+        ["15:19:land", "added-exo"],
+        ["15:20:forth", "particle-exo"]
+      ]
+    },
+    "17": {
+      "gaps": 0,
+      "model": 4,
+      "leftovers": [
+        ["17:6:come", "added-exo"],
+        ["17:6:come", "added-exo"],
+        ["17:9:army", "added-exo"],
+        ["17:9:array", "added-exo"]
+      ]
+    },
+    "18": {
+      "gaps": 0,
+      "model": 10,
+      "leftovers": [
+        ["18:3:father", "added-exo"],
+        ["18:5:forth", "particle-exo"],
+        ["18:7:forth", "particle-exo"],
+        ["18:9:things", "added-exo"],
+        ["18:16:give", "pair-exo"],
+        ["18:17:rightly", "other-verse-exo"],
+        ["18:17:thing", "other-verse-exo"],
+        ["18:23:own", "added-exo"],
+        ["18:25:people", "added-exo"],
+        ["18:27:own", "added-exo"]
+      ]
+    },
+    "19": {
+      "gaps": 0,
+      "model": 11,
+      "leftovers": [
+        ["19:4:near", "added-exo"],
+        ["19:10:go", "added-exo"],
+        ["19:12:part", "added-exo"],
+        ["19:13:come", "added-exo"],
+        ["19:13:one", "added-exo"],
+        ["19:15:come", "added-exo"],
+        ["19:17:forth", "particle-exo"],
+        ["19:21:charge", "pair-exo"],
+        ["19:21:go", "added-exo"],
+        ["19:24:come", "added-exo"],
+        ["19:24:way", "added-exo"]
+      ]
+    }
+  }
+}
