@@ -7,7 +7,7 @@ import { videoOf } from './video';
 
 /**
  * The sermon sources the sermon index serves the words of (sermon-index's source.toml `text = "public-domain"`; mw-ecpivg5.1): today Spurgeon's sermons at CCEL. The reader is offered for a row of these only; any other web
- * sermon opens on the web as before. A source listed here that the service does not serve answers 404 and the row opens on the web too (the sheet says so once). PROVISIONAL, the Governor to confirm.
+ * sermon opens on the web as before. A source listed here that the service does not serve answers 404 and the row opens on the web too (the sheet says so once); a source NOT listed (Enduring Word) is not asked at all, the reader goes straight to the web. PROVISIONAL, the Governor to confirm.
  */
 export const TEXT_SOURCES: readonly string[] = ['spurgeon-ccel'];
 
