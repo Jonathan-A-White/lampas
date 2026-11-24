@@ -3,7 +3,7 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL, MORNING_REPHIL_ID, RANDOM, anotherDevotional, devotionalForDay, devotionalOf, pickableDevotionals } from '../../src/data/daily/devotionals';
-import { EPISODES, anotherEpisode, currentEpisodes, devotionalToday, episodeForDay, episodeDate, mergeEpisodes, nextEpisode, orderedEpisodes, serviceEpisodes, type Episode } from '../../src/data/daily/morningRephil';
+import { EPISODES, anotherEpisode, currentEpisodes, devotionalToday, episodeForDay, episodeDate, hasUnheard, mergeEpisodes, nextEpisode, orderedEpisodes, serviceEpisodes, type Episode } from '../../src/data/daily/morningRephil';
 import { forgetEpisodes, refreshEpisodes } from '../../src/services/rephilFeed';
 import { setSermonsUrl } from '../../src/services/sermons';
 import { clearHeard, getDay, getHeard, markHeard, markSeen, pinEpisode, setDevotionalPick } from '../../src/data/daily/dailyStore';
@@ -320,6 +320,22 @@ describe('the episodes from the sermon index service', () => {
     expect(merged[1].title).toBe('Morning RePhil #2 (again)');
     expect(merged[2].id).toBe('yt:vid00000003');
     expect(serviceEpisodes('not a list')).toEqual([]);
+  });
+
+  it('keeps an episode seen as yt:<video> seen when the service later gives it a Subsplash link (a new id)', async () => {
+    const bundled = [ep('a', '2026-01-01', 1)];
+    const before = mergeEpisodes(bundled, serviceEpisodes([{ number: 2, title: 'Morning RePhil #2', date: '2026-01-04', share: null, video: 'vid00000002' }]));
+    expect(before[1].id).toBe('yt:vid00000002');
+    await markSeen('2026-01-05', 'a');
+    await markSeen('2026-01-05', 'yt:vid00000002');
+    const after = mergeEpisodes(bundled, serviceEpisodes([{ number: 2, title: 'Morning RePhil #2', date: '2026-01-04', share: 'https://brookfieldfirst.subspla.sh/b2', video: 'vid00000002' }]));
+    expect(after[1].id).toBe('b2');
+    const heard = await getHeard();
+    expect(nextEpisode('oldest', heard, after)).toBeUndefined();
+    expect(hasUnheard(heard, after)).toBe(false);
+    expect(anotherEpisode('oldest', heard, 'a', after)).toBeUndefined();
+    expect(episodeForDay('oldest', heard, 'yt:vid00000002', after)?.id).toBe('b2');
+    expect(devotionalToday({ choice: MORNING_REPHIL_ID, ticked: [], date: day, heard, order: 'oldest', backup: 'x', logosOn: false, list: after })?.episode).toBeUndefined();
   });
 
   it('is the bundled list, with nothing erroring, when the fetch fails, the answer is bad or there is no service', async () => {

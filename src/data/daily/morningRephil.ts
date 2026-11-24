@@ -82,24 +82,30 @@ export function subscribeEpisodes(onChange: () => void): () => void {
 /** The episodes in the order asked for. */
 export const orderedEpisodes = (order: EpisodeOrder, list: readonly Episode[] = currentEpisodes()): Episode[] => (order === 'newest' ? [...list].reverse() : [...list]);
 
+/** Whether `id` names `e`: its own id, or the 'yt:<video>' id it had before the service gave it a Subsplash link (the video id is kept on the row beside the new id). */
+export const isEpisode = (e: Episode, id: string | undefined): boolean => id !== undefined && (e.id === id || (e.youtube !== undefined && id === `yt:${e.youtube}`));
+
+/** Whether `e` is heard (or seen): by its id, or by the 'yt:<video>' id a mark made before its Subsplash link came, so the mark is not lost when the id changes. */
+export const isHeard = (heard: ReadonlySet<string>, e: Episode): boolean => heard.has(e.id) || (e.youtube !== undefined && heard.has(`yt:${e.youtube}`));
+
 /** The first episode in `order` that is not in `heard`; undefined once every one is heard. */
-export const nextEpisode = (order: EpisodeOrder, heard: ReadonlySet<string>, list: readonly Episode[] = currentEpisodes()): Episode | undefined => orderedEpisodes(order, list).find((e) => !heard.has(e.id));
+export const nextEpisode = (order: EpisodeOrder, heard: ReadonlySet<string>, list: readonly Episode[] = currentEpisodes()): Episode | undefined => orderedEpisodes(order, list).find((e) => !isHeard(heard, e));
 
 /** Whether any episode is still unheard (the test for Random to draw Morning RePhil at all). */
-export const hasUnheard = (heard: ReadonlySet<string>, list: readonly Episode[] = currentEpisodes()): boolean => list.some((e) => !heard.has(e.id));
+export const hasUnheard = (heard: ReadonlySet<string>, list: readonly Episode[] = currentEpisodes()): boolean => list.some((e) => !isHeard(heard, e));
 
 /** The episode Today shows: the one kept for the day (what he played or Another chose) while it is in the list, even though it is heard now; else the next unheard one. */
 export function episodeForDay(order: EpisodeOrder, heard: ReadonlySet<string>, kept: string | undefined, list: readonly Episode[] = currentEpisodes()): Episode | undefined {
-  return (kept === undefined ? undefined : list.find((e) => e.id === kept)) ?? nextEpisode(order, heard, list);
+  return (kept === undefined ? undefined : list.find((e) => isEpisode(e, kept))) ?? nextEpisode(order, heard, list);
 }
 
 /** Another: the next unheard episode after `current` in `order`, going round to the start, never `current` itself; undefined when no other is unheard. */
 export function anotherEpisode(order: EpisodeOrder, heard: ReadonlySet<string>, current: string | undefined, list: readonly Episode[] = currentEpisodes()): Episode | undefined {
   const ordered = orderedEpisodes(order, list);
-  const at = ordered.findIndex((e) => e.id === current);
+  const at = ordered.findIndex((e) => isEpisode(e, current));
   for (let step = 1; step <= ordered.length; step++) {
     const e = ordered[(at + step + ordered.length) % ordered.length];
-    if (e.id !== current && !heard.has(e.id)) return e;
+    if (!isEpisode(e, current) && !isHeard(heard, e)) return e;
   }
   return undefined;
 }
