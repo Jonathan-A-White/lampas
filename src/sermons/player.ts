@@ -15,8 +15,15 @@ let current: OpenedSermon | null = null;
 const listeners = new Set<() => void>();
 const tell = (): void => listeners.forEach((l) => l());
 
-/** The video a row plays in the app (its Subsplash address where it has one, as the sheet opens it), or undefined: the row opens on the web. */
-export const videoOfRow = (row: LinkRow): Video | undefined => (row.opensIn === 'logos' ? undefined : videoOf(openedRow(row).open.url));
+/** The video a row plays in the app (its Subsplash address where it has one, as the sheet opens it; else, where its own address is no video, the YouTube video its `alt` names: Life Bible Ministry's page links back
+ *  and its video plays here, mw-qtu3zvz.280.3), or undefined: the row opens on the web. The row's link stays its page. */
+export const videoOfRow = (row: LinkRow): Video | undefined => {
+  if (row.opensIn === 'logos') return undefined;
+  const own = videoOf(openedRow(row).open.url);
+  if (own !== undefined || row.alt === undefined) return own;
+  const alt = videoOf(row.alt);
+  return alt?.kind === 'youtube' ? alt : undefined;
+};
 
 /** Plays a row's video in the player sheet. False, and nothing opened, for a row that is no video the app plays. */
 export function openSermon(row: LinkRow, options: { auto?: boolean } = {}): boolean {

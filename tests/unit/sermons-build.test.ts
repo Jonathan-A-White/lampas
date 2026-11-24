@@ -426,3 +426,55 @@ describe('tidyLabel', () => {
     expect(tidyLabel('Love of God')).toBe('Love of God');
   });
 });
+
+describe('runSermonsBuild: the lifebible-ttb source (mw-qtu3zvz.280.3)', () => {
+  const toml = readFileSync('tests/fixtures/sermons/lifebible-ttb.toml', 'utf8');
+  const rows = readFileSync('tests/fixtures/sermons/lifebible-ttb-3.jsonl', 'utf8');
+  function lifebible() {
+    const dir = mkdtempSync(join(tmpdir(), 'sermons-build-'));
+    const configFile = join(dir, 'sources.json');
+    writeFileSync(configFile, JSON.stringify({ repo: 'https://github.com/Jonathan-A-White/sermon-index', commit: SHA, sources: ['lifebible-ttb'], names: { 'lifebible-ttb': 'Life Bible Ministry: Through the Bible' } }));
+    const download = async (url: string, dest: string): Promise<void> => {
+      const { mkdirSync, writeFileSync: write } = await import('node:fs');
+      const { dirname } = await import('node:path');
+      mkdirSync(dirname(dest), { recursive: true });
+      write(dest, url.endsWith('source.toml') ? toml : rows);
+    };
+    return { dir, options: { configFile, rawDir: join(dir, 'raw'), outDir: join(dir, 'out'), download, verses } };
+  }
+
+  it('lists the source Off to start with its credit, home page and name, and one file for each book its three teachings touch', async () => {
+    const w = lifebible();
+    const result = await runSermonsBuild(w.options);
+    const [s] = readJson<SermonIndex>(join(w.options.outDir, 'index.json')).sources;
+    expect(s).toMatchObject({
+      id: 'lifebible-ttb',
+      name: 'Life Bible Ministry: Through the Bible',
+      kind: 'sermons',
+      onByDefault: false,
+      credit: 'Pastor Paul LeBoutillier, Life Bible Ministry (lifebibleministry.com)',
+      homepage: 'https://www.lifebibleministry.com/through-the-bible',
+      rows: 3,
+      books: ['neh', 'isa', 'mat'],
+    });
+    expect(result.sources[0]).toMatchObject({ read: 3, listed: 3, withoutRef: 0, omitted: [] });
+    expect(filesUnder(w.options.outDir)).toEqual(['index.json', 'lifebible-ttb/isa.json', 'lifebible-ttb/mat.json', 'lifebible-ttb/neh.json']);
+  });
+
+  it('writes the page as the row\'s url and the video as its alt, over the chapters the teaching spans', async () => {
+    const w = lifebible();
+    await runSermonsBuild(w.options);
+    const isa = readJson<SermonBookFile>(join(w.options.outDir, 'lifebible-ttb', 'isa.json'));
+    expect(isa.rows).toEqual([
+      {
+        id: 'isaiah.1',
+        title: 'Isaiah 1-4:1: God confronts the Kingdom of Judah',
+        ref: { book: 'isa', chapter: 1, from: 1, to: 1, toChapter: 4 },
+        role: 'text',
+        url: 'https://www.lifebibleministry.com/through-the-bible/isaiah/1',
+        alt: 'https://www.youtube.com/watch?v=ynUYAm1-W6k',
+        preacher: 'Pastor Paul LeBoutillier',
+      },
+    ]);
+  });
+});
