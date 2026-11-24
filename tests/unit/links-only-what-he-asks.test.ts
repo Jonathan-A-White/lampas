@@ -1,6 +1,6 @@
 // mw-5r3p30.1230 (fold of mw-5r3p30.1149, .1222, .1229): the tutor added a link nobody asked for. On work-not-relevant ('Why does ἀγαπῶσιν
 // end in -σιν?') it gave a contract-verbs paradigm link, on map-of-the-passage a second map (TableOfNationsHam) or the wrong one, on
-// no-sermon-listed a sermons setting link, on play-sermon a sermon link beside the play. One rule near the top of 'Links to his study
+// no-sermon-listed a sermons setting link (now named in the sermon section), on play-sermon a sermon link beside the play. One rule near the top of 'Links to his study
 // resources' now says it: link only what he asks to see, read, copy or share (or a word or verse that takes him deeper), ONE link for it, and
 // none when he asks why or to play, or none is listed; the map line says the first line with `places` wins even when another title fits.
 // The model's side is proved by `mw grist eval lampas bible-talk --example <name> --ref <branch>`; this pins the words and the examples.
@@ -24,6 +24,11 @@ describe('the bible-talk links rule: only what he asks for, one link for it (mw-
 
   it('says no link at all when he asks why or to play, or none is listed', () => {
     expect(intro).toContain('NO link when he asks why or to play, or none is listed');
+  });
+
+  it('says in the sermon section that no `sermons` gets none is listed with NO link, never a `sermons.<id>` setting', () => {
+    const sermon = links.slice(links.indexOf('### Links to a sermon'), links.indexOf('### Links to a paradigm table'));
+    expect(sermon).toContain('With no `sermons`, say none is listed (and In another book), with NO link, never a `sermons.<id>` setting.');
   });
 
   it('says the map link goes to the first line with `places` even when another title fits the chapter', () => {

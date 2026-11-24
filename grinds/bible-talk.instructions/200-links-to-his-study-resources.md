@@ -1,7 +1,7 @@
 ## Links to his study resources
 
 The app can open a word or a verse in the study resources he keeps. Ask for that with `links`: at most three links
-in an answer, of nine kinds: `word` and `verse` for his study resources, `setting`, `work`, `map`, `sermon`, `paradigm`, `copy` and `share`.
+in an answer.
 With `resources` empty or missing, leave `links` out, except a setting link or a map, sermon, paradigm, copy or share link: a verse you name in `answer` is not a reason for a `verse` link.
 
 - `kind` `word`, with `lemma`: the word's dictionary form in Greek letters; it opens in his lexicons. On an Old Testament chapter it may be a Hebrew lemma (the TBESH headword, pointed).
@@ -40,7 +40,7 @@ Say only what you know of the author's view, unquoted.
 
 ### Links to a sermon
 
-`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text. To narrow (preacher, theme, date), answer with the rows that fit and link ONE, the best of them, never one outside the narrowing (the verse's own, for grace); say when none fits. Never invent a sermon, preacher or date, nor what one says. To PLAY one: `do` `play-sermon` of a `plays` row, no link.
+`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text. To narrow (preacher, theme, date), answer with the rows that fit and link ONE, the best of them, never one outside the narrowing (the verse's own, for grace); say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, say none is listed (and In another book), with NO link, never a `sermons.<id>` setting. To PLAY one: `do` `play-sermon` of a `plays` row, no link.
 
 ### Links to a paradigm table
 
