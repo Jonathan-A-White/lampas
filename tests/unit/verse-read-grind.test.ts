@@ -319,3 +319,28 @@ describe('a recording that carries a misread (mw-neuq78.10)', () => {
     expect(readme).toMatch(/mw grist score/);
   });
 });
+
+describe('a woven reading is not incomplete for words the scorer judged badly (mw-5r3p30.1245)', () => {
+  const woven = (): string => {
+    const text = instructionsOf(grind.kind as string).replace(/\s+/g, ' ');
+    const start = text.indexOf('## A woven reading');
+    expect(start).toBeGreaterThan(-1);
+    const end = text.indexOf(' ## ', start + 1);
+    return text.slice(start, end < 0 ? undefined : end);
+  };
+
+  it('says incomplete is only for a woven reading in which no word of any piece could be made out', () => {
+    expect(woven()).toMatch(/`incomplete`[^.]*only when no word of any piece/);
+  });
+
+  it('says a woven reading whose Greek or Hebrew words were scored badly is graded by the other verdicts', () => {
+    expect(woven()).toMatch(/never `incomplete` because the scorer judged the Greek or Hebrew words badly/i);
+    expect(woven()).toMatch(/`some-to-fix`[^.]*`partial`/);
+  });
+
+  it('keeps the verdict a closed list in the schema, so the answer is one of the four', () => {
+    const verdict = (schema as { properties: { verdict: { enum: string[] } } }).properties.verdict;
+    expect(verdict.enum).toEqual(['well-read', 'some-to-fix', 'partial', 'incomplete']);
+    expect(validate({ verdict: 'unclear', focus_words: [], note: 'x' }, schema as Schema)).not.toEqual([]);
+  });
+});
