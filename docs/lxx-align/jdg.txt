@@ -6,11 +6,11 @@ Derived without a Morpheus cache: none.
 
 | Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Judges 1 | 36 | 936 | 716 | 76.5% | 46.6% | — |
-| Judges 2 | 23 | 584 | 445 | 76.2% | 50.0% | — |
-| Judges 3 | 31 | 756 | 601 | 79.5% | 54.4% | — |
-| Judges 4 | 24 | 657 | 552 | 84.0% | 60.0% | — |
+| Judges 1 | 36 | 936 | 885 | 94.6% | 65.3% | 187 (20.0%) |
+| Judges 2 | 23 | 584 | 534 | 91.4% | 66.1% | 103 (17.6%) |
+| Judges 3 | 31 | 756 | 697 | 92.2% | 68.0% | 125 (16.5%) |
+| Judges 4 | 24 | 657 | 606 | 92.2% | 68.6% | 65 (9.9%) |
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Judges | 114 | 2,933 | 2,314 | 78.9% | 52.3% | — |
+| Judges | 114 | 2,933 | 2,722 | 92.8% | 66.9% | 480 (16.4%) |
