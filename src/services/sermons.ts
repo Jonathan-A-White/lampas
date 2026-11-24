@@ -158,6 +158,11 @@ export async function fetchThemes(ref: string): Promise<ServiceTheme[]> {
   return (await get<{ rows: ServiceTheme[] }>('/v1/themes', { ref })).rows;
 }
 
+/** The Morning RePhil episodes the service lists (`GET /v1/rephil`, oldest first, mw-r9xo1pj.1): the raw rows, read by src/data/daily/morningRephil.ts serviceEpisodes. Throws as the other calls do. */
+export async function fetchRephil(): Promise<unknown> {
+  return get('/v1/rephil', {});
+}
+
 /** The best 50 sermons and themes for the words `q` (`GET /v1/search`); an empty query, or one over SEARCH_MAX characters, is no request. */
 export async function search(q: string): Promise<ServiceHit[]> {
   const words = q.trim();
