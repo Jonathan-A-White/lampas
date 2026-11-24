@@ -1,0 +1,80 @@
+ref	run	text	g	mark	confidence
+Psa.5:1	1	end, a	0,1,2		0.80
+Psa.5:1	2	of David,	7,8		0.80
+Psa.5:1	2	concerning her that	-		0.80
+Psa.5:2	1	to	-		0.80
+Psa.5:2	2	words,	0,1		0.80
+Psa.5:2	2	O	-		0.80
+Psa.5:2	3	attend to	5		0.80
+Psa.5:2	4	cry.	6,7		0.80
+Psa.5:3	1	to	-		0.80
+Psa.5:3	2	of	-		0.80
+Psa.5:3	3	supplication,	4		0.80
+Psa.5:3	3	my	6		0.80
+Psa.5:3	4	O	-		0.80
+Psa.5:3	5	will	-		0.80
+Psa.5:4	1	In	-		0.80
+Psa.5:4	2	you shall	-		0.80
+Psa.5:4	3	my	-		0.80
+Psa.5:4	4	in the morning	6,7		0.80
+Psa.5:4	4	will	-		0.80
+Psa.5:4	5	wait upon	8		0.80
+Psa.5:4	6	will	-		0.80
+Psa.5:4	7	up.	-		0.80
+Psa.5:5	1	you	-		0.80
+Psa.5:5	2	a	-		0.80
+Psa.5:5	3	that	-		0.80
+Psa.5:5	4	iniquity;	4		0.80
+Psa.5:5	4	neither shall	7		0.80
+Psa.5:5	5	worker of	-		0.80
+Psa.5:5	6	dwell with	8		0.80
+Psa.5:6	1	Neither shall	0		0.80
+Psa.5:6	2	transgressors	2		0.80
+Psa.5:6	2	continue	1		0.80
+Psa.5:6	2	in your sight:	3,5		0.80
+Psa.5:6	3	O	-		0.80
+Psa.5:6	4	them that	10		0.80
+Psa.5:7	1	You will	-		0.80
+Psa.5:7	2	that	2		0.80
+Psa.5:7	3	falsehood:	5		0.80
+Psa.5:7	4	the	-		0.80
+Psa.5:8	1	will	-		0.80
+Psa.5:8	2	into	-		0.80
+Psa.5:8	3	of	5		0.80
+Psa.5:8	4	I will	-		0.80
+Psa.5:9	1	Lead	1		0.80
+Psa.5:9	2	O	-		0.80
+Psa.5:9	3	of	8		0.80
+Psa.5:9	4	make	-		0.80
+Psa.5:9	5	way plain	11,14		0.80
+Psa.5:10	1	there	-		0.80
+Psa.5:10	2	their	-		0.80
+Psa.5:10	3	is vain;	11		0.80
+Psa.5:10	4	is an	-		0.80
+Psa.5:10	5	sepulchre;	12		0.80
+Psa.5:10	5	with	17		0.80
+Psa.5:10	6	have used deceit.	20		0.80
+Psa.5:11	1	O	-		0.80
+Psa.5:11	2	let them	-		0.80
+Psa.5:11	3	their counsels:	6,7		0.80
+Psa.5:11	3	cast	15		0.80
+Psa.5:11	4	out	-		0.80
+Psa.5:11	5	to	-		0.80
+Psa.5:11	6	abundance of	10,11		0.80
+Psa.5:11	7	have	-		0.80
+Psa.5:11	8	O	-		0.80
+Psa.5:12	1	But let	0		0.80
+Psa.5:12	2	that	5		0.80
+Psa.5:12	3	be glad in	1,2		0.80
+Psa.5:12	4	they shall exult	17		0.80
+Psa.5:12	5	shall	-		0.80
+Psa.5:12	6	that	21		0.80
+Psa.5:12	7	your	-		0.80
+Psa.5:12	8	shall	-		0.80
+Psa.5:12	9	in	18		0.80
+Psa.5:13	1	shall	-		0.80
+Psa.5:13	2	the righteous:	3		0.80
+Psa.5:13	2	you have compassed	8		0.80
+Psa.5:13	2	us	9		0.80
+Psa.5:13	3	with a shield	6		0.80
+Psa.5:13	3	of favor.	7		0.80
