@@ -1,8 +1,11 @@
 // Sermons (Settings > Study resources > Sermons > Sermon sources, the one list of mw-qtu3zvz.92): one On/Off switch per sermon source (src/sermons/sources/), 'sermons.<id>', made from the registry of sources the way the map switches are (definitions/maps.ts).
 // A source that is Off gives the Sermons door and its sheet no rows. A source that needs Logos is drawn, and used, only while Logos is On; one that opens in Logos resources (`resources`) is drawn and used only while his Library import holds one (src/sermons/enabled.ts).
-import { ownsKey } from '../../sermons/enabled';
+import { ownedResources } from '../../data/repositories';
+import { OWNS_PREFIX, ownsKey, sourceOffered } from '../../sermons/enabled';
+import { SOURCES as SERMON_SOURCES } from '../../sermons/sources';
 import type { SermonSource } from '../../sermons/types';
 import { defineSetting } from '../define';
+import { derivedValue } from '../row';
 
 export type SermonSwitch = 'on' | 'off';
 
@@ -26,13 +29,22 @@ export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | '
     label: source.name.replace(/ \([^)]*\)$/, ''),
     hint: source.describe,
     help: source.needs === 'logos' && !source.resources ? 'Used only while Logos is On in Study resources.' : SOURCE_HELP,
-    // a Logos collection is drawn only while his import holds it (or Logos gives it free): the pseudo-key is read by rows.ts readValues
+    // a Logos collection is drawn only while his import holds it (or Logos gives it free): the pseudo-key is read by ownsValue below, through rows.ts readValues
     ...(source.resources
       ? { dependsOn: { key: ownsKey(source), shown: (value: string) => value === 'on' } }
       : source.needs === 'logos'
         ? { dependsOn: { key: 'resource.logos', shown: (value: string) => value === 'on' } }
         : {}),
   });
+
+/** The value read for each 'owns.<id>' key: On while his Library import holds one of the source's Logos resources or Logos gives it free (mw-qtu3zvz.94; gathered by src/settings/gather.ts derivedOf). */
+export const ownsValue = derivedValue(
+  (key) => key.startsWith(OWNS_PREFIX),
+  async (key) => {
+    const source = SERMON_SOURCES.find((candidate) => ownsKey(candidate) === key);
+    return source && sourceOffered(source, await ownedResources()) ? 'on' : 'off';
+  },
+);
 
 export type OpenWebIn = 'lampas' | 'browser' | 'firefox';
 

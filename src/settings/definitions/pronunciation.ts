@@ -3,7 +3,8 @@
 // 'Set each language on its own' swaps the family for the two rows. PROVISIONAL: the labels and hints are the Mayor's, the Governor to confirm.
 import { DEFAULT_HEBREW_PRONUNCIATION, DEFAULT_PRONUNCIATION, hebrewPronunciationOf, pronunciationOf, pronunciationsOf, type GreekPronunciation } from '../../speech/pronunciation';
 import { defineSetting, type Dependency } from '../define';
-import { depthFrom } from './interest';
+import { derivedValue } from '../row';
+import { depthFrom, interestLevelOf } from './interest';
 
 /** A family of pronunciations: the Greek scheme and the Hebrew one it sets together. Another family (Erasmian Greek with a Tiberian Hebrew) is one more line here. */
 export interface PronunciationFamily {
@@ -55,8 +56,17 @@ export const pronunciationSeparateSetting = defineSetting<'on' | 'off'>({
   dependsOn: depthFrom(1),
 });
 
-/** The key readValues (src/settings/rows.ts) answers 'on' for when Set each language on its own is On and that language's dial is at Curious or above: it is no setting. */
+/** The key readValues (src/settings/rows.ts) answers 'on' for, from separateGreekValue and separateHebrewValue below, when Set each language on its own is On and that language's dial is at Curious or above: it is no setting. */
 export const SEPARATE_KEYS = { grc: 'pronunciationSeparate.grc', he: 'pronunciationSeparate.he' } as const;
+
+/** The value read for a language's SEPARATE_KEYS (gathered by src/settings/gather.ts derivedOf, mw-6ww.175.112): 'on' while Set each language on its own is On and that language's dial is at Curious or above. */
+const separateValue = (lang: keyof typeof SEPARATE_KEYS) =>
+  derivedValue(SEPARATE_KEYS[lang], async (_key, setting) => {
+    const [on, dial] = await Promise.all([setting('pronunciationSeparate'), setting(lang === 'grc' ? 'greekInterest' : 'hebrewInterest')]);
+    return on === 'on' && interestLevelOf(lang === 'grc' ? 'grc' : 'hbo', dial) >= 1 ? 'on' : 'off';
+  });
+export const separateGreekValue = separateValue('grc');
+export const separateHebrewValue = separateValue('he');
 
 /** The dependency of a language's own pronunciation row: shown while the switch is On and the language is chosen. */
 export const separateFrom = (lang: keyof typeof SEPARATE_KEYS): Dependency => ({ key: SEPARATE_KEYS[lang], shown: (value) => value === 'on' });

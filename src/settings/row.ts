@@ -44,3 +44,24 @@ export const homeDoor = (door: Omit<HomeDoor, "homeDoor">): HomeDoor => ({
   homeDoor: true,
   ...door,
 });
+
+/**
+ * A value a row depends on that is no setting's own (mw-6ww.175.112): the higher of the two dials, 'on' while two settings are both on, whether his import holds a sermon source. A file of
+ * src/settings/definitions/ or src/settings/extraRows/ exports one with derivedValue(...), and rows.ts readValues gathers them (src/settings/gather.ts derivedOf), so a row that depends on
+ * two settings edits no list. `matches` says which keys it answers (a key, or a test of the key for a family such as 'owns.<id>'); `read(key, setting)` gives the value as text, where
+ * `setting(key)` reads a setting's own value (undefined for one never saved). It takes `setting` rather than importing the registry, which would be a cycle: the registry is made from these files.
+ */
+export interface DerivedValue {
+  derivedValue: true;
+  matches: (key: string) => boolean;
+  read: (key: string, setting: (key: string) => Promise<unknown>) => Promise<string>;
+}
+
+export const derivedValue = (
+  keys: string | ((key: string) => boolean),
+  read: DerivedValue["read"],
+): DerivedValue => ({
+  derivedValue: true,
+  matches: typeof keys === "string" ? (key) => key === keys : keys,
+  read,
+});

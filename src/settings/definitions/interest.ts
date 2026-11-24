@@ -4,6 +4,7 @@
 // Moving a dial is src/data/repositories/greekInterest.ts. The names and lines are the Mayor's, PROVISIONAL until the Governor confirms them (the epic mw-3ased2).
 // A phone not yet placed reads Greek 5, All in (nothing hidden) and Hebrew 0 until placeInterest has chosen both; the languages he reads is the two dials' own state (languagesOf).
 import { defineSetting, type Dependency } from '../define';
+import { derivedValue } from '../row';
 
 export type InterestLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
@@ -69,8 +70,14 @@ export const interestLevelOf = (lang: InterestLang, raw: unknown): InterestLevel
 /** The dependency of a row that `lang`'s dial shows from step `level` up (as text, like every dependency: the setting's value). */
 export const interestFrom = (lang: InterestLang, level: InterestLevel): Dependency => ({ key: interestKeyOf(lang), shown: (value) => Number(value) >= level });
 
-/** The key readValues (src/settings/rows.ts) answers as the higher of the two dials: a row both languages share depends on it. It is no setting. */
+/** The key readValues (src/settings/rows.ts) answers, from depthValue below, as the higher of the two dials: a row both languages share depends on it. It is no setting. */
 export const DEPTH_KEY = 'depth';
+
+/** The higher of the two dials, read for DEPTH_KEY (gathered by src/settings/gather.ts derivedOf, mw-6ww.175.112). */
+export const depthValue = derivedValue(DEPTH_KEY, async (_key, setting) => {
+  const [greek, hebrew] = await Promise.all([setting('greekInterest'), setting('hebrewInterest')]);
+  return String(Math.max(interestLevelOf('grc', greek), interestLevelOf('hbo', hebrew)));
+});
 
 /** The dependency of a row the higher of the two dials shows from step `level` up. */
 export const depthFrom = (level: InterestLevel): Dependency => ({ key: DEPTH_KEY, shown: (value) => Number(value) >= level });

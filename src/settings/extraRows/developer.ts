@@ -1,5 +1,6 @@
 // src/settings/extraRows/developer.ts — Developer mode, found on About and kept outside the registry (mw-6ww.175.107: rows that are not settings are gathered by glob, src/settings/gather.ts; this file is the place of its own).
-import { extraRows, type SettingsRow } from "../row";
+import { getDeveloper } from "../../data/repositories";
+import { derivedValue, extraRows, type SettingsRow } from "../row";
 
 /** Developer mode is found, not set (seven taps on About's version number): its switch is drawn only once it is no longer 'hidden'. */
 const DEVELOPER: SettingsRow = {
@@ -15,3 +16,6 @@ const DEVELOPER: SettingsRow = {
 };
 
 export const developerRows = extraRows(80, [DEVELOPER]);
+
+/** The value of the key the row depends on: 'hidden' until found, then 'on' or 'off' (gathered by src/settings/gather.ts derivedOf, mw-6ww.175.112). */
+export const developerModeValue = derivedValue("developerMode", () => getDeveloper());

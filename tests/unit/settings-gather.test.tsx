@@ -10,8 +10,8 @@ import { DEFINITIONS } from '../../src/settings/definitions';
 import type { SectionId } from '../../src/settings/define';
 import { fromDefinition } from '../../src/settings/entry';
 import { CONTROL_MODULES } from '../../src/settings/controls';
-import { controlsOf, definitionsOf, doorsOf, entriesOf, extraRowsOf, layoutOf, rowsWith, type Modules } from '../../src/settings/gather';
-import { CONTROLS, DOORS, GROUPS, HOME_SECTIONS, ROWS, SECTIONS, SETTINGS, TOOL_ROWS, homeEntries, rowOfSetting, settingProblems, type SettingsRow } from '../support/settings';
+import { controlsOf, definitionsOf, derivedOf, doorsOf, entriesOf, extraRowsOf, layoutOf, rowsWith, type Modules } from '../../src/settings/gather';
+import { CONTROLS, DOORS, GROUPS, HOME_SECTIONS, ROWS, SECTIONS, SETTINGS, TOOL_ROWS, homeEntries, readValues, rowOfSetting, settingOf, settingProblems, type SettingsRow } from '../support/settings';
 import * as clash from '../fixtures/settings-controls-clash';
 import { ExampleControl } from '../fixtures/settings-controls/example';
 
@@ -23,6 +23,7 @@ const FIXTURE_ENTRIES: Modules = import.meta.glob('../fixtures/settings-entries/
 const FIXTURE_PAGES: Modules = import.meta.glob('../fixtures/settings-pages/*.ts', { eager: true });
 const WRONG_PAGE: Modules = import.meta.glob('../fixtures/settings-pages-bad/wrongPage.ts', { eager: true });
 const NO_TITLE: Modules = import.meta.glob('../fixtures/settings-pages-bad/noTitle.ts', { eager: true });
+const FIXTURE_DERIVED: Modules = import.meta.glob('../fixtures/settings-derived/*.ts', { eager: true });
 const FIXTURE_CONTROLS: Modules = import.meta.glob('../fixtures/settings-controls/*.tsx', { eager: true });
 
 describe('a definition file in a directory', () => {
@@ -181,5 +182,39 @@ describe('the real rows and pages', () => {
         .at(-1),
     ).toBe('counted');
     expect(GROUPS.map((g) => g.id)).toEqual(['reading', 'greek', 'tutor', 'listening', 'daily', 'study', 'account', 'developer']);
+  });
+});
+
+// A value a row depends on that no setting holds is gathered from the files too (mw-6ww.175.112): a file that exports one is read by readValues with no edit to src/settings/rows.ts.
+describe('a derived value in a file of a directory', () => {
+  const dependsOnKey = (key: string): SettingsRow => ({ key: `needs.${key}`, label: 'Needs', hint: 'A row that depends on a derived value.', section: FIXTURE_SECTION, dependsOn: { key, shown: (value) => value !== '' } });
+
+  it('is given by readValues, from the settings it reads, and a key a family matches is given too', async () => {
+    const derived = derivedOf(FIXTURE_DERIVED);
+    expect(derived).toHaveLength(2);
+    const rows = [dependsOnKey('fixture.pair'), dependsOnKey('fixture.family.alpha'), dependsOnKey('theme')];
+    const values = await readValues(rows, derived);
+    const [theme, weave] = [String(await settingOf('theme')?.read()), String(await settingOf('weave')?.read())];
+    expect(values['fixture.pair']).toBe(`${theme}+${weave}`);
+    expect(values['fixture.family.alpha']).toBe('alpha');
+    // a key no derived value matches is still the setting's own
+    expect(values.theme).toBe(theme);
+  });
+
+  it('is not given by the real readValues until its file is among the real ones, and the real derived values are gathered, not written out in rows.ts', async () => {
+    const real = await readValues([dependsOnKey('fixture.pair')]);
+    expect(real['fixture.pair']).toBe('undefined');
+    const rows = readFileSync('src/settings/rows.ts', 'utf8');
+    expect(rows).toContain('derivedOf(');
+    expect(rows).not.toMatch(/no setting of its own/);
+    for (const name of ['DEPTH_KEY', 'LOGOS_RANDOM_KEY', 'LOGOS_REPHIL_KEY', 'OWNS_PREFIX']) expect(rows, name).not.toMatch(new RegExp(`if \\(key.*${name}`));
+  });
+
+  it('gives the real derived values from the real files: the higher dial, the pair of settings, Developer mode', async () => {
+    const values = await readValues();
+    expect(values.depth).toMatch(/^[0-5]$/);
+    expect(values['devotional.logosRandom']).toBe('off');
+    expect(values['pronunciationSeparate.grc']).toBe('off');
+    expect(['hidden', 'on', 'off']).toContain(values.developerMode);
   });
 });
