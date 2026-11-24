@@ -69,7 +69,10 @@ describe('the ladder is the single source', () => {
   });
 
   it('leaves the built grinds the Greek ladder\'s: no Hebrew idea in either bridge enum', () => {
-    for (const file of SCHEMAS) expect(readFileSync(file, 'utf8')).not.toContain('"he-');
+    // A paradigm link's `table` enum (mw-5r3p30.1245) names Paradigms tables, Hebrew ones too, not ideas: it alone is left out here,
+    // and tests/unit/grind-answer-enums.test.ts holds it to exactly the app's table ids.
+    const withoutTableIds = (key: string, value: unknown): unknown => (key === 'table' ? { ...(value as object), enum: undefined } : value);
+    for (const file of SCHEMAS) expect(JSON.stringify(JSON.parse(readFileSync(file, 'utf8')), withoutTableIds)).not.toContain('"he-');
   });
 
   it('names the idea and the file for an idea with no card', () => {

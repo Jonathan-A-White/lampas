@@ -66,7 +66,7 @@ export function usesBeyondRe2(pattern: string): boolean {
 }
 
 /** The schemas a path can stand at: a field name (or, in an object whose keys are the data's own, a key: its `additionalProperties` schema), or an array place (a number) into `items`; anyOf branches are all tried. */
-function schemasAt(root: Schema, path: string): Schema[] {
+export function schemasAt(root: Schema, path: string): Schema[] {
   let nodes: Schema[] = [root];
   for (const part of path.split('.')) {
     const next: Schema[] = [];
@@ -82,7 +82,7 @@ function schemasAt(root: Schema, path: string): Schema[] {
 }
 
 /** A schema's anyOf branches (and a `$ref`, followed into the root's `$defs`), each a schema of its own. */
-const branches = (schema: Schema, root: Schema): Schema[] => {
+export const branches = (schema: Schema, root: Schema): Schema[] => {
   const s = resolveRef(schema, root);
   return s.anyOf ? s.anyOf.flatMap((b) => branches(b, root)) : [s];
 };
