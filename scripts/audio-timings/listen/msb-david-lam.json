@@ -1,0 +1,6 @@
+{
+ "v":1,"edition":"msb-david","book":"lam","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"1:22","edge":"tail","reason":"a quiet of 80 ms between 'faint' and what is spoken next: less than the 147 ms the player's margin needs; cut in its middle","room":0.08,"cut":288.72,"judge":[{"kind":"tail-clipped","by":0.175,"level":-12.0,"heard":{"lost":"T","letters":"AND MY HEART IS FAINT","words":"my heart is faint"}}]}
+ ]
+}
