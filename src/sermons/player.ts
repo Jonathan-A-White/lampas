@@ -2,6 +2,7 @@
 // which starts the video with no tap. The sheet is drawn by <SermonPlayerHost /> (src/sermons/SermonPlayer.tsx, mounted once in App).
 import { useSyncExternalStore } from 'react';
 import { openedRow, type LinkRow } from './merge';
+import { pageOfRow } from './playerPage';
 import { videoOf, type Video } from './video';
 
 export interface OpenedSermon {
@@ -9,6 +10,8 @@ export interface OpenedSermon {
   video: Video;
   /** Lampas opened it itself: start it with no tap. */
   auto: boolean;
+  /** The row's own page, when the video is not that page (playerPage.ts): the sheet links back to it. */
+  page?: string;
 }
 
 let current: OpenedSermon | null = null;
@@ -29,7 +32,8 @@ export const videoOfRow = (row: LinkRow): Video | undefined => {
 export function openSermon(row: LinkRow, options: { auto?: boolean } = {}): boolean {
   const video = videoOfRow(row);
   if (video === undefined) return false;
-  current = { title: row.title, video, auto: options.auto === true };
+  const page = pageOfRow(row, video);
+  current = { title: row.title, video, auto: options.auto === true, ...(page === undefined ? {} : { page }) };
   tell();
   return true;
 }
