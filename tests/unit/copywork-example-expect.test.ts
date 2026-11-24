@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { markedWords, type CopyworkAnswer } from '../../src/practise/copywork';
+import '../support/grinds-in-graph';
 
 const example = JSON.parse(readFileSync(resolve(__dirname, '../../grinds/examples/copywork/grc-dictation-sounds-alike-john-1-5.json'), 'utf8')) as {
   request: { words: string[]; language: 'grc' };
