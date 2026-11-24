@@ -2,7 +2,8 @@
 // Subsplash's own embed page. Anything else is not a video the app plays: it opens on the web as ever.
 import { isSubsplashHost } from './merge';
 
-export type Video = { kind: 'youtube'; id: string } | { kind: 'subsplash'; embed: string };
+/** A Subsplash video has two pages: its `embed` (always a tap to play) and its media `page` (plays at once with `?autoplay`, mw-qtu3zvz.282). */
+export type Video = { kind: 'youtube'; id: string } | { kind: 'subsplash'; embed: string; page: string };
 
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
 const onHost = (host: string, domain: string): boolean => host === domain || host.endsWith(`.${domain}`);
@@ -20,17 +21,20 @@ function youtubeId(url: URL): string | undefined {
 
 /**
  * Subsplash's embed page: `https://subsplash.com/u/<church>/media/embed/d/<media id>` (the route its web shell has, with `frame-ancestors *` so any page may frame it). A media page is `https://subsplash.com/u/<church>/media/d/<media id>`;
- * a church's short link `https://<church>.subspla.sh/<media id>` is the same item. Anything else on a Subsplash host (the church's media list, a series) is no one video.
+ * a church's short link `https://<church>.subspla.sh/<media id>` is the same item. Both pages are returned: the embed, and the media page (which reads `?autoplay`). Anything else on a Subsplash host (the church's media list, a series) is no one video.
  */
-function subsplashEmbed(url: URL): string | undefined {
+function subsplash(url: URL): { embed: string; page: string } | undefined {
   const host = url.hostname.toLowerCase();
   if (!isSubsplashHost(host)) return undefined;
   const parts = url.pathname.split('/').filter((p) => p !== '');
   if (host.endsWith('.subspla.sh') && parts.length === 1 && host !== 'www.subspla.sh') {
-    return `https://subsplash.com/u/${host.slice(0, -'.subspla.sh'.length)}/media/embed/d/${parts[0]}`;
+    const church = host.slice(0, -'.subspla.sh'.length);
+    return { embed: `https://subsplash.com/u/${church}/media/embed/d/${parts[0]}`, page: `https://subsplash.com/u/${church}/media/d/${parts[0]}` };
   }
   const media = parts.indexOf('media');
-  if (parts[0] === 'u' && parts.length === 5 && media === 2 && parts[3] === 'd') return `https://subsplash.com/u/${parts[1]}/media/embed/d/${parts[4]}`;
+  if (parts[0] === 'u' && parts.length === 5 && media === 2 && parts[3] === 'd') {
+    return { embed: `https://subsplash.com/u/${parts[1]}/media/embed/d/${parts[4]}`, page: `https://subsplash.com/u/${parts[1]}/media/d/${parts[4]}` };
+  }
   return undefined;
 }
 
@@ -45,6 +49,6 @@ export function videoOf(address: string): Video | undefined {
   if (url.protocol !== 'https:') return undefined;
   const id = youtubeId(url);
   if (id !== undefined) return { kind: 'youtube', id };
-  const embed = subsplashEmbed(url);
-  return embed === undefined ? undefined : { kind: 'subsplash', embed };
+  const pages = subsplash(url);
+  return pages === undefined ? undefined : { kind: 'subsplash', ...pages };
 }

@@ -1,5 +1,5 @@
 // src/sermons/SermonPlayer.tsx — the sheet a video sermon plays in (mw-qtu3zvz.83, docs/sermons.md 'The player'): over the reader (and the Sermons sheet it was opened from), the video in 16:9 under its title, and Close.
-// YouTube plays in the IFrame player drawn from youtube-nocookie.com; Subsplash in its own embed page. When Lampas opened it itself (openSermon(row, { auto: true })) the video is started with no tap; where the browser refuses
+// YouTube plays in the IFrame player drawn from youtube-nocookie.com; Subsplash in its own embed page, or, when Lampas starts it itself, its media page with ?autoplay. When Lampas opened it itself (openSermon(row, { auto: true })) the video is started with no tap; where the browser refuses
 // (autoplay blocked, or a play that never starts in 3 seconds), the video stands on one big Play button and nothing is lost. <SermonPlayerHost /> is mounted once, in App.
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -143,15 +143,18 @@ function YouTubeStage({ id, auto }: { id: string; auto: boolean }) {
   );
 }
 
-function SubsplashStage({ embed, title }: { embed: string; title: string }) {
-  // Subsplash's embed page has no player API to call: Hands-free is told so
+/** The media page's own layout (its header, then the player at the width of the sheet, ending near 6/5 of the width) is what the frame shows, so it is taller than the embed's 16:9. */
+function SubsplashStage({ video, auto, title }: { video: { embed: string; page: string }; auto: boolean; title: string }) {
+  // Subsplash's pages have no player API to call: Hands-free is told so
   useEffect(() => {
     const no = (): boolean => false;
     return registerSermonControls({ kind: 'player', playing: no, play: no, pause: no, back: no, forward: no, restart: no, stop: no });
   }, []);
+  // started by Lampas itself: the media page with ?autoplay plays at once (checked 2026-11-23, mw-qtu3zvz.282); its own Play button is the one tap where the browser refuses. Opened by a tap: the embed, as ever.
+  const src = auto ? `${video.page}?autoplay` : video.embed;
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
-      <iframe data-sermon-video src={embed} title={title} allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen className="absolute inset-0 h-full w-full border-0" />
+    <div className={`relative w-full overflow-hidden rounded-xl bg-black ${auto ? 'aspect-[6/5]' : 'aspect-video'}`}>
+      <iframe data-sermon-video src={src} title={title} allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen className="absolute inset-0 h-full w-full border-0" />
     </div>
   );
 }
@@ -188,7 +191,7 @@ export function SermonPlayerHost() {
   const { video, title, auto } = opened;
   return (
     <PlayerSheet title={title} onClose={closeSermon}>
-      {video.kind === 'youtube' ? <YouTubeStage key={video.id} id={video.id} auto={auto} /> : <SubsplashStage embed={video.embed} title={title} />}
+      {video.kind === 'youtube' ? <YouTubeStage key={video.id} id={video.id} auto={auto} /> : <SubsplashStage key={video.page} video={video} auto={auto} title={title} />}
     </PlayerSheet>
   );
 }
