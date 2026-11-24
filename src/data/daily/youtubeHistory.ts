@@ -2,7 +2,7 @@
 // Morning RePhil episodes it lists are marked Seen (dailyStore.ts markManySeen, the device's own heard set). An entry is {title: 'Watched <title>', titleUrl: 'https://www.youtube.com/watch?v=<id>'}.
 // An episode is matched by its YouTube video id where the list has one (Episode.youtube), else by its exact title. The file is never stored and never sent: only the matched episodes' ids are kept.
 import { getHeard, localDate, markManySeen } from './dailyStore';
-import { currentEpisodes, type Episode } from './morningRephil';
+import { currentEpisodes, isHeard, type Episode } from './morningRephil';
 
 export interface WatchEntry {
   /** the video's id from the entry's address, when it has one */
@@ -74,7 +74,7 @@ export function watchedEpisodes(entries: readonly WatchEntry[], list: readonly E
 export async function importWatchHistory(text: string, list: readonly Episode[] = currentEpisodes()): Promise<ImportResult> {
   const matched = watchedEpisodes(readWatchHistory(text), list);
   const heard = await getHeard();
-  const marked = await markManySeen(localDate(new Date()), matched.filter((e) => !heard.has(e.id)).map((e) => e.id));
+  const marked = await markManySeen(localDate(new Date()), matched.filter((e) => !isHeard(heard, e)).map((e) => e.id));
   return { marked: marked.length, already: matched.length - marked.length };
 }
 
