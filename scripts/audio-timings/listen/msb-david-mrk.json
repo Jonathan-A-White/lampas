@@ -1,0 +1,10 @@
+{
+ "v":1,"edition":"msb-david","book":"mrk","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"5:22","edge":"tail","reason":"the narrator reads on into verse 23: no quiet between 'feet' and 'and'; cut at the quietest instant between them","room":0.0,"cut":171.58,"judge":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":-5.5,"heard":{"next":"AND","letters":"HE FELL AT HIS FEET","words":"fell at his feet"}},{"kind":"tail-clipped","by":0.107,"readsOn":true,"level":1.0,"heard":{"lost":"ET","letters":"HE FELL AT HIS FEET","words":"fell at his feet"}}]},
+  {"verse":"5:23","edge":"head","reason":"the narrator reads on from verse 22: no quiet between 'feet' and 'and'; cut at the quietest instant between them","room":0.0,"cut":171.58,"judge":[{"kind":"head-extra","by":0.06,"readsOn":true,"level":-1.4,"heard":{"extra":"T","before":"FEET","letters":"ETON PLEADED WITH HIM URGENT","words":"and pleaded with him"}},{"kind":"head-clipped","by":0.04,"readsOn":true,"level":-5.5,"heard":{"letters":"THAN PLEADED WITH HIM URGENTLY","words":"and pleaded with him"}}]},
+  {"verse":"9:38","edge":"text","judge":[{"kind":"text-differs","heard":{"expected":"us","words":"you"}}],"reason":"the judge's two ears heard 'you' where the text has 'us': not a cut's fault"},
+  {"verse":"11:18","edge":"text","judge":[{"kind":"text-differs","heard":{"expected":"scribes and chief priests","words":"chief priests and scribes"}}],"reason":"the judge's two ears heard 'chief priests and scribes' where the text has 'scribes and chief priests': not a cut's fault"},
+  {"verse":"14:51","edge":"text","judge":[{"kind":"text-differs","heard":{"expected":"men","words":"man"}}],"reason":"the judge's two ears heard 'man' where the text has 'men': not a cut's fault"}
+ ]
+}
