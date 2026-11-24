@@ -20,9 +20,14 @@
 //    driveSermon): the reader reads a paragraph back or forward, the player moves 30 s (PROVISIONAL, the Governor to confirm); 'restart' starts over from the top; a Subsplash video cannot be driven and it says so.
 //    'next chapter', 'previous chapter' and 'read <place>' with a sermon open are not done (they would change the Bible behind the sheet): it says 'Close the sermon first' (mw-ecpivg5.6).
 //    With no sermon open 'pause', 'play' and 'stop' are the Bible reading's as above, and 'back', 'forward' and 'restart' say 'No sermon is open'.
+//  - 'Enduring Word', 'commentary' and 'what does Guzik say' open David Guzik's commentary on the chapter on screen in Lampas's reader, at the section of the verse he has selected, and read it aloud, saying its credit
+//    line once at the start (mw-1l901so.3, PROVISIONAL, the Governor to confirm); 'stop', 'play', 'back' and 'forward' then act on it as on a sermon. 'read <place>', 'next chapter' and 'previous chapter' put the
+//    commentary away and do what he asked, and 'Enduring Word' again goes on where he stopped (the reader keeps his paragraph). The reader reads only where the sermon index service serves the words
+//    (src/sermons/sermonText.ts textServed); where it does not, the page opens on the web and it says so.
 // Any other words: it says 'Sorry, I did not get that, I heard "<his words>"' so he can tell what the phone made of them, and what was playing goes on when the exchange closes (src/handsFree/playback.ts).
 import { defineSpoken, normaliseSpoken, route, type CommandDone, type SpokenRule } from 'voice-kit/handsfree';
-import { titleOf } from '../data/books';
+import { apocryphaBookOf } from '../data/apocrypha';
+import { bookOf, titleOf } from '../data/books';
 import { neighbours } from '../data/neighbours';
 import { crossChapter } from '../reader/crossChapter';
 import { readerOnScreen, readHere, readPassage } from '../nav/readerRequest';
@@ -30,6 +35,8 @@ import { askTutor, closeTutor, leaveTutor, openTutor, questionAfterAsk } from '.
 import { listenInAudible } from './audible';
 import { audibleOf, placeOfWords, type SpokenPlace } from './passage';
 import { sermonControls } from '../sermons/voiceControls';
+import { ENDURING_WORD_SOURCE, enduringWordRow, hasEnduringWord, NO_COMMENTARY_NOTICE, openEnduringWord } from '../resources/enduringWord';
+import { closeSermonText, openedText, textServed } from '../sermons/sermonText';
 import { backOneVerse, driveSermon, goOnNow, keepPaused, stopSound, takeSound, type SermonAction } from './playback';
 
 /** What it says to words it does not know. */
@@ -94,6 +101,9 @@ export const NO_SERMON_CONTROL = 'Use the video’s own buttons for that';
 /** What it says to 'next chapter', 'previous chapter' and 'read <place>' while a sermon sheet is open: they would change the Bible behind the sheet, so none is done (mw-ecpivg5.6). */
 export const CLOSE_THE_SERMON = 'Close the sermon first';
 
+/** What it says to 'Enduring Word' for a book the commentary has none of (the Apocrypha). */
+export const NO_COMMENTARY_ON = (name: string): string => `There is no Enduring Word commentary on ${name}`;
+
 /** The commands that act on the sermon reader or the sermon player when one is open (mw-ecpivg5.3). */
 const SERMON_ACTIONS: ReadonlySet<string> = new Set<SermonAction>(['play', 'pause', 'back', 'forward', 'restart', 'stop']);
 
@@ -123,6 +133,16 @@ const COMMAND_TABLE: readonly CommandEntry[] = [
   { name: 'back', phrases: ['back', 'go back', 'rewind'], help: { rank: 3.1, example: 'back', does: 'goes back a paragraph of a sermon, or 30 seconds of a video' } },
   { name: 'forward', phrases: ['forward', 'go forward', 'skip', 'fast forward'], help: { rank: 3.2, example: 'forward', does: 'goes forward a paragraph of a sermon, or 30 seconds of a video' } },
   { name: 'restart', phrases: ['restart', 'start over', 'start again', 'from the beginning'], help: { rank: 3.3, example: 'restart', does: 'starts the sermon over' } },
+  // the commentary's phrases come before 'read', which takes 'open' and any words after it
+  {
+    name: 'commentary',
+    phrases: [
+      'enduring word', 'enduring words', 'enduring word commentary', 'open enduring word', 'read enduring word', 'play enduring word', 'listen to enduring word',
+      'commentary', 'the commentary', 'open commentary', 'open the commentary', 'read commentary', 'read the commentary', 'play the commentary', 'listen to the commentary',
+      'guzik', 'david guzik', 'what does guzik say', 'what does david guzik say',
+    ],
+    help: { rank: 3.4, example: 'Enduring Word', does: 'reads David Guzik’s commentary on this verse; say it again to go on where you stopped' },
+  },
   { name: 'next-chapter', phrases: ['next chapter', 'go to next chapter', 'go to the next chapter'], help: { rank: 5, example: 'next chapter', does: 'reads the next chapter' } },
   { name: 'previous-chapter', phrases: ['previous chapter', 'go to previous chapter', 'go to the previous chapter', 'go back a chapter', 'back a chapter'], help: { rank: 6, example: 'previous chapter', does: 'reads the chapter before' } },
   { name: 'back-verse', phrases: ['back a verse', 'back one verse', 'go back a verse', 'go back one verse', 'previous verse', 'last verse again'], help: { rank: 7, example: 'back a verse', does: 'reads the last verse again' } },
@@ -181,6 +201,23 @@ async function readNeighbour(by: 1 | -1, say: (text: string) => Promise<void>): 
   readPassage(to.book, to.chapter, 1, () => crossChapter(here.book, here.chapter, by));
 }
 
+/** 'Enduring Word' (mw-1l901so.3): the commentary on the chapter on screen opens in the reader at the verse's section and is read; asked again while its sheet is open it goes on where it stopped. */
+async function readCommentary(say: (text: string) => Promise<void>): Promise<void> {
+  const here = readerOnScreen();
+  if (!here) return say(OPEN_A_CHAPTER);
+  if (!hasEnduringWord(here.book)) return say(NO_COMMENTARY_ON(bookOf(here.book)?.name ?? apocryphaBookOf(here.book)?.name ?? here.book));
+  const sermon = sermonControls();
+  // a video is over everything: it is for him to put away
+  if (sermon?.kind === 'player') return say(CLOSE_THE_SERMON);
+  const row = enduringWordRow(here);
+  const open = openedText();
+  // its sheet is open on this very page: 'Enduring Word' goes on (or starts) where it is
+  if (sermon && open && row && open.source === ENDURING_WORD_SOURCE && open.id === row.id) return driveSermon(sermon, 'play') ? undefined : say(NO_SERMON_CONTROL);
+  stopSound();
+  openEnduringWord(here);
+  if (!textServed(ENDURING_WORD_SOURCE)) return say(NO_COMMENTARY_NOTICE);
+}
+
 /** What the words of a command come to: more to listen for (a follow-up, in the tutor's talk) or nothing. */
 export type Done = CommandDone | void;
 
@@ -209,6 +246,7 @@ export async function runCommand(heard: string, say: (text: string) => Promise<v
     const sermon = sermonControls();
     if (sermon) return driveSermon(sermon, command.name as SermonAction) ? undefined : say(NO_SERMON_CONTROL);
   }
+  if (command?.name === 'commentary') return readCommentary(say);
   if (command?.name === 'back' || command?.name === 'forward' || command?.name === 'restart') return say(NO_SERMON_OPEN);
   if (command?.name === 'pause') return keepPaused();
   if (command?.name === 'play') {
@@ -218,7 +256,11 @@ export async function runCommand(heard: string, say: (text: string) => Promise<v
   }
   if (command?.name === 'stop') return stopSound();
   // these change the Bible behind the sheet: with a sermon open they are not done, and he is told why
-  if ((command?.name === 'read' || command?.name === 'next-chapter' || command?.name === 'previous-chapter') && sermonControls()) return say(CLOSE_THE_SERMON);
+  if ((command?.name === 'read' || command?.name === 'next-chapter' || command?.name === 'previous-chapter') && sermonControls()) {
+    // the commentary is of the chapter he asks to leave: it is put away and what he asked is done; a sermon is for him to close
+    if (openedText()?.source !== ENDURING_WORD_SOURCE || sermonControls()?.kind !== 'reader') return say(CLOSE_THE_SERMON);
+    closeSermonText();
+  }
   if (command?.name === 'read') return readPlaceOf(command.rest, say);
   if (command?.name === 'next-chapter') return readNeighbour(1, say);
   if (command?.name === 'previous-chapter') return readNeighbour(-1, say);

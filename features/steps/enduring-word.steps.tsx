@@ -2,7 +2,7 @@
 // (src/library/InLogosChooser.tsx, where his library holds no DGCB volume of the book) and as the Verse view's "Commentary" door (src/library/EnduringWordDoor.tsx), both opening Lampas's reader
 // (src/sermons/SermonReader.tsx). The sermon index service is not reached (SERMONS_URL is empty in the tests): the reader cannot get the words, so the page opens on the web.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -11,12 +11,17 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { setGreekInterest, setResourceOn, shelfOf } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
+import { forgetPlayback } from '../../src/handsFree/playback';
+import { runCommand } from '../../src/handsFree/commands';
 import { InLogosChooser } from '../../src/library/InLogosChooser';
 import type { CatalogueEntry } from '../../src/resources/catalogue';
+import { ENDURING_WORD_CREDIT, ENDURING_WORD_SECTIONS, ENDURING_WORD_SOURCE } from '../../src/resources/enduringWord';
 import { SermonReaderHost } from '../../src/sermons/SermonReader';
-import { closeSermonText } from '../../src/sermons/sermonText';
-import { stopReading } from '../../src/speech/readAloud';
+import { closeSermonText, serveTextOf } from '../../src/sermons/sermonText';
+import { setSermonsUrl } from '../../src/services/sermons';
+import { getReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { keepImport } from '../../tests/support/logos-import';
 import { closeDatabase } from './close-database';
@@ -24,6 +29,8 @@ import { closeDatabase } from './close-database';
 afterAll(async () => {
   cleanup();
   stopReading();
+  serveTextOf(ENDURING_WORD_SOURCE, false);
+  setSermonsUrl(undefined);
   vi.unstubAllGlobals();
   await closeDatabase();
 });
@@ -104,6 +111,72 @@ const tapRow = async (_: unknown, short: string) => {
   await user.click(await within(await chooser()).findByRole('link', { name: `Open ${at} in ${short}` }));
 };
 
+
+// ---- by voice (mw-1l901so.3): the words go to Hands-free's own router (runCommand), as the recogniser would hand them; the speech engine is voice-kit's honest fake ----
+const SERVICE = 'https://sermons.test';
+const SECTION_WORDS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+/** The commentary's words as the service would hand them (made up for the test: none of the site's own): an opening paragraph, then each section of John 3's outline as its heading and one paragraph. */
+const COMMENTARY = ['Opening words.', ...(ENDURING_WORD_SECTIONS['john-3'] ?? []).flatMap((range, i) => [`${i + 1}. (${range}) Heading ${SECTION_WORDS[i]}`, `Words of section ${i + 1}.`])];
+let synth: FakeSynth;
+let said: string[] = [];
+let asked: string[] = [];
+
+/** Lampas is opened on John 3:16, Logos Off, the phone speaking English; `served`: the service answers the commentary's words (the reader asks for them), else it serves none of the site's. */
+async function openJohn316(served: boolean): Promise<void> {
+  cleanup();
+  closeSermonText();
+  stopReading();
+  clearBus();
+  forgetPlayback();
+  vi.unstubAllGlobals();
+  noteWindows();
+  said = [];
+  asked = [];
+  serveTextOf(ENDURING_WORD_SOURCE, false);
+  window.localStorage.clear();
+  window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, '00'.repeat(31) + '02');
+  window.history.replaceState(null, '', '/#/?b=jhn&c=3&v=16');
+  stubChapterFetch();
+  synth = stubSpeech([ENGLISH_VOICE]);
+  if (served) {
+    setSermonsUrl(SERVICE);
+    serveTextOf(ENDURING_WORD_SOURCE);
+    const chapters = globalThis.fetch;
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (!url.startsWith(`${SERVICE}/v1/text`)) return chapters(input, init);
+      asked.push(url);
+      return Promise.resolve(new Response(JSON.stringify({ id: 'john-3', title: 'John 3 · Enduring Word', source: ENDURING_WORD_SOURCE, url: 'https://enduringword.com/bible-commentary/john-3/', paragraphs: COMMENTARY }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    });
+  } else setSermonsUrl(undefined);
+  await db.open();
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear(), db.readings.clear(), db.library.clear()]);
+  await setGreekInterest(5);
+  await seedHisWords();
+  await setResourceOn('logos', false);
+  render(<App />);
+  await screen.findByRole('region', { name: 'Verse view' });
+}
+
+const hear = async (_: unknown, words: string) => {
+  await act(async () => {
+    await runCommand(words, (text) => {
+      said.push(text);
+      return Promise.resolve();
+    });
+  });
+};
+const sheet = () => document.querySelector<HTMLElement>('[data-sermon-reader]');
+const markedParagraph = async (text: string, doing: 'reading' | 'not reading') => {
+  await waitFor(() => {
+    const marked = sheet()?.querySelector('[data-sermon-paragraph][data-reading]');
+    expect(marked?.textContent).toBe(text);
+    const reading = getReading();
+    if (doing === 'reading') expect(reading.status === 'reading' && reading.answer !== null).toBe(true);
+    else expect(reading.status === 'idle' || reading.status === 'paused').toBe(true);
+  });
+};
+
 const feature = await loadFeature('features/enduring-word.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -147,25 +220,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('With Logos Off the Verse view has the Commentary door', ({ Given, Then, When, And }) => {
-    Given('Lampas is opened on John 3:16 with Logos Off', async () => {
-      cleanup();
-      closeSermonText();
-      stopReading();
-      clearBus();
-      vi.unstubAllGlobals();
-      noteWindows();
-      window.localStorage.clear();
-      window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, '00'.repeat(31) + '02');
-      window.history.replaceState(null, '', '/#/?b=jhn&c=3&v=16');
-      stubChapterFetch();
-      await db.open();
-      await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.answers.clear(), db.readings.clear(), db.library.clear()]);
-      await setGreekInterest(5);
-      await seedHisWords();
-      await setResourceOn('logos', false);
-      render(<App />);
-      await screen.findByRole('region', { name: 'Verse view' });
-    });
+    Given('Lampas is opened on John 3:16 with Logos Off', () => openJohn316(false));
     Then('the Verse view has the door {string}, which is the link {string}', async (_, label: string, url: string) => {
       const door = await waitFor(() => {
         const found = [...document.querySelectorAll<HTMLAnchorElement>('a[data-enduring-word-door]')].find((a) => a.textContent === label);
@@ -180,5 +235,71 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the reader is headed {string}', readerHeaded);
     And('the page {string} is opened on the web, as the reader cannot get its words', pageOpened);
+  });
+
+  const served = 'Lampas is opened on John 3:16 with Logos Off and a service that serves the words of John 3\'s commentary';
+  const headed = "the reader is headed {string}";
+  const marks = 'the reader marks the paragraph {string} and is reading it';
+  const marksNot = 'the reader marks the paragraph {string} and is not reading';
+
+  Scenario('In Hands-free on John 3:16 "Enduring Word" opens the John 3 page in the reader at section 6 and starts reading', ({ Given, When, Then, And }) => {
+    Given(served, () => openJohn316(true));
+    When('he says {string}', hear);
+    Then(headed, readerHeaded);
+    And('the service was asked for the commentary {string}', async (_, id: string) => {
+      await waitFor(() => expect(asked).toEqual([`${SERVICE}/v1/text?id=${id}&source=${ENDURING_WORD_SOURCE}`]));
+    });
+    And(marks, (_, text: string) => markedParagraph(text, 'reading'));
+    And('no page is opened on the web', () => {
+      expect(windows).toEqual([]);
+    });
+  });
+
+  Scenario('"stop", then the reading, then "Enduring Word" again goes on at the paragraph where he stopped', ({ Given, When, Then, And }) => {
+    Given(served, () => openJohn316(true));
+    When('he says {string}', hear);
+    And('he then says {string}', hear);
+    Then(marks, (_, text: string) => markedParagraph(text, 'reading'));
+    When('he says {string} to end it', hear);
+    Then(marksNot, (_, text: string) => markedParagraph(text, 'not reading'));
+    When('he next says {string}', hear);
+    Then('the reader is put away', async () => {
+      await waitFor(() => expect(sheet()).toBeNull());
+    });
+    And('John 3 is being read from verse {int}', async (_, verse: number) => {
+      await waitFor(() => {
+        const reading = getReading();
+        expect(reading.status).toBe('reading');
+        expect(reading.answer).toBeNull();
+        expect(reading.verse).toBe(verse);
+      });
+    });
+    When('he asks again {string}', hear);
+    Then(headed, readerHeaded);
+    And('the reader goes on at the paragraph {string} and is reading it', (_, text: string) => markedParagraph(text, 'reading'));
+  });
+
+  Scenario('The credit line is said once, at the start', ({ Given, When, Then, And }) => {
+    Given(served, () => openJohn316(true));
+    When('he says {string}', hear);
+    Then('the first thing the phone says is the credit {string}', async (_, credit: string) => {
+      expect(credit).toBe(ENDURING_WORD_CREDIT);
+      await waitFor(() => expect(synth.spoken[0]?.text).toBe(credit));
+    });
+    When('he then says {string}', hear);
+    And('he next says {string}', hear);
+    And('he says {string} once more', hear);
+    Then('the phone has said the credit once', () => {
+      expect(synth.spoken.filter((s) => s.text.includes(ENDURING_WORD_CREDIT))).toHaveLength(1);
+    });
+  });
+
+  Scenario('Where the service serves no words the page opens on the web and he is told', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on John 3:16 with Logos Off and a service that serves no words of the commentary', () => openJohn316(false));
+    When('he says {string}', hear);
+    Then('the page {string} is opened on the web, as the reader cannot get its words', pageOpened);
+    And('Hands-free says {string}', (_, line: string) => {
+      expect(said).toEqual([line]);
+    });
   });
 });

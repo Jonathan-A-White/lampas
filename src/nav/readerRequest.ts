@@ -71,13 +71,15 @@ interface ReadAnswer {
   read: (verse?: number) => void;
   book: string;
   chapter: number;
+  /** the verse selected (the Verse view's, or the one the address names), if one is */
+  verse?: number;
 }
 
 const readHereAnswers: ReadAnswer[] = [];
 
 /** The Reader of `chapter` of `book`, on screen, answers 'read from here' with `read`; the function returned stops it. */
-export function answerReadHere(read: (verse?: number) => void, book: string, chapter: number): () => void {
-  const answer = { read, book, chapter };
+export function answerReadHere(read: (verse?: number) => void, book: string, chapter: number, verse?: number): () => void {
+  const answer: ReadAnswer = { read, book, chapter, ...(verse === undefined ? {} : { verse }) };
   readHereAnswers.push(answer);
   return () => {
     const at = readHereAnswers.lastIndexOf(answer);
@@ -93,10 +95,11 @@ export function readHere(): boolean {
   return true;
 }
 
-/** The chapter the Reader on screen is of, or null when no Reader is open (Hands-free's 'next chapter' crosses from it). */
-export function readerOnScreen(): { book: string; chapter: number } | null {
+/** The chapter the Reader on screen is of, or null when no Reader is open (Hands-free's 'next chapter' crosses from it); `verse` is the verse he has selected there, when he has one (Hands-free's
+ * 'Enduring Word' opens the commentary at it, mw-1l901so.3). */
+export function readerOnScreen(): { book: string; chapter: number; verse?: number } | null {
   const answer = readHereAnswers[readHereAnswers.length - 1];
-  return answer ? { book: answer.book, chapter: answer.chapter } : null;
+  return answer ? { book: answer.book, chapter: answer.chapter, ...(answer.verse === undefined ? {} : { verse: answer.verse }) } : null;
 }
 
 /** A reading the Reader of a chapter is to start when it has its plan (Hands-free's 'read John 3', 'next chapter', mw-rl10piw.7). The Reader is made afresh for each chapter, so the

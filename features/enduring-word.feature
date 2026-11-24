@@ -37,3 +37,44 @@ Feature: Enduring Word, David Guzik's commentary on the web
     When he taps the door "Commentary"
     Then the reader is headed "John 3 · Enduring Word"
     And the page "https://enduringword.com/bible-commentary/john-3/#section-6" is opened on the web, as the reader cannot get its words
+
+  # By voice (mw-1l901so.3, PROVISIONAL, the Governor to confirm). In Hands-free the words "Enduring Word", "commentary" or "what does Guzik say" open the page of the passage he is on in the reader, at the
+  # verse's section, and it reads it aloud, saying its credit line once at the start; "stop", "back", "forward" and "play" work as for a sermon. "read <place>", "next chapter" and "previous chapter" put the
+  # commentary away and do what he asked; asking for the commentary again goes on where he stopped. The reader can read it only where the sermon index service serves its words (it serves none of this site's today,
+  # so these scenarios stand a service that does in its place); where it does not, the page opens on the web and Hands-free says so.
+  Scenario: In Hands-free on John 3:16 "Enduring Word" opens the John 3 page in the reader at section 6 and starts reading
+    Given Lampas is opened on John 3:16 with Logos Off and a service that serves the words of John 3's commentary
+    When he says "Enduring Word"
+    Then the reader is headed "John 3 · Enduring Word"
+    And the service was asked for the commentary "john-3"
+    And the reader marks the paragraph "6. (16) Heading six" and is reading it
+    And no page is opened on the web
+
+  Scenario: "stop", then the reading, then "Enduring Word" again goes on at the paragraph where he stopped
+    Given Lampas is opened on John 3:16 with Logos Off and a service that serves the words of John 3's commentary
+    When he says "Enduring Word"
+    And he then says "forward"
+    Then the reader marks the paragraph "Words of section 6." and is reading it
+    When he says "stop" to end it
+    Then the reader marks the paragraph "Words of section 6." and is not reading
+    When he next says "read John 3 16"
+    Then the reader is put away
+    And John 3 is being read from verse 16
+    When he asks again "Enduring Word"
+    Then the reader is headed "John 3 · Enduring Word"
+    And the reader goes on at the paragraph "Words of section 6." and is reading it
+
+  Scenario: The credit line is said once, at the start
+    Given Lampas is opened on John 3:16 with Logos Off and a service that serves the words of John 3's commentary
+    When he says "what does Guzik say"
+    Then the first thing the phone says is the credit "(c)1996-present The Enduring Word Bible Commentary by David Guzik - enduringword.com"
+    When he then says "forward"
+    And he next says "back"
+    And he says "restart" once more
+    Then the phone has said the credit once
+
+  Scenario: Where the service serves no words the page opens on the web and he is told
+    Given Lampas is opened on John 3:16 with Logos Off and a service that serves no words of the commentary
+    When he says "commentary"
+    Then the page "https://enduringword.com/bible-commentary/john-3/#section-6" is opened on the web, as the reader cannot get its words
+    And Hands-free says "Lampas could not get the words of this commentary, so it opens on the web."
