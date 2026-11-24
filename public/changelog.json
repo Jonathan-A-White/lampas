@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.375",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.109",
+    "kind": "fixed",
+    "text": "In Deuteronomy 1 to 5, tapping an English word of the Septuagint such as 'officers', 'commanded' or 'came out' now opens the Greek word that renders it, not the Verse view or a neighbour's word."
+  },
+  {
+    "version": "0.7.375",
+    "date": "2026-11-24",
+    "story": "mw-qtu3zvz.280.7",
+    "kind": "new",
+    "text": "The sermon player now links a Brookfield First talk back to its page on Subsplash."
+  },
+  {
     "version": "0.7.374",
     "date": "2026-11-24",
     "story": "mw-1l901so.2",

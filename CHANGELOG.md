@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.375
+_2026-11-24_
+- Fixed: In Deuteronomy 1 to 5, tapping an English word of the Septuagint such as 'officers', 'commanded' or 'came out' now opens the Greek word that renders it, not the Verse view or a neighbour's word.
+- New: The sermon player now links a Brookfield First talk back to its page on Subsplash.
+
 ## 0.7.374
 _2026-11-24_
 - New: The Enduring Word commentary link now opens at the part of the chapter that explains the verse you started from (John 3 so far).
