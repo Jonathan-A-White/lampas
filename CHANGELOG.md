@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.370
+_2026-11-24_
+- New: David's recording now reads Hebrews, James, 1 and 2 Peter, 1, 2 and 3 John, Jude and Revelation, with the highlight following.
+
 ## 0.7.368
 _2026-11-24_
 - New: Pastor Paul LeBoutillier's Through the Bible teachings from Life Bible Ministry can be listed under each passage in Sermons and played in the app, once you switch them on in Settings.
