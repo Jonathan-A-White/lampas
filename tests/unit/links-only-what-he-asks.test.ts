@@ -26,9 +26,9 @@ describe('the bible-talk links rule: only what he asks for, one link for it (mw-
     expect(intro).toContain('NO link when he asks why or to play, or none is listed');
   });
 
-  it('says in the sermon section that no `sermons` gets none is listed with NO link, never a `sermons.<id>` setting', () => {
+  it('says in the sermon section that no `sermons` gets none is listed with NO link, never a `sermons.<id>` setting, not even for the preacher he names', () => {
     const sermon = links.slice(links.indexOf('### Links to a sermon'), links.indexOf('### Links to a paradigm table'));
-    expect(sermon).toContain('With no `sermons`, say none is listed (and In another book), with NO link, never a `sermons.<id>` setting.');
+    expect(sermon).toContain('With no `sermons`, say none is listed (and In another book) and give NO link, never a `sermons.<id>` setting, not even for the preacher he names.');
   });
 
   it('says the map link goes to the first line with `places` even when another title fits the chapter', () => {
