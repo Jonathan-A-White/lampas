@@ -15,14 +15,13 @@ import { openLibrary } from '../nav/route';
 import { useScrollMemory } from '../nav/scrollMemory';
 import { entryOf } from '../resources/catalogue';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
-import { backToStudyResources, openSetting } from '../settings/link';
+import { backToSettingsHome, backToStudyResources, openSetting } from '../settings/link';
 import { settingOf, writeSetting } from '../settings/registry';
 import { useReportScreen } from '../tutor/screenContext';
-import { matching } from '../ui/listFilter';
 import { scrollBoxOf } from '../ui/reveal';
 import { ThreeStep } from '../ui/ThreeStep';
 import { AskForPreacher } from './AskForPreacher';
-import { countLine, GROUP_ORDER, GROUP_WORDS, inOrder, onCount, rowsToChange, type SourceItem, type SourceList } from './sourceList';
+import { countLine, GROUP_ORDER, GROUP_WORDS, inOrder, onCount, rowsToChange, sourcesMatching, type SourceItem, type SourceList } from './sourceList';
 import { readSourceList, useSourceList } from './useSourceList';
 
 /** The page's name, as its header, the row that opens it and the tutor say it. */
@@ -66,7 +65,8 @@ function inTurn(job: () => Promise<void>): Promise<void> {
 /** The name of a source the address asks for that is not listed: the setting's label, a book's short name. */
 const nameOf = (id: string): string | undefined => settingOf(id)?.label ?? entryOf(id)?.short;
 
-export function SermonSourcesPage({ at }: { at?: string }) {
+/** `search` is the text the list starts filtered to, when the Settings search opened it (mw-qtu3zvz.281): its back arrow then says ‹ Settings and brings him back to that search. */
+export function SermonSourcesPage({ at, search }: { at?: string; search?: string }) {
   const list = useSourceList();
   // null while he has imported no list
   const note = useLiveQuery(async () => (await importNote()) ?? null, []);
@@ -90,10 +90,10 @@ export function SermonSourcesPage({ at }: { at?: string }) {
   return (
     <>
       {/* no count here: the line under the search field says it once, with the total (mw-qtu3zvz.173). slimAction holds no 80 px column at the right, so the long back label and the title share one row at 390 px (mw-qtu3zvz.149) */}
-      <ScreenHeader title={SOURCES_TITLE} back={<HeaderButton onClick={backToStudyResources}>‹ Study resources</HeaderButton>} slimAction />
+      <ScreenHeader title={SOURCES_TITLE} back={search ? <HeaderButton onClick={backToSettingsHome}>‹ Settings</HeaderButton> : <HeaderButton onClick={backToStudyResources}>‹ Study resources</HeaderButton>} slimAction />
       <main ref={scrollRef} data-sermon-sources className="screen min-h-0 flex-1 px-4">
         <p className="pt-3 text-base">The Sermons door at a verse draws on the sources that are on.</p>
-        {list && note !== undefined ? <Sources list={list} at={at} imported={note !== null} /> : null}
+        {list && note !== undefined ? <Sources list={list} at={at} search={search} imported={note !== null} /> : null}
         <div className="h-[var(--lp-end-inset)]" aria-hidden="true" />
       </main>
     </>
@@ -101,9 +101,9 @@ export function SermonSourcesPage({ at }: { at?: string }) {
 }
 
 /** The list, drawn once the phone is read: its order is made here, when it opens. */
-function Sources({ list, at, imported }: { list: SourceList; at?: string; imported: boolean }) {
+function Sources({ list, at, search, imported }: { list: SourceList; at?: string; search?: string; imported: boolean }) {
   const { items } = list;
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(search ?? '');
   const [order, setOrder] = useState<readonly string[]>(() => inOrder(items).map((item) => item.id));
   const [undo, setUndo] = useState<Undo | null>(null);
   // the row an address opened the page at is marked until his next tap
@@ -125,7 +125,7 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
   // the order as it was made, then any source that has arrived since, last in its group
   const ordered = [...order.flatMap((id) => byId.get(id) ?? []), ...inOrder(items.filter((item) => !placed.has(item.id)))];
   const searching = query.trim() !== '';
-  const shown = searching ? matching(ordered.map((item) => ({ id: item.id, name: item.name, also: [item.title, item.detail, item.search].filter(Boolean).join(' ') })), query).map((found) => byId.get(found.id)!) : ordered;
+  const shown = searching ? sourcesMatching(ordered, query) : ordered;
   const on = onCount(items);
   const bothGroups = GROUP_ORDER.every((group) => items.some((item) => item.group === group));
 
@@ -184,7 +184,7 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
         </p>
       ) : null}
       <div className="sticky top-0 z-10 bg-canvas pb-1 pt-2">
-        {items.length >= SEARCH_FROM ? (
+        {items.length >= SEARCH_FROM || search ? (
           <input
             type="search"
             value={query}

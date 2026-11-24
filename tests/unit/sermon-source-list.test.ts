@@ -16,7 +16,7 @@ import { sermonSourcesLink, sermonSourcesOf } from '../../src/settings/link';
 import { ROWS, isTalkable } from '../support/settings';
 import { logosArchives, SERMON_BOOKS } from '../../src/sermons/sources/logos';
 import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
-import { countLine, filingName, GROUP_WORDS, inOrder, rowsToChange, sourceList, type SourceInput } from '../../src/sermons/sourceList';
+import { countLine, filingName, GROUP_WORDS, inOrder, rowsToChange, sourceList, sourcesMatching, type SourceInput } from '../../src/sermons/sourceList';
 import type { SermonSource } from '../../src/sermons/types';
 import '../support/grinds-in-graph';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
@@ -261,6 +261,19 @@ describe('the Library after the change', () => {
     expect(sermonSourcesOf('#/settings?setting=textSize')).toBeNull();
     expect(sermonSourcesOf('#/settings?group=study')).toBeNull();
     expect(sermonSourcesOf('#/library?kind=sermons')).toBeNull();
+  });
+
+  // mw-qtu3zvz.281: the Settings search says how many sources match on one row, which opens this list filtered to the search
+  it('opens the list filtered to what the Settings search held, and counts the sources the page then shows', () => {
+    expect(sermonSourcesLink(undefined, 'sermons')).toBe('#/settings?sources=sermons&q=sermons');
+    expect(sermonSourcesOf(sermonSourcesLink(undefined, 'a b&c'))).toEqual({ q: 'a b&c' });
+    expect(sermonSourcesOf(sermonSourcesLink(GREG, 'x'))).toEqual({ at: GREG, q: 'x' });
+    const list = sourceList(input({ logosOn: false }));
+    expect(sourcesMatching(list.items, 'henry').map((i) => i.name)).toEqual(["Matthew Henry's sermons"]);
+    expect(sourcesMatching(list.items, '')).toHaveLength(list.items.length);
+    expect(sourcesMatching(list.items, 'zzzzqqq')).toEqual([]);
+    // the description of a source is searched too, as the Settings search read it before it counted
+    expect(sourcesMatching(list.items, 'listed by the sermon index').map((i) => i.id)).toContain('sermons.brookfield');
   });
 
   it('"In another book…" holds no sermon book: no Sermon archives group at a verse, in either Testament', () => {

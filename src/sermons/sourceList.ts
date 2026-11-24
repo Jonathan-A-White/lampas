@@ -6,6 +6,7 @@ import type { ShelfState } from '../data/repositories';
 import { isFreeLogos, isOffered, type Owned } from '../data/owned';
 import type { CatalogueEntry, Kind } from '../resources/catalogue';
 import { sourceKey, sourceOffered } from './enabled';
+import { matching } from '../ui/listFilter';
 import type { SermonSource } from './types';
 
 /** The two groups of the list, named by what On gives: each sermon at its verse, or one link to the whole book at the verse. */
@@ -95,7 +96,7 @@ function listItem(source: SermonSource, input: SourceInput, byResource: Readonly
     detail: count === undefined ? where : `${count.toLocaleString('en')} ${count === 1 ? 'sermon' : 'sermons'} · ${where}`,
     ...(free ? { free: true as const } : {}),
     ...(books.length > 0 ? { books } : {}),
-    search: [source.name, source.by, source.credit, ...stands.flatMap((entry) => [entry.title, entry.author]), inLogos(source) ? 'Logos' : 'web'].filter(Boolean).join(' '),
+    search: [source.name, source.by, source.credit, source.describe, ...stands.flatMap((entry) => [entry.title, entry.author]), inLogos(source) ? 'Logos' : 'web'].filter(Boolean).join(' '),
     on: (saved === 'on' || saved === 'off' ? saved : source.default) === 'on',
   };
 }
@@ -138,6 +139,13 @@ export function sourceList(input: SourceInput): SourceList {
   const held = [...lists.filter(({ source }) => source.resources !== undefined && sourceOffered(source, input.owned)).map(({ item }) => item), ...books];
   if (input.logosOn) return { items: [...shown, ...books], logosOn: true, held: held.length, hidden: 0, hiddenOn: 0 };
   return { items: shown, logosOn: false, held: held.length, hidden: held.length, hiddenOn: held.filter((item) => item.on).length };
+}
+
+/** The sources whose name, whole name, second line or search words hold `query` (all of them for an empty one): the one filter of the page of Sermon sources and the count the Settings search says on its row of
+ *  sermon sources (mw-qtu3zvz.281), so the row's number is the number of rows the page shows. */
+export function sourcesMatching(items: readonly SourceItem[], query: string): SourceItem[] {
+  const byId = new Map(items.map((item) => [item.id, item]));
+  return matching(items.map((item) => ({ id: item.id, name: item.name, also: [item.title, item.detail, item.search].filter(Boolean).join(' ') })), query).map((found) => byId.get(found.id)!);
 }
 
 /** A name as a library files it: a leading A, An or The is passed over ('The Beatitudes' is under B). */

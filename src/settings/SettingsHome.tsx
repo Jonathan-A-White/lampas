@@ -1,12 +1,12 @@
 // src/settings/SettingsHome.tsx — the pieces of the Settings home (mw-3ased2.1): the search field pinned at the top, a group's button, a door's button (mw-6ww.175.87) and the rows the search found (a door among them, mw-6ww.175.103).
 // The search field, the group button and the found rows are the kit's (pwa-kit/settings; its look is themed in src/index.css, 'Settings home'); what is here is Lampas's:
-// where a tap goes, and the books of his library the search finds beside the settings. src/SettingsScreen.tsx draws them; docs/layout/settings.md.
+// where a tap goes, and the long lists the search answers as one row each beside the settings (mw-qtu3zvz.281). src/SettingsScreen.tsx draws them; docs/layout/settings.md.
 import { Found as FoundRows, GroupButton as KitGroupButton, SettingsSearch } from 'pwa-kit/settings';
 import { openLibrary } from '../nav/route';
 import { openTool } from '../tools';
-import { detailOf, infoOf } from '../library/kinds';
 import { openCounted, openFoundRow, openSermonSources, openSettingsGroup } from './link';
-import type { searchLibrary } from './librarySearch';
+import { keepHomeSearch } from './useHomeSearch';
+import type { ListMatches } from './useListMatches';
 import { GROUPS, HOME_SECTIONS, type COUNTED_DOOR, type GroupId, type SettingsRow } from './rows';
 
 /** The search field at the top: it filters the rows by name and hint as he types. It is pinned under the header (sticky), so it is in view however far he scrolls (mw-5r3p30.617). */
@@ -39,34 +39,33 @@ function openFound(row: SettingsRow): void {
   openFoundRow(row.key);
 }
 
-/** What the search found among the settings, the doors of the home, the Tools and the books of his library: each setting with the group it is in; choosing one opens its page at that row. A door of the home
- *  (What Lampas has counted, rows.ts foundDoors) is listed 'in Settings' and opens its own page. A tool (Words, Verse lists, Your Logos library… moved out of Settings to the Tools screen, mw-5r3p30.754) is listed
- *  'in Tools' and opens its own screen; a book opens its kind page at it. */
+/** What the search found, in layers (mw-qtu3zvz.281): first the settings, the doors of the home and the Tools that match, each with where it is (a setting with the group it is in; a door of the home, What Lampas has
+ *  counted, rows.ts foundDoors, 'in Settings'; a tool, moved out of Settings to the Tools screen, mw-5r3p30.754, 'in Tools'); choosing one opens its page at that row. Then each long list that has matches (the sermon
+ *  sources, the books of his library) as ONE row saying how many match, which opens the list filtered to the search: the next layer down. No member of a list is listed here one by one. */
 export function Found({
   rows,
   doors,
   tools,
-  books,
+  lists,
   query,
 }: {
   rows: readonly SettingsRow[];
   doors: readonly (typeof COUNTED_DOOR)[];
   tools: readonly SettingsRow[];
-  books: ReturnType<typeof searchLibrary>;
+  lists: ListMatches;
   query: string;
 }) {
   // with nothing found among any, the kit's list says so
-  if (rows.length === 0 && doors.length === 0 && tools.length === 0 && books.total === 0) return <FoundRows rows={rows} query={query} groups={GROUPS} homeSections={HOME_SECTIONS} onOpen={openFound} />;
+  if (rows.length === 0 && doors.length === 0 && tools.length === 0 && lists.sermons === 0 && lists.library === 0) return <FoundRows rows={rows} query={query} groups={GROUPS} homeSections={HOME_SECTIONS} onOpen={openFound} />;
   return (
     <>
       {rows.length > 0 ? <FoundRows rows={rows} query={query} groups={GROUPS} homeSections={HOME_SECTIONS} onOpen={openFound} /> : null}
       {doors.length > 0 ? <FoundDoors doors={doors} /> : null}
       {tools.length > 0 ? <FoundTools tools={tools} /> : null}
-      {books.total > 0 ? <FoundBooks books={books} /> : null}
+      {lists.sermons > 0 || lists.library > 0 ? <FoundLists lists={lists} query={query} /> : null}
     </>
   );
 }
-
 /** The doors of the home that hold the search (What Lampas has counted, mw-6ww.175.103), drawn as the kit draws a found setting (its classes) but saying 'in Settings', since a door is in no group:
  *  it is a row of the Settings home itself. A tap opens the door's own page, as its row of the home does. */
 function FoundDoors({ doors }: { doors: readonly (typeof COUNTED_DOOR)[] }) {
@@ -102,33 +101,28 @@ function FoundTools({ tools }: { tools: readonly SettingsRow[] }) {
   );
 }
 
-/** The books of his library that hold the search (the `library` source of the search, mw-rfjjzd.5): 'BDAG · Your Logos library', opening the kind page at the book; more than are shown are one tap away in the Library.
- *  A book that is only sermons answers 'Princeton Sermons · Sermon sources' and opens the one list of sermon sources at its row (mw-qtu3zvz.92). */
-function FoundBooks({ books }: { books: ReturnType<typeof searchLibrary> }) {
-  const more = books.total - books.books.length;
+/** The long lists that hold the search, each ONE row: 'Sermon sources · 14 match ›' (opens the list of sermon sources filtered to the search, the page's own back arrow bringing him back to the search) and 'Books of your
+ *  library · 3 match ›' (opens the Library filtered). The count is what the opened page then shows (useListMatches). A list of 3 or fewer is not spread under its row: the row is one tap from them, and a search that
+ *  names one source then reads the same as one that names forty (mw-qtu3zvz.281, PROVISIONAL, the Governor to confirm). */
+function FoundLists({ lists, query }: { lists: ListMatches; query: string }) {
+  const row = (list: 'sermons' | 'library', title: string, count: number, open: () => void) => (
+    <li key={list}>
+      <button type="button" data-found-list={list} onClick={open} className="flex min-h-12 w-full items-center gap-3 border-b border-line py-3 text-left">
+        <span className="min-w-0 flex-1 text-lg font-medium">{`${title} · ${count} match`}</span>
+        <span aria-hidden="true" className="shrink-0 text-accent">
+          ›
+        </span>
+      </button>
+    </li>
+  );
   return (
-    <ul aria-label="Matching books">
-      {books.books.map((entry) => (
-        <li key={entry.resource}>
-          <button
-            type="button"
-            data-found-book={entry.resource}
-            onClick={() => (entry.kind === 'sermons' ? openSermonSources(entry.resource) : openLibrary({ kind: entry.kind, book: entry.resource }))}
-            className="block min-h-12 w-full border-b border-line py-3 text-left"
-          >
-            <span className="block text-lg font-medium">{entry.kind === 'sermons' ? `${entry.short} · Sermon sources` : `${entry.short} · Your Logos library`}</span>
-            <span className="block text-base text-muted">{detailOf(entry)}</span>
-            <span className="block text-base text-accent">{entry.kind === 'sermons' ? 'in Study resources' : `in ${infoOf(entry.kind).plural}`}</span>
-          </button>
-        </li>
-      ))}
-      {more > 0 ? (
-        <li>
-          <button type="button" onClick={() => openLibrary()} className="block min-h-12 w-full border-b border-line py-3 text-left text-base font-medium text-accent">
-            {`${more} more ${more === 1 ? 'book' : 'books'} in Your Logos library ›`}
-          </button>
-        </li>
-      ) : null}
+    <ul aria-label="Matching lists">
+      {lists.sermons > 0 ? row('sermons', 'Sermon sources', lists.sermons, () => openSermonSources(undefined, query.trim())) : null}
+      {lists.library > 0 ? row('library', 'Books of your library', lists.library, () => {
+        // the Library is outside Settings: the entry keeps the search so that Back finds it as he left it
+        keepHomeSearch(query);
+        openLibrary({ search: query.trim() });
+      }) : null}
     </ul>
   );
 }

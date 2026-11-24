@@ -313,15 +313,16 @@ test('no dead address: the old Library > Sermons opens the list, a link to a sou
   await expect(page.getByRole('button', { name: /^Things New and Old: Old and New Testament Studies/ })).toHaveCount(0);
   await shot(page, 'library-no-sermons');
 
-  // the Settings search answers the book, and opens the list at its row
+  // the Settings search answers the book as the one row of sermon sources, which opens the list filtered to it (mw-qtu3zvz.281)
   await page.goto('/#/settings');
   await page.getByRole('searchbox', { name: 'Search settings' }).fill('Things New and Old: Old and New Testament Studies');
-  const found = page.getByRole('button', { name: /^Things New and Old: Old and New Testament Studies · Sermon sources/ });
+  const found = page.getByRole('button', { name: 'Sermon sources · 1 match' });
   await expect(found).toBeVisible();
   await found.click();
   await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
-  await expect(page.locator('[data-source][aria-current="true"]')).toContainText('Things New and Old: Old and New Testament Studies');
-  await expect(page.locator('[data-source][aria-current="true"]')).toBeInViewport({ ratio: 1 });
+  await expect(page.locator('[data-source]')).toHaveCount(1);
+  await expect(page.locator('[data-source]')).toContainText('Things New and Old: Old and New Testament Studies');
+  await expect(page.locator('[data-source]')).toBeInViewport({ ratio: 1 });
 });
 
 test('a book with more than sermons is in the list and in the Library, one book with one switch', async ({ page }) => {

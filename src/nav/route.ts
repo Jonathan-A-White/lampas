@@ -308,6 +308,8 @@ export interface LibraryAddress {
   import?: true;
   /** the parked share holding the list, when the import was opened by Share to Lampas */
   share?: string;
+  /** the text the Library home's search starts with: the Settings search opens the Library filtered to what he typed there (mw-qtu3zvz.281) */
+  search?: string;
 }
 
 export function libraryOf(hash: string): LibraryAddress {
@@ -321,14 +323,17 @@ export function libraryOf(hash: string): LibraryAddress {
   if (params.has('import')) address.import = true;
   const share = params.get('import');
   if (share) address.share = share;
+  const search = params.get('q');
+  if (search && !kind && !params.has('import')) address.search = search;
   return address;
 }
 
 /** The Library address, always in the same order. */
-export function libraryHash({ kind, book, import: importing, share }: LibraryAddress): string {
+export function libraryHash({ kind, book, import: importing, share, search }: LibraryAddress): string {
   const params = new URLSearchParams();
   if (kind) params.set('kind', kind);
   if (kind && book) params.set('book', book);
+  if (!kind && !importing && search) params.set('q', search);
   const query = params.toString();
   if (importing) {
     const flag = share ? `import=${encodeURIComponent(share)}` : 'import';

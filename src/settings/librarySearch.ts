@@ -1,6 +1,6 @@
 // src/settings/librarySearch.ts — the library as a source of the Settings search (mw-rfjjzd.5, docs/design/library-at-scale.md 8): a title typed in the search answers the books of the catalogue that
 // hold it, each opening its kind page at the book. A book that is only sermons is on no page of the Library (mw-qtu3zvz.92): it is answered only when it is in the one list of sermon sources (`sermonBooks`,
-// the Resource IDs listed there), and opens that list at its row. Pure: SettingsScreen hands the query here and Found (SettingsHome.tsx) draws the answer.
+// the Resource IDs listed there), and opens that list at its row. Pure: useListMatches hands the query here and Found (SettingsHome.tsx) draws the number as ONE row that opens the Library filtered to it (mw-qtu3zvz.281): `total` is the number of books the Library's own search then lists.
 import { offeredEntries, type Owned } from '../data/owned';
 import { CATALOGUE, type CatalogueEntry } from '../resources/catalogue';
 import { matching, type ListItem } from '../ui/listFilter';
