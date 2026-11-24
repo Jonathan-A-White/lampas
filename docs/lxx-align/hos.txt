@@ -6,10 +6,10 @@ Derived without a Morpheus cache: hos.
 
 | Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Hosea 1 | 11 | 263 | 223 | 84.8% | 58.2% | — |
-| Hosea 5 | 15 | 286 | 213 | 74.5% | 48.3% | — |
-| Hosea 6 | 11 | 168 | 126 | 75.0% | 50.0% | — |
+| Hosea 1 | 11 | 263 | 257 | 97.7% | 71.9% | 43 (16.3%) |
+| Hosea 5 | 15 | 286 | 277 | 96.9% | 73.1% | 81 (28.3%) |
+| Hosea 6 | 11 | 168 | 154 | 91.7% | 70.8% | 40 (23.8%) |
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Hosea | 37 | 717 | 562 | 78.4% | 52.3% | — |
+| Hosea | 37 | 717 | 688 | 96.0% | 72.1% | 164 (22.9%) |
