@@ -7,8 +7,9 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import noRawInterestWrite from './eslint-rules/no-raw-interest-write.js';
 import noRealTimeWait from './eslint-rules/no-real-time-wait.js';
 import noLayerInversion from './eslint-rules/no-layer-inversion.js';
+import noNewRepositoryExports from './eslint-rules/no-new-repository-exports.js';
 
-const local = { rules: { 'no-real-time-wait': noRealTimeWait, 'no-raw-interest-write': noRawInterestWrite, 'no-layer-inversion': noLayerInversion } };
+const local = { rules: { 'no-real-time-wait': noRealTimeWait, 'no-raw-interest-write': noRawInterestWrite, 'no-layer-inversion': noLayerInversion, 'no-new-repository-exports': noNewRepositoryExports } };
 
 export default defineConfig([
   globalIgnores(['dist', 'shots', 'test-results', 'playwright-report']),
@@ -42,6 +43,12 @@ export default defineConfig([
     files: ['src/**/*.{ts,tsx}'],
     plugins: { local },
     rules: { 'local/no-layer-inversion': 'error' },
+  },
+  {
+    // The repositories barrel takes no new export: a new repository is imported from its own file (eslint-rules/no-new-repository-exports.js; what it exports today: eslint-rules/repository-exports.json, a list that may only get shorter).
+    files: ['src/data/repositories/index.ts'],
+    plugins: { local },
+    rules: { 'local/no-new-repository-exports': 'error' },
   },
   {
     // A control file exports its controls and, beside each, the rows it draws (src/settings/controls/types.ts `draws`), which src/settings/controls/index.ts gathers by glob (mw-6ww.175.106); it is not a fast-refresh boundary.
