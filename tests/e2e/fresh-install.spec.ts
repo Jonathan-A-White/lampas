@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { afterFrames, untilSettled } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { settingsHeading } from './openSettings';
@@ -59,8 +60,11 @@ test('a fresh install shows nothing of his on Words, Review, the grammar ladder 
   await expect(settingsHeading(page)).toBeVisible();
 
   // and nothing was written for him behind the screens
-  await page.waitForTimeout(500);
-  const counts = await rowsIn(page, ['words', 'reviews', 'grammarLevels', 'grammarKnown', 'settings', 'talks', 'results']);
+  const tables = ['words', 'reviews', 'grammarLevels', 'grammarKnown', 'settings', 'talks', 'results'];
+  // the app's own two writes are there (the dial's placement), then the frames after them are drawn, and only then is the store counted
+  await untilSettled(() => rowsIn(page, tables), (rows) => (rows.settings === 2 ? null : `settings holds ${rows.settings} rows, the dial's two are not yet written`));
+  await afterFrames(page);
+  const counts = await rowsIn(page, tables);
   // the two settings are the dial's placement (greekInterest and hebrewInterest, both written as the app opens: mw-3ased2.2), nothing of his
   expect(counts).toEqual({ words: 0, reviews: 0, grammarLevels: 0, grammarKnown: 0, settings: 2, talks: 0, results: 0 });
 });

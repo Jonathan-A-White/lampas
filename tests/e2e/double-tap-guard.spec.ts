@@ -118,6 +118,7 @@ async function drawnOnPageClock(page: Page, drawn: () => Promise<unknown>): Prom
     done = true;
   });
   for (let ran = 0; !done; ran += 10) {
+    // a real-time hold: the page's clock is held still, so nothing on the page can say it is time; the host's own 100 ms is what the first tap's code and data take to arrive, and the race ends the moment `drawn` does
     await Promise.race([waiting, new Promise((resolve) => setTimeout(resolve, 100))]);
     if (done) break;
     expect(ran, 'what the first tap brings up is drawn inside the settle moment').toBeLessThan(DRAW_BUDGET_MS);

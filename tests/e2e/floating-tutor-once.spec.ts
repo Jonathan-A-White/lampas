@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { honestSpeech } from '../support/honest-fakes';
 import { openGroup } from './settings-group';
+import { afterFrames } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
@@ -94,7 +95,9 @@ test('Floating ?: every screen draws exactly one tutor button', async ({ page })
   const counts: Record<string, number> = {};
   for (const screen of SCREENS) {
     await page.goto(`/#/${screen}`);
-    await page.waitForTimeout(400);
+    // the screen's own draw (some wait on their code or data) shows a round button; then the frames after it, in which a second would come
+    await expect.poll(() => page.locator(DRAWN).count(), { message: `${screen || 'reader'} draws a tutor button` }).toBeGreaterThan(0);
+    await afterFrames(page);
     counts[screen || 'reader'] = await page.locator(DRAWN).count();
     expect(await page.locator('[data-ask-tutor]').count(), `${screen}: the older button`).toBe(0);
   }

@@ -6,6 +6,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
 import { holdFor } from '../support/hold';
+import { pageTime } from '../support/gesture';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -125,7 +126,8 @@ test('Stop ends a word before its end, and Play my reading still plays all of th
   // (mw-5r3p30.338: with the 0.5 s word of TIMED_READING_ANSWER the word could end first, and the tap on the button that had turned back to Me played it again)
   const panel = await readVerse28(page, LONG_WORD_ANSWER);
   await panel.getByRole('button', { name: 'Hear me say together', exact: true }).click();
-  await page.waitForTimeout(700);
+  await expect.poll(() => seen(page)).toHaveLength(1);
+  await pageTime(page, 700); // the word is 0.7 s into its 1.9 s on the page's clock, however late the host delivers the tap
   await panel.getByRole('button', { name: 'Stop hearing me say together', exact: true }).click();
   await expect(panel.getByRole('button', { name: 'Hear me say together', exact: true })).toHaveText('Me');
   expect(await paused(page)).toHaveLength(1);

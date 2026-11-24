@@ -6,6 +6,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { honestMic } from '../support/honest-fakes';
 import { GREEK_READING_ANSWER, makeFakePostern, PARTIAL_ANSWER, QUIZ_ANSWER, WELL_READ_ANSWER } from '../support/fake-postern';
 import { holdFor } from '../support/hold';
+import { afterFrames, untilSettled } from '../support/settled';
 import { routePostern } from '../support/playwright-postern';
 import { FLOATING } from './open-tutor';
 import { openLetterDrill } from './large-text-titles';
@@ -69,6 +70,25 @@ async function advance(page: Page): Promise<boolean> {
 
 const STATES = 8;
 
+/** Waits until the card that the last tap moved on has settled: no animation runs and the buttons on screen are the same over two looks, a few frames apart (lampas.settleMs is 0 in openUnlocked). */
+async function afterCardSettles(page: Page): Promise<void> {
+  let before: string | null = null;
+  await untilSettled(
+    async () => {
+      await afterFrames(page, 3);
+      const boxes = await buttonsOf(page).evaluateAll((els) => JSON.stringify(els.map((el) => el.getBoundingClientRect().toJSON())));
+      const running = await page.evaluate(() => document.getAnimations().filter((a) => a.effect?.getComputedTiming().iterations !== Infinity && a.playState === 'running').length);
+      return { boxes, running };
+    },
+    (seen) => {
+      const still = seen.boxes === before;
+      before = seen.boxes;
+      return seen.running > 0 ? `${seen.running} animation(s) still running` : !still ? 'the buttons are still moving' : null;
+    },
+    { message: 'the card settles' },
+  );
+}
+
 /** Walks the screen: at each state every button is checked, then the screen is moved on, up to STATES times or until the round ends. */
 async function walk(page: Page, name: string): Promise<void> {
   let checked = 0;
@@ -78,8 +98,8 @@ async function walk(page: Page, name: string): Promise<void> {
     else if (!(await expect(buttonsOf(page).first()).toBeVisible().then(() => true, () => false))) break;
     checked += await expectAllClear(page, `${name} state ${state + 1}`);
     if (!(await advance(page))) break;
-    // the next state is drawn after the tap; a moment for the card that settles (lampas.settleMs is 0 in openUnlocked)
-    await page.waitForTimeout(150);
+    // the next state is drawn after the tap; wait for the card that settles (lampas.settleMs is 0 in openUnlocked)
+    await afterCardSettles(page);
   }
   expect(checked, `${name}: some buttons were checked`).toBeGreaterThan(0);
 }

@@ -252,8 +252,29 @@ test('Theme, Text size and both rates survive a reload', async ({ page }) => {
   await page.getByRole('slider', { name: 'English speed' }).fill('0.7');
   await page.getByRole('slider', { name: 'Greek speed' }).fill('1.3');
   await expect(page.getByRole('slider', { name: 'Greek speed' })).toHaveValue('1.3');
-  // let the saves land
-  await page.waitForTimeout(300);
+  // let the saves land: the four rows are in the app's store before the page goes
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            new Promise<Record<string, string>>((resolve, reject) => {
+              const open = indexedDB.open('lampas');
+              open.onerror = () => reject(open.error);
+              open.onsuccess = () => {
+                const idb = open.result;
+                const all = idb.transaction('settings').objectStore('settings').getAll();
+                all.onsuccess = () => {
+                  idb.close();
+                  resolve(Object.fromEntries((all.result as { key: string; value: string }[]).map((r) => [r.key, r.value])));
+                };
+                all.onerror = () => reject(all.error);
+              };
+            }),
+        ),
+      { message: 'Theme, Text size and both rates are saved' },
+    )
+    .toMatchObject({ theme: expect.any(String), textSize: expect.any(String), 'rate.english': expect.stringMatching(/^0\.7/), 'rate.greek': expect.stringMatching(/^1\.3/) });
   await page.reload();
   // the page he was on, Listening, is what reopens
   await expect(page.getByRole('heading', { name: 'Listening', exact: true, level: 1 })).toBeVisible();
