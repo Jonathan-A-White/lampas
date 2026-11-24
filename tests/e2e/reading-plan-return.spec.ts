@@ -4,6 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { OT_BOOKS } from '../../src/data/books';
+import { afterFrames, untilStill } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -116,7 +117,7 @@ test('back after two chapters of listening the sheet proposes Leviticus 3, and S
   expect(around.map((t) => t.replace('my guess', '').trim())).toEqual(['Leviticus 1', 'Leviticus 2', 'Leviticus 3', 'Leviticus 4', 'Leviticus 5']);
 
   // it fits the phone: every button is 48 px tall and the whole sheet is on the screen
-  await page.waitForTimeout(400); // the slide-up has ended
+  await untilStill(page, '[role="dialog"]'); // the slide-up has ended
   const buttons = await dialog.getByRole('button').evaluateAll((els) => els.map((el) => el.getBoundingClientRect()));
   for (const box of buttons) {
     expect(box.height).toBeGreaterThanOrEqual(43.5);
@@ -140,7 +141,7 @@ test('back after two chapters of listening the sheet proposes Leviticus 3, and S
 
   // the session is over: coming back again asks nothing
   await awayAndBack(page, TWO_CHAPTERS * 2);
-  await page.waitForTimeout(300);
+  await afterFrames(page); // the return's handlers have run and drawn, if they were going to ask
   await expect(sheet(page)).toHaveCount(0);
 });
 

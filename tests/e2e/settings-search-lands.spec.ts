@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { untilSettled, untilStill } from '../support/settled';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
 import { talkField } from './talk-field';
@@ -24,8 +25,8 @@ for (const key of ['textSize', 'greekRate', 'offlineCopy', 'request.devotional',
     const row = page.locator(`[data-setting="${key}"]`);
     await expect(row).toHaveAttribute('data-highlighted', '');
     await expect(row).toBeInViewport({ ratio: 1 });
-    // it stays there once the page has settled
-    await page.waitForTimeout(800);
+    // it stays there once the page has settled: the controls above it draw one by one and move it, each move starting the count of still frames again
+    await untilStill(page, `[data-setting="${key}"]`);
     await expect(row).toBeInViewport({ ratio: 1 });
   });
 }
@@ -46,27 +47,27 @@ test('every result of a search lands on its row', async ({ page }) => {
     await search.fill('e');
     await page.locator(`[data-found="${key}"]`).scrollIntoViewIfNeeded();
     await page.locator(`[data-found="${key}"]`).tap();
-    await page.waitForTimeout(500);
-    // the door of the home (rows.ts COUNTED_DOOR) is no row of a page: it opens its own page (link.ts COUNTED_LINK)
-    if (key === 'counted') {
-      if (new URL(page.url()).hash !== '#/settings?page=counted') missed.push(key);
-      continue;
-    }
+    // the door of the home (rows.ts COUNTED_DOOR) is no row of a page: it opens its own page (link.ts COUNTED_LINK); a tool opens the tool's own screen
     const tool = TOOL_SCREENS[key];
-    if (tool) {
-      if (new URL(page.url()).hash !== `#/${tool}`) missed.push(key);
-      continue;
-    }
-    const lands = await page.evaluate((k) => {
-      const el = document.querySelector(`[data-setting="${CSS.escape(k)}"]`);
-      if (!el) return false;
-      const box = el.getBoundingClientRect();
-      const bar = (document.querySelector('main.screen') as HTMLElement).getBoundingClientRect();
-      // a row taller than the screen (Grammar approach) is scrolled to by its top, so its name shows
-      const inView = box.height > bar.height ? box.top >= bar.top - 1 && box.top < bar.bottom : box.top >= bar.top - 1 && box.bottom <= bar.bottom + 1;
-      return inView && el.hasAttribute('data-highlighted');
-    }, key);
-    if (!lands) missed.push(key);
+    const door = key === 'counted' ? '#/settings?page=counted' : tool ? `#/${tool}` : null;
+    const seen = await untilSettled(
+      () =>
+        page.evaluate((k) => {
+          const el = document.querySelector(`[data-setting="${CSS.escape(k)}"]`);
+          let lands = false;
+          if (el) {
+            const box = el.getBoundingClientRect();
+            const bar = (document.querySelector('main.screen') as HTMLElement).getBoundingClientRect();
+            // a row taller than the screen (Grammar approach) is scrolled to by its top, so its name shows
+            const inView = box.height > bar.height ? box.top >= bar.top - 1 && box.top < bar.bottom : box.top >= bar.top - 1 && box.bottom <= bar.bottom + 1;
+            lands = inView && el.hasAttribute('data-highlighted');
+          }
+          return { hash: window.location.hash, lands };
+        }, key),
+      (look) => (door ? (look.hash === door ? null : `at ${look.hash}, not ${door}`) : look.lands ? null : 'the row is not in view and marked'),
+      { timeout: 15_000 }, // a result that lands is there within a frame or two of the tap; a miss is named, not waited for for the whole test
+    ).catch(() => null);
+    if (seen === null) missed.push(key);
   }
   expect(missed).toEqual([]);
 });
