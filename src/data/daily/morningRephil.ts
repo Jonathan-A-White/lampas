@@ -67,6 +67,9 @@ const listeners = new Set<() => void>();
 /** The episodes now: the bundled list, and the service's newest once rephilFeed.ts has them. Every reader that is given no list takes this one. */
 export const currentEpisodes = (): readonly Episode[] => live;
 
+/** True once the service's episodes are in the list (it has answered, today or on an earlier day and the answer is kept); false while the list is the bundled one alone (offline, no service). */
+export const serviceHasAnswered = (): boolean => live !== EPISODES;
+
 /** Puts the service's episodes in (none puts the bundled list alone) and tells whoever listens (useEpisodes). */
 export function setServiceEpisodes(service: readonly Episode[]): void {
   live = service.length === 0 ? EPISODES : mergeEpisodes(EPISODES, service);

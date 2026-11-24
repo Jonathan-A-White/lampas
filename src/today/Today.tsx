@@ -9,7 +9,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { DEFAULT_BACKUP, MORNING_REPHIL_ID, RANDOM, canDrawAnother, tickedDevotionals } from '../data/daily/devotionals';
 import { clearHeard, getDay, getExplained, getHeard, localDate, markHeard, markOpened, markSeen, noteExplained, pickAnotherDevotional, pinEpisode, unmarkSeen, type SeenBefore } from '../data/daily/dailyStore';
 import { useEpisodes } from './useEpisodes';
-import { DEFAULT_ORDER, anotherEpisode, devotionalToday, episodeDate, hasUnheard, type Episode, type EpisodeOrder, type TodaysDevotional } from '../data/daily/morningRephil';
+import { DEFAULT_ORDER, anotherEpisode, devotionalToday, episodeDate, hasUnheard, serviceHasAnswered, type Episode, type EpisodeOrder, type TodaysDevotional } from '../data/daily/morningRephil';
 import { dailyReadings, heldInLampas } from '../data/daily/psalmsProverbs';
 import { dayProgress, getLogosBibles, markChapterRead, ownedResources, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
@@ -367,7 +367,11 @@ function RephilEpisode({ ticks, episode, heard, choice, order, onSeen }: { ticks
       <Piece id="devotional" label="Morning RePhil" ticks={ticks}>
         <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2">
           <span className="text-lg font-medium">Morning RePhil</span>
-          <span className="text-base text-muted">You&apos;ve heard every Morning RePhil in this version of Lampas; new ones come with an update.</span>
+          <span className="text-base text-muted">
+            {serviceHasAnswered()
+              ? "You've heard every Morning RePhil so far; new episodes show here as they come out."
+              : "You've heard every Morning RePhil in this version of Lampas; new ones come with an update."}
+          </span>
           <StartAgain date={ticks.date} label="Start again from the top" className={`${ACTION} mt-1 self-start`} />
         </div>
       </Piece>
