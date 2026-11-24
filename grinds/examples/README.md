@@ -52,7 +52,7 @@ shape without a network.
     `matches` cannot say (`"answer": { "all": [{ "matches": "Luke" }, { "matches": "14|fourteen" }] }`)
 
 Every `expect` path must be a field of the grind's answer schema, and every `equals` or
-`one_of` value one the schema allows. `feedback` forwards to the Mayor and has no answer
+`one_of` value one the schema allows; a field checked with `one_of` has an `enum` there, unless its values are the request's own (listed with a reason in `tests/unit/grind-answer-enums.test.ts`). `feedback` forwards to the Mayor and has no answer
 schema: its answer is the mill's `{"status":"sent"}`.
 
 A story that changes a grind's behaviour (its instructions, schemas, or what the app sends)
