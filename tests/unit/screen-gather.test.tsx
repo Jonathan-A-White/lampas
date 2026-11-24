@@ -3,7 +3,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { ADDRESSES, hashFor, nameOfFile, renderersOf, ROUTE_TABLE, ROUTES, routeIn, routeOf, routeTableOf, type Route, type ScreenModules } from '../support/routes';
+import { ADDRESSES, ESSAY_PATH, hashFor, LESSONS_PATH, LISTS_PATH, MEMORIZE_PATH, nameOfFile, renderersOf, ROUTE_TABLE, ROUTES, routeIn, routeOf, routeTableOf, type Route, type ScreenModules } from '../support/routes';
 import { RENDERERS, SCREEN_MODULES } from '../../src/screens';
 
 const REAL_FILES = Object.keys(SCREEN_MODULES);
@@ -52,6 +52,7 @@ describe('a screen file in a directory', () => {
     expect(() => routeTableOf([...FIXTURE_FILES, ...SAME_NAME_FILES], WITH_LIST)).toThrow(/two screen files are named 'exampleFixture'/);
     expect(() => routeTableOf([...REAL_FILES, ...FIXTURE_FILES], { ...WITH_LIST, exampleFixture: { fallback: true } })).toThrow(/exactly one screen/);
     expect(() => routeTableOf(FIXTURE_FILES, WITH_LIST)).toThrow(/exactly one screen/);
+    expect(routeIn(routeTableOf([]), '#/words')).toBe('home');
     expect(() => routeTableOf([...REAL_FILES, ...FIXTURE_FILES], { ...WITH_LIST, exampleFixture: { path: '#/words' } })).toThrow(/have the one address '#\/words'/);
     expect(() => renderersOf(WRONG_NAME)).toThrow(/is named for its screen/);
     expect(() => renderersOf(NO_SCREEN)).toThrow(/declares 0 screens/);
@@ -91,6 +92,7 @@ describe('the real screens', () => {
       '#/unlock?from=reader': 'unlock',
     };
     for (const [hash, route] of Object.entries(addresses)) expect(routeOf(hash), hash).toBe(route);
+    expect([ROUTE_TABLE.lists.path, ROUTE_TABLE.memorize.path, ROUTE_TABLE.essay.path, ROUTE_TABLE.lessons.path]).toEqual([LISTS_PATH, MEMORIZE_PATH, ESSAY_PATH, LESSONS_PATH]);
     expect(hashFor('home')).toBe('#/');
     expect(hashFor('essay')).toBe('#/preface/robinson');
     expect(hashFor('lessons')).toBe('#/lessons/variants');

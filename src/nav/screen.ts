@@ -64,6 +64,8 @@ export function routeTableOf(files: readonly string[], addresses: Readonly<Recor
     table[name] = { name: name as Route, path: a.path ?? `#/${name}`, under: a.under === true, fallback: a.fallback === true };
   }
   const all = Object.values(table);
+  // no file at all (Playwright's loader has no glob, src/nav/screenFiles.ts): no screen is known, and routeIn opens the Reader
+  if (all.length === 0) return table as Record<Route, ScreenAddress>;
   const fallbacks = all.filter((d) => d.fallback);
   if (fallbacks.length !== 1) throw new Error(`exactly one screen is the one an address with no screen opens (the Reader), not ${fallbacks.length}`);
   for (const d of all) {
@@ -82,7 +84,7 @@ export function routeIn(table: Readonly<Record<Route, ScreenAddress>>, hash: str
     if (def.fallback) fallback = def;
     else if ((path === def.path || (def.under && path.startsWith(`${def.path}/`))) && (!best || def.path.length > best.path.length)) best = def;
   }
-  return (best ?? fallback)!.name;
+  return best?.name ?? fallback?.name ?? ('home' as Route);
 }
 
 /** The address of a screen: its path ('#/' for the Reader). */

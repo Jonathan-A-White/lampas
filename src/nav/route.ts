@@ -65,16 +65,16 @@ export { pathOf };
 export const routeOf = (hash: string): Route => routeIn(ROUTE_TABLE, hash);
 
 /** The Verse lists screen (src/lists/); one list is `#/lists/<id>`. */
-export const LISTS_PATH = ROUTE_TABLE.lists.path;
+export const LISTS_PATH = '#/lists';
 
 /** The Memorize screen (src/memorize/); one session is `#/memorize/<canonical reference>/<en|el|he|weave>`, and the bare address opens the next verse that is due. */
-export const MEMORIZE_PATH = ROUTE_TABLE.memorize.path;
+export const MEMORIZE_PATH = '#/memorize';
 
 /** The in-app copy of Robinson's essay (src/Essay.tsx), a page under the Preface. */
-export const ESSAY_PATH = ROUTE_TABLE.essay.path;
+export const ESSAY_PATH = '#/preface/robinson';
 
 /** The lessons on variant readings (src/lessons/VariantLessons.tsx): the list, and one page is `#/lessons/variants/<n>`, n from 1. */
-export const LESSONS_PATH = ROUTE_TABLE.lessons.path;
+export const LESSONS_PATH = '#/lessons/variants';
 
 const pageOpenedOnReader = typeof window === 'undefined' || routeOf(window.location.hash) === 'home';
 
