@@ -205,6 +205,25 @@ describe('when the text cannot be had', () => {
     expect(within(sheet()).getByRole('link', { name: 'Open on the web' })).toHaveAttribute('href', WEB);
   });
 
+  it('opens Enduring Word on the web within 3 seconds when the service never answers (it serves no words of it)', async () => {
+    const PAGE = 'https://enduringword.com/bible-commentary/john-3/';
+    // the service never answers: the call hangs until its signal aborts
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
+      asked.push(String(input));
+      return new Promise((_resolve, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted'))));
+    });
+    const started = Date.now();
+    render(<SermonReaderHost />);
+    await act(async () => {
+      openSermonText({ id: 'john-3', source: 'enduring-word', title: 'John 3', open: { url: PAGE }, opensIn: 'web' });
+    });
+    expect(await screen.findAllByText(/so it opens on the web/i)).toHaveLength(1);
+    expect(opened).toEqual([PAGE]);
+    expect(Date.now() - started).toBeLessThan(3000);
+    // the service was not asked for words it does not serve
+    expect(asked).toEqual([]);
+  });
+
   it('is the same when the service is not known', async () => {
     setSermonsUrl('');
     render(<SermonReaderHost />);

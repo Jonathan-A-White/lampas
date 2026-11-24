@@ -19,7 +19,7 @@ import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { oneTap } from '../ui/settle';
 import { webHref } from './openWeb';
 import { registerSermonControls } from './voiceControls';
-import { closeSermonText, forgetPlace, keepPlace, minutesLeft, parseText, readPlace, stepParagraph, timeLeftLine, useOpenedText, type OpenedText, type SermonText } from './sermonText';
+import { TEXT_SOURCES, closeSermonText, forgetPlace, keepPlace, minutesLeft, parseText, readPlace, stepParagraph, timeLeftLine, useOpenedText, type OpenedText, type SermonText } from './sermonText';
 
 /** The id the sermon's reading goes under (reading.answer): far below any stored answer's, a page's (PageActions) or a named one's (ReadAloud), so no Talk turn takes it for its own. */
 export const SERMON_READING_ID = -2_500_000_000;
@@ -294,9 +294,12 @@ function Reading({ opened, text }: { opened: OpenedText; text: SermonText }) {
 
 /** The sheet for the sermon being read: it asks the service for the text, then reads it; when the text cannot be had it opens the sermon on the web and says so. */
 function ReaderSheet({ opened }: { opened: OpenedText }) {
-  const [load, setLoad] = useState<Load>({ status: 'loading' });
+  // a source the index serves no words of (Enduring Word's commentary: not public domain) is not asked: the service answers it 404 or, unreachable, only after TEXT_WAIT_MS, and the page should open at the tap
+  const served = TEXT_SOURCES.includes(opened.source);
+  const [load, setLoad] = useState<Load>(served ? { status: 'loading' } : { status: 'failed' });
   const failedOnce = useRef(false);
   useEffect(() => {
+    if (!served) return;
     let gone = false;
     fetchSermonText(opened.source, opened.id).then(
       (answer) => {
@@ -311,7 +314,7 @@ function ReaderSheet({ opened }: { opened: OpenedText }) {
     return () => {
       gone = true;
     };
-  }, [opened.source, opened.id]);
+  }, [served, opened.source, opened.id]);
 
   // the sermon opens where it always did, once; the sheet keeps a link for a phone that blocks a window opened by itself
   const href = webHref(opened.url, 'browser', onAndroid());
