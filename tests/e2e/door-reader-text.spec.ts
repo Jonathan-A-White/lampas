@@ -5,6 +5,7 @@
 // Each case opens Luke 20 or John 5 at 390x844 on a licensed phone.
 import { expect, test, type Page } from '@playwright/test';
 import { FLOATING, twoFingers } from './open-tutor';
+import { untilStill } from '../support/settled';
 import { shot } from './shot';
 import { keepHand } from './tutor-door';
 import { keepSettings } from './keep-settings';
@@ -211,7 +212,9 @@ async function openJohnFoot(page: Page, settings: Record<string, string>) {
     await expect(page.locator('[data-place-line]')).toBeVisible();
   }
   await box.evaluate((el) => void (el.scrollTop = el.scrollHeight));
-  await page.waitForTimeout(500);
+  // at the foot, and the bars and the place line done moving
+  await expect.poll(() => box.evaluate((el) => el.scrollHeight - el.clientHeight - el.scrollTop)).toBeLessThanOrEqual(1);
+  await untilStill(page, ['[data-reader]', '[data-place-line]']);
 }
 
 /** How far the last line of John 5:47 ends above the place line's top, in px. */

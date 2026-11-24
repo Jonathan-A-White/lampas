@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { asSpoken } from '../support/lone-word';
+import { afterFrames } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -133,7 +134,7 @@ test('the word speaks by itself once, a wrong answer waits for Next, and Ask the
   expect(nextBox?.height).toBeGreaterThanOrEqual(48);
   expect(askBox?.height).toBeGreaterThanOrEqual(48);
   expect(askBox?.y).toBe(nextBox?.y);
-  await page.waitForTimeout(800);
+  await afterFrames(page); // nothing in the screen advances by itself: the frames after the answer are drawn
   await expect(prompt).toHaveText(word ?? '');
   await expectFitsPhone(page);
   await shot(page, 'test-answered');
@@ -166,6 +167,6 @@ test('while the answered word speaks by itself, Tap to hear shows the stop squar
   await bar.click();
   await expect.poll(calls).toEqual([{ text: asSpoken(word ?? ''), lang: 'el-GR', outcome: 'interrupted' }]);
   await expect(bar).toHaveAttribute('aria-pressed', 'false');
-  await page.waitForTimeout(500);
+  await afterFrames(page); // the tap's stop and anything it would start are done
   expect(await calls()).toEqual([{ text: asSpoken(word ?? ''), lang: 'el-GR', outcome: 'interrupted' }]);
 });

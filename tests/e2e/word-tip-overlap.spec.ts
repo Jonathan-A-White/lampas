@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { afterFrames, untilStill } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { switchOnResources, shelveLexicons } from './long-library';
@@ -24,7 +25,7 @@ async function openSheet(page: Page, options: { long: boolean }) {
   const heading = sheet.getByText('“condemnation”');
   await expect(tip).toContainText('Long-press a word to hear it');
   await expect(heading).toBeVisible();
-  await page.waitForTimeout(300);
+  await untilStill(page, ['[role="dialog"]', '[role="dialog"] [role="note"]']); // the sheet's slide-up has ended
   return { sheet, tip, heading };
 }
 
@@ -56,7 +57,7 @@ test('on a long word sheet the heading stays whole under the tip while the facts
   expect(before.y).toBeGreaterThanOrEqual(tipBox.y + tipBox.height);
 
   await scroll.evaluate((el) => { el.scrollTop = 20; });
-  await page.waitForTimeout(100);
+  await afterFrames(page); // the scroll's event and what it sets are done
   const scrolled = await boxOf(heading);
   expect(scrolled.y).toBe(before.y);
   await expect(heading).toBeInViewport({ ratio: 1 });

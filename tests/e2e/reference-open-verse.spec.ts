@@ -5,6 +5,7 @@ import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openTalkAbout } from './verse-view';
+import { untilPlaceKept } from '../support/settled';
 import { talkField } from './talk-field';
 import { openUnlocked } from './unlocked';
 
@@ -62,7 +63,7 @@ for (const view of ['english', 'greek']) {
     await page.locator('[data-reader]').evaluate((el) => (el.scrollTop = 700));
     await expect.poll(() => page.locator('[data-reader]').evaluate((el) => el.scrollTop)).toBe(700);
     // the scroll is kept 250 ms after its last event; a lesson is reached by the address, as the Back trail and Help do
-    await page.waitForTimeout(600);
+    await untilPlaceKept(page, 700);
     await page.evaluate(() => {
       window.history.pushState(null, '', '/#/lessons/variants/2');
       window.dispatchEvent(new PopStateEvent('popstate'));
@@ -84,7 +85,7 @@ test('Open on a reference in the tutor\'s answer brings its verse to the top, pa
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.locator('[data-reader]').evaluate((el) => (el.scrollTop = 700));
   await expect.poll(() => page.locator('[data-reader]').evaluate((el) => el.scrollTop)).toBe(700);
-  await page.waitForTimeout(600);
+  await untilPlaceKept(page, 700);
   await page.goto('/#/?b=rom&c=8');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 

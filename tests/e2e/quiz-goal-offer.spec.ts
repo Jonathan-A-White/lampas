@@ -4,8 +4,12 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern, QUIZ_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { afterPageClock } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+
+/** How long the Talk sheet keeps the offer in view while the sheet settles (the timer of src/Talk.tsx's settle observer, 1500 ms). */
+const SETTLE_MS = 1500;
 
 const LONG = Array.from({ length: 4 }, (_, i) => `Part ${i + 1}: I will ask in plain English about what the verse says and leave the Greek out, one small step at a time.`).join('\n\n');
 
@@ -85,8 +89,8 @@ test.describe('the offer stays in view (mw-5r3p30.211)', () => {
     const sheet = await openQuiz(page);
     await expect(sheet.getByRole('button', { name: 'Yes, from now on', exact: true })).toBeVisible();
     await expect.poll(offerInBox(sheet)).toBe(true);
-    // wait past the first alignment's settling time, as he would
-    await page.waitForTimeout(2000);
+    // wait past the first alignment's settling time (Talk.tsx stops following the sheet's size 1500 ms after the answer is drawn), as he would: on the page's own clock
+    await afterPageClock(page, SETTLE_MS);
     for (const size of [{ width: 844, height: 390 }, { width: 390, height: 844 }]) {
       await page.setViewportSize(size);
       await expect.poll(offerInBox(sheet)).toBe(true);
@@ -99,7 +103,7 @@ test.describe('the offer stays in view (mw-5r3p30.211)', () => {
     const sheet = await openQuiz(page);
     await expect(sheet.getByRole('button', { name: 'Yes, from now on', exact: true })).toBeVisible();
     await expect.poll(offerInBox(sheet)).toBe(true);
-    await page.waitForTimeout(2000);
+    await afterPageClock(page, SETTLE_MS); // the first alignment's settling time, as above
     const hold = sheet.getByRole('button', { name: 'Hold to talk' });
     const at = await hold.boundingBox();
     if (!at) throw new Error('no Hold to talk');
