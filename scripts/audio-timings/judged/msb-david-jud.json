@@ -1,0 +1,40 @@
+{
+ "v":1,
+ "judge":"4",
+ "edition":"msb-david",
+ "book":"jud",
+ "timings":{"file":"public/data/audio/msb-david/jud.json","sha256":"2d1e89ff54d21810f0066683786256c5b4c0fade1f96e1f9a4410b3f89a2fa75"},
+ "slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "tolerance":0.02,
+ "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
+ "summary":{"verses":25,"ok":24,"flagged":1,"flags":{"head-extra":0,"head-clipped":0,"tail-extra":0,"tail-clipped":0,"text-differs":1}},
+ "chapters":{
+  "1":{"announcement":"AUDIO BIBLE JUDE CHAPTER ONE","between":[],"closing":"","speech":-17.0,"verses":[
+   {"n":1,"verdict":"ok","sound":[2.995,5.41,14.785,15.505]},
+   {"n":2,"verdict":"ok","sound":[14.785,15.505,19.265,19.945]},
+   {"n":3,"verdict":"ok","sound":[19.265,19.945,32.13,32.585]},
+   {"n":4,"verdict":"ok","sound":[32.13,32.585,48.36,48.95]},
+   {"n":5,"verdict":"ok","sound":[48.36,48.95,58.575,59.565]},
+   {"n":6,"verdict":"ok","sound":[58.575,59.565,71.73,72.54]},
+   {"n":7,"verdict":"ok","sound":[71.73,72.54,86.695,87.82]},
+   {"n":8,"verdict":"ok","sound":[86.695,87.82,95.625,96.445]},
+   {"n":9,"verdict":"ok","sound":[95.625,96.445,108.69,109.725]},
+   {"n":10,"verdict":"ok","sound":[108.69,109.725,118.855,119.605]},
+   {"n":11,"verdict":"flagged","flags":[{"kind":"text-differs","heard":{"expected":"for profit","words":"headlong"}}],"sound":[118.855,119.605,128.685,129.745]},
+   {"n":12,"verdict":"ok","sound":[128.685,129.745,145.775,146.97]},
+   {"n":13,"verdict":"ok","sound":[145.775,146.97,156.28,157.205]},
+   {"n":14,"verdict":"ok","sound":[156.28,157.205,165.67,165.985]},
+   {"n":15,"verdict":"ok","sound":[165.67,165.985,177.705,179.245]},
+   {"n":16,"verdict":"ok","sound":[177.705,179.245,188.27,188.99]},
+   {"n":17,"verdict":"ok","sound":[188.27,188.99,193.845,194.115]},
+   {"n":18,"verdict":"ok","sound":[193.845,194.115,200.945,202.545]},
+   {"n":19,"verdict":"ok","sound":[200.945,202.545,207.325,208.12]},
+   {"n":20,"verdict":"ok","sound":[207.325,208.12,213.425,214.16]},
+   {"n":21,"verdict":"ok","sound":[213.425,214.16,221.56,222.38]},
+   {"n":22,"verdict":"ok","sound":[221.56,222.38,226.56,227.045]},
+   {"n":23,"verdict":"ok","sound":[226.56,227.045,233.715,234.31]},
+   {"n":24,"verdict":"ok","sound":[233.715,234.31,242.585,243.05]},
+   {"n":25,"verdict":"ok","sound":[242.585,243.05,252.16,null]}
+  ]}
+ }
+}

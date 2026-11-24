@@ -1,0 +1,29 @@
+{
+ "v":1,
+ "judge":"4",
+ "edition":"msb-david",
+ "book":"3jn",
+ "timings":{"file":"public/data/audio/msb-david/3jn.json","sha256":"4c3662ff96055d8377de4c2680207e6920887728f4e8ffed1e0a38bc052435a7"},
+ "slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "tolerance":0.02,
+ "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
+ "summary":{"verses":14,"ok":14,"flagged":0,"flags":{"head-extra":0,"head-clipped":0,"tail-extra":0,"tail-clipped":0,"text-differs":0}},
+ "chapters":{
+  "1":{"announcement":"AUDIO BIBLE THIRD JOHN CHAPTER ONE","between":[],"closing":"","speech":-18.0,"verses":[
+   {"n":1,"verdict":"ok","sound":[3.355,5.375,9.57,10.88]},
+   {"n":2,"verdict":"ok","sound":[9.57,10.88,18.37,19.485]},
+   {"n":3,"verdict":"ok","sound":[18.37,19.485,26.805,27.57]},
+   {"n":4,"verdict":"ok","sound":[26.805,27.57,32.155,32.975]},
+   {"n":5,"verdict":"ok","sound":[32.155,32.975,38.805,39.605]},
+   {"n":6,"verdict":"ok","sound":[38.805,39.605,46.525,47.15]},
+   {"n":7,"verdict":"ok","sound":[46.525,47.15,52.135,52.68]},
+   {"n":8,"verdict":"ok","sound":[52.135,52.68,58.235,59.11]},
+   {"n":9,"verdict":"ok","sound":[58.235,59.11,66.18,66.725]},
+   {"n":10,"verdict":"ok","sound":[66.18,66.725,81.57,82.375]},
+   {"n":11,"verdict":"ok","sound":[81.57,82.375,92.85,93.605]},
+   {"n":12,"verdict":"ok","sound":[92.85,93.605,103.45,104.1]},
+   {"n":13,"verdict":"ok","sound":[103.45,104.1,109.16,109.725]},
+   {"n":14,"verdict":"ok","sound":[109.16,109.725,121.48,null]}
+  ]}
+ }
+}

@@ -1,0 +1,6 @@
+{
+ "v":1,"edition":"msb-david","book":"2pe","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"1:21","edge":"text","judge":[{"kind":"text-differs","heard":{"expected":"of god spoke","words":"spoke from god"}}],"reason":"the judge's two ears heard 'spoke from god' where the text has 'of god spoke': not a cut's fault"}
+ ]
+}

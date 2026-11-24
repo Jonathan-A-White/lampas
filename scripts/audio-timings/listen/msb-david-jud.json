@@ -1,0 +1,6 @@
+{
+ "v":1,"edition":"msb-david","book":"jud","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"1:11","edge":"text","judge":[{"kind":"text-differs","heard":{"expected":"for profit","words":"headlong"}}],"reason":"the judge's two ears heard 'headlong' where the text has 'for profit': not a cut's fault"}
+ ]
+}
