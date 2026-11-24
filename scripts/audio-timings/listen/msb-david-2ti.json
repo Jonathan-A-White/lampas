@@ -1,0 +1,7 @@
+{
+ "v":1,"edition":"msb-david","book":"2ti","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"3:10","edge":"tail","reason":"the narrator reads on into verse 11: no quiet between 'perseverance' and 'my'; cut at the quietest instant between them","room":0.0,"cut":81.41,"judge":[{"kind":"tail-extra","by":0.05,"readsOn":true,"level":5.0,"heard":{"next":"MY","letters":"MY PERSEVERANCE","words":"my love my perseverance"}},{"kind":"tail-clipped","by":0.097,"readsOn":true,"level":-0.7,"heard":{"letters":"OF MY PERSEVERANCE","words":"my love my perseverance"}}]},
+  {"verse":"3:11","edge":"head","reason":"the narrator reads on from verse 10: no quiet between 'perseverance' and 'my'; cut at the quietest instant between them","room":0.0,"cut":81.41,"judge":[{"kind":"head-extra","by":0.05,"readsOn":true,"level":-0.7,"heard":{"before":"PERSEVERANCE","letters":"TO MY PERSECUTIONS","words":"my persecutions and the"}},{"kind":"head-clipped","by":0.05,"readsOn":true,"level":5.0,"heard":{"letters":"MY PERSECUTIONS AT","words":"my persecutions and the"}}]}
+ ]
+}

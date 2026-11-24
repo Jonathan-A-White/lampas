@@ -1,0 +1,7 @@
+{
+ "v":1,"edition":"msb-david","book":"1ti","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"3:14","edge":"tail","reason":"the narrator reads on into verse 15: no quiet between 'things' and 'in'; cut at the quietest instant between them","room":0.0,"cut":110.32,"judge":[{"kind":"tail-extra","by":0.045,"readsOn":true,"level":1.4,"heard":{"next":"IN","letters":"I AM WRITING YOU THESE THINGS","words":"writing you these things"}},{"kind":"tail-clipped","by":0.102,"readsOn":true,"level":1.1,"heard":{"lost":"S","letters":"I AM WRITING YOU THESE THINGS","words":"writing you these things"}}]},
+  {"verse":"3:15","edge":"head","reason":"the narrator reads on from verse 14: no quiet between 'things' and 'in'; cut at the quietest instant between them","room":0.0,"cut":110.32,"judge":[{"kind":"head-extra","by":0.055,"readsOn":true,"level":-3.8,"heard":{"before":"THINGS","letters":"AS IN CASE I AM DELAYED","words":"in case i am"}},{"kind":"head-clipped","by":0.045,"readsOn":true,"level":1.4,"heard":{"letters":"IN CASE I AM DELAYED","words":"in case i am"}}]}
+ ]
+}

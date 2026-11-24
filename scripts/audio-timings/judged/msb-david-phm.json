@@ -1,0 +1,40 @@
+{
+ "v":1,
+ "judge":"4",
+ "edition":"msb-david",
+ "book":"phm",
+ "timings":{"file":"public/data/audio/msb-david/phm.json","sha256":"af11aaedd1a1782d661925211460055e127f00f982888927390745767852d219"},
+ "slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "tolerance":0.02,
+ "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
+ "summary":{"verses":25,"ok":25,"flagged":0,"flags":{"head-extra":0,"head-clipped":0,"tail-extra":0,"tail-clipped":0,"text-differs":0}},
+ "chapters":{
+  "1":{"announcement":"BE ORDIOR BIBLE PHILIMON CHAPTER ONE","between":[],"closing":"","speech":-17.9,"verses":[
+   {"n":1,"verdict":"ok","sound":[2.895,5.175,11.365,11.7]},
+   {"n":2,"verdict":"ok","sound":[11.365,11.7,17.48,18.305]},
+   {"n":3,"verdict":"ok","sound":[17.48,18.305,22.635,23.535]},
+   {"n":4,"verdict":"ok","sound":[22.635,23.535,26.945,27.52]},
+   {"n":5,"verdict":"ok","sound":[26.945,27.52,32.23,32.98]},
+   {"n":6,"verdict":"ok","sound":[32.23,32.98,40.85,41.655]},
+   {"n":7,"verdict":"ok","sound":[40.85,41.655,48.12,48.805]},
+   {"n":8,"verdict":"ok","sound":[48.12,48.805,52.785,53.55]},
+   {"n":9,"verdict":"ok","sound":[52.785,53.55,61.83,62.73]},
+   {"n":10,"verdict":"ok","sound":[61.83,62.73,68.345,69.18]},
+   {"n":11,"verdict":"ok","sound":[68.345,69.18,74.755,75.8]},
+   {"n":12,"verdict":"ok","sound":[74.755,75.8,79.415,80.285]},
+   {"n":13,"verdict":"ok","sound":[79.415,80.285,86.75,87.49]},
+   {"n":14,"verdict":"ok","sound":[86.75,87.49,95.565,96.8]},
+   {"n":15,"verdict":"ok","sound":[95.565,96.8,102.58,103.34]},
+   {"n":16,"verdict":"ok","sound":[102.58,103.34,115.77,116.45]},
+   {"n":17,"verdict":"ok","sound":[115.77,116.45,120.265,121.015]},
+   {"n":18,"verdict":"ok","sound":[120.265,121.015,125.77,126.28]},
+   {"n":19,"verdict":"ok","sound":[125.77,126.28,133.785,134.925]},
+   {"n":20,"verdict":"ok","sound":[133.785,134.925,140.75,141.665]},
+   {"n":21,"verdict":"ok","sound":[140.75,141.665,148.28,149.09]},
+   {"n":22,"verdict":"ok","sound":[148.28,149.09,157.87,159.055]},
+   {"n":23,"verdict":"ok","sound":[157.87,159.055,164.01,164.545]},
+   {"n":24,"verdict":"ok","sound":[164.01,164.545,170.05,170.69]},
+   {"n":25,"verdict":"ok","sound":[170.05,170.69,175.105,null]}
+  ]}
+ }
+}

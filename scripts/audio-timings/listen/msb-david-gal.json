@@ -1,0 +1,8 @@
+{
+ "v":1,"edition":"msb-david","book":"gal","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"1:15","edge":"tail","reason":"the narrator reads on into verse 16: no quiet between 'pleased' and 'to'; cut at the quietest instant between them","room":0.0,"cut":123.44,"judge":[{"kind":"tail-extra","by":0.045,"readsOn":true,"level":3.9,"heard":{"extra":"T","next":"TO","letters":"GRACE WAS PLEASED","words":"his grace was pleased"}},{"kind":"tail-clipped","by":0.095,"readsOn":true,"level":0.9,"heard":{"lost":"ED","letters":"HIS GRACE WAS PLEASED","words":"his grace was please"}}]},
+  {"verse":"1:16","edge":"head","reason":"the narrator reads on from verse 15: no quiet between 'pleased' and 'to'; cut at the quietest instant between them","room":0.0,"cut":123.44,"judge":[{"kind":"head-extra","by":0.05,"readsOn":true,"level":-2.7,"heard":{"extra":"D","before":"PLEASED","letters":"TO REVEAL HIS SON IN ME","words":"to reveal his son"}},{"kind":"head-clipped","by":0.045,"readsOn":true,"level":3.9,"heard":{"lost":"T","letters":"TO REVEAL HIS SON IN ME","words":"reveal his son in"}}]},
+  {"verse":"5:20","edge":"tail","reason":"a quiet of 145 ms between 'factions' and 'envy': less than the 147 ms the player's margin needs; cut in its middle","room":0.145,"cut":157.44,"judge":[{"kind":"tail-clipped","by":0.027,"level":-30.6,"heard":{"letters":"DIVISIONS FACTIONS","words":"rage rivalries divisions factions"}}]}
+ ]
+}
