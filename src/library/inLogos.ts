@@ -12,6 +12,7 @@ import { resourceLink, type LogosLink } from '../resources/logosRes';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
 import type { StudyPlace } from '../resources/types';
 import { isOffered, type Owned } from '../data/owned';
+import { ENDURING_WORD_ENTRY, enduringWordUrl } from '../resources/enduringWord';
 
 /** One book that opens at the place: the catalogue's entry, its state on the shelf (never Off) and the link that opens it there. */
 export interface InLogosRow {
@@ -102,6 +103,28 @@ export function sermonBookRows(entries: readonly CatalogueEntry[], states: Reado
     const link = linkFor(entry, place);
     return link ? [{ entry, state, link }] : [];
   });
+}
+
+/** Whether a catalogue row is a volume of David Guzik's Commentaries on the Bible (DGCB), the Logos books Enduring Word stands in for. */
+export const isDgcb = (entry: Pick<CatalogueEntry, 'resource'>): boolean => entry.resource.startsWith('LLS:GUZIKCOMM');
+
+/** Whether his library holds a DGCB volume that opens at the place (a row of `rows`). */
+export const hasDgcb = (rows: readonly InLogosRow[]): boolean => rows.some((r) => isDgcb(r.entry));
+
+/**
+ * `rows` with Enduring Word (David Guzik, on the web, src/resources/enduringWord.ts) among the commentaries where his library holds no DGCB volume for the book (mw-1l901so.1): one row, which opens the chapter's page
+ * (a tap opens Lampas's reader, which falls back to the browser). It stands where the DGCB volume of the book would in `entries`' order (the dial's order), before the first commentary that comes after it, else last among
+ * the commentaries; a book the site has no commentary of (the Apocrypha) gets none. Not part of `inLogosRows`: it is no book of his shelf and no Logos link, so it opens no second door by itself (hasAnotherBook).
+ */
+export function withEnduringWord(rows: readonly InLogosRow[], entries: readonly CatalogueEntry[], place: StudyPlace): InLogosRow[] {
+  const url = enduringWordUrl(place.book, place.chapter);
+  if (url === undefined || hasDgcb(rows)) return [...rows];
+  const row: InLogosRow = { entry: ENDURING_WORD_ENTRY, state: 'on', link: { url, fallback: url } };
+  const order = (entry: CatalogueEntry): number => entries.findIndex((e) => e.resource === entry.resource);
+  const dgcb = entries.findIndex((e) => isDgcb(e) && covers(e, place));
+  const after = dgcb < 0 ? -1 : rows.findIndex((r) => r.entry.kind === 'commentary' && order(r.entry) > dgcb);
+  if (after >= 0) return [...rows.slice(0, after), row, ...rows.slice(after)];
+  return [...rows, row];
 }
 
 /** Whether there is a second door at all: a book other than his Bible opens at the place (a Bible is already the first door). */

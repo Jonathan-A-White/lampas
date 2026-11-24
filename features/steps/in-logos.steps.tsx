@@ -23,8 +23,10 @@ afterAll(async () => {
 
 const user = userEvent.setup();
 
+/** A commentary of the test library holds a DGCB volume's Resource ID where it covers a book Enduring Word has (Romans, John): his library holds David Guzik's volume there, so the chooser lists the books of his shelf and not
+ *  Enduring Word's web row (mw-1l901so.1; features/enduring-word.feature is that row's own). */
 const entry = (kind: Kind, short: string, covers?: string[]): CatalogueEntry => ({
-  resource: `LLS:${short.toUpperCase().replace(/\W+/g, '')}`,
+  resource: kind === 'commentary' ? `LLS:GUZIKCOMM${short.toUpperCase().replace(/\W+/g, '')}` : `LLS:${short.toUpperCase().replace(/\W+/g, '')}`,
   kind,
   title: short,
   short,
@@ -171,7 +173,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('The Old Testament card lists Bibles and interlinears only', ({ Given, And, When, Then }) => {
+  Scenario('The Old Testament card lists Bibles and interlinears, and Enduring Word where his shelf holds no DGCB volume of the book', ({ Given, And, When, Then }) => {
     Given(SHELF, () => everything('Interlinear 1'));
     And('the Bible {string} is chosen', async (_, short: string) => {
       // a Bible is chosen where Settings sets it: here for the Old Testament, the part of the place these scenarios open

@@ -12,6 +12,7 @@ import { hasGreekVoice, hasVoice, onSpeechRefused, warmVoices } from '../speech/
 import { pageRuns } from '../speech/pageRuns';
 import { getReading, pauseReading, resumeReading, startReading, stopReading, useListenCompleted, useReading, type PlanVerse } from '../speech/readAloud';
 import { Icon } from '../speech/SpeakButton';
+import { ENDURING_WORD_CREDIT, ENDURING_WORD_HOME, ENDURING_WORD_SOURCE } from '../resources/enduringWord';
 import { useNoDoor } from '../tutor/door';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -25,6 +26,8 @@ export const SERMON_READING_ID = -2_500_000_000;
 
 /** What the sheet says when the text cannot be had; the sermon opens on the web at the same time. */
 export const NO_TEXT_NOTICE = 'Lampas could not get the words of this sermon, so it opens on the web.';
+/** The same, for Enduring Word's commentary on a chapter (mw-1l901so.1): the page opens on the web. */
+export const NO_COMMENTARY_NOTICE = 'Lampas could not get the words of this commentary, so it opens on the web.';
 
 const BUTTON_BASE = 'inline-flex min-w-12 items-center justify-center gap-1 rounded-xl border border-line px-3 text-accent';
 /** the small buttons, Restart and Stop (and the link): 48 px; the three above them, Back, Play / Pause and Forward, are 64 px */
@@ -42,7 +45,7 @@ function PauseIcon() {
 type Load = { status: 'loading' } | { status: 'ready'; text: SermonText } | { status: 'failed' };
 
 /** The sheet's frame: the backdrop, the handle and Close, the title; the phone's Back, Escape and a swipe down on the handle close it as every sheet does. */
-function Frame({ title, children }: { title: string; children: React.ReactNode }) {
+function Frame({ title, credit, children }: { title: string; credit?: string; children: React.ReactNode }) {
   const { drag, handle } = useSheetDrag(closeSermonText);
   useEscapeToClose(closeSermonText, true);
   useSheetBack(closeSermonText);
@@ -65,6 +68,14 @@ function Frame({ title, children }: { title: string; children: React.ReactNode }
           </button>
         </div>
         <h2 className="shrink-0 px-4 pr-20 text-lg font-semibold break-words">{title}</h2>
+        {credit ? (
+          // the site's own credit line, unchanged, wherever its words are shown (mw-1l901so.1)
+          <p data-enduring-credit className="shrink-0 px-4 pb-1 text-sm text-muted">
+            <a href={ENDURING_WORD_HOME} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+              {credit}
+            </a>
+          </p>
+        ) : null}
         {children}
       </div>
     </div>,
@@ -311,18 +322,19 @@ function ReaderSheet({ opened }: { opened: OpenedText }) {
   }, [load.status, href]);
 
   const title = load.status === 'ready' ? load.text.title : opened.title;
+  const commentary = opened.source === ENDURING_WORD_SOURCE;
   return (
-    <Frame title={title}>
+    <Frame title={title} credit={commentary ? ENDURING_WORD_CREDIT : undefined}>
       {load.status === 'ready' ? <Reading opened={opened} text={load.text} /> : null}
       {load.status === 'loading' ? (
         <p role="status" className="px-4 py-3 text-base text-muted">
-          Getting the sermon…
+          {commentary ? 'Getting the commentary…' : 'Getting the sermon…'}
         </p>
       ) : null}
       {load.status === 'failed' ? (
         <div className="px-4 py-3 pb-[calc(0.75rem+var(--lp-bar-inset))]">
           <p role="status" className="pb-3 text-base">
-            {NO_TEXT_NOTICE}
+            {commentary ? NO_COMMENTARY_NOTICE : NO_TEXT_NOTICE}
           </p>
           <a href={href} target="_blank" rel="noopener noreferrer" className={`${BUTTON} w-full`}>
             Open on the web
