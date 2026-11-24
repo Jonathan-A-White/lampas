@@ -1,0 +1,59 @@
+{
+  "reasons": {
+    "added-jdg": "No free Greek word of its verse renders it: it is English Brenton adds to make the Greek English (a noun or auxiliary the Greek leaves understood, 'the number of ten thousand', 'a secret errand' beside it), or the second word of an English phrase for one Greek word that the aligner already put on a neighbouring word ('forth', 'aside', 'away', 'drink'), a pair the model pass does not touch; each was read against its verse (mw-u2w5klk.349.59).",
+    "other-verse-jdg": "Its Greek words are in the verse before or after, which has no chunk to point at: Brenton's English of Judges 2:13 'provoked the Lord' holds the Greek that ends 2:12 (καὶ παρώργισαν τὸν κύριον) and 2:16's 'listened not to' the Greek that opens 2:17, as the Greek verse division has it (mw-u2w5klk.349.59).",
+    "neighbour-jdg": "Its Greek word is taken by the aligner's pair of a neighbouring English word and no fix can give it back without leaving that word with none (Judges 2:16 'spoiled' belongs to the Greek that the aligner put on 'judges', Judges 2:23 'Joshua' to the Greek it put on 'So'), a pair the model pass does not touch (mw-u2w5klk.349.59)."
+  },
+  "chapters": {
+    "1": {
+      "gaps": 0,
+      "model": 5,
+      "leftovers": [
+        ["1:4:number", "added-jdg"],
+        ["1:14:request", "added-jdg"],
+        ["1:27:inhabitants", "added-jdg"],
+        ["1:27:towns", "added-jdg"],
+        ["1:31:people", "added-jdg"]
+      ]
+    },
+    "2": {
+      "gaps": 0,
+      "model": 9,
+      "leftovers": [
+        ["2:1:made", "added-jdg"],
+        ["2:2:things", "added-jdg"],
+        ["2:8:one", "added-jdg"],
+        ["2:13:lord", "other-verse-jdg"],
+        ["2:13:provoked", "other-verse-jdg"],
+        ["2:16:listened", "other-verse-jdg"],
+        ["2:16:spoiled", "neighbour-jdg"],
+        ["2:21:lord", "other-verse-jdg"],
+        ["2:23:joshua", "neighbour-jdg"]
+      ]
+    },
+    "3": {
+      "gaps": 0,
+      "model": 6,
+      "leftovers": [
+        ["3:19:away", "added-jdg"],
+        ["3:20:own", "added-jdg"],
+        ["3:21:forth", "added-jdg"],
+        ["3:24:chamber", "added-jdg"],
+        ["3:25:chamber", "added-jdg"],
+        ["3:31:number", "added-jdg"]
+      ]
+    },
+    "4": {
+      "gaps": 0,
+      "model": 6,
+      "leftovers": [
+        ["4:9:attend", "added-jdg"],
+        ["4:14:forth", "added-jdg"],
+        ["4:18:aside", "added-jdg"],
+        ["4:18:aside", "added-jdg"],
+        ["4:18:aside", "added-jdg"],
+        ["4:19:drink", "added-jdg"]
+      ]
+    }
+  }
+}
