@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.362
+_2026-11-24_
+- New: David's recording now plays with a moving highlight through the whole book of Ezekiel.
+- New: David's recording now plays with the highlight following along in Jeremiah 1 to 26.
+- Fixed: Tapping an English word in the first eight chapters of Leviticus now opens the Greek word that renders it, where before many words opened the whole verse.
+- Fixed: In nine chapters of Exodus (1, 6, 8, 11, 14, 15, 17, 18 and 19), tapping an English word in the Septuagint opens its Greek word instead of the whole verse.
+- Fixed: Tapping an English word in Isaiah chapters 2 to 8, 12, 13, 15, 18 and 20 of the Septuagint now opens the Greek word that renders it, not the whole verse.
+
 ## 0.7.359
 _2026-11-23_
 - New: David's recording now reads Proverbs, Song of Songs and Ecclesiastes (except chapter 2) with the highlight following.
