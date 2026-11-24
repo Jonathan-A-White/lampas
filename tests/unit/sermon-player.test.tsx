@@ -236,15 +236,44 @@ describe('the link back to the row\'s own page (mw-qtu3zvz.280.6)', () => {
     expect(sheet.textContent).not.toContain('Open on');
   });
 
-  it('names the page of a row that plays on Subsplash by its alt, and nothing for a row that is the Subsplash page itself', async () => {
+  it('links a row that plays on Subsplash by its alt to the Subsplash media page, not to the row\'s own url (mw-qtu3zvz.280.7)', async () => {
     render(<SermonPlayerHost />);
     openSermon(yt('https://brookfield.example.org/sermons/1', 'https://brookfieldfirst.subspla.sh/q59d572'));
     const sheet = await screen.findByRole('dialog', { name: 'The Day of the Lord' });
-    expect(within(sheet).getByRole('link', { name: 'Open on brookfield.example.org ›' })).toHaveAttribute('href', 'https://brookfield.example.org/sermons/1');
-    act(() => closeSermon());
-    openSermon(yt('https://subsplash.com/u/brookfieldfirst/media/d/q59d572'));
-    const again = await screen.findByRole('dialog', { name: 'The Day of the Lord' });
-    expect(within(again).queryByRole('link')).toBeNull();
+    const link = within(sheet).getByRole('link', { name: 'Open on subsplash.com ›' });
+    expect(link).toHaveAttribute('href', 'https://subsplash.com/u/brookfieldfirst/media/d/q59d572');
+    expect(within(sheet).getAllByRole('link')).toHaveLength(1);
+  });
+});
+
+describe('Brookfield First: the player links its Subsplash media page (mw-qtu3zvz.280.7)', () => {
+  const MEDIA = 'https://subsplash.com/u/brookfieldfirst/media/d/q59d572';
+  const brookfield = (url: string, alt?: string): LinkRow => ({ id: 'q59d572', source: 'brookfield', title: 'Morning RePhil 1', open: { url }, opensIn: 'web', ...(alt ? { alt } : {}) });
+
+  it.each([
+    ['its media page as the url', brookfield(MEDIA)],
+    ['its church short link as the url', brookfield('https://brookfieldfirst.subspla.sh/q59d572')],
+    ['a church page with the short link as alt', brookfield('https://brookfield.example.org/sermons/1', 'https://brookfieldfirst.subspla.sh/q59d572')],
+  ])('shows \'Open on subsplash.com ›\' to the media page, never the embed, for %s, and opens it in a new tab even with Firefox chosen', async (_how, row) => {
+    const ANDROID = 'Mozilla/5.0 (Linux; Android 16; SM-S938B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36';
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(ANDROID);
+    await setSetting(openWebSetting, 'firefox');
+    render(<SermonPlayerHost />);
+    openSermon(row);
+    const link = await screen.findByRole('link', { name: 'Open on subsplash.com ›' });
+    await waitFor(() => expect(link).toHaveAttribute('href', MEDIA), { timeout });
+    expect(link.getAttribute('href')).not.toContain('/embed/');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    await db.settings.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('shows the same link where Lampas starts the video itself (auto: the media page with ?autoplay is the frame)', async () => {
+    render(<SermonPlayerHost />);
+    openSermon(brookfield(MEDIA), { auto: true });
+    const link = await screen.findByRole('link', { name: 'Open on subsplash.com ›' });
+    expect(link).toHaveAttribute('href', MEDIA);
   });
 });
 
@@ -272,7 +301,7 @@ describe('the sweep: every bundled row the player plays (mw-qtu3zvz.280.6)', () 
           const own = videoOf(r.url);
           const same = own !== undefined && JSON.stringify(own) === JSON.stringify(video);
           const page = pageOfRow(row, video);
-          expect(page, `${entry.id}/${r.id}`).toBe(same ? undefined : r.url);
+          expect(page, `${entry.id}/${r.id}`).toBe(video.kind === 'subsplash' ? video.page : same ? undefined : r.url);
           if (page !== undefined) tally.linked++;
           covered.set(entry.id, tally);
         }
@@ -282,5 +311,22 @@ describe('the sweep: every bundled row the player plays (mw-qtu3zvz.280.6)', () 
     const lifebible = covered.get('lifebible-ttb');
     expect(lifebible?.plays).toBeGreaterThan(900);
     expect(lifebible?.linked).toBe(lifebible?.plays);
+  });
+});
+
+describe('the sweep: every kind the player plays (mw-qtu3zvz.280.7)', () => {
+  const MEDIA = 'https://subsplash.com/u/brookfieldfirst/media/d/q59d572';
+  const row = (url: string, alt?: string, extra: Partial<LinkRow> = {}): LinkRow => ({ id: 'k', source: 'k', title: 'K', open: { url }, opensIn: 'web', ...(alt ? { alt } : {}), ...extra });
+  const kinds: Array<[string, LinkRow, string | undefined]> = [
+    ['a sermon row with a YouTube alt (Life Bible Ministry)', row('https://www.lifebibleministry.com/through-the-bible/isaiah/1', 'https://www.youtube.com/watch?v=ynUYAm1-W6k'), 'https://www.lifebibleministry.com/through-the-bible/isaiah/1'],
+    ['a sermon row that is a Subsplash media page', row(MEDIA), MEDIA],
+    ['a sermon row that is a Subsplash short link', row('https://brookfieldfirst.subspla.sh/q59d572'), MEDIA],
+    ['a sermon row with a Subsplash alt (Brookfield First)', row('https://brookfield.example.org/sermons/1', 'https://brookfieldfirst.subspla.sh/q59d572'), MEDIA],
+    ['a Morning RePhil episode as a sermon row (Subsplash share link)', row('https://brookfieldfirst.subspla.sh/q59d572', undefined, { id: 'q59d572', source: 'rephil' }), MEDIA],
+    // its url is the video itself and that video's only page: the sheet already shows it, so no second line (mw-qtu3zvz.280.6)
+    ['a sermon row whose url is the YouTube video', row('https://www.youtube.com/watch?v=vid1_abcdEF'), undefined],
+  ];
+  it.each(kinds)('%s', (_kind, r, page) => {
+    expect(pageOfRow(r, videoOfRow(r))).toBe(page);
   });
 });
