@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.363
+_2026-11-24_
+- New: Today's Morning RePhil now picks up new episodes by itself when you are online, including the November 20 one.
+
 ## 0.7.362
 _2026-11-24_
 - New: David's recording now plays with a moving highlight through the whole book of Ezekiel.
