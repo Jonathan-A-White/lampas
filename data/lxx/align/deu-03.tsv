@@ -1,0 +1,221 @@
+ref	run	text	g	mark	confidence
+Deu.3:1	1	and	-		0.80
+Deu.3:1	2	by	-		0.80
+Deu.3:1	3	way leading	3		0.80
+Deu.3:1	4	the	-		0.80
+Deu.3:1	5	of	-		0.80
+Deu.3:1	6	came	-		0.80
+Deu.3:1	7	us,	-		0.80
+Deu.3:1	8	at	23		0.80
+Deu.3:2	1	the	-		0.80
+Deu.3:2	2	I have	-		0.80
+Deu.3:2	3	land,	22,23		0.80
+Deu.3:2	4	your	-		0.80
+Deu.3:2	5	shall	-		0.80
+Deu.3:2	6	to	-		0.80
+Deu.3:2	7	you	-		0.80
+Deu.3:2	8	to	-		0.80
+Deu.3:2	9	of	-		0.80
+Deu.3:3	1	the	4		0.80
+Deu.3:3	2	our	-		0.80
+Deu.3:3	3	our	-		0.80
+Deu.3:3	4	even	11		0.80
+Deu.3:3	5	the	12		0.80
+Deu.3:3	6	of	15		0.80
+Deu.3:3	7	none of	26,27		0.80
+Deu.3:4	1	we	-		0.80
+Deu.3:4	2	at	6,7		0.80
+Deu.3:4	3	there	-		0.80
+Deu.3:4	4	a	-		0.80
+Deu.3:4	5	we	-		0.80
+Deu.3:4	6	country round about	23		0.80
+Deu.3:4	7	belonging to	22		0.80
+Deu.3:5	1	strong	-		0.80
+Deu.3:5	2	besides	8		0.80
+Deu.3:5	3	many	14		0.80
+Deu.3:5	4	of	-		0.80
+Deu.3:6	1	We utterly destroyed	0		0.80
+Deu.3:6	2	we	-		0.80
+Deu.3:6	3	with	-		0.80
+Deu.3:6	4	the	4		0.80
+Deu.3:6	5	of	-		0.80
+Deu.3:6	6	so	8		0.80
+Deu.3:6	6	we utterly destroyed	9		0.80
+Deu.3:6	6	every	10		0.80
+Deu.3:6	7	in	-		0.80
+Deu.3:7	1	we took for a prey	9		0.80
+Deu.3:7	1	to ourselves	10		0.80
+Deu.3:7	2	of	-		0.80
+Deu.3:8	1	we	-		0.80
+Deu.3:8	2	at	2,3		0.80
+Deu.3:8	3	of the	-		0.80
+Deu.3:8	4	of the	-		0.80
+Deu.3:8	5	of	-		0.80
+Deu.3:8	6	beyond	16,17		0.80
+Deu.3:8	7	extending	-		0.80
+Deu.3:8	8	of	-		0.80
+Deu.3:8	9	even	23		0.80
+Deu.3:9	1	but	6		0.80
+Deu.3:9	2	has	-		0.80
+Deu.3:10	1	the	-		0.80
+Deu.3:10	2	of	-		0.80
+Deu.3:10	3	as far as	9		0.80
+Deu.3:10	4	of the	-		0.80
+Deu.3:10	5	of	15		0.80
+Deu.3:11	1	only	1		0.80
+Deu.3:11	2	the	-		0.80
+Deu.3:11	3	of	-		0.80
+Deu.3:11	4	was	-		0.80
+Deu.3:11	5	of	6		0.80
+Deu.3:11	6	his	-		0.80
+Deu.3:11	7	was a	-		0.80
+Deu.3:11	8	of	-		0.80
+Deu.3:11	9	is	-		0.80
+Deu.3:11	10	chief city of	19		0.80
+Deu.3:11	11	of	-		0.80
+Deu.3:11	12	the	-		0.80
+Deu.3:11	13	of	-		0.80
+Deu.3:11	14	is	-		0.80
+Deu.3:11	15	of	-		0.80
+Deu.3:11	16	according to	33		0.80
+Deu.3:11	17	of a	-		0.80
+Deu.3:12	1	we	-		0.80
+Deu.3:12	2	at	6		0.80
+Deu.3:12	3	the border of	15		0.80
+Deu.3:12	4	torrent	16		0.80
+Deu.3:12	5	the	19		0.80
+Deu.3:12	6	of	-		0.80
+Deu.3:12	7	I	-		0.80
+Deu.3:12	8	to	31		0.80
+Deu.3:13	1	of	3		0.80
+Deu.3:13	2	the	-		0.80
+Deu.3:13	3	of	-		0.80
+Deu.3:13	4	I	-		0.80
+Deu.3:13	5	to	-		0.80
+Deu.3:13	6	of	14	unsure	0.50
+Deu.3:13	7	the	-		0.80
+Deu.3:13	8	round about	18		0.80
+Deu.3:13	9	it shall be accounted the land of	24		0.80
+Deu.3:14	1	the	-		0.80
+Deu.3:14	2	of	-		0.80
+Deu.3:14	3	country round about	6		0.80
+Deu.3:14	3	Argob	7		0.80
+Deu.3:14	3	as far as	8		0.80
+Deu.3:14	3	the borders of	10		0.80
+Deu.3:14	4	called	14		0.80
+Deu.3:14	5	by his	16,17		0.80
+Deu.3:15	1	to	1		0.80
+Deu.3:15	2	I	-		0.80
+Deu.3:16	1	to	1		0.80
+Deu.3:16	2	I	-		0.80
+Deu.3:16	3	land under	-		0.80
+Deu.3:16	4	as far as the	15		0.80
+Deu.3:16	5	the border between the brook	-		0.80
+Deu.3:16	6	as far as	-		0.80
+Deu.3:16	7	is the	-		0.80
+Deu.3:17	1	Jordan are	5		0.80
+Deu.3:17	2	boundary of	6		0.80
+Deu.3:17	3	even	8		0.80
+Deu.3:17	4	the	-		0.80
+Deu.3:17	5	of	-		0.80
+Deu.3:17	6	the	-		0.80
+Deu.3:18	1	at	3,4		0.80
+Deu.3:18	2	The	9		0.80
+Deu.3:18	3	your	-		0.80
+Deu.3:18	4	has	-		0.80
+Deu.3:18	5	land	14,15		0.80
+Deu.3:18	6	yourselves,	-		0.80
+Deu.3:18	6	every one	28		0.80
+Deu.3:18	6	that is powerful,	29		0.80
+Deu.3:18	6	and go	20		0.80
+Deu.3:18	7	children of	26		0.80
+Deu.3:19	1	wives	1		0.80
+Deu.3:19	2	cattle	9,10		0.80
+Deu.3:19	2	(I know	12		0.80
+Deu.3:19	3	have	-		0.80
+Deu.3:19	4	let them	-		0.80
+Deu.3:19	5	I have	-		0.80
+Deu.3:20	1	the	4		0.80
+Deu.3:20	2	your	-		0.80
+Deu.3:20	3	give	2		0.80
+Deu.3:20	4	brethren	7,8		0.80
+Deu.3:20	4	rest,	-		0.80
+Deu.3:20	5	also	11		0.80
+Deu.3:20	6	has given to	-		0.80
+Deu.3:20	7	they	-		0.80
+Deu.3:20	7	also	15		0.80
+Deu.3:20	7	shall	-		0.80
+Deu.3:20	8	the	21		0.80
+Deu.3:20	9	our	-		0.80
+Deu.3:20	10	other	-		0.80
+Deu.3:20	11	of	29		0.80
+Deu.3:20	12	then	31		0.80
+Deu.3:20	13	shall	-		0.80
+Deu.3:20	14	one	-		0.80
+Deu.3:20	15	have	-		0.80
+Deu.3:21	1	at	4,5		0.80
+Deu.3:21	2	Your	-		0.80
+Deu.3:21	3	have	-		0.80
+Deu.3:21	4	things,	-		0.80
+Deu.3:21	4	which	14		0.80
+Deu.3:21	5	our	-		0.80
+Deu.3:21	6	to	20		0.80
+Deu.3:21	7	shall	-		0.80
+Deu.3:21	7	the	27		0.80
+Deu.3:21	8	our	29		0.80
+Deu.3:21	9	to	-		0.80
+Deu.3:21	10	over	-		0.80
+Deu.3:22	1	You⌃ shall	-		0.80
+Deu.3:22	2	be	-		0.80
+Deu.3:22	3	the	4		0.80
+Deu.3:22	4	our	6		0.80
+Deu.3:22	5	himself shall	-		0.80
+Deu.3:22	6	for	-		0.80
+Deu.3:23	1	I	-		0.80
+Deu.3:23	2	the	-		0.80
+Deu.3:23	3	at	4,5		0.80
+Deu.3:24	1	have	-		0.80
+Deu.3:24	2	to	-		0.80
+Deu.3:24	3	to	6		0.80
+Deu.3:24	4	your	13		0.80
+Deu.3:24	5	your	22		0.80
+Deu.3:24	6	what	26		0.80
+Deu.3:24	7	there	-		0.80
+Deu.3:24	8	will	-		0.80
+Deu.3:24	9	have	-		0.80
+Deu.3:24	10	to	44		0.80
+Deu.3:24	11	might?	45		0.80
+Deu.3:25	1	I will	-		0.80
+Deu.3:25	2	go over and	0		0.80
+Deu.3:25	3	land	3,4		0.80
+Deu.3:25	3	that	8		0.80
+Deu.3:25	4	beyond	10,11		0.80
+Deu.3:25	5	this	13		0.80
+Deu.3:26	1	the	-		0.80
+Deu.3:26	2	of	-		0.80
+Deu.3:26	3	did not regard	1		0.80
+Deu.3:26	4	to	-		0.80
+Deu.3:26	5	the	-		0.80
+Deu.3:26	6	Let it	-		0.80
+Deu.3:26	7	of	-		0.80
+Deu.3:26	8	matter	21,22		0.80
+Deu.3:26	8	to me	-		0.80
+Deu.3:26	8	any more.	18,19		0.80
+Deu.3:27	1	up	-		0.80
+Deu.3:27	2	the top of	2		0.80
+Deu.3:27	2	the quarried rock,	3		0.80
+Deu.3:27	3	with your	6		0.80
+Deu.3:27	4	it	-		0.80
+Deu.3:27	4	with your	18		0.80
+Deu.3:27	5	shall	-		0.80
+Deu.3:27	6	go over	23		0.80
+Deu.3:27	7	Jordan.	24,25		0.80
+Deu.3:28	1	shall	-		0.80
+Deu.3:28	2	the	-		0.80
+Deu.3:28	3	of	14		0.80
+Deu.3:28	4	shall	-		0.80
+Deu.3:28	5	the inheritance of all	-		0.80
+Deu.3:28	6	you have	-		0.80
+Deu.3:29	1	we	-		0.80
+Deu.3:29	2	the valley near	3		0.80
+Deu.3:29	3	of	-		0.80
