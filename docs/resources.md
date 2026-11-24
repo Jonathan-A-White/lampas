@@ -29,6 +29,7 @@ settings registry (`src/settings/registry.ts`), so the Bible talk cannot change 
 - [Audio Bible: Listen in Audible (mw-5r3p30.390, mw-5r3p30.451)](#audio-bible-listen-in-audible-mw-5r3p30390-mw-5r3p30451)
 - [Hebrew texts (mw-5r3p30.1115)](#hebrew-texts-mw-5r3p301115)
 - [Sermon archives (mw-qtu3zvz.3, PROVISIONAL, UNVERIFIED on a device)](#sermon-archives-mw-qtu3zvz3-provisional-unverified-on-a-device)
+- [Enduring Word (mw-1l901so.1, PROVISIONAL, the Governor to confirm)](#enduring-word-mw-1l901so1-provisional-the-governor-to-confirm)
 
 <!-- /toc -->
 
