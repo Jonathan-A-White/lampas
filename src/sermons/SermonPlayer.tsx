@@ -7,6 +7,7 @@ import { useNoDoor } from '../tutor/door';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
 import { closeSermon, useOpenedSermon } from './player';
+import { PlayerPageLink } from './PlayerPageLink';
 import { registerSermonControls, SKIP_SECONDS } from './voiceControls';
 import { loadYouTube, type YouTubePlayer } from './youtubeApi';
 
@@ -188,10 +189,11 @@ function PlayerSheet({ title, children, onClose }: { title: string; children: Re
 export function SermonPlayerHost() {
   const opened = useOpenedSermon();
   if (opened === null) return null;
-  const { video, title, auto } = opened;
+  const { video, title, auto, page } = opened;
   return (
     <PlayerSheet title={title} onClose={closeSermon}>
       {video.kind === 'youtube' ? <YouTubeStage key={video.id} id={video.id} auto={auto} /> : <SubsplashStage key={video.page} video={video} auto={auto} title={title} />}
+      {page === undefined ? null : <PlayerPageLink page={page} />}
     </PlayerSheet>
   );
 }
