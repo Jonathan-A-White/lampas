@@ -1,6 +1,7 @@
 // scripts/sermons/toml.ts — the subset of TOML the sermon-index repo's source.toml uses (docs/sources.md there): `key = value` lines with a basic string, a multi-line basic string
 // ("""...""", a backslash at the end of a line joins the next, as TOML says), a multi-line literal string (''' ... ''', kept as it stands), a boolean, a whole number or a date (kept as its text), and `#` comments. Anything else is an error that names
-// the line, so a source.toml that grows a table or an array is noticed here rather than read wrong.
+// the line, so a source.toml that grows an array is noticed here rather than read wrong. A `[table]` header ends what is read: in TOML every key after it belongs to the table, and the tables of a source.toml
+// (host_rules, the sermon-index tool's own pause between requests, mw-qtu3zvz.280.4) are not the build's.
 export type TomlValue = string | boolean | number;
 
 const ESCAPES: Record<string, string> = { b: '\b', t: '\t', n: '\n', f: '\f', r: '\r', '"': '"', '\\': '\\' };
@@ -23,6 +24,7 @@ export function parseToml(text: string): Record<string, TomlValue> {
   for (let n = 0; n < lines.length; n++) {
     const line = lines[n];
     if (line.trim() === '' || line.trim().startsWith('#')) continue;
+    if (/^\s*\[/.test(line)) break; // a table: it and every line after it are the sermon-index tool's, not read here
     const eq = /^([A-Za-z0-9_-]+)\s*=\s*(.*)$/.exec(line);
     if (!eq) throw new Error(`line ${n + 1}: not a key = value line`);
     const [, key, rest] = eq;

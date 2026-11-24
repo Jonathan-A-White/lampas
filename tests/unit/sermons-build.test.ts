@@ -131,6 +131,12 @@ describe('parseToml: the subset of source.toml', () => {
   it('refuses a line it does not understand', () => {
     expect(() => parseToml('id = [1, 2]')).toThrow(/id/);
   });
+
+  it('leaves a [table] and what is under it unread: the sermon-index tool\'s own settings (host_rules) are not the build\'s (mw-qtu3zvz.280.4)', () => {
+    const text = ['id = "a"', 'on_by_default = false', '', '# a pause', '[host_rules."biblethinker.org"]', 'delay_ms = 2000', 'agent = "x"'].join('\n');
+    expect(parseToml(text)).toEqual({ id: 'a', on_by_default: false });
+    expect(() => parseToml('id = "a"\n[host_rules]\nx = [1]')).not.toThrow();
+  });
 });
 
 const SHA = '0123456789abcdef0123456789abcdef01234567';
@@ -506,6 +512,59 @@ describe('runSermonsBuild: the lifebible-ttb source (mw-qtu3zvz.280.3)', () => {
         url: 'https://www.lifebibleministry.com/through-the-bible/isaiah/1',
         alt: 'https://www.youtube.com/watch?v=ynUYAm1-W6k',
         preacher: 'Pastor Paul LeBoutillier',
+      },
+    ]);
+  });
+});
+
+describe('runSermonsBuild: the biblethinker source (mw-qtu3zvz.280.4)', () => {
+  const toml = readFileSync('tests/fixtures/sermons/biblethinker.toml', 'utf8');
+  const rows = readFileSync('tests/fixtures/sermons/biblethinker-3.jsonl', 'utf8');
+  function biblethinker() {
+    const dir = mkdtempSync(join(tmpdir(), 'sermons-build-'));
+    const configFile = join(dir, 'sources.json');
+    writeFileSync(configFile, JSON.stringify({ repo: 'https://github.com/Jonathan-A-White/sermon-index', commit: SHA, sources: ['biblethinker'], names: { biblethinker: 'Bible Thinker: Mike Winger' } }));
+    const download = async (url: string, dest: string): Promise<void> => {
+      const { mkdirSync, writeFileSync: write } = await import('node:fs');
+      const { dirname } = await import('node:path');
+      mkdirSync(dirname(dest), { recursive: true });
+      write(dest, url.endsWith('source.toml') ? toml : rows);
+    };
+    return { dir, options: { configFile, rawDir: join(dir, 'raw'), outDir: join(dir, 'out'), download, verses } };
+  }
+
+  it('lists the source Off to start with its credit and home page, and one file for each book its three posts touch', async () => {
+    const w = biblethinker();
+    const result = await runSermonsBuild(w.options);
+    const [s] = readJson<SermonIndex>(join(w.options.outDir, 'index.json')).sources;
+    expect(s).toMatchObject({
+      id: 'biblethinker',
+      name: 'Bible Thinker: Mike Winger',
+      kind: 'sermons',
+      onByDefault: false,
+      credit: 'Mike Winger, Bible Thinker (biblethinker.org)',
+      homepage: 'https://biblethinker.org/mark/',
+      rows: 3,
+    });
+    expect([...(s?.books ?? [])].sort()).toEqual(['1pe', 'mrk', 'rom']);
+    expect(result.sources[0]).toMatchObject({ read: 3, listed: 3, withoutRef: 0, omitted: [] });
+    expect(filesUnder(w.options.outDir)).toEqual(['1pe.json', 'mrk.json', 'rom.json'].map((f) => `biblethinker/${f}`).concat('index.json').sort());
+  });
+
+  it('writes the post as the row\'s url and the YouTube video as its alt, for 1 Peter 1:3-7', async () => {
+    const w = biblethinker();
+    await runSermonsBuild(w.options);
+    const pe = readJson<SermonBookFile>(join(w.options.outDir, 'biblethinker', '1pe.json'));
+    expect(pe.rows).toEqual([
+      {
+        id: 'hope-in-grief-born-again-jesus-resurrection-1-peter-13-7',
+        title: 'Hope in Grief, Born Again, Jesus’ Resurrection: 1 Peter 1:3-7',
+        ref: { book: '1pe', chapter: 1, from: 3, to: 7 },
+        role: 'text',
+        url: 'https://biblethinker.org/hope-in-grief-born-again-jesus-resurrection-1-peter-13-7/',
+        alt: 'https://www.youtube.com/watch?v=n-0M1f1iJ5Y',
+        preacher: 'Mike Winger',
+        date: '2015-09-15',
       },
     ]);
   });

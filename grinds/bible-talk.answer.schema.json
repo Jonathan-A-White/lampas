@@ -1641,6 +1641,7 @@
                   "sermons.sermon-starters-volume-4-logos",
                   "sermons.sermon-starters-volume-5-logos",
                   "sermons.lifebible-ttb",
+                  "sermons.biblethinker",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -2374,6 +2375,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "sermons.lifebible-ttb" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.biblethinker" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",
