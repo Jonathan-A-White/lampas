@@ -1,0 +1,47 @@
+ref	run	text	g	mark	confidence
+Psa.12:1	1	a	-		0.80
+Psa.12:1	2	of	4		0.80
+Psa.12:2	1	How long,	0,1		0.80
+Psa.12:2	1	O	-		0.80
+Psa.12:2	2	will you	-		0.80
+Psa.12:2	3	ever?	6		0.80
+Psa.12:2	3	how long	7,8		0.80
+Psa.12:2	3	will	-		0.80
+Psa.12:2	4	away your	-		0.80
+Psa.12:3	1	How long	0,1		0.80
+Psa.12:3	1	shall	-		0.80
+Psa.12:3	2	take	2		0.80
+Psa.12:3	2	counsel	3		0.80
+Psa.12:3	3	my	-		0.80
+Psa.12:3	4	having	-		0.80
+Psa.12:3	4	sorrows	7		0.80
+Psa.12:3	5	daily?	11		0.80
+Psa.12:3	5	how long	12,13		0.80
+Psa.12:3	5	shall	-		0.80
+Psa.12:3	6	be exalted	14		0.80
+Psa.12:4	1	on me,	-		0.80
+Psa.12:4	2	to	-		0.80
+Psa.12:4	3	O	-		0.80
+Psa.12:4	4	my	-		0.80
+Psa.12:4	5	lighten	7		0.80
+Psa.12:4	6	I	-		0.80
+Psa.12:5	1	at any time	1		0.80
+Psa.12:5	1	my	-		0.80
+Psa.12:5	2	have prevailed	6		0.80
+Psa.12:5	2	against	7		0.80
+Psa.12:5	3	persecutors	9,10		0.80
+Psa.12:5	3	will exult	12		0.80
+Psa.12:5	4	ever	-		0.80
+Psa.12:5	4	I should be moved.	14		0.80
+Psa.12:6	1	have	-		0.80
+Psa.12:6	2	in	3		0.80
+Psa.12:6	3	my	8		0.80
+Psa.12:6	4	shall exult	7		0.80
+Psa.12:6	5	salvation.	12,13		0.80
+Psa.12:6	6	will sing	15		0.80
+Psa.12:6	7	who	18		0.80
+Psa.12:6	7	has dealt bountifully with	19		0.80
+Psa.12:6	8	I will	-		0.80
+Psa.12:6	9	psalms to	-		0.80
+Psa.12:6	10	of the	-		0.80
+Psa.12:6	11	most	26		0.80

@@ -1,0 +1,59 @@
+ref	run	text	g	mark	confidence
+Psa.23:1	1	A	-		0.80
+Psa.23:1	2	for	1		0.80
+Psa.23:1	3	on	-		0.80
+Psa.23:1	4	of	-		0.80
+Psa.23:1	5	week.	-		0.80
+Psa.23:1	6	is the	-		0.80
+Psa.23:1	7	fullness thereof;	12,13		0.80
+Psa.23:1	8	that	18		0.80
+Psa.23:2	1	has founded	3		0.80
+Psa.23:2	2	the	-		0.80
+Psa.23:2	3	prepared	8		0.80
+Psa.23:2	4	the	-		0.80
+Psa.23:3	1	Who shall	0		0.80
+Psa.23:3	2	up	-		0.80
+Psa.23:3	3	of	-		0.80
+Psa.23:3	4	who shall	8		0.80
+Psa.23:4	1	that is	-		0.80
+Psa.23:4	2	in his	-		0.80
+Psa.23:4	3	in his	-		0.80
+Psa.23:4	4	has	-		0.80
+Psa.23:4	5	lifted up his	8,11		0.80
+Psa.23:4	6	vanity,	10		0.80
+Psa.23:4	6	nor	14,15		0.80
+Psa.23:5	1	shall	-		0.80
+Psa.23:5	2	a	-		0.80
+Psa.23:5	3	the	-		0.80
+Psa.23:5	4	Saviour.	9		0.80
+Psa.23:6	1	is	-		0.80
+Psa.23:6	2	of them that	-		0.80
+Psa.23:6	3	that	-		0.80
+Psa.23:6	4	of	-		0.80
+Psa.23:6	5	of	-		0.80
+Psa.23:7	1	Lift	-		0.80
+Psa.23:7	2	your	-		0.80
+Psa.23:7	3	princes,	2,3		0.80
+Psa.23:7	4	be you⌃	-		0.80
+Psa.23:7	5	up, you⌃	-		0.80
+Psa.23:7	6	of	13		0.80
+Psa.23:7	7	shall	-		0.80
+Psa.23:7	8	in.	-		0.80
+Psa.23:8	1	Who	0		0.80
+Psa.23:8	2	of	5		0.80
+Psa.23:8	3	the	-		0.80
+Psa.23:8	4	strong	10	unsure	0.50
+Psa.23:8	5	the	-		0.80
+Psa.23:9	1	Lift	-		0.80
+Psa.23:9	2	your	-		0.80
+Psa.23:9	3	princes;	2,3		0.80
+Psa.23:9	4	be you⌃	-		0.80
+Psa.23:9	5	up, you⌃	-		0.80
+Psa.23:9	6	of	13		0.80
+Psa.23:9	7	shall	-		0.80
+Psa.23:9	8	in.	-		0.80
+Psa.23:10	1	Who	0		0.80
+Psa.23:10	2	of	5		0.80
+Psa.23:10	3	The	-		0.80
+Psa.23:10	4	of	8		0.80
+Psa.23:10	5	of	15		0.80

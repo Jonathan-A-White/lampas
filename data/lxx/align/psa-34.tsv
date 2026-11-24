@@ -1,0 +1,163 @@
+ref	run	text	g	mark	confidence
+Psa.34:1	1	A Psalm of David.	0,1		0.80
+Psa.34:1	2	you, O	-		0.80
+Psa.34:1	3	them that	4		0.80
+Psa.34:1	4	against them that	8		0.80
+Psa.34:1	5	against	-		0.80
+Psa.34:2	1	of	-		0.80
+Psa.34:2	2	buckler,	-		0.80
+Psa.34:3	1	Bring forth a	0		0.80
+Psa.34:3	2	stop	3		0.80
+Psa.34:3	3	way	4		0.80
+Psa.34:3	3	against	5		0.80
+Psa.34:3	3	them that persecute	7		0.80
+Psa.34:3	4	am	-		0.80
+Psa.34:4	1	Let them that	3		0.80
+Psa.34:4	2	be	-		0.80
+Psa.34:4	3	confounded:	-		0.80
+Psa.34:4	3	let them that devise	14,15		0.80
+Psa.34:4	4	against	-		0.80
+Psa.34:4	5	be	-		0.80
+Psa.34:4	6	put	13		0.80
+Psa.34:5	1	Let them be	0		0.80
+Psa.34:5	2	before the	3,4		0.80
+Psa.34:5	3	an	-		0.80
+Psa.34:5	4	of the	-		0.80
+Psa.34:6	1	Let	-		0.80
+Psa.34:6	2	way	1,2		0.80
+Psa.34:6	3	an	-		0.80
+Psa.34:6	4	of the	-		0.80
+Psa.34:7	1	without cause	1		0.80
+Psa.34:7	1	they have	-		0.80
+Psa.34:7	2	for	-		0.80
+Psa.34:7	3	destructive	4		0.80
+Psa.34:7	3	snare:	5		0.80
+Psa.34:7	3	without a cause	7		0.80
+Psa.34:7	3	they have reproached	8		0.80
+Psa.34:8	1	Let a	-		0.80
+Psa.34:8	2	upon them;	-		0.80
+Psa.34:8	3	they	-		0.80
+Psa.34:8	4	let	-		0.80
+Psa.34:8	5	fall into	14,17		0.80
+Psa.34:8	6	very same	18		0.80
+Psa.34:8	6	snare.	16		0.80
+Psa.34:9	1	shall	-		0.80
+Psa.34:9	2	in	5		0.80
+Psa.34:9	3	it shall	-		0.80
+Psa.34:9	4	in	9		0.80
+Psa.34:9	5	salvation.	10,11		0.80
+Psa.34:10	1	shall	-		0.80
+Psa.34:10	2	O	-		0.80
+Psa.34:10	3	who is	6		0.80
+Psa.34:10	4	to	-		0.80
+Psa.34:10	5	the	-		0.80
+Psa.34:10	6	of the	-		0.80
+Psa.34:10	7	of them that are	-		0.80
+Psa.34:10	8	than	-		0.80
+Psa.34:10	9	yes, the	15		0.80
+Psa.34:10	10	needy one	18		0.80
+Psa.34:10	11	them that	20		0.80
+Psa.34:11	1	arose,	0		0.80
+Psa.34:11	1	and asked me	6		0.80
+Psa.34:11	1	of things	3		0.80
+Psa.34:11	2	new	5		0.80
+Psa.34:12	1	They	-		0.80
+Psa.34:12	2	to	7		0.80
+Psa.34:13	1	when	3		0.80
+Psa.34:13	2	shall return	23		0.80
+Psa.34:13	3	own	-		0.80
+Psa.34:14	1	I behaved agreeably	5,6		0.80
+Psa.34:14	1	towards them	-		0.80
+Psa.34:14	2	if it had been	2		0.80
+Psa.34:14	3	or	-		0.80
+Psa.34:14	4	I	-		0.80
+Psa.34:14	5	myself	-		0.80
+Psa.34:14	6	one	-		0.80
+Psa.34:14	7	of	-		0.80
+Psa.34:15	1	Yet	0		0.80
+Psa.34:15	1	they rejoiced	3		0.80
+Psa.34:15	2	plagues	9		0.80
+Psa.34:15	2	were plentifully	5		0.80
+Psa.34:15	2	brought	6		0.80
+Psa.34:15	3	I	-		0.80
+Psa.34:15	4	it	-		0.80
+Psa.34:15	5	they were scattered,	13		0.80
+Psa.34:15	5	but	14		0.80
+Psa.34:15	5	repented	16		0.80
+Psa.34:16	1	They	-		0.80
+Psa.34:16	2	they	-		0.80
+Psa.34:16	3	at	-		0.80
+Psa.34:16	4	most contemptuously,	2		0.80
+Psa.34:16	4	they gnashed	5		0.80
+Psa.34:16	5	teeth	8,9		0.80
+Psa.34:17	1	O	-		0.80
+Psa.34:17	2	will you	-		0.80
+Psa.34:17	3	upon	-		0.80
+Psa.34:17	4	my	-		0.80
+Psa.34:17	5	mischief,	8,9		0.80
+Psa.34:17	6	only-begotten one	13,14		0.80
+Psa.34:17	7	the	-		0.80
+Psa.34:18	1	I will give thanks to	0		0.80
+Psa.34:18	2	even	-		0.80
+Psa.34:18	3	a	-		0.80
+Psa.34:18	4	an abundant	8		0.80
+Psa.34:18	5	I will	-		0.80
+Psa.34:19	1	Let	-		0.80
+Psa.34:19	2	them that are	3		0.80
+Psa.34:19	3	enemies	-		0.80
+Psa.34:19	3	without a cause	6		0.80
+Psa.34:19	4	who	7		0.80
+Psa.34:19	5	for	-		0.80
+Psa.34:19	6	with their	-		0.80
+Psa.34:20	1	they	-		0.80
+Psa.34:20	2	peaceably,	2,3		0.80
+Psa.34:20	2	but	5		0.80
+Psa.34:20	2	imagined	-		0.80
+Psa.34:20	3	in their	7	unsure	0.50
+Psa.34:21	1	they opened wide	1		0.80
+Psa.34:21	1	their	4		0.80
+Psa.34:21	2	Aha, aha,	8,9		0.80
+Psa.34:21	2	our	13		0.80
+Psa.34:21	3	have	-		0.80
+Psa.34:21	4	it.	-		0.80
+Psa.34:22	1	You have	-		0.80
+Psa.34:22	2	it, O	-		0.80
+Psa.34:22	3	keep	-		0.80
+Psa.34:22	4	silence:	3		0.80
+Psa.34:22	4	O	-		0.80
+Psa.34:22	5	withdraw	-		0.80
+Psa.34:23	1	Awake, O	0		0.80
+Psa.34:23	2	to	4		0.80
+Psa.34:23	3	even	-		0.80
+Psa.34:23	4	cause,	15,16		0.80
+Psa.34:24	1	O	-		0.80
+Psa.34:24	2	to	-		0.80
+Psa.34:24	3	O	-		0.80
+Psa.34:24	4	let them	-		0.80
+Psa.34:24	5	against	-		0.80
+Psa.34:25	1	Let them	-		0.80
+Psa.34:25	2	their	-		0.80
+Psa.34:25	3	Aha, aha,	5,6		0.80
+Psa.34:25	4	is pleasing to our	7		0.80
+Psa.34:25	5	neither let them	10		0.80
+Psa.34:25	6	have	-		0.80
+Psa.34:26	1	Let them be confounded	2		0.80
+Psa.34:26	2	that	4		0.80
+Psa.34:26	3	at	6		0.80
+Psa.34:26	4	afflictions:	7		0.80
+Psa.34:26	4	let them be clothed with	9		0.80
+Psa.34:26	5	confusion	12		0.80
+Psa.34:26	5	that speak	13		0.80
+Psa.34:26	6	swelling words	-		0.80
+Psa.34:27	1	Let them that	3		0.80
+Psa.34:27	2	in	-		0.80
+Psa.34:27	3	exult	-		0.80
+Psa.34:27	4	be glad:	2		0.80
+Psa.34:27	5	let them	-		0.80
+Psa.34:27	6	be	-		0.80
+Psa.34:27	7	who	15		0.80
+Psa.34:27	8	of	19		0.80
+Psa.34:27	9	servant.	20		0.80
+Psa.34:28	1	shall	-		0.80
+Psa.34:28	2	on	5		0.80
+Psa.34:28	3	and on	11		0.80
