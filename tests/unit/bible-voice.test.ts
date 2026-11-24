@@ -118,13 +118,13 @@ describe("the real timings of the recorded voice (public/data/audio/msb-david, m
     forgetTimings();
   });
 
-  it('offers John 3 the recording and Acts 1 none', async () => {
+  it('offers John 3 the recording and Revelation 1 none', async () => {
     await loadBookTimings('jhn');
-    await loadBookTimings('act');
+    await loadBookTimings('rev');
     const john = chapterOf('jhn/3');
-    const acts = chapterOf('act/1');
+    const rev = chapterOf('rev/1');
     expect(recordingFor('jhn', john, english(john))?.audio).toMatch(/^https:\/\/openbible\.com\//);
-    expect(recordingFor('act', acts, english(acts))).toBeUndefined();
+    expect(recordingFor('rev', rev, english(rev))).toBeUndefined();
   });
 
   it("offers Genesis 1 the recording: David's Genesis chapter 1 file, though Genesis's source is Hebrew (mw-zbgo4ep.38)", async () => {
