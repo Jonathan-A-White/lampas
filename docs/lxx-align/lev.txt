@@ -6,14 +6,14 @@ Derived without a Morpheus cache: none.
 
 | Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Leviticus 1 | 17 | 400 | 336 | 84.0% | 47.5% | — |
-| Leviticus 2 | 16 | 317 | 265 | 83.6% | 56.2% | — |
-| Leviticus 3 | 17 | 386 | 306 | 79.3% | 45.3% | — |
-| Leviticus 4 | 35 | 895 | 726 | 81.1% | 45.8% | — |
-| Leviticus 5 | 19 | 497 | 373 | 75.1% | 45.3% | — |
-| Leviticus 6 | 40 | 828 | 650 | 78.5% | 47.7% | — |
-| Leviticus 7 | 28 | 562 | 429 | 76.3% | 44.7% | — |
-| Leviticus 8 | 36 | 895 | 615 | 68.7% | 40.2% | — |
+| Leviticus 1 | 17 | 400 | 375 | 93.8% | 57.3% | 39 (9.8%) |
+| Leviticus 2 | 16 | 317 | 308 | 97.2% | 69.7% | 43 (13.6%) |
+| Leviticus 3 | 17 | 386 | 379 | 98.2% | 64.2% | 73 (18.9%) |
+| Leviticus 4 | 35 | 895 | 880 | 98.3% | 63.0% | 154 (17.2%) |
+| Leviticus 5 | 19 | 497 | 484 | 97.4% | 67.2% | 111 (22.3%) |
+| Leviticus 6 | 40 | 828 | 770 | 93.0% | 62.2% | 120 (14.5%) |
+| Leviticus 7 | 28 | 562 | 535 | 95.2% | 63.5% | 106 (18.9%) |
+| Leviticus 8 | 36 | 895 | 690 | 77.1% | 48.5% | 75 (8.4%) |
 | Leviticus 9 | 24 | 520 | 453 | 87.1% | 55.6% | — |
 | Leviticus 10 | 20 | 529 | 428 | 80.9% | 56.1% | — |
 | Leviticus 11 | 47 | 927 | 745 | 80.4% | 50.5% | — |
@@ -36,4 +36,4 @@ Derived without a Morpheus cache: none.
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Leviticus | 859 | 19,042 | 14,732 | 77.4% | 47.5% | — |
+| Leviticus | 859 | 19,042 | 15,453 | 81.2% | 51.2% | 721 (3.8%) |
