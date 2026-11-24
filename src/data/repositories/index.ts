@@ -1,5 +1,6 @@
 // UI code reaches the local store only through the repositories exported here, never through Dexie tables
 // directly, and a repository owns its transactions (docs/pwa-best-practices.md section 15).
+// FROZEN (mw-6ww.175.84): no new export here (eslint-rules/no-new-repository-exports.js); a new repository is imported from its own file.
 export { addImportedWords, addWordToLearn, holdsOnlyExampleWords, listedWord, restoreWord, wordIsListed, listDroppedLemmas, listLearningLemmas, listSolidHeadwords, listSolidLemmas, listWords, setWordState, teachWord } from './words';
 export type { Word, WordOutcome, WordState } from './words';
 export { GREEK_START_KEY, HEBREW_START_KEY, getGreekInterest, getHebrewInterest, getInterestLevels, getLanguages, holdsAReader, placeGreekInterest, placeInterest, raiseGreekInterest, raiseHebrewInterest, setGreekInterest, setHebrewInterest, setLanguages } from './greekInterest';
