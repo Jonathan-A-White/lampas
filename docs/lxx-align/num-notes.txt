@@ -1,0 +1,5 @@
+Numbers: what its pairing passes did (hand-kept; the generated file beside it is num.txt). Written by the stories of the epic mw-u2w5klk.349 that went through the book, one paragraph a pass, oldest first.
+The real-data checks of Numbers are tests/unit/lxx-align-choose-num.test.ts; the counts and each leftover's reason are data/lxx/align/num.expect.json; the method is docs/lxx-align.md, 'A pairing pass'.
+
+Numbers 1 to 4 are done (story mw-u2w5klk.349.10: 1,231 runs, `data/lxx/align/num-01` to `num-04`, `num.expect.json`); the first chapter left is Numbers 5 (242 runs), then 6 to 36. `npm run lxx:unpaired -- --book num` says what is left at any time.
+The census verses of Numbers 1 (the same eight lines for each tribe) were cut by the same rule in each: 'divisions' to δῆμος, 'polls' to κεφαλή, 'upward, every one that goes out' to ἐπάνω πᾶς ὁ ἐκπορευόμενος. The numerals, ages and set phrases whose one Greek word the aligner had given to a single English word of the phrase ('twenty years old', 'a month old', 'six hundred', 'seven thousand', 'encamp next shall be') are `fix` rows, 99 in all, so a tap on 'old' or 'hundred' opens the Greek word.

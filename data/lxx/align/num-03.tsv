@@ -1,0 +1,321 @@
+ref	run	text	g	mark	confidence
+Num.3:1	1	are	-		0.80
+Num.3:1	2	of	-		0.80
+Num.3:1	3	the	-		0.80
+Num.3:1	4	in	-		0.80
+Num.3:1	5	the	-		0.80
+Num.3:1	6	to	12		0.80
+Num.3:2	1	are	-		0.80
+Num.3:2	2	of	-		0.80
+Num.3:2	3	of	-		0.80
+Num.3:2	4	the	-		0.80
+Num.3:3	1	are	-		0.80
+Num.3:3	2	of	-		0.80
+Num.3:3	3	of	-		0.80
+Num.3:3	4	to	-		0.80
+Num.3:4	1	died	1		0.80
+Num.3:4	2	the	-		0.80
+Num.3:4	3	offered strange	10		0.80
+Num.3:4	4	the	-		0.80
+Num.3:4	5	of	-		0.80
+Num.3:4	6	had	20		0.80
+Num.3:4	7	ministered in the	-		0.80
+Num.3:4	8	office	-		0.80
+Num.3:5	1	the	-		0.80
+Num.3:6	1	of	-		0.80
+Num.3:6	2	you shall	-		0.80
+Num.3:6	3	before	7		0.80
+Num.3:6	4	they shall	-		0.80
+Num.3:6	5	to	-		0.80
+Num.3:7	1	shall	-		0.80
+Num.3:7	2	charges,	2,3		0.80
+Num.3:7	3	of	-		0.80
+Num.3:7	4	of	-		0.80
+Num.3:7	5	tabernacle of witness, to do	13,14,15,16		0.80
+Num.3:7	6	of	-		0.80
+Num.3:8	1	they shall	-		0.80
+Num.3:8	2	of	-		0.80
+Num.3:8	3	of	7		0.80
+Num.3:8	4	of	-		0.80
+Num.3:8	5	of	-		0.80
+Num.3:8	6	as to	15		0.80
+Num.3:8	7	of	-		0.80
+Num.3:9	1	you shall	-		0.80
+Num.3:9	2	to	-		0.80
+Num.3:9	3	to	6		0.80
+Num.3:9	4	they are	13		0.80
+Num.3:9	5	for a	-		0.80
+Num.3:9	6	of	-		0.80
+Num.3:10	1	you shall	-		0.80
+Num.3:10	2	of	10		0.80
+Num.3:10	3	they shall	-		0.80
+Num.3:10	4	charge of	14	unsure	0.50
+Num.3:10	5	things belonging to	19,20		0.80
+Num.3:10	6	that	30		0.80
+Num.3:10	7	them shall	-		0.80
+Num.3:11	1	the	-		0.80
+Num.3:12	1	have	-		0.80
+Num.3:12	2	the	-		0.80
+Num.3:12	3	of	-		0.80
+Num.3:12	4	of	-		0.80
+Num.3:12	5	of	-		0.80
+Num.3:12	6	that	-		0.80
+Num.3:12	7	the	-		0.80
+Num.3:12	8	among	-		0.80
+Num.3:12	9	of	-		0.80
+Num.3:12	10	shall	-		0.80
+Num.3:12	11	their	-		0.80
+Num.3:12	12	the Levites shall	26	unsure	0.50
+Num.3:13	1	is mine;	-		0.80
+Num.3:13	2	the	-		0.80
+Num.3:13	3	in	-		0.80
+Num.3:13	4	the	-		0.80
+Num.3:13	5	of	-		0.80
+Num.3:13	6	myself every	15		0.80
+Num.3:13	7	both	-		0.80
+Num.3:13	8	and	-		0.80
+Num.3:13	9	they shall	-		0.80
+Num.3:13	10	mine:	23		0.80
+Num.3:13	11	am the	-		0.80
+Num.3:14	1	the	-		0.80
+Num.3:14	2	of	-		0.80
+Num.3:15	1	number of the	-		0.80
+Num.3:15	2	of	-		0.80
+Num.3:15	3	to the	-		0.80
+Num.3:15	4	of	-		0.80
+Num.3:15	5	to	-		0.80
+Num.3:15	6	divisions;	9		0.80
+Num.3:15	6	number you⌃	-		0.80
+Num.3:15	7	every	11		0.80
+Num.3:15	8	a	-		0.80
+Num.3:15	9	old	-		0.80
+Num.3:16	1	numbered	1		0.80
+Num.3:16	2	the	-		0.80
+Num.3:16	3	of the	-		0.80
+Num.3:16	4	as the	9,10		0.80
+Num.3:16	5	commanded	11		0.80
+Num.3:17	1	Levi by	5		0.80
+Num.3:18	1	are	-		0.80
+Num.3:18	2	of	-		0.80
+Num.3:18	3	of	-		0.80
+Num.3:18	4	to	-		0.80
+Num.3:18	5	families;	8		0.80
+Num.3:19	1	the	-		0.80
+Num.3:19	2	of	-		0.80
+Num.3:19	3	to	-		0.80
+Num.3:19	4	families;	4		0.80
+Num.3:20	1	the	-		0.80
+Num.3:20	2	of	-		0.80
+Num.3:20	3	to	-		0.80
+Num.3:20	4	families,	4		0.80
+Num.3:20	5	the	-		0.80
+Num.3:20	6	of	-		0.80
+Num.3:20	7	to the	-		0.80
+Num.3:20	8	of	-		0.80
+Num.3:21	1	To	0		0.80
+Num.3:21	2	family of	-		0.80
+Num.3:21	3	family of	6		0.80
+Num.3:21	4	are	-		0.80
+Num.3:21	5	families of	10		0.80
+Num.3:22	1	of	-		0.80
+Num.3:22	2	to the	-		0.80
+Num.3:22	3	of	-		0.80
+Num.3:22	4	a	-		0.80
+Num.3:22	5	old	-		0.80
+Num.3:22	6	numbering was	11		0.80
+Num.3:22	6	seven	-		0.80
+Num.3:22	7	five	-		0.80
+Num.3:23	1	the	-		0.80
+Num.3:23	2	of	-		0.80
+Num.3:23	3	shall	-		0.80
+Num.3:23	4	westward behind the tabernacle.	3,4,5,6,7		0.80
+Num.3:24	1	of the	-		0.80
+Num.3:24	2	of the	5		0.80
+Num.3:24	3	of	7		0.80
+Num.3:24	4	was	-		0.80
+Num.3:24	5	the	-		0.80
+Num.3:24	6	of	-		0.80
+Num.3:25	1	of the	-		0.80
+Num.3:25	2	of	-		0.80
+Num.3:25	3	tabernacle of witness was	6,7,9		0.80
+Num.3:25	4	of	-		0.80
+Num.3:25	5	of	-		0.80
+Num.3:25	6	of	22		0.80
+Num.3:26	1	of	-		0.80
+Num.3:26	2	veil of	-		0.80
+Num.3:26	3	of	-		0.80
+Num.3:26	4	which	12		0.80
+Num.3:26	5	by	14		0.80
+Num.3:26	6	of	21		0.80
+Num.3:27	1	To	0		0.80
+Num.3:27	2	belonged one division, that of	2,3		0.80
+Num.3:27	3	another division, that of	6,7		0.80
+Num.3:27	4	another division, that of	10,11		0.80
+Num.3:27	5	another division, that of	14,15		0.80
+Num.3:27	6	divisions of	19		0.80
+Num.3:27	7	according to number.	-		0.80
+Num.3:28	1	Every	2		0.80
+Num.3:28	2	a	-		0.80
+Num.3:28	3	old	-		0.80
+Num.3:28	4	upward,	7		0.80
+Num.3:28	4	eight	-		0.80
+Num.3:28	5	six	-		0.80
+Num.3:28	6	of	-		0.80
+Num.3:28	7	things.	-		0.80
+Num.3:29	1	of	-		0.80
+Num.3:29	2	shall	-		0.80
+Num.3:29	3	tabernacle toward the	9,10		0.80
+Num.3:30	1	of the	-		0.80
+Num.3:30	2	of the	-		0.80
+Num.3:30	3	of	-		0.80
+Num.3:30	4	of	7		0.80
+Num.3:30	5	was	-		0.80
+Num.3:30	6	the	-		0.80
+Num.3:30	7	of	-		0.80
+Num.3:31	1	charge was	1,2		0.80
+Num.3:31	2	all	-		0.80
+Num.3:31	3	of	-		0.80
+Num.3:31	4	sanctuary wherewith	20		0.80
+Num.3:31	5	do	-		0.80
+Num.3:32	1	of	-		0.80
+Num.3:32	2	was	-		0.80
+Num.3:32	3	of	-		0.80
+Num.3:32	4	to	-		0.80
+Num.3:32	5	of	-		0.80
+Num.3:32	6	things.	-		0.80
+Num.3:33	1	To	0		0.80
+Num.3:33	2	family of	-		0.80
+Num.3:33	3	family of	6		0.80
+Num.3:33	4	the	-		0.80
+Num.3:33	5	of	-		0.80
+Num.3:34	1	of	-		0.80
+Num.3:34	2	to	-		0.80
+Num.3:34	3	a	-		0.80
+Num.3:34	4	old	-		0.80
+Num.3:34	5	upwards, was	10		0.80
+Num.3:34	6	thousand	-		0.80
+Num.3:35	1	of the	-		0.80
+Num.3:35	2	of the	-		0.80
+Num.3:35	3	of	5		0.80
+Num.3:35	4	division of	6		0.80
+Num.3:35	5	was	-		0.80
+Num.3:35	6	the	-		0.80
+Num.3:35	7	they shall	-		0.80
+Num.3:35	8	by the side of	13		0.80
+Num.3:35	9	tabernacle northwards.	14,15,17		0.80
+Num.3:36	1	of	-		0.80
+Num.3:36	2	of the	-		0.80
+Num.3:36	3	of	-		0.80
+Num.3:36	4	included	-		0.80
+Num.3:36	5	of	-		0.80
+Num.3:36	6	sockets,	19,20		0.80
+Num.3:36	7	furniture,	24,25		0.80
+Num.3:37	1	of	-		0.80
+Num.3:37	2	round about,	5		0.80
+Num.3:37	3	bases,	7,8		0.80
+Num.3:37	4	their	-		0.80
+Num.3:37	5	cords.	14,15		0.80
+Num.3:38	1	They that	0,1		0.80
+Num.3:38	2	before	4		0.80
+Num.3:38	3	tabernacle	6		0.80
+Num.3:38	4	witness on	8		0.80
+Num.3:38	5	shall be	-		0.80
+Num.3:38	6	of	-		0.80
+Num.3:38	7	of	-		0.80
+Num.3:38	8	of	-		0.80
+Num.3:38	9	that	32		0.80
+Num.3:38	10	them, shall	-		0.80
+Num.3:39	1	of	-		0.80
+Num.3:39	2	numbered	6		0.80
+Num.3:39	3	the	-		0.80
+Num.3:39	4	of the	-		0.80
+Num.3:39	5	to	-		0.80
+Num.3:39	6	families, every	14,16		0.80
+Num.3:39	7	a	-		0.80
+Num.3:39	8	old	-		0.80
+Num.3:39	9	upwards, were	21		0.80
+Num.3:40	1	the	-		0.80
+Num.3:40	2	of	-		0.80
+Num.3:40	3	a	-		0.80
+Num.3:40	4	old	-		0.80
+Num.3:40	5	upwards,	16		0.80
+Num.3:40	6	by	-		0.80
+Num.3:41	1	you shall	-		0.80
+Num.3:41	2	me—I am the	4,5		0.80
+Num.3:41	3	of	-		0.80
+Num.3:41	4	of	-		0.80
+Num.3:41	5	of	-		0.80
+Num.3:41	6	of	-		0.80
+Num.3:41	7	of	-		0.80
+Num.3:41	8	of	-		0.80
+Num.3:41	9	of	-		0.80
+Num.3:42	1	counted, as the	1,3,4		0.80
+Num.3:42	2	commanded him, every	5,7		0.80
+Num.3:42	3	of	-		0.80
+Num.3:43	1	in	-		0.80
+Num.3:43	2	by	9		0.80
+Num.3:43	3	a	-		0.80
+Num.3:43	4	old	-		0.80
+Num.3:43	5	to	-		0.80
+Num.3:43	6	numbering	15,16	unsure	0.50
+Num.3:44	1	the	-		0.80
+Num.3:45	1	of	-		0.80
+Num.3:45	2	of	-		0.80
+Num.3:45	3	of	-		0.80
+Num.3:45	4	of	-		0.80
+Num.3:45	5	of	-		0.80
+Num.3:45	6	cattle,	16,17		0.80
+Num.3:45	7	the Levites shall	23		0.80
+Num.3:45	8	mine;	-		0.80
+Num.3:45	9	am	24	unsure	0.50
+Num.3:46	1	for	-		0.80
+Num.3:46	2	of the	-		0.80
+Num.3:46	3	which exceed	9		0.80
+Num.3:46	4	in number	-		0.80
+Num.3:46	5	of	-		0.80
+Num.3:46	6	of	-		0.80
+Num.3:47	1	you shall even	0		0.80
+Num.3:47	2	a	4		0.80
+Num.3:47	3	you shall	-		0.80
+Num.3:47	4	them	-		0.80
+Num.3:47	5	to	-		0.80
+Num.3:47	6	didrachm,	8		0.80
+Num.3:47	7	to	-		0.80
+Num.3:48	1	you shall	-		0.80
+Num.3:48	2	to	-		0.80
+Num.3:48	3	to	6		0.80
+Num.3:48	4	the	-		0.80
+Num.3:48	5	of those who exceed in number	10,11		0.80
+Num.3:49	1	of those that	7		0.80
+Num.3:49	2	number	-		0.80
+Num.3:49	3	of	-		0.80
+Num.3:50	1	He	-		0.80
+Num.3:50	2	the silver	7,8		0.80
+Num.3:50	3	of	-		0.80
+Num.3:50	4	of	-		0.80
+Num.3:50	5	a	-		0.80
+Num.3:50	6	hundred and	-		0.80
+Num.3:50	7	to	-		0.80
+Num.3:51	1	of them	5		0.80
+Num.3:51	2	were over to	6		0.80
+Num.3:51	3	the	-		0.80
+Num.3:51	4	of the	-		0.80
+Num.3:51	5	as the	16		0.80
+Num.3:51	6	commanded	17		0.80
+Num.3:22	fix	seven thousand	14		0.80
+Num.3:22	fix	five hundred.	16		0.80
+Num.3:28	fix	eight thousand	8		0.80
+Num.3:28	fix	six hundred,	10		0.80
+Num.3:34	fix	six thousand	11		0.80
+Num.3:50	fix	three hundred and sixty-five	10,11		0.80
+Num.3:15	fix	month old	14		0.80
+Num.3:22	fix	month old	8		0.80
+Num.3:28	fix	month old	5		0.80
+Num.3:34	fix	month old	8		0.80
+Num.3:39	fix	month old	19		0.80
+Num.3:40	fix	month old	14		0.80
+Num.3:43	fix	month old	12		0.80
+Num.3:4	fix	ministered in the priests' office	23		0.80
+Num.3:28	fix	holy things.	15		0.80
+Num.3:32	fix	holy things.	19		0.80
+Num.3:49	fix	exceeded in number	8,9		0.80
