@@ -1,375 +1,377 @@
 {
   "reasons": {
-
+    "no-greek-verse-43": "Swete's Greek has no verse here: LXX2012's Psalm 43:8 ('For you have saved us from them that afflicted us, and have put to shame them that hated us.') is Brenton's, from the Hebrew, and the Greek verse 43:8 is empty, so there is no Greek word to point at (mw-u2w5klk.349.13).",
+    "next-verse-33-43": "LXX2012 carries English of the next Greek verse here (Psalm 33:17's 'The righteous cried, and the Lord listened to them,' is Swete's 33:18, and Psalm 43:21's 'search these things out?' is Swete's 43:22 'οὐχὶ ὁ θεὸς ἐκζητήσει ταῦτα'): the Greek words are in the other verse, which has no chunk of its own to hold them (mw-u2w5klk.349.13).",
+    "paired-or-added-psa": "Either the Greek word that renders it is a pair the aligner made to another English word that the pass does not touch (a 'the' or a verb crossed with its neighbour, as 'afflict' of 3:2 sits beside θλίβοντες on 'many'), or Brenton adds it to make English of a Greek phrase ('O Lord', 'the one that', 'saying', 'whole burnt'); each was read against its verse and no free Greek word of its verse renders it (mw-u2w5klk.349.13)."
   },
   "chapters": {
     "2": {
       "gaps": 0,
       "model": 3,
       "leftovers": [
-        ["2:3:saying", ""],
-        ["2:4:scorn", ""],
-        ["2:9:pieces", ""]
+        ["2:3:saying", "paired-or-added-psa"],
+        ["2:4:scorn", "paired-or-added-psa"],
+        ["2:9:pieces", "paired-or-added-psa"]
       ]
     },
     "3": {
       "gaps": 0,
       "model": 2,
       "leftovers": [
-        ["3:2:afflict", ""],
-        ["3:4:one", ""]
+        ["3:2:afflict", "paired-or-added-psa"],
+        ["3:4:one", "paired-or-added-psa"]
       ]
     },
     "4": {
       "gaps": 0,
       "model": 2,
       "leftovers": [
-        ["4:7:manifested", ""],
-        ["4:9:caused", ""]
+        ["4:7:manifested", "paired-or-added-psa"],
+        ["4:9:caused", "paired-or-added-psa"]
       ]
     },
     "5": {
       "gaps": 0,
       "model": 2,
       "leftovers": [
-        ["5:1:concerning", ""],
-        ["5:5:worker", ""]
+        ["5:1:concerning", "paired-or-added-psa"],
+        ["5:5:worker", "paired-or-added-psa"]
       ]
     },
     "6": {
       "gaps": 0,
       "model": 5,
       "leftovers": [
-        ["6:2:chasten", ""],
-        ["6:3:lord", ""],
-        ["6:6:thanks", ""],
-        ["6:8:because", ""],
-        ["6:11:back", ""]
+        ["6:2:chasten", "paired-or-added-psa"],
+        ["6:3:lord", "paired-or-added-psa"],
+        ["6:6:thanks", "paired-or-added-psa"],
+        ["6:8:because", "paired-or-added-psa"],
+        ["6:11:back", "paired-or-added-psa"]
       ]
     },
     "7": {
       "gaps": 0,
       "model": 12,
       "leftovers": [
-        ["7:3:enemy", ""],
-        ["7:5:good", ""],
-        ["7:7:lord", ""],
-        ["7:8:cause", ""],
-        ["7:11:coming", ""],
-        ["7:13:ready", ""],
-        ["7:15:trouble", ""],
-        ["7:16:dug", ""],
-        ["7:17:come", ""],
-        ["7:17:own", ""],
-        ["7:17:own", ""],
-        ["7:18:most", ""]
+        ["7:3:enemy", "paired-or-added-psa"],
+        ["7:5:good", "paired-or-added-psa"],
+        ["7:7:lord", "paired-or-added-psa"],
+        ["7:8:cause", "paired-or-added-psa"],
+        ["7:11:coming", "paired-or-added-psa"],
+        ["7:13:ready", "paired-or-added-psa"],
+        ["7:15:trouble", "paired-or-added-psa"],
+        ["7:16:dug", "paired-or-added-psa"],
+        ["7:17:come", "paired-or-added-psa"],
+        ["7:17:own", "paired-or-added-psa"],
+        ["7:17:own", "paired-or-added-psa"],
+        ["7:18:most", "paired-or-added-psa"]
       ]
     },
     "8": {
       "gaps": 0,
       "model": 3,
       "leftovers": [
-        ["8:6:less", ""],
-        ["8:7:put", ""],
-        ["8:9:creatures", ""]
+        ["8:6:less", "paired-or-added-psa"],
+        ["8:7:put", "paired-or-added-psa"],
+        ["8:9:creatures", "paired-or-added-psa"]
       ]
     },
     "11": {
       "gaps": 0,
       "model": 8,
       "leftovers": [
-        ["11:3:one", ""],
-        ["11:6:because", ""],
-        ["11:6:because", ""],
-        ["11:6:openly", ""],
-        ["11:6:thereof", ""],
-        ["11:7:fire", ""],
-        ["11:7:times", ""],
-        ["11:9:exalted", ""]
+        ["11:3:one", "paired-or-added-psa"],
+        ["11:6:because", "paired-or-added-psa"],
+        ["11:6:because", "paired-or-added-psa"],
+        ["11:6:openly", "paired-or-added-psa"],
+        ["11:6:thereof", "paired-or-added-psa"],
+        ["11:7:fire", "paired-or-added-psa"],
+        ["11:7:times", "paired-or-added-psa"],
+        ["11:9:exalted", "paired-or-added-psa"]
       ]
     },
     "12": {
       "gaps": 0,
       "model": 2,
       "leftovers": [
-        ["12:5:ever", ""],
-        ["12:6:psalms", ""]
+        ["12:5:ever", "paired-or-added-psa"],
+        ["12:6:psalms", "paired-or-added-psa"]
       ]
     },
     "13": {
       "gaps": 0,
       "model": 2,
       "leftovers": [
-        ["13:3:shed", ""],
-        ["13:3:way", ""]
+        ["13:3:shed", "paired-or-added-psa"],
+        ["13:3:way", "paired-or-added-psa"]
       ]
     },
     "15": {
       "gaps": 0,
       "model": 10,
       "leftovers": [
-        ["15:2:goodness", ""],
-        ["15:2:need", ""],
-        ["15:3:saints", ""],
-        ["15:6:most", ""],
-        ["15:7:chastened", ""],
-        ["15:8:face", ""],
-        ["15:8:hand", ""],
-        ["15:9:exulted", ""],
-        ["15:11:hand", ""],
-        ["15:11:known", ""]
+        ["15:2:goodness", "paired-or-added-psa"],
+        ["15:2:need", "paired-or-added-psa"],
+        ["15:3:saints", "paired-or-added-psa"],
+        ["15:6:most", "paired-or-added-psa"],
+        ["15:7:chastened", "paired-or-added-psa"],
+        ["15:8:face", "paired-or-added-psa"],
+        ["15:8:hand", "paired-or-added-psa"],
+        ["15:9:exulted", "paired-or-added-psa"],
+        ["15:11:hand", "paired-or-added-psa"],
+        ["15:11:known", "paired-or-added-psa"]
       ]
     },
     "16": {
       "gaps": 0,
       "model": 18,
       "leftovers": [
-        ["16:1:uttered", ""],
-        ["16:2:come", ""],
-        ["16:3:amiss", ""],
-        ["16:3:fire", ""],
-        ["16:3:mouth", ""],
-        ["16:3:purposed", ""],
-        ["16:3:speak", ""],
-        ["16:4:ways", ""],
-        ["16:7:marvels", ""],
-        ["16:8:hand", ""],
-        ["16:8:resist", ""],
-        ["16:8:right", ""],
-        ["16:11:round", ""],
-        ["16:13:draw", ""],
-        ["16:14:babes", ""],
-        ["16:14:because", ""],
-        ["16:14:filled", ""],
-        ["16:14:though", ""]
+        ["16:1:uttered", "paired-or-added-psa"],
+        ["16:2:come", "paired-or-added-psa"],
+        ["16:3:amiss", "paired-or-added-psa"],
+        ["16:3:fire", "paired-or-added-psa"],
+        ["16:3:mouth", "paired-or-added-psa"],
+        ["16:3:purposed", "paired-or-added-psa"],
+        ["16:3:speak", "paired-or-added-psa"],
+        ["16:4:ways", "paired-or-added-psa"],
+        ["16:7:marvels", "paired-or-added-psa"],
+        ["16:8:hand", "paired-or-added-psa"],
+        ["16:8:resist", "paired-or-added-psa"],
+        ["16:8:right", "paired-or-added-psa"],
+        ["16:11:round", "paired-or-added-psa"],
+        ["16:13:draw", "paired-or-added-psa"],
+        ["16:14:babes", "paired-or-added-psa"],
+        ["16:14:because", "paired-or-added-psa"],
+        ["16:14:filled", "paired-or-added-psa"],
+        ["16:14:though", "paired-or-added-psa"]
       ]
     },
     "18": {
       "gaps": 0,
       "model": 5,
       "leftovers": [
-        ["18:5:gone", ""],
-        ["18:7:other", ""],
-        ["18:9:ordinances", ""],
-        ["18:14:attack", ""],
-        ["18:14:gain", ""]
+        ["18:5:gone", "paired-or-added-psa"],
+        ["18:7:other", "paired-or-added-psa"],
+        ["18:9:ordinances", "paired-or-added-psa"],
+        ["18:14:attack", "paired-or-added-psa"],
+        ["18:14:gain", "paired-or-added-psa"]
       ]
     },
     "19": {
       "gaps": 0,
       "model": 2,
       "leftovers": [
-        ["19:4:enrich", ""],
-        ["19:9:overthrown", ""]
+        ["19:4:enrich", "paired-or-added-psa"],
+        ["19:9:overthrown", "paired-or-added-psa"]
       ]
     },
     "22": {
       "gaps": 0,
       "model": 4,
       "leftovers": [
-        ["22:1:tends", ""],
-        ["22:2:made", ""],
-        ["22:3:sake", ""],
-        ["22:5:thoroughly", ""]
+        ["22:1:tends", "paired-or-added-psa"],
+        ["22:2:made", "paired-or-added-psa"],
+        ["22:3:sake", "paired-or-added-psa"],
+        ["22:5:thoroughly", "paired-or-added-psa"]
       ]
     },
     "23": {
       "gaps": 0,
       "model": 4,
       "leftovers": [
-        ["23:1:week", ""],
-        ["23:7:lift", ""],
-        ["23:8:strong", ""],
-        ["23:9:lift", ""]
+        ["23:1:week", "paired-or-added-psa"],
+        ["23:7:lift", "paired-or-added-psa"],
+        ["23:8:strong", "paired-or-added-psa"],
+        ["23:9:lift", "paired-or-added-psa"]
       ]
     },
     "25": {
       "gaps": 0,
       "model": 7,
       "leftovers": [
-        ["25:1:psalm", ""],
-        ["25:3:well", ""],
-        ["25:4:transgressors", ""],
-        ["25:5:doers", ""],
-        ["25:5:sit", ""],
-        ["25:6:lord", ""],
-        ["25:9:together", ""]
+        ["25:1:psalm", "paired-or-added-psa"],
+        ["25:3:well", "paired-or-added-psa"],
+        ["25:4:transgressors", "paired-or-added-psa"],
+        ["25:5:doers", "paired-or-added-psa"],
+        ["25:5:sit", "paired-or-added-psa"],
+        ["25:6:lord", "paired-or-added-psa"],
+        ["25:9:together", "paired-or-added-psa"]
       ]
     },
     "28": {
       "gaps": 0,
       "model": 1,
       "leftovers": [
-        ["28:2:due", ""]
+        ["28:2:due", "paired-or-added-psa"]
       ]
     },
     "29": {
       "gaps": 0,
       "model": 7,
       "leftovers": [
-        ["29:2:exalt", ""],
-        ["29:2:rejoice", ""],
-        ["29:6:wait", ""],
-        ["29:10:go", ""],
-        ["29:11:become", ""],
-        ["29:11:compassion", ""],
-        ["29:13:praise", ""]
+        ["29:2:exalt", "paired-or-added-psa"],
+        ["29:2:rejoice", "paired-or-added-psa"],
+        ["29:6:wait", "paired-or-added-psa"],
+        ["29:10:go", "paired-or-added-psa"],
+        ["29:11:become", "paired-or-added-psa"],
+        ["29:11:compassion", "paired-or-added-psa"],
+        ["29:13:praise", "paired-or-added-psa"]
       ]
     },
     "31": {
       "gaps": 0,
       "model": 5,
       "leftovers": [
-        ["31:3:waxed", ""],
-        ["31:6:come", ""],
-        ["31:6:fit", ""],
-        ["31:8:go", ""],
-        ["31:9:come", ""]
+        ["31:3:waxed", "paired-or-added-psa"],
+        ["31:6:come", "paired-or-added-psa"],
+        ["31:6:fit", "paired-or-added-psa"],
+        ["31:8:go", "paired-or-added-psa"],
+        ["31:9:come", "paired-or-added-psa"]
       ]
     },
     "32": {
       "gaps": 0,
       "model": 6,
       "leftovers": [
-        ["32:2:platy", ""],
-        ["32:9:made", ""],
-        ["32:12:own", ""],
-        ["32:16:reason", ""],
-        ["32:19:alive", ""],
-        ["32:22:according", ""]
+        ["32:2:platy", "paired-or-added-psa"],
+        ["32:9:made", "paired-or-added-psa"],
+        ["32:12:own", "paired-or-added-psa"],
+        ["32:16:reason", "paired-or-added-psa"],
+        ["32:19:alive", "paired-or-added-psa"],
+        ["32:22:according", "paired-or-added-psa"]
       ]
     },
     "33": {
       "gaps": 0,
       "model": 12,
       "leftovers": [
-        ["33:1:psalm", ""],
-        ["33:5:diligently", ""],
-        ["33:6:draw", ""],
-        ["33:11:become", ""],
-        ["33:11:diligently", ""],
-        ["33:11:thing", ""],
-        ["33:16:open", ""],
-        ["33:17:cried", ""],
-        ["33:17:listened", ""],
-        ["33:17:lord", ""],
-        ["33:17:righteous", ""],
-        ["33:18:delivered", ""]
+        ["33:1:psalm", "paired-or-added-psa"],
+        ["33:5:diligently", "paired-or-added-psa"],
+        ["33:6:draw", "paired-or-added-psa"],
+        ["33:11:become", "paired-or-added-psa"],
+        ["33:11:diligently", "paired-or-added-psa"],
+        ["33:11:thing", "paired-or-added-psa"],
+        ["33:16:open", "paired-or-added-psa"],
+        ["33:17:cried", "next-verse-33-43"],
+        ["33:17:listened", "next-verse-33-43"],
+        ["33:17:lord", "next-verse-33-43"],
+        ["33:17:righteous", "next-verse-33-43"],
+        ["33:18:delivered", "paired-or-added-psa"]
       ]
     },
     "36": {
       "gaps": 0,
       "model": 12,
       "leftovers": [
-        ["36:1:fret", ""],
-        ["36:2:away", ""],
-        ["36:5:bring", ""],
-        ["36:6:forth", ""],
-        ["36:8:fret", ""],
-        ["36:20:honored", ""],
-        ["36:21:compassion", ""],
-        ["36:23:pleasure", ""],
-        ["36:23:take", ""],
-        ["36:27:aside", ""],
-        ["36:35:highly", ""],
-        ["36:35:very", ""]
+        ["36:1:fret", "paired-or-added-psa"],
+        ["36:2:away", "paired-or-added-psa"],
+        ["36:5:bring", "paired-or-added-psa"],
+        ["36:6:forth", "paired-or-added-psa"],
+        ["36:8:fret", "paired-or-added-psa"],
+        ["36:20:honored", "paired-or-added-psa"],
+        ["36:21:compassion", "paired-or-added-psa"],
+        ["36:23:pleasure", "paired-or-added-psa"],
+        ["36:23:take", "paired-or-added-psa"],
+        ["36:27:aside", "paired-or-added-psa"],
+        ["36:35:highly", "paired-or-added-psa"],
+        ["36:35:very", "paired-or-added-psa"]
       ]
     },
     "37": {
       "gaps": 0,
       "model": 8,
       "leftovers": [
-        ["37:2:chasten", ""],
-        ["37:3:heavily", ""],
-        ["37:7:bowed", ""],
-        ["37:12:kin", ""],
-        ["37:12:still", ""],
-        ["37:14:man", ""],
-        ["37:17:boastingly", ""],
-        ["37:22:forsake", ""]
+        ["37:2:chasten", "paired-or-added-psa"],
+        ["37:3:heavily", "paired-or-added-psa"],
+        ["37:7:bowed", "paired-or-added-psa"],
+        ["37:12:kin", "paired-or-added-psa"],
+        ["37:12:still", "paired-or-added-psa"],
+        ["37:14:man", "paired-or-added-psa"],
+        ["37:17:boastingly", "paired-or-added-psa"],
+        ["37:22:forsake", "paired-or-added-psa"]
       ]
     },
     "38": {
       "gaps": 0,
       "model": 10,
       "leftovers": [
-        ["38:2:heed", ""],
-        ["38:2:take", ""],
-        ["38:3:words", ""],
-        ["38:5:know", ""],
-        ["38:7:disquieted", ""],
-        ["38:7:treasures", ""],
-        ["38:8:pause", ""],
-        ["38:12:make", ""],
-        ["38:12:web", ""],
-        ["38:13:lord", ""]
+        ["38:2:heed", "paired-or-added-psa"],
+        ["38:2:take", "paired-or-added-psa"],
+        ["38:3:words", "paired-or-added-psa"],
+        ["38:5:know", "paired-or-added-psa"],
+        ["38:7:disquieted", "paired-or-added-psa"],
+        ["38:7:treasures", "paired-or-added-psa"],
+        ["38:8:pause", "paired-or-added-psa"],
+        ["38:12:make", "paired-or-added-psa"],
+        ["38:12:web", "paired-or-added-psa"],
+        ["38:13:lord", "paired-or-added-psa"]
       ]
     },
     "39": {
       "gaps": 0,
       "model": 7,
       "leftovers": [
-        ["39:7:burnt", ""],
-        ["39:7:whole", ""],
-        ["39:10:righteousness", ""],
-        ["39:12:far", ""],
-        ["39:13:encompassed", ""],
-        ["39:15:put", ""],
-        ["39:16:reward", ""]
+        ["39:7:burnt", "paired-or-added-psa"],
+        ["39:7:whole", "paired-or-added-psa"],
+        ["39:10:righteousness", "paired-or-added-psa"],
+        ["39:12:far", "paired-or-added-psa"],
+        ["39:13:encompassed", "paired-or-added-psa"],
+        ["39:15:put", "paired-or-added-psa"],
+        ["39:16:reward", "paired-or-added-psa"]
       ]
     },
     "40": {
       "gaps": 0,
       "model": 7,
       "leftovers": [
-        ["40:3:alive", ""],
-        ["40:3:preserve", ""],
-        ["40:5:mercy", ""],
-        ["40:6:saying", ""],
-        ["40:7:like", ""],
-        ["40:7:manner", ""],
-        ["40:11:compassion", ""]
+        ["40:3:alive", "paired-or-added-psa"],
+        ["40:3:preserve", "paired-or-added-psa"],
+        ["40:5:mercy", "paired-or-added-psa"],
+        ["40:6:saying", "paired-or-added-psa"],
+        ["40:7:like", "paired-or-added-psa"],
+        ["40:7:manner", "paired-or-added-psa"],
+        ["40:11:compassion", "paired-or-added-psa"]
       ]
     },
     "42": {
       "gaps": 0,
       "model": 2,
       "leftovers": [
-        ["42:1:plead", ""],
-        ["42:3:forth", ""]
+        ["42:1:plead", "paired-or-added-psa"],
+        ["42:3:forth", "paired-or-added-psa"]
       ]
     },
     "43": {
       "gaps": 0,
       "model": 19,
       "leftovers": [
-        ["43:3:destroyed", ""],
-        ["43:3:utterly", ""],
-        ["43:4:own", ""],
-        ["43:8:afflicted", ""],
-        ["43:8:hated", ""],
-        ["43:8:put", ""],
-        ["43:8:saved", ""],
-        ["43:8:shame", ""],
-        ["43:10:forth", ""],
-        ["43:13:exchange", ""],
-        ["43:17:because", ""],
-        ["43:17:slanderer", ""],
-        ["43:18:things", ""],
-        ["43:21:search", ""],
-        ["43:21:things", ""],
-        ["43:23:long", ""],
-        ["43:23:sake", ""],
-        ["43:25:turn", ""],
-        ["43:26:cleaved", ""]
+        ["43:3:destroyed", "paired-or-added-psa"],
+        ["43:3:utterly", "paired-or-added-psa"],
+        ["43:4:own", "paired-or-added-psa"],
+        ["43:8:afflicted", "no-greek-verse-43"],
+        ["43:8:hated", "no-greek-verse-43"],
+        ["43:8:put", "no-greek-verse-43"],
+        ["43:8:saved", "no-greek-verse-43"],
+        ["43:8:shame", "no-greek-verse-43"],
+        ["43:10:forth", "paired-or-added-psa"],
+        ["43:13:exchange", "paired-or-added-psa"],
+        ["43:17:because", "paired-or-added-psa"],
+        ["43:17:slanderer", "paired-or-added-psa"],
+        ["43:18:things", "paired-or-added-psa"],
+        ["43:21:search", "next-verse-33-43"],
+        ["43:21:things", "next-verse-33-43"],
+        ["43:23:long", "paired-or-added-psa"],
+        ["43:23:sake", "paired-or-added-psa"],
+        ["43:25:turn", "paired-or-added-psa"],
+        ["43:26:cleaved", "paired-or-added-psa"]
       ]
     },
     "45": {
       "gaps": 0,
       "model": 2,
       "leftovers": [
-        ["45:9:achieved", ""],
-        ["45:10:crush", ""]
+        ["45:9:achieved", "paired-or-added-psa"],
+        ["45:10:crush", "paired-or-added-psa"]
       ]
     }
   }
