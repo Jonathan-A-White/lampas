@@ -86,6 +86,7 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/sounds-trial/')) return null; // trial clips of other voices, credited on the listening page itself (public/sounds-trial.html), not on About: no screen uses them
   if (path.startsWith('public/sermons/spurgeon-ccel/')) return 'Spurgeon'; // the sermon index's book files (scripts/sermons-build.ts): rows of CCEL's Spurgeon source, facts only; one rule for each bundled source
   if (path.startsWith('public/sermons/henry-sermons/')) return 'Matthew Henry'; // rows of the Internet Archive's scans of Henry's sermons (sermon-index sources/henry-sermons), facts only
+  if (path.startsWith('public/sermons/lifebible-ttb/')) return 'Life Bible Ministry'; // rows of Pastor Paul LeBoutillier's Through the Bible (sermon-index sources/lifebible-ttb): titles, passages, page links and YouTube ids, facts only
   if (path.startsWith('public/sermons/greg-laurie-logos/')) return 'Greg Laurie Sermon Archive'; // rows of his Logos archive (sermon-index sources/greg-laurie-logos): titles, passages and ref.ly links, facts only
   if (path.startsWith('public/sermons/jd-greear-logos/')) return 'J. D. Greear Sermon Archive'; // likewise
   if (path.startsWith('public/sermons/skip-heitzig-logos/')) return 'Skip Heitzig Sermon Archive'; // likewise

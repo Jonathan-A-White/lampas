@@ -1,6 +1,6 @@
 {
   "repo": "https://github.com/Jonathan-A-White/sermon-index",
-  "commit": "6413baf1c24863f2a097ce9f5324e49c26929dac",
+  "commit": "c2fdd3a10f118fa9f22a4cb1fdcb3ac1932b6d5a",
   "sources": [
     "spurgeon-ccel",
     "henry-sermons",
@@ -51,7 +51,8 @@
     "sermon-starters-volume-2-logos",
     "sermon-starters-volume-3-logos",
     "sermon-starters-volume-4-logos",
-    "sermon-starters-volume-5-logos"
+    "sermon-starters-volume-5-logos",
+    "lifebible-ttb"
   ],
   "themes": [
     "themes-tcr1934",
@@ -105,6 +106,7 @@
     "sermon-starters-volume-2-logos": "Sermon Starters, vol 2 (Logos library)",
     "sermon-starters-volume-3-logos": "Sermon Starters, vol 3 (Logos library)",
     "sermon-starters-volume-4-logos": "Sermon Starters, vol 4 (Logos library)",
-    "sermon-starters-volume-5-logos": "Sermon Starters, vol 5 (Logos library)"
+    "sermon-starters-volume-5-logos": "Sermon Starters, vol 5 (Logos library)",
+    "lifebible-ttb": "Life Bible Ministry's Through the Bible"
   }
 }
