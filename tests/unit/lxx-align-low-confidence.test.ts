@@ -93,6 +93,17 @@ const TAPS: Array<[number, number, string, string, string[]]> = [
   [27, 12, 'Peradventure', 'Peradventure', ['μή', 'ποτε']],
 ];
 
+// The sidecar names the pairs by place of Genesis 12 to 23 (story mw-u2w5klk.349.91): the 185 were read only as a list in mw-u2w5klk.349.83, and a chapter with no `placePairs` is one the real-data test below does not hold.
+// This one needs no sources, so a chapter that loses its list fails in every gate; each pair is marked 'read'.
+describe('the sidecar of Genesis names the pairs by place of chapters 12 to 23 as read', () => {
+  const expectGen = readExpect('gen')!;
+  it.each(Array.from({ length: 12 }, (_, i) => i + 12))('chapter %i has a placePairs list, each pair marked read', (n) => {
+    const list = expectGen.chapters[String(n)].placePairs;
+    expect(list, `gen.expect.json chapter ${n} has no placePairs: npm run lxx:align-expect -- --book gen, then read each pair`).toBeDefined();
+    expect(list!.filter(([, why]) => why !== 'read').map(([k]) => k)).toEqual([]);
+  });
+});
+
 describe.skipIf(!real.run)('the real chapters with the model pass and the fix rows', () => {
   const dirs: string[] = [];
   const chapters = new Map<number, Chapter>();
