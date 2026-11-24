@@ -1,4 +1,4 @@
-@uc-logos-links
+@uc-logos-links @greek
 Feature: Enduring Word, David Guzik's commentary on the web
   For whoever lacks David Guzik's Commentaries on the Bible (DGCB) in Logos (mw-1l901so.1). Enduring Word (https://enduringword.com) is a web commentary: Lampas links its chapter page and opens it
   in its own reader (which opens the browser when it cannot get the words), and holds none of its text. In the "In another book…" chooser it is one row, "Enduring Word (David Guzik)", under

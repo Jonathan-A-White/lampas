@@ -81,7 +81,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `learner-summary` | The tutor is told his progress in the language: solid words, the ladder, the reading ladder, rust | hebrew-tutor, tutor-rust, welcome-back | hebrew-tutor, tutor-rust | gap |
 | `languages-dial` | Which languages? and a dial per language: what each step shows, the tutor may move it | languages | languages | gap |
 | `script-depth` | How deep into the script the tutor writes: transliteration, both, or the letters alone | n/a: Greek is written in its letters wherever it is drawn (its depth is simply full, src/script/scripts.ts); a reader who wants less lowers the dial | languages | n/a: Latin is written in the Latin alphabet, which needs no transliteration |
-| `logos-links` | Links into Logos from a word (Strong’s, Bible Word Study, his lexicons) and a verse (In Logos, In another book, Read in Logos) | grammar-books, idea-sheet-read-more, in-logos, tutor-links, tutor-works | hebrew-word-sheet, old-testament | gap |
+| `logos-links` | Links into Logos from a word (Strong’s, Bible Word Study, his lexicons) and a verse (In Logos, In another book, Read in Logos) | enduring-word, grammar-books, idea-sheet-read-more, in-logos, tutor-links, tutor-works | hebrew-word-sheet, old-testament | gap |
 | `resources` | Study resources by language: which ship, which his shelf turns on, the Study row at scale | study-resources, word-sheet-many-resources, word-sheet-study | hebrew-word-sheet | gap |
 | `data` | The text data: every word with its lemma, gloss and parsing, the lexicon and frequencies built with the chapters | data | data | gap |
 <!-- /parity-table -->
