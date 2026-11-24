@@ -1,0 +1,10 @@
+{
+ "v":1,"edition":"msb-david","book":"zec","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"2:3","edge":"tail","reason":"the narrator reads on into verse 4: no quiet between 'him' and 'and'; cut at the quietest instant between them","room":0.0,"cut":23.48,"judge":[{"kind":"tail-extra","by":0.05,"readsOn":true,"level":1.8,"heard":{"extra":"AN","next":"AND","letters":"RANGEL CAME FORWARD TO MEET HIM AND","words":"forward to meet him"}},{"kind":"tail-clipped","by":0.097,"readsOn":true,"level":3.6,"heard":{"lost":"IM","letters":"OTHER ANGEL CAME FORWARD TO MEET HIM","words":"came forward to meeting"}}]},
+  {"verse":"2:4","edge":"head","reason":"the narrator reads on from verse 3: no quiet between 'him' and 'and'; cut at the quietest instant between them","room":0.0,"cut":23.48,"judge":[{"kind":"head-extra","by":0.05,"readsOn":true,"level":1.2,"heard":{"extra":"M","before":"HIM","letters":"AND SAID TO HIM","words":"and said to him"}},{"kind":"head-clipped","by":0.05,"readsOn":true,"level":1.8,"heard":{"lost":"AN","letters":"AND SAID TO HIM ROPE","words":"said to him run"}}]},
+  {"verse":"2:5","edge":"tail","reason":"a quiet of 70 ms between 'it' and what is spoken next: less than the 147 ms the player's margin needs; cut in its middle","room":0.07,"cut":41.05,"judge":[{"kind":"tail-clipped","by":0.18,"level":-3.4,"heard":{"lost":"IT","letters":"IT WILL BE THE GLORY WITHIN IT","words":"the glory within it"}}]},
+  {"verse":"8:1","edge":"tail","reason":"a quiet of 65 ms between 'saying' and 'this': less than the 147 ms the player's margin needs; cut in its middle","room":0.065,"cut":10.41,"judge":[{"kind":"tail-extra","by":0.045,"level":-3.9,"heard":{"next":"THIS","letters":"TO ME SAYING","words":"came to me saying"}}]},
+  {"verse":"8:2","edge":"head","reason":"a quiet of 65 ms between 'saying' and 'this': less than the 100 ms the player's margin needs; cut in its middle","room":0.065,"cut":10.42,"judge":[{"kind":"head-clipped","by":0.055,"level":-1.2,"heard":{"lost":"T","letters":"THIS IS WHAT THE LORD OF HOST","words":"this is what the"}}]}
+ ]
+}
