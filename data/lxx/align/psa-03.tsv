@@ -1,0 +1,41 @@
+ref	run	text	g	mark	confidence
+Psa.3:1	1	A	-		0.80
+Psa.3:1	2	of	1		0.80
+Psa.3:1	3	presence	6		0.80
+Psa.3:1	3	of his	-		0.80
+Psa.3:2	1	O	-		0.80
+Psa.3:2	2	why	1		0.80
+Psa.3:2	2	are	-		0.80
+Psa.3:2	2	they that	3		0.80
+Psa.3:2	2	afflict	-		0.80
+Psa.3:2	3	up	-		0.80
+Psa.3:3	1	concerning	2		0.80
+Psa.3:3	2	There	-		0.80
+Psa.3:3	3	for him	9		0.80
+Psa.3:4	1	O	-		0.80
+Psa.3:4	2	helper:	3		0.80
+Psa.3:4	3	the one that	-		0.80
+Psa.3:4	4	up	-		0.80
+Psa.3:5	1	the	-		0.80
+Psa.3:5	2	with my	-		0.80
+Psa.3:5	3	of his	-		0.80
+Psa.3:6	1	down	-		0.80
+Psa.3:6	2	I	-		0.80
+Psa.3:6	3	the	-		0.80
+Psa.3:6	4	will	-		0.80
+Psa.3:7	1	I will	-		0.80
+Psa.3:7	2	be	-		0.80
+Psa.3:7	3	ten thousands of	3		0.80
+Psa.3:7	4	who beset	5,7		0.80
+Psa.3:7	5	round about.	6		0.80
+Psa.3:8	1	have	-		0.80
+Psa.3:8	2	who were	-		0.80
+Psa.3:8	2	without cause	14		0.80
+Psa.3:8	3	enemies;	12		0.80
+Psa.3:8	3	you have broken	17		0.80
+Psa.3:8	4	teeth	15		0.80
+Psa.3:8	4	of sinners.	16		0.80
+Psa.3:9	1	Deliverance	2,3		0.80
+Psa.3:9	1	is	-		0.80
+Psa.3:9	2	blessing	9,10		0.80
+Psa.3:9	2	is	-		0.80

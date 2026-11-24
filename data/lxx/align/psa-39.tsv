@@ -1,0 +1,115 @@
+ref	run	text	g	mark	confidence
+Psa.39:1	1	end,	2		0.80
+Psa.39:1	1	a	-		0.80
+Psa.39:1	2	of David.	3,4		0.80
+Psa.39:2	1	I	-		0.80
+Psa.39:2	2	for	-		0.80
+Psa.39:2	3	he	-		0.80
+Psa.39:2	4	to	-		0.80
+Psa.39:2	5	to	9		0.80
+Psa.39:2	6	supplication.	10		0.80
+Psa.39:3	1	he	-		0.80
+Psa.39:3	2	up	-		0.80
+Psa.39:3	3	of a	-		0.80
+Psa.39:3	4	of	-		0.80
+Psa.39:3	5	miry	9		0.80
+Psa.39:3	6	he	-		0.80
+Psa.39:3	7	a	-		0.80
+Psa.39:3	8	ordered	18		0.80
+Psa.39:3	9	goings aright.	19,20		0.80
+Psa.39:4	1	he	-		0.80
+Psa.39:4	2	a	-		0.80
+Psa.39:4	3	even a	-		0.80
+Psa.39:4	4	our	11		0.80
+Psa.39:4	5	many shall	13		0.80
+Psa.39:4	6	it,	-		0.80
+Psa.39:4	7	shall	-		0.80
+Psa.39:4	8	in the	-		0.80
+Psa.39:5	1	is the	-		0.80
+Psa.39:5	2	of the	-		0.80
+Psa.39:5	3	who has	-		0.80
+Psa.39:5	4	frenzies.	15		0.80
+Psa.39:6	1	O	-		0.80
+Psa.39:6	2	my	4		0.80
+Psa.39:6	3	have	1		0.80
+Psa.39:6	4	your	-		0.80
+Psa.39:6	4	wonderful works,	0,7,8		0.80
+Psa.39:6	5	in	-		0.80
+Psa.39:6	6	thoughts	11,12		0.80
+Psa.39:6	6	there is none	14,16		0.80
+Psa.39:6	6	who shall	-		0.80
+Psa.39:6	7	to	-		0.80
+Psa.39:6	8	of them:	-		0.80
+Psa.39:6	8	they exceeded	22		0.80
+Psa.39:7	1	you would	4		0.80
+Psa.39:7	2	a	-		0.80
+Psa.39:7	3	have you	-		0.80
+Psa.39:7	4	whole burnt	-		0.80
+Psa.39:7	5	sacrifice for	11		0.80
+Psa.39:7	6	you did	-		0.80
+Psa.39:8	1	I	-		0.80
+Psa.39:8	2	I	-		0.80
+Psa.39:8	3	the	-		0.80
+Psa.39:8	4	of the	-		0.80
+Psa.39:8	5	it is	-		0.80
+Psa.39:9	1	desired to	8		0.80
+Psa.39:9	2	O my	5		0.80
+Psa.39:9	3	your	10		0.80
+Psa.39:9	4	of	15		0.80
+Psa.39:10	1	I have	-		0.80
+Psa.39:10	2	the	-		0.80
+Psa.39:10	3	congregation;	3		0.80
+Psa.39:10	4	will	9		0.80
+Psa.39:10	5	refrain my	11		0.80
+Psa.39:10	6	O	-		0.80
+Psa.39:10	7	my righteousness.	-		0.80
+Psa.39:11	1	have	-		0.80
+Psa.39:11	2	within my	5,6		0.80
+Psa.39:11	3	have	-		0.80
+Psa.39:11	4	I have	-		0.80
+Psa.39:11	5	your	23		0.80
+Psa.39:12	1	remove	4		0.80
+Psa.39:12	2	far	-		0.80
+Psa.39:12	3	have	-		0.80
+Psa.39:12	4	continually.	17,18		0.80
+Psa.39:13	1	have encompassed me;	-		0.80
+Psa.39:13	2	transgressions	10,11		0.80
+Psa.39:13	2	have taken hold of	8		0.80
+Psa.39:13	3	could	15		0.80
+Psa.39:13	4	they	-		0.80
+Psa.39:13	5	more than	19		0.80
+Psa.39:13	6	of	22		0.80
+Psa.39:13	7	has	-		0.80
+Psa.39:14	1	Be pleased,	0		0.80
+Psa.39:14	1	O	-		0.80
+Psa.39:14	2	to	2		0.80
+Psa.39:14	3	O	-		0.80
+Psa.39:14	4	draw near	10		0.80
+Psa.39:15	1	Let those that	4		0.80
+Psa.39:15	2	to	9		0.80
+Psa.39:15	3	be ashamed	0		0.80
+Psa.39:15	4	confounded	2		0.80
+Psa.39:15	5	let those that	18		0.80
+Psa.39:15	5	wish	19		0.80
+Psa.39:15	6	be	-		0.80
+Psa.39:15	7	put	-		0.80
+Psa.39:16	1	Let those that	4		0.80
+Psa.39:16	2	to	-		0.80
+Psa.39:16	3	Aha, aha,	7,8		0.80
+Psa.39:16	3	quickly	1		0.80
+Psa.39:16	3	receive	0		0.80
+Psa.39:16	4	for	-		0.80
+Psa.39:16	5	reward.	-		0.80
+Psa.39:17	1	Let	-		0.80
+Psa.39:17	2	those that	6		0.80
+Psa.39:17	3	O	-		0.80
+Psa.39:17	4	exult	2		0.80
+Psa.39:17	5	in	3		0.80
+Psa.39:17	6	let them that	17		0.80
+Psa.39:17	7	salvation	19,20		0.80
+Psa.39:17	8	be	-		0.80
+Psa.39:18	1	am	5		0.80
+Psa.39:18	2	needy;	4		0.80
+Psa.39:18	2	the	-		0.80
+Psa.39:18	3	will take care of	7		0.80
+Psa.39:18	4	O	16		0.80

@@ -1,0 +1,114 @@
+ref	run	text	g	mark	confidence
+Psa.7:1	1	A	-		0.80
+Psa.7:1	2	of	1		0.80
+Psa.7:1	3	he	-		0.80
+Psa.7:1	4	to	-		0.80
+Psa.7:1	5	because of	7		0.80
+Psa.7:1	6	of	-		0.80
+Psa.7:1	7	the Benjamite.	11,12		0.80
+Psa.7:2	1	O	-		0.80
+Psa.7:2	2	my	1		0.80
+Psa.7:2	3	in	4		0.80
+Psa.7:2	4	have	-		0.80
+Psa.7:2	5	them that	11		0.80
+Psa.7:3	1	at any time	1		0.80
+Psa.7:3	1	the enemy	-		0.80
+Psa.7:3	2	a	-		0.80
+Psa.7:3	3	while there is none	8		0.80
+Psa.7:3	4	to	-		0.80
+Psa.7:4	1	O	-		0.80
+Psa.7:4	2	my	-		0.80
+Psa.7:4	3	have	-		0.80
+Psa.7:4	4	there	-		0.80
+Psa.7:5	1	have requited	1		0.80
+Psa.7:5	1	with	-		0.80
+Psa.7:5	2	those who requited	2,3		0.80
+Psa.7:5	2	me with good; may	-		0.80
+Psa.7:5	3	then	7		0.80
+Psa.7:5	3	perish	6		0.80
+Psa.7:5	4	by means	9		0.80
+Psa.7:5	5	my	-		0.80
+Psa.7:6	1	Let	1		0.80
+Psa.7:6	2	persecute	0		0.80
+Psa.7:6	3	it;	-		0.80
+Psa.7:6	4	let him	-		0.80
+Psa.7:6	5	on the ground,	11,12		0.80
+Psa.7:6	6	lay	22		0.80
+Psa.7:6	7	the	-		0.80
+Psa.7:7	1	O	-		0.80
+Psa.7:7	2	your	-		0.80
+Psa.7:7	3	be	-		0.80
+Psa.7:7	4	utmost boundaries	8		0.80
+Psa.7:7	4	of	9		0.80
+Psa.7:7	5	awake,	12		0.80
+Psa.7:7	5	O Lord	-		0.80
+Psa.7:7	6	according to	17		0.80
+Psa.7:7	7	decree	18		0.80
+Psa.7:7	8	did	-		0.80
+Psa.7:8	1	the	-		0.80
+Psa.7:8	2	of the	-		0.80
+Psa.7:8	3	shall	-		0.80
+Psa.7:8	4	cause	-		0.80
+Psa.7:8	4	do you return	10		0.80
+Psa.7:8	4	on high.	8,9		0.80
+Psa.7:9	1	The	-		0.80
+Psa.7:9	2	shall	-		0.80
+Psa.7:9	3	the	-		0.80
+Psa.7:9	4	O	-		0.80
+Psa.7:9	5	to	7		0.80
+Psa.7:9	6	that is in	-		0.80
+Psa.7:10	1	Oh let	1		0.80
+Psa.7:10	1	the wickedness	2		0.80
+Psa.7:10	1	of sinners	3		0.80
+Psa.7:10	1	come to an end;	0		0.80
+Psa.7:10	2	then	-		0.80
+Psa.7:10	2	you shall direct	5		0.80
+Psa.7:10	2	the righteous,	6		0.80
+Psa.7:10	2	O	11		0.80
+Psa.7:10	3	that search	7		0.80
+Psa.7:10	3	the	-		0.80
+Psa.7:11	1	is	-		0.80
+Psa.7:11	2	coming	-		0.80
+Psa.7:11	3	who	7		0.80
+Psa.7:11	4	upright in	11		0.80
+Psa.7:12	1	is a	-		0.80
+Psa.7:12	1	righteous	3		0.80
+Psa.7:13	1	you⌃ will	-		0.80
+Psa.7:13	2	repent,	2		0.80
+Psa.7:13	3	will furbish his	3		0.80
+Psa.7:13	4	has	-		0.80
+Psa.7:13	5	his	7		0.80
+Psa.7:13	6	ready.	-		0.80
+Psa.7:14	1	it	-		0.80
+Psa.7:14	2	has	-		0.80
+Psa.7:14	3	the	6		0.80
+Psa.7:14	4	of	-		0.80
+Psa.7:14	5	has	-		0.80
+Psa.7:14	6	his	-		0.80
+Psa.7:14	7	for	9		0.80
+Psa.7:14	7	the raging ones.	10		0.80
+Psa.7:15	1	he has	1		0.80
+Psa.7:15	2	with	-		0.80
+Psa.7:15	3	he has	-		0.80
+Psa.7:15	4	trouble,	-		0.80
+Psa.7:15	5	brought forth	6		0.80
+Psa.7:15	5	iniquity.	2		0.80
+Psa.7:16	1	He has opened	1		0.80
+Psa.7:16	1	a	-		0.80
+Psa.7:16	2	dug	-		0.80
+Psa.7:16	3	he shall	-		0.80
+Psa.7:16	4	the	-		0.80
+Psa.7:16	5	he has	-		0.80
+Psa.7:17	1	shall	-		0.80
+Psa.7:17	2	on	4		0.80
+Psa.7:17	3	own	-		0.80
+Psa.7:17	4	shall come	-		0.80
+Psa.7:17	5	own	-		0.80
+Psa.7:17	5	crown.	9		0.80
+Psa.7:18	1	I will give thanks	0		0.80
+Psa.7:18	1	to the	-		0.80
+Psa.7:18	2	to	-		0.80
+Psa.7:18	3	I will	-		0.80
+Psa.7:18	4	to	-		0.80
+Psa.7:18	5	of the	-		0.80
+Psa.7:18	6	most	-		0.80

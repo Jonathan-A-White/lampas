@@ -1,0 +1,57 @@
+ref	run	text	g	mark	confidence
+Psa.25:1	1	A Psalm	-		0.80
+Psa.25:1	1	of David.	0,1		0.80
+Psa.25:1	2	O	-		0.80
+Psa.25:1	3	have walked	10		0.80
+Psa.25:1	4	my	-		0.80
+Psa.25:1	5	in	12		0.80
+Psa.25:1	6	shall	16		0.80
+Psa.25:1	7	be	-		0.80
+Psa.25:2	1	O	-		0.80
+Psa.25:2	2	as with	-		0.80
+Psa.25:2	3	reins	7		0.80
+Psa.25:3	1	my	5		0.80
+Psa.25:3	2	am well	-		0.80
+Psa.25:4	1	I have	-		0.80
+Psa.25:4	2	of	-		0.80
+Psa.25:4	3	will in nowise	8,9		0.80
+Psa.25:4	4	in	-		0.80
+Psa.25:4	5	transgressors.	-		0.80
+Psa.25:5	1	I have	-		0.80
+Psa.25:5	2	the	-		0.80
+Psa.25:5	3	of	-		0.80
+Psa.25:5	4	doers;	-		0.80
+Psa.25:5	5	will	6		0.80
+Psa.25:5	6	sit	-		0.80
+Psa.25:6	1	will wash my	0		0.80
+Psa.25:6	2	innocency,	2		0.80
+Psa.25:6	3	O Lord:	-		0.80
+Psa.25:7	1	to	0		0.80
+Psa.25:7	2	the	-		0.80
+Psa.25:7	3	of	-		0.80
+Psa.25:7	4	to	-		0.80
+Psa.25:7	5	wonderful works.	7,8		0.80
+Psa.25:8	1	O	-		0.80
+Psa.25:8	2	I have	-		0.80
+Psa.25:8	3	the	-		0.80
+Psa.25:8	4	of	-		0.80
+Psa.25:8	5	the	-		0.80
+Psa.25:8	6	of the	-		0.80
+Psa.25:8	7	of	-		0.80
+Psa.25:9	1	together	-		0.80
+Psa.25:9	2	the	-		0.80
+Psa.25:9	3	nor	7		0.80
+Psa.25:10	1	are	-		0.80
+Psa.25:10	2	and	-		0.80
+Psa.25:10	3	hand	4		0.80
+Psa.25:10	3	is filled with	7		0.80
+Psa.25:10	3	bribes.	8		0.80
+Psa.25:11	1	have walked	5		0.80
+Psa.25:11	2	redeem	6		0.80
+Psa.25:11	3	have	-		0.80
+Psa.25:11	4	upon	-		0.80
+Psa.25:12	1	My	0		0.80
+Psa.25:12	2	an even	-		0.80
+Psa.25:12	3	the	-		0.80
+Psa.25:12	4	will	-		0.80
+Psa.25:12	5	O	-		0.80

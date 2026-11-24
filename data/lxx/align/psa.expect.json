@@ -1,0 +1,376 @@
+{
+  "reasons": {
+
+  },
+  "chapters": {
+    "2": {
+      "gaps": 0,
+      "model": 3,
+      "leftovers": [
+        ["2:3:saying", ""],
+        ["2:4:scorn", ""],
+        ["2:9:pieces", ""]
+      ]
+    },
+    "3": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["3:2:afflict", ""],
+        ["3:4:one", ""]
+      ]
+    },
+    "4": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["4:7:manifested", ""],
+        ["4:9:caused", ""]
+      ]
+    },
+    "5": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["5:1:concerning", ""],
+        ["5:5:worker", ""]
+      ]
+    },
+    "6": {
+      "gaps": 0,
+      "model": 5,
+      "leftovers": [
+        ["6:2:chasten", ""],
+        ["6:3:lord", ""],
+        ["6:6:thanks", ""],
+        ["6:8:because", ""],
+        ["6:11:back", ""]
+      ]
+    },
+    "7": {
+      "gaps": 0,
+      "model": 12,
+      "leftovers": [
+        ["7:3:enemy", ""],
+        ["7:5:good", ""],
+        ["7:7:lord", ""],
+        ["7:8:cause", ""],
+        ["7:11:coming", ""],
+        ["7:13:ready", ""],
+        ["7:15:trouble", ""],
+        ["7:16:dug", ""],
+        ["7:17:come", ""],
+        ["7:17:own", ""],
+        ["7:17:own", ""],
+        ["7:18:most", ""]
+      ]
+    },
+    "8": {
+      "gaps": 0,
+      "model": 3,
+      "leftovers": [
+        ["8:6:less", ""],
+        ["8:7:put", ""],
+        ["8:9:creatures", ""]
+      ]
+    },
+    "11": {
+      "gaps": 0,
+      "model": 8,
+      "leftovers": [
+        ["11:3:one", ""],
+        ["11:6:because", ""],
+        ["11:6:because", ""],
+        ["11:6:openly", ""],
+        ["11:6:thereof", ""],
+        ["11:7:fire", ""],
+        ["11:7:times", ""],
+        ["11:9:exalted", ""]
+      ]
+    },
+    "12": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["12:5:ever", ""],
+        ["12:6:psalms", ""]
+      ]
+    },
+    "13": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["13:3:shed", ""],
+        ["13:3:way", ""]
+      ]
+    },
+    "15": {
+      "gaps": 0,
+      "model": 10,
+      "leftovers": [
+        ["15:2:goodness", ""],
+        ["15:2:need", ""],
+        ["15:3:saints", ""],
+        ["15:6:most", ""],
+        ["15:7:chastened", ""],
+        ["15:8:face", ""],
+        ["15:8:hand", ""],
+        ["15:9:exulted", ""],
+        ["15:11:hand", ""],
+        ["15:11:known", ""]
+      ]
+    },
+    "16": {
+      "gaps": 0,
+      "model": 18,
+      "leftovers": [
+        ["16:1:uttered", ""],
+        ["16:2:come", ""],
+        ["16:3:amiss", ""],
+        ["16:3:fire", ""],
+        ["16:3:mouth", ""],
+        ["16:3:purposed", ""],
+        ["16:3:speak", ""],
+        ["16:4:ways", ""],
+        ["16:7:marvels", ""],
+        ["16:8:hand", ""],
+        ["16:8:resist", ""],
+        ["16:8:right", ""],
+        ["16:11:round", ""],
+        ["16:13:draw", ""],
+        ["16:14:babes", ""],
+        ["16:14:because", ""],
+        ["16:14:filled", ""],
+        ["16:14:though", ""]
+      ]
+    },
+    "18": {
+      "gaps": 0,
+      "model": 5,
+      "leftovers": [
+        ["18:5:gone", ""],
+        ["18:7:other", ""],
+        ["18:9:ordinances", ""],
+        ["18:14:attack", ""],
+        ["18:14:gain", ""]
+      ]
+    },
+    "19": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["19:4:enrich", ""],
+        ["19:9:overthrown", ""]
+      ]
+    },
+    "22": {
+      "gaps": 0,
+      "model": 4,
+      "leftovers": [
+        ["22:1:tends", ""],
+        ["22:2:made", ""],
+        ["22:3:sake", ""],
+        ["22:5:thoroughly", ""]
+      ]
+    },
+    "23": {
+      "gaps": 0,
+      "model": 4,
+      "leftovers": [
+        ["23:1:week", ""],
+        ["23:7:lift", ""],
+        ["23:8:strong", ""],
+        ["23:9:lift", ""]
+      ]
+    },
+    "25": {
+      "gaps": 0,
+      "model": 7,
+      "leftovers": [
+        ["25:1:psalm", ""],
+        ["25:3:well", ""],
+        ["25:4:transgressors", ""],
+        ["25:5:doers", ""],
+        ["25:5:sit", ""],
+        ["25:6:lord", ""],
+        ["25:9:together", ""]
+      ]
+    },
+    "28": {
+      "gaps": 0,
+      "model": 1,
+      "leftovers": [
+        ["28:2:due", ""]
+      ]
+    },
+    "29": {
+      "gaps": 0,
+      "model": 7,
+      "leftovers": [
+        ["29:2:exalt", ""],
+        ["29:2:rejoice", ""],
+        ["29:6:wait", ""],
+        ["29:10:go", ""],
+        ["29:11:become", ""],
+        ["29:11:compassion", ""],
+        ["29:13:praise", ""]
+      ]
+    },
+    "31": {
+      "gaps": 0,
+      "model": 5,
+      "leftovers": [
+        ["31:3:waxed", ""],
+        ["31:6:come", ""],
+        ["31:6:fit", ""],
+        ["31:8:go", ""],
+        ["31:9:come", ""]
+      ]
+    },
+    "32": {
+      "gaps": 0,
+      "model": 6,
+      "leftovers": [
+        ["32:2:platy", ""],
+        ["32:9:made", ""],
+        ["32:12:own", ""],
+        ["32:16:reason", ""],
+        ["32:19:alive", ""],
+        ["32:22:according", ""]
+      ]
+    },
+    "33": {
+      "gaps": 0,
+      "model": 12,
+      "leftovers": [
+        ["33:1:psalm", ""],
+        ["33:5:diligently", ""],
+        ["33:6:draw", ""],
+        ["33:11:become", ""],
+        ["33:11:diligently", ""],
+        ["33:11:thing", ""],
+        ["33:16:open", ""],
+        ["33:17:cried", ""],
+        ["33:17:listened", ""],
+        ["33:17:lord", ""],
+        ["33:17:righteous", ""],
+        ["33:18:delivered", ""]
+      ]
+    },
+    "36": {
+      "gaps": 0,
+      "model": 12,
+      "leftovers": [
+        ["36:1:fret", ""],
+        ["36:2:away", ""],
+        ["36:5:bring", ""],
+        ["36:6:forth", ""],
+        ["36:8:fret", ""],
+        ["36:20:honored", ""],
+        ["36:21:compassion", ""],
+        ["36:23:pleasure", ""],
+        ["36:23:take", ""],
+        ["36:27:aside", ""],
+        ["36:35:highly", ""],
+        ["36:35:very", ""]
+      ]
+    },
+    "37": {
+      "gaps": 0,
+      "model": 8,
+      "leftovers": [
+        ["37:2:chasten", ""],
+        ["37:3:heavily", ""],
+        ["37:7:bowed", ""],
+        ["37:12:kin", ""],
+        ["37:12:still", ""],
+        ["37:14:man", ""],
+        ["37:17:boastingly", ""],
+        ["37:22:forsake", ""]
+      ]
+    },
+    "38": {
+      "gaps": 0,
+      "model": 10,
+      "leftovers": [
+        ["38:2:heed", ""],
+        ["38:2:take", ""],
+        ["38:3:words", ""],
+        ["38:5:know", ""],
+        ["38:7:disquieted", ""],
+        ["38:7:treasures", ""],
+        ["38:8:pause", ""],
+        ["38:12:make", ""],
+        ["38:12:web", ""],
+        ["38:13:lord", ""]
+      ]
+    },
+    "39": {
+      "gaps": 0,
+      "model": 7,
+      "leftovers": [
+        ["39:7:burnt", ""],
+        ["39:7:whole", ""],
+        ["39:10:righteousness", ""],
+        ["39:12:far", ""],
+        ["39:13:encompassed", ""],
+        ["39:15:put", ""],
+        ["39:16:reward", ""]
+      ]
+    },
+    "40": {
+      "gaps": 0,
+      "model": 7,
+      "leftovers": [
+        ["40:3:alive", ""],
+        ["40:3:preserve", ""],
+        ["40:5:mercy", ""],
+        ["40:6:saying", ""],
+        ["40:7:like", ""],
+        ["40:7:manner", ""],
+        ["40:11:compassion", ""]
+      ]
+    },
+    "42": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["42:1:plead", ""],
+        ["42:3:forth", ""]
+      ]
+    },
+    "43": {
+      "gaps": 0,
+      "model": 19,
+      "leftovers": [
+        ["43:3:destroyed", ""],
+        ["43:3:utterly", ""],
+        ["43:4:own", ""],
+        ["43:8:afflicted", ""],
+        ["43:8:hated", ""],
+        ["43:8:put", ""],
+        ["43:8:saved", ""],
+        ["43:8:shame", ""],
+        ["43:10:forth", ""],
+        ["43:13:exchange", ""],
+        ["43:17:because", ""],
+        ["43:17:slanderer", ""],
+        ["43:18:things", ""],
+        ["43:21:search", ""],
+        ["43:21:things", ""],
+        ["43:23:long", ""],
+        ["43:23:sake", ""],
+        ["43:25:turn", ""],
+        ["43:26:cleaved", ""]
+      ]
+    },
+    "45": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["45:9:achieved", ""],
+        ["45:10:crush", ""]
+      ]
+    }
+  }
+}

@@ -1,0 +1,103 @@
+ref	run	text	g	mark	confidence
+Psa.33:1	1	A Psalm	-		0.80
+Psa.33:1	1	of David,	0,1		0.80
+Psa.33:1	2	he	-		0.80
+Psa.33:1	3	countenance	4,5		0.80
+Psa.33:1	3	before	7		0.80
+Psa.33:1	4	let him go,	10		0.80
+Psa.33:1	5	he	-		0.80
+Psa.33:2	1	will	-		0.80
+Psa.33:2	2	at	3		0.80
+Psa.33:2	3	shall be	-		0.80
+Psa.33:2	3	continually	6,7		0.80
+Psa.33:2	4	my	12		0.80
+Psa.33:3	1	shall boast herself	3		0.80
+Psa.33:3	2	let	-		0.80
+Psa.33:3	3	meek	8		0.80
+Psa.33:4	1	you⌃	-		0.80
+Psa.33:4	2	let us	-		0.80
+Psa.33:4	3	together.	10,11,12		0.80
+Psa.33:5	1	diligently,	-		0.80
+Psa.33:5	2	he	-		0.80
+Psa.33:5	3	to	-		0.80
+Psa.33:5	4	delivered me	12		0.80
+Psa.33:6	1	Draw	-		0.80
+Psa.33:6	2	be	-		0.80
+Psa.33:6	3	shall	-		0.80
+Psa.33:6	4	by any means be ashamed.	9,11		0.80
+Psa.33:7	1	man	1		0.80
+Psa.33:7	2	to	-		0.80
+Psa.33:7	3	delivered	15		0.80
+Psa.33:7	4	of	12		0.80
+Psa.33:7	5	afflictions.	13		0.80
+Psa.33:8	1	The	-		0.80
+Psa.33:8	2	of the	-		0.80
+Psa.33:8	3	will	-		0.80
+Psa.33:8	4	round about them that	3,4		0.80
+Psa.33:8	5	will	-		0.80
+Psa.33:9	1	is	-		0.80
+Psa.33:9	2	is the	-		0.80
+Psa.33:9	3	in	11		0.80
+Psa.33:10	1	you⌃	4		0.80
+Psa.33:10	2	saints:	5		0.80
+Psa.33:10	3	there is	-		0.80
+Psa.33:10	4	lack	10		0.80
+Psa.33:10	5	them that	11		0.80
+Psa.33:11	1	The	-		0.80
+Psa.33:11	2	have become	-		0.80
+Psa.33:11	3	they that	4		0.80
+Psa.33:11	4	diligently shall	-		0.80
+Psa.33:11	5	thing.	-		0.80
+Psa.33:12	1	you⌃	-		0.80
+Psa.33:12	2	me:	-		0.80
+Psa.33:12	3	will	-		0.80
+Psa.33:12	4	the	-		0.80
+Psa.33:12	5	of the	-		0.80
+Psa.33:13	1	What	0		0.80
+Psa.33:13	2	there that	3		0.80
+Psa.33:13	3	to	-		0.80
+Psa.33:14	1	your	1		0.80
+Psa.33:14	2	from	8,9		0.80
+Psa.33:15	1	from	-		0.80
+Psa.33:16	1	The	0		0.80
+Psa.33:16	2	of the	-		0.80
+Psa.33:16	3	are	-		0.80
+Psa.33:16	4	the	-		0.80
+Psa.33:16	5	are open	-		0.80
+Psa.33:16	6	prayer:	9		0.80
+Psa.33:17	1	the	-		0.80
+Psa.33:17	2	of the	-		0.80
+Psa.33:17	3	is	-		0.80
+Psa.33:17	4	them that	-		0.80
+Psa.33:17	5	to	6		0.80
+Psa.33:17	6	their	-		0.80
+Psa.33:17	7	the	-		0.80
+Psa.33:17	8	The righteous cried, and	-		0.80
+Psa.33:17	9	Lord listened to	-		0.80
+Psa.33:18	1	delivered	-		0.80
+Psa.33:18	2	of	11		0.80
+Psa.33:19	1	The	-		0.80
+Psa.33:19	2	is	-		0.80
+Psa.33:19	3	to them that are of a	2		0.80
+Psa.33:19	4	will	-		0.80
+Psa.33:19	5	in	9		0.80
+Psa.33:20	1	are	-		0.80
+Psa.33:20	2	of	-		0.80
+Psa.33:20	3	but	5		0.80
+Psa.33:20	4	of	-		0.80
+Psa.33:20	5	Lord will deliver	9		0.80
+Psa.33:21	1	their	3		0.80
+Psa.33:21	2	shall be	-		0.80
+Psa.33:22	1	The	-		0.80
+Psa.33:22	2	of	-		0.80
+Psa.33:22	3	is	-		0.80
+Psa.33:22	4	they that	4		0.80
+Psa.33:22	5	righteousness	6,7		0.80
+Psa.33:22	5	will go wrong.	8		0.80
+Psa.33:23	1	The	-		0.80
+Psa.33:23	2	will redeem the	0		0.80
+Psa.33:23	3	of	-		0.80
+Psa.33:23	4	servants:	3		0.80
+Psa.33:23	5	none of those that	9,10		0.80
+Psa.33:23	6	in	12		0.80
+Psa.33:23	7	shall go wrong.	6,7,8		0.80

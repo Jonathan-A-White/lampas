@@ -1,0 +1,103 @@
+ref	run	text	g	mark	confidence
+Psa.32:1	1	you⌃	3		0.80
+Psa.32:1	2	becomes	9		0.80
+Psa.32:1	2	the upright.	7		0.80
+Psa.32:2	1	the	-		0.80
+Psa.32:2	2	platy to	-		0.80
+Psa.32:2	3	a lute of ten strings.	6,7		0.80
+Psa.32:3	1	to	-		0.80
+Psa.32:3	2	a	-		0.80
+Psa.32:3	3	play	0		0.80
+Psa.32:3	3	skillfully	4		0.80
+Psa.32:3	4	a loud noise.	7		0.80
+Psa.32:4	1	of	-		0.80
+Psa.32:4	2	is	-		0.80
+Psa.32:4	3	are	11		0.80
+Psa.32:5	1	He	-		0.80
+Psa.32:5	2	is	-		0.80
+Psa.32:5	3	the	-		0.80
+Psa.32:5	4	of the	-		0.80
+Psa.32:6	1	By	-		0.80
+Psa.32:6	2	of	-		0.80
+Psa.32:6	3	were	-		0.80
+Psa.32:6	4	host of	14,15		0.80
+Psa.32:6	5	by the	-		0.80
+Psa.32:6	6	of	10		0.80
+Psa.32:7	1	Who	-		0.80
+Psa.32:7	2	the	-		0.80
+Psa.32:7	3	of the	-		0.80
+Psa.32:7	4	in a bottle;	2		0.80
+Psa.32:7	4	who lays up	5		0.80
+Psa.32:7	4	the deeps	8		0.80
+Psa.32:8	1	Let	-		0.80
+Psa.32:8	2	let	-		0.80
+Psa.32:8	3	that	11		0.80
+Psa.32:8	4	in	-		0.80
+Psa.32:8	5	be moved because	9		0.80
+Psa.32:9	1	they	-		0.80
+Psa.32:9	2	made;	-		0.80
+Psa.32:9	3	they were	-		0.80
+Psa.32:10	1	The	-		0.80
+Psa.32:10	2	frustrates	1		0.80
+Psa.32:10	2	the counsels	2		0.80
+Psa.32:10	2	of the nations;	3		0.80
+Psa.32:10	2	he brings to nothing	4		0.80
+Psa.32:10	2	also	5		0.80
+Psa.32:10	2	the reasonings of the	6		0.80
+Psa.32:10	3	brings to nothing	9		0.80
+Psa.32:10	3	the counsels	10		0.80
+Psa.32:10	3	of princes.	11		0.80
+Psa.32:11	1	of	-		0.80
+Psa.32:11	2	endures	8		0.80
+Psa.32:11	3	ever,	6,7		0.80
+Psa.32:11	4	thoughts of	9		0.80
+Psa.32:12	1	is	-		0.80
+Psa.32:12	2	the	-		0.80
+Psa.32:12	3	has	-		0.80
+Psa.32:12	4	own	-		0.80
+Psa.32:13	1	of	-		0.80
+Psa.32:13	2	he	-		0.80
+Psa.32:13	3	of	-		0.80
+Psa.32:14	1	his	-		0.80
+Psa.32:14	1	prepared	1		0.80
+Psa.32:14	1	habitation	2		0.80
+Psa.32:14	2	on	-		0.80
+Psa.32:15	1	who	0		0.80
+Psa.32:15	2	who	7		0.80
+Psa.32:16	1	A	-		0.80
+Psa.32:16	2	is	-		0.80
+Psa.32:16	3	reason of	-		0.80
+Psa.32:16	3	a great	4		0.80
+Psa.32:16	3	host;	5		0.80
+Psa.32:16	4	a	-		0.80
+Psa.32:16	5	shall	-		0.80
+Psa.32:16	6	be	-		0.80
+Psa.32:16	7	the	-		0.80
+Psa.32:16	8	of	-		0.80
+Psa.32:17	1	A	-		0.80
+Psa.32:17	2	is vain	0		0.80
+Psa.32:17	3	safety;	3		0.80
+Psa.32:17	3	neither shall	9		0.80
+Psa.32:17	4	be delivered	10		0.80
+Psa.32:17	5	the	-		0.80
+Psa.32:17	6	of his	-		0.80
+Psa.32:18	1	of the	-		0.80
+Psa.32:18	2	are	-		0.80
+Psa.32:18	3	them that	5		0.80
+Psa.32:18	4	those that	8		0.80
+Psa.32:18	5	in	10,11		0.80
+Psa.32:19	1	to	-		0.80
+Psa.32:19	2	to	-		0.80
+Psa.32:19	3	alive	-		0.80
+Psa.32:20	1	Our	2		0.80
+Psa.32:20	2	on	-		0.80
+Psa.32:20	3	he	-		0.80
+Psa.32:20	4	our	10		0.80
+Psa.32:21	1	our	-		0.80
+Psa.32:21	2	shall rejoice	3		0.80
+Psa.32:21	3	have	-		0.80
+Psa.32:22	1	Let	-		0.80
+Psa.32:22	2	O	-		0.80
+Psa.32:22	3	us, according	-		0.80
+Psa.32:22	4	have	-		0.80
+Psa.32:22	5	in	9		0.80
