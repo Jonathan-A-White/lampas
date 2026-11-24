@@ -1,0 +1,287 @@
+ref	run	text	g	mark	confidence
+Isa.5:1	1	Now	1		0.80
+Isa.5:1	1	I will	-		0.80
+Isa.5:1	2	my	-		0.80
+Isa.5:1	3	a	-		0.80
+Isa.5:1	4	of my	-		0.80
+Isa.5:1	5	concerning	-		0.80
+Isa.5:1	6	beloved	14		0.80
+Isa.5:1	6	had a	-		0.80
+Isa.5:1	7	a	-		0.80
+Isa.5:1	7	high hill	16		0.80
+Isa.5:1	8	a	-		0.80
+Isa.5:1	8	fertile	19		0.80
+Isa.5:2	1	I	-		0.80
+Isa.5:2	2	a	-		0.80
+Isa.5:2	3	it,	-		0.80
+Isa.5:2	4	dug a trench,	4		0.80
+Isa.5:2	5	a	-		0.80
+Isa.5:2	6	a	-		0.80
+Isa.5:2	7	the	-		0.80
+Isa.5:2	8	of	-		0.80
+Isa.5:2	9	dug	17		0.80
+Isa.5:2	9	a place for the	-		0.80
+Isa.5:2	9	wine-vat	16		0.80
+Isa.5:2	10	I waited	21		0.80
+Isa.5:2	10	for it to bring forth	-		0.80
+Isa.5:2	11	it brought forth	26		0.80
+Isa.5:3	1	you⌃	-		0.80
+Isa.5:3	2	every	-		0.80
+Isa.5:3	3	of	-		0.80
+Isa.5:4	1	What	0		0.80
+Isa.5:4	1	shall I	-		0.80
+Isa.5:4	2	any more	2		0.80
+Isa.5:4	2	to my	-		0.80
+Isa.5:4	3	that	-		0.80
+Isa.5:4	4	have	-		0.80
+Isa.5:4	5	to	-		0.80
+Isa.5:4	6	Whereas	10		0.80
+Isa.5:4	6	I expected	11		0.80
+Isa.5:4	6	it to bring forth	13		0.80
+Isa.5:4	7	it has brought forth	15		0.80
+Isa.5:5	1	I will	-		0.80
+Isa.5:5	2	what	4		0.80
+Isa.5:5	2	I will	-		0.80
+Isa.5:5	3	to my	-		0.80
+Isa.5:5	4	will	-		0.80
+Isa.5:5	5	hedge,	-		0.80
+Isa.5:5	6	it shall	-		0.80
+Isa.5:5	7	a	-		0.80
+Isa.5:5	8	I will pull	-		0.80
+Isa.5:5	9	its	-		0.80
+Isa.5:5	10	shall	-		0.80
+Isa.5:5	11	left	-		0.80
+Isa.5:5	12	be	-		0.80
+Isa.5:5	13	down.	-		0.80
+Isa.5:6	1	will	-		0.80
+Isa.5:6	2	my	-		0.80
+Isa.5:6	3	it shall	-		0.80
+Isa.5:6	4	be	-		0.80
+Isa.5:6	5	shall come	-		0.80
+Isa.5:6	6	upon	14		0.80
+Isa.5:6	7	on	17		0.80
+Isa.5:6	7	barren land;	18		0.80
+Isa.5:6	8	I will	-		0.80
+Isa.5:6	8	command	23		0.80
+Isa.5:6	9	upon	-		0.80
+Isa.5:7	1	the	-		0.80
+Isa.5:7	2	of the	-		0.80
+Isa.5:7	3	of	-		0.80
+Isa.5:7	4	is the	-		0.80
+Isa.5:7	5	of	-		0.80
+Isa.5:7	6	the	-		0.80
+Isa.5:7	7	of	-		0.80
+Isa.5:7	8	his	-		0.80
+Isa.5:7	8	beloved plant:	12,13		0.80
+Isa.5:7	8	I expected	14		0.80
+Isa.5:7	8	it	-		0.80
+Isa.5:7	8	to bring forth	16		0.80
+Isa.5:7	9	it brought forth	18		0.80
+Isa.5:7	9	iniquity;	20		0.80
+Isa.5:7	10	a	-		0.80
+Isa.5:8	1	to them that	-		0.80
+Isa.5:8	2	add	10		0.80
+Isa.5:8	3	they may	-		0.80
+Isa.5:8	3	take away	14		0.80
+Isa.5:8	3	something	15		0.80
+Isa.5:8	3	of their	-		0.80
+Isa.5:8	4	will you⌃	16		0.80
+Isa.5:9	1	things	-		0.80
+Isa.5:9	1	have reached	0,2		0.80
+Isa.5:9	2	of the	-		0.80
+Isa.5:9	3	of	-		0.80
+Isa.5:9	4	though	8		0.80
+Isa.5:9	4	many	12		0.80
+Isa.5:9	4	houses	11		0.80
+Isa.5:9	4	should	-		0.80
+Isa.5:9	5	built,	-		0.80
+Isa.5:9	5	many	16		0.80
+Isa.5:9	6	fair	18		0.80
+Isa.5:9	6	houses shall	-		0.80
+Isa.5:9	7	desolate,	13,14		0.80
+Isa.5:9	8	there shall	-		0.80
+Isa.5:10	1	of oxen	5		0.80
+Isa.5:10	1	plow	-		0.80
+Isa.5:10	1	the land	-		0.80
+Isa.5:10	1	shall yield	6		0.80
+Isa.5:10	2	,	-		0.80
+Isa.5:10	3	he that	10		0.80
+Isa.5:10	4	homers	12		0.80
+Isa.5:10	4	shall produce	14		0.80
+Isa.5:11	1	to them that	-		0.80
+Isa.5:11	2	up in	-		0.80
+Isa.5:11	3	follow strong	-		0.80
+Isa.5:11	4	who	-		0.80
+Isa.5:11	5	at it	-		0.80
+Isa.5:11	6	the	-		0.80
+Isa.5:11	7	shall inflame	17		0.80
+Isa.5:12	1	they	-		0.80
+Isa.5:12	2	pipes:	8		0.80
+Isa.5:12	3	they	-		0.80
+Isa.5:12	3	regard	17		0.80
+Isa.5:12	4	of the	-		0.80
+Isa.5:12	5	consider	25		0.80
+Isa.5:12	6	of	-		0.80
+Isa.5:13	1	Therefore	0		0.80
+Isa.5:13	2	have	-		0.80
+Isa.5:13	3	taken	-		0.80
+Isa.5:13	4	know	9		0.80
+Isa.5:13	5	there has	-		0.80
+Isa.5:13	6	a	-		0.80
+Isa.5:13	7	of	-		0.80
+Isa.5:13	8	bodies,	-		0.80
+Isa.5:13	9	of	-		0.80
+Isa.5:13	10	of	-		0.80
+Isa.5:13	11	for	-		0.80
+Isa.5:14	1	has	-		0.80
+Isa.5:14	2	desire	-		0.80
+Isa.5:14	3	its	-		0.80
+Isa.5:14	4	without	13		0.80
+Isa.5:14	4	ceasing:	14		0.80
+Isa.5:14	5	her	-		0.80
+Isa.5:14	6	her	-		0.80
+Isa.5:14	6	pestilent men	27		0.80
+Isa.5:14	6	shall	-		0.80
+Isa.5:14	7	down into	-		0.80
+Isa.5:15	1	the	-		0.80
+Isa.5:15	2	shall be brought low,	-		0.80
+Isa.5:15	3	the	-		0.80
+Isa.5:15	4	shall be disgraced,	-		0.80
+Isa.5:15	5	lofty	-		0.80
+Isa.5:15	6	shall be	-		0.80
+Isa.5:16	1	But	0		0.80
+Isa.5:16	1	the	-		0.80
+Isa.5:16	2	of	-		0.80
+Isa.5:16	3	shall be exalted	1		0.80
+Isa.5:16	4	shall be	-		0.80
+Isa.5:17	1	they that were spoiled	3		0.80
+Isa.5:17	1	shall be	-		0.80
+Isa.5:17	2	lambs	11		0.80
+Isa.5:17	2	shall feed on	12		0.80
+Isa.5:17	3	waste places	8		0.80
+Isa.5:17	3	of them that are taken away.	10		0.80
+Isa.5:18	1	to them that	-		0.80
+Isa.5:18	2	to them	-		0.80
+Isa.5:18	3	with a	-		0.80
+Isa.5:18	4	iniquities	14		0.80
+Isa.5:18	5	with a	-		0.80
+Isa.5:18	6	of the	-		0.80
+Isa.5:19	1	Let him speedily	3		0.80
+Isa.5:19	1	hasten	4		0.80
+Isa.5:19	1	what he will	-		0.80
+Isa.5:19	2	we may	-		0.80
+Isa.5:19	3	it:	-		0.80
+Isa.5:19	4	let	-		0.80
+Isa.5:19	5	of	-		0.80
+Isa.5:19	6	One of	-		0.80
+Isa.5:19	7	we may	-		0.80
+Isa.5:19	8	it.	-		0.80
+Isa.5:20	1	to them that	-		0.80
+Isa.5:20	2	who	-		0.80
+Isa.5:20	3	who	-		0.80
+Isa.5:21	1	to them that are	-		0.80
+Isa.5:21	2	own conceit,	-		0.80
+Isa.5:21	3	in	-		0.80
+Isa.5:21	3	their own	7		0.80
+Isa.5:21	3	sight.	6		0.80
+Isa.5:22	1	to	-		0.80
+Isa.5:22	2	ones of	-		0.80
+Isa.5:22	3	that	-		0.80
+Isa.5:22	4	mighty ones	10		0.80
+Isa.5:22	4	that	11		0.80
+Isa.5:22	4	mingle	12		0.80
+Isa.5:22	4	strong	-		0.80
+Isa.5:23	1	who	0		0.80
+Isa.5:23	2	for	4		0.80
+Isa.5:23	3	away	-		0.80
+Isa.5:23	4	of	-		0.80
+Isa.5:24	1	as	2		0.80
+Isa.5:24	2	shall be	-		0.80
+Isa.5:24	3	a	-		0.80
+Isa.5:24	4	of	-		0.80
+Isa.5:24	5	shall be	-		0.80
+Isa.5:24	6	a	-		0.80
+Isa.5:24	6	violent	13		0.80
+Isa.5:24	7	shall	-		0.80
+Isa.5:24	8	chaff,	18		0.80
+Isa.5:24	9	shall go	-		0.80
+Isa.5:24	10	they	-		0.80
+Isa.5:24	11	of the	-		0.80
+Isa.5:24	12	of	-		0.80
+Isa.5:24	13	and	34		0.80
+Isa.5:24	13	insulted	40		0.80
+Isa.5:24	14	of	-		0.80
+Isa.5:24	15	One of	-		0.80
+Isa.5:25	1	the	-		0.80
+Isa.5:25	2	of	-		0.80
+Isa.5:25	3	was greatly	-		0.80
+Isa.5:25	4	his	-		0.80
+Isa.5:25	5	reached forth	10		0.80
+Isa.5:25	5	his	-		0.80
+Isa.5:25	6	were troubled,	19		0.80
+Isa.5:25	7	carcasses	25		0.80
+Isa.5:25	8	the	-		0.80
+Isa.5:25	9	of the	-		0.80
+Isa.5:25	9	way:	31		0.80
+Isa.5:25	9	yet for	-		0.80
+Isa.5:25	10	his anger has	-		0.80
+Isa.5:25	11	been	-		0.80
+Isa.5:25	12	is	-		0.80
+Isa.5:25	12	yet	42		0.80
+Isa.5:25	12	raised.	45		0.80
+Isa.5:26	1	shall he lift	-		0.80
+Isa.5:26	2	a	-		0.80
+Isa.5:26	3	to	3		0.80
+Isa.5:26	4	nations	5		0.80
+Isa.5:26	4	that are afar,	7		0.80
+Isa.5:26	5	shall	-		0.80
+Isa.5:26	6	for	-		0.80
+Isa.5:26	7	the	-		0.80
+Isa.5:26	8	of	-		0.80
+Isa.5:26	9	they are	-		0.80
+Isa.5:26	10	very	18		0.80
+Isa.5:27	1	They shall	-		0.80
+Isa.5:27	2	be weary,	2,3		0.80
+Isa.5:27	2	neither shall they	-		0.80
+Isa.5:27	2	slumber	5		0.80
+Isa.5:27	3	neither	8		0.80
+Isa.5:27	3	shall	-		0.80
+Isa.5:27	4	their	-		0.80
+Isa.5:27	5	neither	17,18		0.80
+Isa.5:27	5	shall	-		0.80
+Isa.5:27	6	shoe-latchets	20,21,22,23		0.80
+Isa.5:27	6	be broken.	19		0.80
+Isa.5:28	1	bent;	9		0.80
+Isa.5:28	2	hoofs	11		0.80
+Isa.5:28	2	are	-		0.80
+Isa.5:28	3	are	-		0.80
+Isa.5:28	4	a	-		0.80
+Isa.5:29	1	They	-		0.80
+Isa.5:29	2	and	-		0.80
+Isa.5:29	2	draw near	3		0.80
+Isa.5:29	3	a	-		0.80
+Isa.5:29	4	whelps:	5		0.80
+Isa.5:29	5	he shall	-		0.80
+Isa.5:29	6	a	-		0.80
+Isa.5:29	7	beast,	-		0.80
+Isa.5:29	8	he shall cast them forth,	14		0.80
+Isa.5:29	9	there shall	-		0.80
+Isa.5:29	10	none	16		0.80
+Isa.5:29	10	to deliver	19		0.80
+Isa.5:30	1	shall roar	1		0.80
+Isa.5:30	1	on account of them	2		0.80
+Isa.5:30	1	in	-		0.80
+Isa.5:30	2	the	-		0.80
+Isa.5:30	3	of the	-		0.80
+Isa.5:30	4	they shall	-		0.80
+Isa.5:30	5	there shall be	-		0.80
+Isa.5:30	5	thick	19		0.80
+Isa.5:10	fix	where	0		0.80
+Isa.5:10	fix	plow	2		0.80
+Isa.5:11	fix	follow strong drink;	6,7,8		0.80
+Isa.5:11	fix	who wait at it till	9,10		0.80
+Isa.5:22	fix	strong drink:	13,14		0.80
+Isa.5:24	fix	Therefore	0,1		0.80
+Isa.5:24	fix	as stubble	2,3,5		0.80
+Isa.5:25	fix	his anger has	38,39		0.80
+Isa.5:25	fix	been turned away,	37		0.80
