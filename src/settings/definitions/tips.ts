@@ -6,6 +6,7 @@ export type Tips = 'on' | 'off';
 export const tipsSetting = defineSetting<Tips>({
   order: 30,
   slot: 240,
+  ai: true,
   key: 'tips',
   default: 'on',
   allowed: {

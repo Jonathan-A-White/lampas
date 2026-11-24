@@ -16,3 +16,17 @@ export { LogosBibleControl } from '../../src/settings/controls/resources';
 export { registryModule };
 
 export { SETTINGS_SOURCE } from './settings-sources';
+
+/** What is wrong with a list of registry entries, one sentence each (an empty list when it is right): every key once, a label, a hint and, for a choice, a value. A test reads the real SETTINGS and a gathered list with a fixture setting added through this one. */
+export function settingProblems(entries: readonly registryModule.SettingEntry[]): string[] {
+  const problems: string[] = [];
+  const keys = new Set<string>();
+  for (const entry of entries) {
+    if (keys.has(entry.key)) problems.push(`'${entry.key}' is in the list twice`);
+    keys.add(entry.key);
+    if (entry.label === '') problems.push(`'${entry.key}' has no label`);
+    if (entry.hint === '') problems.push(`'${entry.key}' has no hint`);
+    if (entry.allowed.kind === 'choice' && entry.allowed.values.length === 0) problems.push(`'${entry.key}' allows a choice with no values`);
+  }
+  return problems;
+}

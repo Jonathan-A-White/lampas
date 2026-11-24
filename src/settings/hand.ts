@@ -1,6 +1,6 @@
 // src/settings/hand.ts — which hand he holds his phone in (Settings > Reading > Layout > Hand, mw-5r3p30.879): one app-wide preference every screen reads through this file
 // (getHand, useHand), so the floating tutor button and anything else that sits at the thumb can go to that side. PROVISIONAL. Right until he says. No grip detection: a web
-// app cannot read it reliably, so he says it in Settings (src/settings/controls/hand.tsx). Not a talkable setting: a row of its own (rows.ts HAND_ROW).
+// app cannot read it reliably, so he says it in Settings (src/settings/controls/hand.tsx). Not a talkable setting: a row of its own (extraRows/hand.ts HAND_ROW).
 import { useEffect } from 'react';
 import { defineSetting } from './define';
 import { getSetting, setSetting, useSetting } from './store';

@@ -21,7 +21,7 @@ import { ownedResources } from './data/repositories';
 import { searchLibrary } from './settings/librarySearch';
 import { DoorButton, Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { greekLevelOf } from './settings/definitions/greekInterest';
-import { COUNTED_DOOR, HOME_SECTIONS, SECTIONS, dialOf, foundDoors, groupById, groupOf, homeEntries, isHomeRow, isSermonSourceRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleRows, visibleToolRows, type GroupId } from './settings/rows';
+import { HOME_SECTIONS, SECTIONS, dialOf, foundDoors, groupById, groupOf, homeEntries, isHomeRow, isSermonSourceRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleRows, visibleToolRows, type GroupId } from './settings/rows';
 import { SermonSourcesPage } from './sermons/SermonSourcesPage';
 import { useSourceList } from './sermons/useSourceList';
 import { neededText } from './settings/neededText';
@@ -139,7 +139,7 @@ function SettingsPages({ query, setQuery }: { query: string; setQuery: (query: s
                   </HighlightedSetting.Provider>
                   <ul aria-label="Settings groups">
                     {homeEntries(values).map((g) =>
-                      g.id === COUNTED_DOOR.id ? <DoorButton key={g.id} id={g.id} title={g.title} hint={g.hint} onOpen={openCounted} /> : <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />,
+                      'homeDoor' in g ? <DoorButton key={g.id} id={g.id} title={g.title} hint={g.hint} onOpen={openCounted} /> : <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />,
                     )}
                   </ul>
                 </>

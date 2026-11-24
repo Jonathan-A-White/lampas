@@ -8,7 +8,8 @@ import { getGreekPronunciation, getLayout, getLogosBible, getSectionHeadings, ge
 import { clearBus, latest } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { getStudyResources } from '../../src/data/repositories';
-import { GROUPS, isTalkable, ROWS, groupOf, isHomeRow, SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../support/settings';
+import { GROUPS, isTalkable, ROWS, groupOf, isHomeRow, SETTINGS, applyChanges, currentSettings, settingOf, settingProblems, undoChange } from '../support/settings';
+import { DEFINITIONS } from '../../src/settings/definitions';
 import { showSettingsGroup } from '../support/settings-pages';
 import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
@@ -24,6 +25,9 @@ beforeEach(async () => {
   await db.settings.clear();
   await keepImport(EVERY_BOOK_IDS);
 });
+
+/** The names of the rows that are no registry setting, read from ROWS (a new such row is a file of src/settings/extraRows/, and no edit here). */
+const NOT_SETTING_LABELS: ReadonlySet<string> = new Set(ROWS.filter((r) => !isTalkable(r.key) && settingOf(r.key) === undefined && !SETTINGS.some((s) => s.label === r.label)).map((r) => r.label));
 
 const LOGOS_PICKERS = ['New Testament', 'Old Testament', 'Apocrypha', 'Septuagint'].map((part) => `${part} Bible in Logos`);
 const isLogosPicker = (el: HTMLElement): boolean => LOGOS_PICKERS.includes(el.closest('label')?.querySelector('span')?.textContent ?? '');
@@ -56,16 +60,12 @@ describe('the registry lists every Settings row', () => {
         ...screen.queryAllByRole('slider'),
       ]
         .map((el) => el.getAttribute('aria-label') ?? el.closest('label')?.querySelector('span')?.textContent ?? '')
-        // Read as (mw-9ji6ek0.25) is a row of its own (rows.ts READING_SET_ROW), not a registry setting: the sets live in their own table
-        .filter((label) => label !== 'Read as')
-        // Keep on this phone (mw-lcv9z3g.2) is likewise a row of its own (rows.ts OFFLINE_COPY_ROW): the scope is the offline copy's key, not a registry setting
-        .filter((label) => label !== 'Keep on this phone')
+        // the rows that are no registry setting (src/settings/extraRows/: Read as, Keep on this phone, Hand, Open web sermons in, the links) are not drawn as a setting's control, and the tutor does not change them; ROWS names them
+        .filter((label) => !NOT_SETTING_LABELS.has(label))
         // the Hebrew ladder's own path (mw-5r3p30.914) is drawn in the Grammar approach row beside the Greek one while the Hebrew dial stands at 3 or more: one row, two groups
         .filter((label) => label !== 'Hebrew grammar approach')
-        // Hand (mw-5r3p30.879) is a row of its own too (rows.ts HAND_ROW), kept outside the registry so the tutor does not change it; the Tutor door row is gone (mw-5r3p30.882)
-        .filter((label) => label !== 'Tutor door' && label !== 'Hand' && label !== 'Which hand do you hold your phone in?')
-        // Open web sermons in (mw-qtu3zvz.16) is likewise a row of its own (rows.ts OPEN_WEB_ROW), kept outside the registry: the tutor's Settings request is full
-        .filter((label) => label !== 'Open web sermons in');
+        // Hand's control is a group named by its question; the Tutor door row is gone (mw-5r3p30.882)
+        .filter((label) => label !== 'Tutor door' && label !== 'Which hand do you hold your phone in?');
     // a sermon source's switch is a registry setting drawn on a page of its own, the list of sermon sources (mw-qtu3zvz.92): no group's page draws it
     const onSourcesPage = (key: string): boolean => key.startsWith('sermons.');
     // each group's page draws the controls of the settings its sections hold, and nothing else (one grammar path: no choice to draw for the Grammar approach, mw-foy5mb.1, so the row's content is the group);
@@ -93,9 +93,9 @@ describe('the registry lists every Settings row', () => {
 
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
-    expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['audioBible', 'bibleVoice', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'devotionalLogos', 'devotionalRephil', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handsFree', 'handsFreePause', 'handwritingDrills', 'hebrewDepth', 'hebrewInterest', 'hebrewKeyboard', 'hebrewPronunciation', 'hebrewRate', 'hebrewVoice', 'immersiveHint', 'immersiveReader', 'ipaLesson', 'languages', 'layout', 'logosBible', 'maps.biblemapper', 'maps.logosatlas', 'morningRephilBackup', 'morningRephilOrder', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'pronunciation', 'pronunciationSeparate', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'rp2026English', 'sectionHeadings', 'send', 'septuagint', 'septuagintGaps', 'sermons.augustine-logos', 'sermons.broadus-logos', 'sermons.bunyan-logos', 'sermons.burroughs-logos', 'sermons.calvin-pt-logos', 'sermons.chapin-logos', 'sermons.charles-wesley-logos', 'sermons.chrysostom-logos', 'sermons.evangelistic-sermon-outlines-logos', 'sermons.eyton-logos', 'sermons.greg-laurie-logos', 'sermons.henry-sermons', 'sermons.jd-greear-logos', 'sermons.jimmy-evans-logos', 'sermons.keach-logos', 'sermons.kuyper-logos', 'sermons.maclaren-logos', 'sermons.mcpherson-logos', 'sermons.moberly-logos', 'sermons.moody-logos', 'sermons.piper-logos', 'sermons.pope-logos', 'sermons.princeton-sermons-logos', 'sermons.sedgwick-logos', 'sermons.sermon-outlines-for-growing-christians-logos', 'sermons.sermon-outlines-for-seekers-logos', 'sermons.sermon-outlines-for-special-days-logos', 'sermons.sermon-outlines-on-1-corinthians-logos', 'sermons.sermon-outlines-on-acts-logos', 'sermons.sermon-outlines-on-christian-living-logos', 'sermons.sermon-outlines-on-ephesians-logos', 'sermons.sermon-outlines-on-galatians-ephesians-philippians-colossians-logos', 'sermons.sermon-outlines-on-romans-logos', 'sermons.sermon-outlines-on-the-gospels-logos', 'sermons.sermon-starters-volume-1-logos', 'sermons.sermon-starters-volume-2-logos', 'sermons.sermon-starters-volume-3-logos', 'sermons.sermon-starters-volume-4-logos', 'sermons.sermon-starters-volume-5-logos', 'sermons.shedd-logos', 'sermons.skip-heitzig-logos', 'sermons.smale-logos', 'sermons.spurgeon-ccel', 'sermons.spurgeon-sermon-notes-logos', 'sermons.strong-logos', 'sermons.watson-logos', 'sermons.wesley-logos', 'sermons.whitefield-logos', 'sermons.wi-evans-logos', 'sermons.worlds-great-sermons-logos', 'talk', 'textSize', 'theme', 'themes.themes-tcr1934', 'themes.themes-torrey', 'tips', 'todaysDevotional', 'variantLessonsOffer', 'variantWitnesses', 'variants', 'weave', 'weaveGrammar', 'weaveOrder'],
-    );
+    // every setting declared once has its entry, and the list is the one the registry gathered (no list of every key is kept here)
+    for (const def of DEFINITIONS) expect(SETTINGS.map((s) => s.key), def.key).toContain(def.key);
+    expect(settingProblems(SETTINGS)).toEqual([]);
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
       expect(s.hint).not.toBe('');
@@ -308,136 +308,12 @@ describe('undoChange', () => {
 
 describe('currentSettings', () => {
   it('reports every setting as the grind may name it', async () => {
-    expect(await currentSettings()).toEqual({
-      languages: 'greek',
-      greekInterest: '5',
-      hebrewInterest: '0',
-      theme: 'phone',
-      font: 'phone',
-      textSize: 'normal',
-      layout: 'verse',
-      readingMode: 'scroll',
-      chapterButtons: 'show',
-      copyLink: 'on',
-      copyNumbers: 'on',
-      copyReference: 'after',
-      sectionHeadings: 'on',
-      immersiveReader: 'off',
-      immersiveHint: 'on',
-      readSpan: 'book',
-      readLessons: 'off',
-      handsFree: 'off',
-      handsFreePause: '1.5',
-      readTutor: 'on',
-      talk: 'hold',
-      send: 'release',
-      hebrewDepth: 'both',
-      tips: 'on',
-      weave: 'off',
-      weaveGrammar: 'any',
-      weaveOrder: 'english',
-      englishVoice: 'default',
-      greekVoice: 'default',
-      englishRate: 1,
-      greekRate: 1,
-      hebrewVoice: 'default',
-      hebrewRate: 1,
-      pronunciation: 'modern',
-      pronunciationSeparate: 'off',
-      greekPronunciation: 'modern',
-      hebrewPronunciation: 'israeli',
-      englishAccent: 'american',
-      ipaLesson: 'on',
-      goal: '',
-      grammarApproach: 'ladder',
-      handwritingDrills: 'auto',
-      pickerGrammar: 'frontier',
-      paradigmExtent: 'solid+frontier',
-      grammarMove: 'ask',
-      newWordsADay: '3',
-      logosBible: 'LLS:LGCYSTNDRDBBLSB',
-      'maps.biblemapper': 'on',
-      'maps.logosatlas': 'on',
-      'themes.themes-tcr1934': 'on',
-      'themes.themes-torrey': 'on',
-      'sermons.spurgeon-ccel': 'on',
-      'sermons.henry-sermons': 'on',
-      'sermons.greg-laurie-logos': 'off',
-      'sermons.jd-greear-logos': 'off',
-      'sermons.skip-heitzig-logos': 'off',
-      'sermons.spurgeon-sermon-notes-logos': 'off',
-      'sermons.wesley-logos': 'off',
-      'sermons.whitefield-logos': 'off',
-      'sermons.moody-logos': 'off',
-      'sermons.augustine-logos': 'off',
-      'sermons.chrysostom-logos': 'off',
-      'sermons.piper-logos': 'off',
-      'sermons.bunyan-logos': 'off',
-      'sermons.charles-wesley-logos': 'off',
-      'sermons.jimmy-evans-logos': 'off',
-      'sermons.shedd-logos': 'off',
-      'sermons.burroughs-logos': 'off',
-      'sermons.keach-logos': 'off',
-      'sermons.maclaren-logos': 'off',
-      'sermons.kuyper-logos': 'off',
-      'sermons.broadus-logos': 'off',
-      'sermons.worlds-great-sermons-logos': 'off',
-      'sermons.princeton-sermons-logos': 'off',
-      'sermons.mcpherson-logos': 'off',
-      'sermons.strong-logos': 'off',
-      'sermons.sedgwick-logos': 'off',
-      'sermons.moberly-logos': 'off',
-      'sermons.eyton-logos': 'off',
-      'sermons.chapin-logos': 'off',
-      'sermons.watson-logos': 'off',
-      'sermons.pope-logos': 'off',
-      'sermons.smale-logos': 'off',
-      'sermons.wi-evans-logos': 'off',
-      'sermons.calvin-pt-logos': 'off',
-      'sermons.evangelistic-sermon-outlines-logos': 'off',
-      'sermons.sermon-outlines-for-growing-christians-logos': 'off',
-      'sermons.sermon-outlines-for-seekers-logos': 'off',
-      'sermons.sermon-outlines-for-special-days-logos': 'off',
-      'sermons.sermon-outlines-on-1-corinthians-logos': 'off',
-      'sermons.sermon-outlines-on-acts-logos': 'off',
-      'sermons.sermon-outlines-on-christian-living-logos': 'off',
-      'sermons.sermon-outlines-on-ephesians-logos': 'off',
-      'sermons.sermon-outlines-on-galatians-ephesians-philippians-colossians-logos': 'off',
-      'sermons.sermon-outlines-on-romans-logos': 'off',
-      'sermons.sermon-outlines-on-the-gospels-logos': 'off',
-      'sermons.sermon-starters-volume-1-logos': 'off',
-      'sermons.sermon-starters-volume-2-logos': 'off',
-      'sermons.sermon-starters-volume-3-logos': 'off',
-      'sermons.sermon-starters-volume-4-logos': 'off',
-      'sermons.sermon-starters-volume-5-logos': 'off',
-      quizGoal: '',
-      'resource.strongs': 'off',
-      'resource.logos': 'off',
-      audioBible: 'off',
-      bibleVoice: 'msb-david-wifi',
-      readingPlan: 'off',
-      dailyReview: 'on',
-      dailyMemorize: 'on',
-      dailyPlan: 'on',
-      dailyPsalms: 'on',
-      dailyDevotional: 'on',
-      devotional: 'LLS:20.10.1',
-      devotionalDraw: 'all',
-      devotionalLogos: 'on',
-      devotionalRephil: 'on',
-      morningRephilOrder: 'oldest',
-      morningRephilBackup: 'LLS:20.10.1',
-      todaysDevotional: 'LLS:20.10.1',
-      variantWitnesses: 'ecm',
-      variantLessonsOffer: 'on',
-      rp2026English: 'off',
-      septuagint: 'off',
-      septuagintGaps: 'off',
-      variants: 'off',
-      dailyTicks: 'on',
-      greekKeyboard: 'off',
-      hebrewKeyboard: 'off',
-    });
+    const first = await currentSettings();
+    // every setting of the registry, and nothing else, each as the setting reads (a voice he chose is 'other', and none is chosen here)
+    expect(Object.keys(first).sort()).toEqual(SETTINGS.map((s) => s.key).sort());
+    for (const s of SETTINGS) expect(first[s.key], s.key).toEqual(await s.read());
+    // a few that a phone starts with, as the grind is told them
+    expect(first).toMatchObject({ languages: 'greek', theme: 'phone', layout: 'verse', newWordsADay: '3', greekRate: 1, handsFreePause: '1.5', logosBible: 'LLS:LGCYSTNDRDBBLSB', 'resource.logos': 'off', 'maps.biblemapper': 'on' });
     await applyChanges([{ key: 'greekRate', value: 0.8 }, { key: 'theme', value: 'dark' }]);
     await db.settings.put({ key: 'voice.english', value: 'Some voice' });
     const now = await currentSettings();

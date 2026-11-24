@@ -44,7 +44,17 @@ export type SectionId =
   | 'more'
   | 'tools';
 
+/** The pages of Settings (the groups of its home), in the order the home lists them (src/settings/rows.ts GROUPS has their titles). */
+export type GroupId = 'reading' | 'greek' | 'tutor' | 'listening' | 'daily' | 'study' | 'account' | 'developer';
+
 export interface SettingStore {
+  /** the page (group) its section is on: a setting in a section no group holds yet names it, and the section's `sectionTitle` (mw-6ww.175.107); for a section already on a page it may be left out, and says the same if given */
+  page?: GroupId;
+  /** the title (and `sectionHint`, a line under it) of a section this setting brings with it: read only when no group holds the section yet; the section comes after those listed in rows.ts SECTIONS, on its `page` */
+  sectionTitle?: string;
+  sectionHint?: string;
+  /** the setting sets how the tutor works (the AI): with no licence its row is drawn off and greyed, with 'Needs a licence' (mw-8m9dyu.3) */
+  ai?: boolean;
   /** where it sits in DEFINITIONS (src/settings/definitions/index.ts): lowest first, then by key; a new setting leaves it out and comes last */
   order?: number;
   /** where its registry entry sits in SETTINGS (the order the tutor is told them in): lowest first, then by key; a new setting leaves it out and comes last. A setting whose entry is made by hand in src/settings/entries/ has no slot, that entry has it */

@@ -10,10 +10,13 @@ import type { Weave } from './definitions/weave';
 import { setSetting, settingsStore } from './store';
 
 /** What the Settings screen needs of a row besides its control. */
-export type RowMeta = KitRowMeta<SectionId>;
+export type RowMeta = KitRowMeta<SectionId> & {
+  /** the row sets how the tutor works (the AI): with no licence it is drawn off and greyed, with 'Needs a licence' (mw-8m9dyu.3) */
+  ai?: boolean;
+};
 
 /** An entry of the registry (the kit's, over Lampas's sections): `key` is what the grind and `settings_changes` call it, 'greekRate'; `hint` is one line (at most 90 characters) under the control. */
-export type SettingEntry = KitSettingEntry<SectionId>;
+export type SettingEntry = KitSettingEntry<SectionId> & { ai?: boolean };
 
 /** The voice value that means the phone's own pick; a voice he chose in Settings is its voiceURI, which a talk cannot name. */
 export const PHONE_VOICE = 'default';
@@ -61,6 +64,7 @@ const OLD_KINDS: Readonly<Record<string, (value: SettingValue) => AppEvent>> = {
 export function fromDefinition<T extends SettingValue>(def: SettingDef<T>): SettingEntry {
   return {
     ...entryOf<SectionId>(def, settingsStore),
+    ...(def.ai ? { ai: true } : {}),
     write: async (value) => {
       const parsed = def.parse(value);
       await setSetting(def, parsed);
