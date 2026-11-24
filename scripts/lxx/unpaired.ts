@@ -16,6 +16,7 @@ import { septuagintChunkLinked } from '../../src/reader/septuagint';
 import { lettersOf } from './align';
 import { OLD_TESTAMENT } from './report';
 import type { ShipOptions } from './ship';
+import { requireSources } from './sources';
 
 /**
  * The English words that are not counted: articles, conjunctions, prepositions, pronouns, the verbs 'to be', 'to have' and 'to do' (and their auxiliaries), and the particles Brenton's English is
@@ -158,6 +159,7 @@ export async function runUnpaired(argv: readonly string[], options: ShipOptions 
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  requireSources('lxx:unpaired', process.argv.slice(2));
   runUnpaired(process.argv.slice(2), { log: console.log }).catch((error: unknown) => {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

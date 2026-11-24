@@ -11,7 +11,7 @@ import type { SweteWord } from './swete';
 import { morpheusBuildCommand, noMorpheusWarning, readMorpheusCache } from './morpheus';
 import { existsSync } from 'node:fs';
 import { OLD_TESTAMENT } from './report';
-import { RAW_DIR, type Fetcher } from './sources';
+import { RAW_DIR, requireSources, type Fetcher } from './sources';
 
 /** About how many pending words a batch holds; the cut falls at the chapter boundary nearest to it. */
 export const BATCH_SIZE = 700;
@@ -239,6 +239,7 @@ export async function runBatches(argv: readonly string[], options: RunOptions = 
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  requireSources('lxx:batches', process.argv.slice(2));
   runBatches(process.argv.slice(2), { log: console.log }).catch((error: unknown) => {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

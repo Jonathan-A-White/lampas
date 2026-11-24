@@ -17,6 +17,7 @@ import { ALIGN_CHOICES_DIR } from './align-choose';
 import { OLD_TESTAMENT } from './report';
 import type { ShipOptions, Shipped } from './ship';
 import { countChapter, FUNCTION_WORDS } from './unpaired';
+import { requireSources } from './sources';
 
 export const EXPECT_DIR = ALIGN_CHOICES_DIR;
 export const expectFile = (code: string, dir: string = EXPECT_DIR): string => join(dir, `${code.toLowerCase()}.expect.json`);
@@ -351,6 +352,7 @@ export async function runExpect(argv: readonly string[], options: ExpectOptions 
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  requireSources('lxx:align-expect', process.argv.slice(2));
   runExpect(process.argv.slice(2), { log: console.log }).catch((error: unknown) => {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

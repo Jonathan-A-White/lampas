@@ -50,7 +50,7 @@ export function decideLxxRealData(probe: LxxProbe): LxxRealData {
   const lent = !here && resolve(probe.cwd) !== resolve(probe.source) && hasSources(probe, probe.source);
   const root = here ? probe.cwd : lent ? probe.source : '';
   if (!root) {
-    return { run: false, ...none, line: 'lxx real-data tests (lxx-align-choose.test.ts, Genesis 1 to 11 with the model pass): SKIPPED, the git-ignored sources data/raw/lxx and data/lxx/morpheus are not here or in ' + probe.source };
+    return { run: false, ...none, line: 'lxx real-data tests (lxx-align-choose.test.ts, Genesis 1 to 11 with the model pass): SKIPPED, the git-ignored sources data/raw/lxx and data/lxx/morpheus are not here or in ' + probe.source + ' (npm run lxx:link, or npm run lxx:link -- --from <archive> from npm run lxx:pack on the Laptop)' };
   }
   const dirs = { rawDir: join(root, 'data/raw/lxx'), morpheusDir: join(root, 'data/lxx/morpheus') };
   const where = root === probe.cwd ? 'this checkout' : root;

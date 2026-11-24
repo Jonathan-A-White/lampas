@@ -11,6 +11,7 @@ import { batchName, batchesOf, derivedBook, parseBookArgs, requireMorpheusCache,
 import { applyChoices, readChoiceDir } from './choices';
 import { OUT_DIR, supportOf, type BookResult, type PendingWord } from './derive';
 import type { SweteWord } from './swete';
+import { requireSources } from './sources';
 
 /** The share of a book's chosen words the second pass reads again (at least one word). */
 export const RECHECK_FRACTION = 0.05;
@@ -128,6 +129,7 @@ export async function runPending(argv: readonly string[], options: RunOptions = 
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  requireSources('lxx:pending', process.argv.slice(2));
   runPending(process.argv.slice(2), { log: console.log }).catch((error: unknown) => {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);
