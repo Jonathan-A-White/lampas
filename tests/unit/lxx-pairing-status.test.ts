@@ -1,16 +1,19 @@
 // Every shipped Septuagint book is either paired or pending with its pass story named (story mw-u2w5klk.349.60; his ask of 2026-11-20:
 // "as books are added to the Septuagint that this matching piece also is listed to do that"). The English-to-Greek pairing pass of the epic
 // mw-u2w5klk.349 is one story a book, filed by hand; Judges shipped with none and was found only by his tap. data/lxx/pairing-status.json names
-// each shipped book `paired` or `pending: <bead id>[, <bead id>]`; this test fails, naming the book, when a shipped book is in neither state.
+// each shipped book `paired` or `pending: <bead id>[, <bead id>]`, in its own file data/lxx/pairing-status/<book>.txt (one line), so a book's
+// final pass edits only its own file and passes side by side do not meet in one shared file (mw-u2w5klk.349.106); this test fails, naming the
+// book, when a shipped book is in neither state.
 // A book is shipped the way the ship reads it (scripts/lxx/ship.ts): it has a choices file, data/lxx/choices/<book>-*.tsv; the books of
 // the books of docs/lxx-align/ (one file a book, the ship's own record, mw-u2w5klk.349.73) are read too.
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { ALIGN_REPORT_DIR } from '../../scripts/lxx/align';
 import { CHOICES_DIR } from '../../scripts/lxx/release';
 import { OLD_TESTAMENT } from '../../scripts/lxx/report';
 
-const STATUS_FILE = 'data/lxx/pairing-status.json';
+const STATUS_DIR = 'data/lxx/pairing-status';
+const OLD_SHARED_FILE = 'data/lxx/pairing-status.json';
 const PENDING = /^pending: mw-[a-z0-9]+(\.[0-9]+)*(, mw-[a-z0-9]+(\.[0-9]+)*)*$/;
 
 /** The code of each shipped book, as Swete's lower-case code (`gen`, `1sa`). */
@@ -32,14 +35,30 @@ export function statusProblem(books: string[], status: Record<string, unknown>):
   const problems: string[] = [];
   for (const book of books) {
     const s = status[book];
-    if (s === undefined) problems.push(`${book}: shipped but not in ${STATUS_FILE}; add it as "paired" or "pending: <bead id of its pairing pass>" and file the pass`);
+    if (s === undefined) problems.push(`${book}: shipped but not in ${STATUS_DIR}/${book}.txt; add it as "paired" or "pending: <bead id of its pairing pass>" and file the pass`);
     else if (s !== 'paired' && !(typeof s === 'string' && PENDING.test(s))) problems.push(`${book}: ${JSON.stringify(s)} is neither "paired" nor "pending: <bead id>"`);
   }
   return problems;
 }
 
+/** Each book's status as its own file holds it: the file's one line, by the book's code. */
+export function readStatus(dir: string = STATUS_DIR): Record<string, unknown> {
+  const status: Record<string, unknown> = {};
+  for (const f of readdirSync(dir)) {
+    const m = /^([a-z0-9]+)\.txt$/.exec(f);
+    if (m) status[m[1]] = readFileSync(`${dir}/${f}`, 'utf8').replace(/\r?\n$/, '');
+    else status[f] = `${f} is not a <book>.txt file`;
+  }
+  return status;
+}
+
 describe('the Septuagint pairing pass of every shipped book (mw-u2w5klk.349.60)', () => {
-  const status = JSON.parse(readFileSync(STATUS_FILE, 'utf8')) as Record<string, unknown>;
+  const status = readStatus();
+
+  it('keeps each book\'s status in its own file, not in one shared file (mw-u2w5klk.349.106)', () => {
+    expect(existsSync(OLD_SHARED_FILE)).toBe(false);
+    expect(Object.keys(status).length).toBeGreaterThan(0);
+  });
 
   it('finds the shipped books', () => {
     const books = shippedBooks();
