@@ -24,6 +24,7 @@ import { getMenuButton, openSettings, queryMenuButton } from '../../tests/unit/o
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
+  clock.restore();
   cleanup();
   // the Reader's unmount set a leave-full-screen timer: it must not fire after jsdom is torn down
   resetImmersive();
@@ -33,7 +34,36 @@ afterAll(async () => {
 });
 
 const user = userEvent.setup();
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+/** The app judges a two-finger tap and the click that may follow it by performance.now() (src/immersive.ts: TAP_MS, CLICK_GUARD_MS = 600 ms). A step that waited
+ * in real time was at the host's mercy both ways: a click sent late fell outside the guard on a loaded host, and the wait past it was a sleep. This clock is the
+ * page's performance.now() with two hands of the step's own: `freeze` stops it (the click "a few milliseconds after the tap" is then sent whatever the host's
+ * load), and `pass` moves it on (the guard is over by this clock, with no sleep). */
+const clock = (() => {
+  const real = performance.now.bind(performance);
+  let skew = 0;
+  let frozen: number | null = null;
+  const spy = vi.spyOn(performance, 'now').mockImplementation(() => frozen ?? real() + skew);
+  return {
+    /** Runs `during` with the clock stopped where it is. */
+    async frozen<T>(during: () => Promise<T> | T): Promise<T> {
+      frozen = real() + skew;
+      try {
+        return await during();
+      } finally {
+        skew = (frozen ?? 0) - real();
+        frozen = null;
+      }
+    },
+    /** Moves the clock past the click guard of a two-finger tap. */
+    pass(ms: number): void {
+      skew += ms;
+    },
+    restore: () => spy.mockRestore(),
+  };
+})();
+/** A little over the app's CLICK_GUARD_MS (600 ms, src/immersive.ts): the clock is moved this far to leave the guard of a two-finger tap behind. */
+const PAST_CLICK_GUARD_MS = 650;
+const pastTheClickGuard = () => clock.pass(PAST_CLICK_GUARD_MS);
 const PHONE_KEY = '00'.repeat(31) + '02';
 const SCROLL_HEIGHT = 5000;
 const CLIENT_HEIGHT = 700;
@@ -234,8 +264,8 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(reader()).toHaveAttribute('data-immersive', 'on'));
     });
     When('he taps the text with two fingers again', async () => {
-      // past the guard that drops the click after a tap
-      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
+      // past the guard that drops the click after a tap, by the app's own clock
+      pastTheClickGuard();
       twoFingerTap();
     });
     Then(`${bars} in view`, inView);
@@ -263,16 +293,19 @@ describeFeature(feature, ({ Scenario }) => {
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     And('he taps the text with two fingers, and the phone also sends a click on a word', async () => {
       await outOfView();
-      twoFingerTap();
-      await user.click(firstWord());
+      // the click follows the tap by milliseconds on a phone: the clock stands still between them, so no load on this host can put it past the guard
+      await clock.frozen(async () => {
+        twoFingerTap();
+        await user.click(firstWord());
+      });
     });
     Then(`${bars} in view`, inView);
     And('no word sheet is open', () => {
       expect(screen.queryByRole('dialog')).toBeNull();
     });
     When('he taps the text with two fingers again', async () => {
-      // past the guard that drops the click after a tap
-      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
+      // past the guard that drops the click after a tap, by the app's own clock
+      pastTheClickGuard();
       twoFingerTap();
     });
     Then(`${bars} out of view`, outOfView);
@@ -308,7 +341,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the text with two fingers', twoFingerTap);
     Then(`${bars} in view`, inView);
     When('he taps the text with three fingers again', async () => {
-      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
+      pastTheClickGuard();
       threeFingerTap();
     });
     Then(`${bars} still in view`, async () => {
@@ -365,8 +398,8 @@ describeFeature(feature, ({ Scenario }) => {
       await inView();
     });
     And('he taps the first word of verse {int}', async () => {
-      // past the guard that drops the click after a tap
-      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
+      // past the guard that drops the click after a tap, by the app's own clock
+      pastTheClickGuard();
       await user.click(firstWord());
     });
     Then('the word sheet is open', async () => {
@@ -577,7 +610,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(placeLine()).toBeNull());
     });
     When('he taps the text with two fingers again', async () => {
-      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
+      pastTheClickGuard();
       twoFingerTap();
     });
     Then('the place line is back and reads {string}', reads);

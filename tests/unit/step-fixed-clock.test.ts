@@ -30,7 +30,7 @@ const FIXED_LATER: Record<string, number> = {
   'features/steps/hebrew-ladder.steps.tsx': 1,
   'features/steps/hebrew-words.steps.tsx': 2,
   'features/steps/immersive-hint.steps.tsx': 1,
-  'features/steps/immersive-reader.steps.tsx': 2,
+  'features/steps/immersive-reader.steps.tsx': 1,
   // session 2
   'features/steps/in-logos.steps.tsx': 1,
   'features/steps/languages.steps.tsx': 1,
