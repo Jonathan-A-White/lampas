@@ -1,0 +1,8 @@
+Joshua: what its pairing passes did (hand-kept; the generated file beside it is jos.txt). Written by the stories of the epic mw-u2w5klk.349 that went through the book, one paragraph a pass, oldest first.
+The real-data checks of Joshua are tests/unit/lxx-align-choose-jos.test.ts; the counts and each leftover's reason are data/lxx/align/jos.expect.json; the method is docs/lxx-align.md, 'A pairing pass'.
+
+Joshua 1 to 8, 13 and 16 are done (story mw-u2w5klk.349.12: 1,464 runs, `data/lxx/align/jos-01` to `jos-08`, `jos-13`, `jos-16`, `jos.expect.json`): 694 English content words sat where a tap opened no Greek word before the pass, and 0 do after.
+The first chapter left is Joshua 17, then 18, 19, 22, 23 and 24, about 1,200 runs (17: 156, 18: 142, 19: 173, 22: 354, 23: 137, 24: 260); `npm run lxx:unpaired -- --book jos` says what is left at any time.
+The pass wrote 35 fix rows for the aligner's own pairs that left a content word with no Greek ('to pass' of 'it came to pass' on ἐγένετο, 'removed' of 3:14, 'quit yourself like a man' on ἀνδρίζου, 'well armed', 'went through', 'hearts failed'); a swap of two Greek words between neighbours is two fix rows in the one verse.
+The 189 English content words settled as rendering no Greek word are in the sidecar, each with its reason: 47 are Brenton's English of the Greek verse beside it (Joshua 5:15, 6:7, 6:8, 6:14, 7:2, 8:19, 13:8), 142 are English Brenton adds or the second word of a phrase whose Greek word the aligner put on the first.
+Joshua 5:14 to 5:15, 6:7 to 6:8 and 13:7 to 13:8 carry English that belongs to the Greek verse next to it, which no pairing can fix (as Genesis 8:3 and 8:4 do).
