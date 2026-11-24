@@ -640,9 +640,10 @@ describeFeature(feature, ({ Background, Scenario }) => {
       expect(document.querySelector('[data-testid="paradigm-table"]')).not.toBeNull();
     });
     When('he goes back', async () => {
+      const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
       await act(async () => {
         window.history.back();
-        await new Promise((resolve) => setTimeout(resolve, 30));
+        await popped;
       });
     });
     Then('no idea sheet is open and the table {string} is on screen', async (_, name: string) => {

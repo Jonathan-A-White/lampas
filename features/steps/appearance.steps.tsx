@@ -2,7 +2,7 @@
 // Settings. matchMedia is a fake phone colour scheme and speech synthesis the honest fake of tests/support/fake-speech.ts; what the pixels look like
 // (dark palette, 44 px at every size) is proven at phone width in tests/e2e/appearance.spec.ts.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import Dexie from 'dexie';
@@ -18,6 +18,7 @@ import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/
 import { ensureSettingsGroup, openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
+import { afterTurns } from '../../tests/support/turns';
 
 const GREEK: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
 const ENGLISH: FakeVoice = { lang: 'en-US', name: 'English (US)' };
@@ -82,11 +83,21 @@ function slowSettingsReads(ms: number): void {
     get(key).then((row) => new Dexie.Promise((resolve) => setTimeout(() => resolve(row), ms)))) as unknown as typeof db.settings.get);
 }
 
+// every run of the App's startup writes (src/data/startupWrites.ts, started with nobody waiting) is kept, so the file waits for them: one still running when the database is closed
+// logs a closed-database trace, and one that lands late writes into the next scenario (mw-ar5k42b.31)
+const startupRuns = vi.hoisted((): Promise<void>[] => []);
+vi.mock('../../src/data/startupWrites', async (original) => {
+  const real = await original<typeof import('../../src/data/startupWrites')>();
+  return { ...real, startBackgroundWrites: () => { const run = real.startBackgroundWrites(); startupRuns.push(run); return run; } };
+});
+
 afterAll(async () => {
+  await Promise.allSettled(startupRuns);
   vi.restoreAllMocks();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
+  await afterTurns(); // a read the last screen began is answered before the database closes
   await closeDatabase();
 });
 
@@ -277,8 +288,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he sets the Greek speed to {number} in Settings', (_, value: number) => setSpeed('Greek speed', String(value)));
     And('a finger goes down at {number} on the Greek speed slider and the page scrolls instead', async (_, value: number) => {
       await touchSlider('Greek speed', value, 'scrolls');
-      // give a wrong save the time it would take
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // give a wrong save the turns it would take: the slider's own write is a chain of reads over the store
+      await act(async () => { await afterTurns(); });
     });
     Then('the Greek speed in Settings stays {number} and is saved as {number}', (_, shown: number, kept: number) => greekSpeedIs(shown, kept));
     When('a finger goes down at {number} on the Greek speed slider and lifts', (_, value: number) => touchSlider('Greek speed', value, 'lifts'));

@@ -16,6 +16,7 @@ import { HearAnyWord } from '../../src/ui/HearAnyWord';
 import { ENGLISH_VOICE, type FakeSynth, GREEK_VOICE, HEBREW_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
 import { statusLine } from '../../tests/support/status';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 
 const ANSWER = [
   'In Romans 8:28 the word **ἀγαθόν** means good; the Hebrew מֶלֶךְ and צֶדֶק speak of a king and of righteousness.',
@@ -61,8 +62,6 @@ afterAll(() => {
 });
 
 const user = userEvent.setup();
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)); // clock: a press's own hold time: sleep() is used only by press()
-const HOLD_MS = 650;
 
 /** The text node holding `word` and the offset of its middle; the stand-in caret answers with it. */
 function findWord(word: string): { node: Text; offset: number } {
@@ -80,10 +79,11 @@ function fingerOn(word: string): HTMLElement {
   return node.parentElement as HTMLElement;
 }
 
-async function press(el: HTMLElement, ms: number, drag = 0): Promise<void> {
-  await user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } });
-  if (drag) await user.pointer({ target: el, coords: { clientX: 100 + drag, clientY: 100 } });
-  await sleep(ms);
+async function press(el: HTMLElement, drag = 0): Promise<void> {
+  await stayDownPastLongPress(async () => {
+    await user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } });
+    if (drag) await user.pointer({ target: el, coords: { clientX: 100 + drag, clientY: 100 } });
+  });
   await user.pointer({ keys: '[/MouseLeft]', target: el, coords: { clientX: 100 + drag, clientY: 100 } });
 }
 
@@ -101,7 +101,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   Scenario('A long press on a Greek word of a tutor answer says it in Greek', (s) => {
     answer(s);
-    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word), HOLD_MS));
+    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word)));
     s.Then('the phone is told to speak {string} in {string}', (_, text: string, language: string) => spokenIn(text, language));
     s.And('the word is marked while it speaks', () => {
       // jsdom has no Custom Highlight API: the mark is a no-op there, and its proof is the Playwright spec
@@ -112,7 +112,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   Scenario('A long press on a Hebrew word of a tutor answer says it in Hebrew and does not open the guide', (s) => {
     answer(s);
-    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word), HOLD_MS));
+    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word)));
     s.Then('the phone is told to speak {string} in {string}', (_, text: string, language: string) => spokenIn(text, language));
     s.And('no pronunciation guide is open', () => expect(screen.queryByRole('dialog')).toBeNull());
   });
@@ -144,19 +144,19 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   Scenario('A long press on an English word of a tutor answer says it in English', (s) => {
     answer(s);
-    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word), HOLD_MS));
+    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word)));
     s.Then('the phone is told to speak {string} in {string}', (_, text: string, language: string) => spokenIn(text, language));
   });
 
   Scenario('A long press on a word of the About page says it in English', ({ Given, When, Then }) => {
     Given('the About page is on screen on a phone with Greek, Hebrew and English voices', () => draw(ALL, 'about'));
-    When('he long presses the word {string} of the page', (_, word: string) => press(fingerOn(word), HOLD_MS));
+    When('he long presses the word {string} of the page', (_, word: string) => press(fingerOn(word)));
     Then('the phone is told to speak {string} in {string}', (_, text: string, language: string) => spokenIn(text, language));
   });
 
   Scenario("The click that ends a long press does not reach the answer's own tap, which would stop the speech", (s) => {
     answer(s);
-    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word), HOLD_MS));
+    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word)));
     s.Then('the phone is told to speak {string} in {string}', (_, text: string, language: string) => spokenIn(text, language));
     s.And('the speech was not cancelled after it began', () => {
       expect(synth.calls[synth.calls.length - 1]).toMatch(/^speak /);
@@ -172,20 +172,20 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('A press that moves more than 10 px says nothing', (s) => {
     answer(s);
     s.When('he presses the word {string} of the answer and drags {int} px before the half second is up', (_, word: string, px: number) =>
-      press(fingerOn(word), HOLD_MS, px),
+      press(fingerOn(word), px),
     );
     s.Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
   });
 
   Scenario('A long press on a number or a mark says nothing', (s) => {
     answer(s);
-    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word), HOLD_MS));
+    s.When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word)));
     s.Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
   });
 
   Scenario('A long press on a Greek word with no Greek voice on the phone says so instead of speaking', ({ Given, When, Then, And }) => {
     Given('a tutor answer is on screen on a phone with only an English voice', () => draw([ENGLISH_VOICE], 'answer'));
-    When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word), HOLD_MS));
+    When('he long presses the word {string} of the answer', (_, word: string) => press(fingerOn(word)));
     Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
     And('the notice {string} is shown', (_, text: string) => expect(statusLine().textContent).toContain(text));
   });
@@ -204,7 +204,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       // a caret that points into the control's own text: were it asked, it would find a word
       const node = (el.firstChild?.nodeType === 3 ? el.firstChild : document.createTextNode('ἀγαθόν')) as Text;
       Object.defineProperty(document, 'caretPositionFromPoint', { configurable: true, value: () => ({ offsetNode: node, offset: 1 }) });
-      await press(el, HOLD_MS);
+      await press(el);
     });
     Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
   });

@@ -27,11 +27,14 @@ let link: HTMLElement | undefined;
 /** the time before each tap, and the annotation_time_utc each tap wrote into the link */
 let tappedAt: number[] = [];
 let stamps: number[] = [];
+/** The tap's time is Date.now(): 'a second goes by' moves that clock on a second (for the rest of the scenario), with no sleep. */
+let dateSpy: ReturnType<typeof vi.spyOn> | undefined;
 
 // The scenario's steps are tests of their own, so the stubs live until the file ends rather than until each step does.
 const real = { ...browserEnv };
 
 afterAll(async () => {
+  dateSpy?.mockRestore();
   Object.assign(browserEnv, real);
   cleanup();
   clearBus();
@@ -40,6 +43,8 @@ afterAll(async () => {
 });
 
 async function openWith(settings: Record<string, string>, { licence }: { licence: boolean } = { licence: true }): Promise<void> {
+  dateSpy?.mockRestore();
+  dateSpy = undefined;
   cleanup();
   clearBus();
   forgetTrail();
@@ -238,8 +243,9 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with the Audio Bible on', () => openWith({ audioBible: 'word-of-promise' }));
     When('he opens the Verse view of Luke 15:11', openLuke15Verse11);
     And('he taps {string}', tapListen);
-    And('a second goes by', async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1100));
+    And('a second goes by', () => {
+      const realNow = Date.now.bind(Date);
+      dateSpy = vi.spyOn(Date, 'now').mockImplementation(() => realNow() + 1100); // clock: the second that goes by between the two taps
     });
     And('he taps {string} again', tapListen);
     Then("the second tap's time is later than the first's", () => {

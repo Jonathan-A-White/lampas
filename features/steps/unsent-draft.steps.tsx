@@ -18,6 +18,7 @@ import { messageBox } from '../../tests/support/composer';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { afterTurns } from '../../tests/support/turns';
 import { openTutor } from './open-tutor';
 import { closeDatabase } from './close-database';
 
@@ -85,9 +86,10 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const talkHolds = (_: unknown, length: number) => expect(talkField().value).toBe(prayer(length));
   const pressBack = async () => {
+    const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
     await act(async () => {
       window.history.back();
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await popped;
     });
   };
   const receivedWhole = async (kind: string, length: number) => {
@@ -96,8 +98,8 @@ describeFeature(feature, ({ Scenario }) => {
     expect(fake.received[0].input.question).toBe(prayer(length).trim());
   };
   const nothingSent = async () => {
-    // give a send that should not happen the time to happen
-    await new Promise((r) => setTimeout(r, 100));
+    // give a send that should not happen the turns to happen
+    await act(async () => { await afterTurns(); });
     expect(fake.received).toHaveLength(0);
   };
   const talkClosed = async () => {

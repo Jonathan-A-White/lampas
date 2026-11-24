@@ -16,7 +16,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
 import { stripCantillation } from '../../src/speech/schemes/hebrew-israeli';
-import { LONG_PRESS_MS } from '../../src/ui/longPress';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, type FakeVoice, stubSpeech } from '../../tests/support/fake-speech';
 import { closeDatabase } from './close-database';
@@ -88,8 +88,7 @@ const choice = (name: string): HTMLElement => within(switchEl()).getByRole('butt
 const lastSpoken = () => (synth?.spoken ?? [])[(synth?.spoken ?? []).length - 1];
 
 async function longPress(target: HTMLElement): Promise<void> {
-  await user.pointer({ keys: '[MouseLeft>]', target });
-  await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
+  await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target }));
   await user.pointer({ keys: '[/MouseLeft]', target });
 }
 

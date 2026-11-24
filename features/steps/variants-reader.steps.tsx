@@ -2,7 +2,7 @@
 // chip that turns them on and off (a tap) and opens the filter sheet (a long press). fetch is stubbed with the committed public/data/rev/3.json and gen/1.json; the
 // counts expected are read from the chapter file's own changesEnglish and witness, not from the Reader's filter.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -12,7 +12,8 @@ import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { LONG_PRESS_MS } from '../../src/ui/longPress';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
+import { afterTurns } from '../../tests/support/turns';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { closeDatabase } from './close-database';
 
@@ -59,8 +60,7 @@ const savedAs = (value: string) => waitFor(async () => expect((await db.settings
 const sheet = (): HTMLElement => screen.getByRole('dialog', { name: 'Variants' });
 
 async function longPress(target: HTMLElement): Promise<void> {
-  await user.pointer({ keys: '[MouseLeft>]', target });
-  await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
+  await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target }));
   await user.pointer({ keys: '[/MouseLeft]', target });
 }
 
@@ -176,7 +176,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the header has no variants chip', async () => {
       // the settings the chip waits for are read by then: Variants all draws its chip at once on a chapter that has units
       await waitFor(async () => expect((await db.settings.get('variants'))?.value).toBe('all'));
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      await act(async () => { await afterTurns(); });
       expect(screen.queryByRole('button', { name: /^Variants,/ })).toBeNull();
     });
   });

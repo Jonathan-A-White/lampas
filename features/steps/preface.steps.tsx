@@ -82,9 +82,11 @@ async function openEssay(): Promise<void> {
 }
 
 async function back(): Promise<void> {
+  // Back is done when the browser's popstate has come and the app has taken it in
+  const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
   await act(async () => {
     window.history.back();
-    await new Promise((resolve) => setTimeout(resolve, 30));
+    await popped;
   });
 }
 

@@ -19,6 +19,7 @@ import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
@@ -66,9 +67,6 @@ afterAll(async () => {
 });
 
 const user = userEvent.setup();
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)); // clock: a press's own hold time: sleep() is used only by press()
-/** past the app's 500 ms hold */
-const HOLD_MS = 650;
 
 const verseEl = (n: number): HTMLElement => {
   const el = document.querySelector<HTMLElement>(`[data-verse="${n}"]`);
@@ -92,11 +90,12 @@ async function setWeaveSolid(): Promise<void> {
   await waitFor(() => expect(verseEl(1).querySelectorAll('[data-woven]').length).toBeGreaterThan(0));
 }
 
-/** Finger down on `el`, held `ms`, optionally dragged `drag` px at the start, then lifted. */
-async function press(el: HTMLElement, ms: number, drag = 0): Promise<void> {
-  await user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } });
-  if (drag) await user.pointer({ target: el, coords: { clientX: 100 + drag, clientY: 100 } });
-  await sleep(ms);
+/** Finger down on `el`, optionally dragged `drag` px at the start, held past the app's hold (stayDownPastLongPress), then lifted. */
+async function press(el: HTMLElement, drag = 0): Promise<void> {
+  await stayDownPastLongPress(async () => {
+    await user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } });
+    if (drag) await user.pointer({ target: el, coords: { clientX: 100 + drag, clientY: 100 } });
+  });
   await user.pointer({ keys: '[/MouseLeft]', target: el, coords: { clientX: 100 + drag, clientY: 100 } });
 }
 
@@ -109,7 +108,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A long press on a Greek word speaks that word with lang el-GR and does not open the sheet', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
     And('he switches the reader to Greek', switchToGreek);
-    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
+    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n)));
     Then('the phone is told to speak {string} with lang {string}', (_, text: string, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
       expect(lastSpoken()?.text).toBe(lang.startsWith('el') ? asSpoken(text) : text);
@@ -129,7 +128,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
       await waitFor(() => expect(within(verseEl(1)).getAllByRole('button').length).toBeGreaterThan(1));
     });
-    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
+    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n)));
     // a Greek voice handed one letter names it ('omicron'), with or without an accent; handed the vowel doubled it says the sound (mw-5r3p30.421)
     Then('the phone is told to speak the form the pronunciation he chose gives {string}, {string}, with lang {string}', (_, word: string, form: string, lang: string) => {
       expect(chosenPronunciation().loneLetterForm(word)).toBe(form);
@@ -143,7 +142,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A long press on an English word speaks it with lang en', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([GREEK_VOICE, ENGLISH_VOICE]));
-    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
+    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n)));
     Then('the phone is told to speak {string} with lang en', (_, text: string) => {
       expect(synth.spoken).toHaveLength(1);
       expect(lastSpoken()?.text).toBe(text);
@@ -163,7 +162,7 @@ describeFeature(feature, ({ Scenario }) => {
       const el = verseEl(n).querySelector<HTMLElement>(`[data-chunk="${chunk}"]`);
       if (!el) throw new Error(`no chunk for ${lemma}`);
       expect(el).toHaveAttribute('data-woven');
-      await press(el, HOLD_MS);
+      await press(el);
     });
     Then('the phone is told to speak the Greek of the lemma {string} in verse {int} with lang {string}', (_, lemma: string, __: number, lang: string) => {
       const word = verse1.g.find((w) => nfc(wordLemma(w)) === nfc(lemma));
@@ -184,7 +183,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(screen.getByRole('button', { name: `Verse ${n}`, exact: true }));
       await screen.findByRole('region', { name: 'Verse view' });
     });
-    When('he long presses the word {string} in the Verse view', (_, text: string) => press(viewWord(text), HOLD_MS));
+    When('he long presses the word {string} in the Verse view', (_, text: string) => press(viewWord(text)));
     Then('the phone is told to speak {string} with lang {string}', (_, text: string, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
       expect(lastSpoken()?.text).toBe(lang.startsWith('el') ? asSpoken(text) : text);
@@ -213,7 +212,7 @@ describeFeature(feature, ({ Scenario }) => {
       lemma = first().getAttribute('data-lemma') ?? '';
       before = first().getAttribute('data-state') ?? '';
     });
-    When('he long presses the first word of the list', () => press(first(), HOLD_MS));
+    When('he long presses the first word of the list', () => press(first()));
     Then('the phone is told to speak that word with lang {string}', (_, lang: string) => {
       expect(synth.spoken).toHaveLength(1);
       expect(lastSpoken()?.text).toBe(asSpoken(lemma));
@@ -231,7 +230,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A word long-pressed and let go at once is still spoken to its end', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
     And('he switches the reader to Greek', switchToGreek);
-    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
+    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n)));
     Then('the word is still being spoken after he let go', () => {
       expect(synth.spoken).toHaveLength(1);
       expect(synth.speaking).toBe(true);
@@ -259,7 +258,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
     And('he switches the reader to Greek', switchToGreek);
     When('he presses the word {string} in verse {int} and drags {int} px before the half second is up', (_, text: string, n: number, px: number) =>
-      press(wordEl(text, n), HOLD_MS, px),
+      press(wordEl(text, n), px),
     );
     Then('nothing is spoken', () => expect(synth.spoken).toHaveLength(0));
     And('no word sheet is open', () => expect(screen.queryByRole('dialog')).toBeNull());
@@ -268,7 +267,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A long press gives a light buzz and tells the bus which word was spoken', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH_VOICE, GREEK_VOICE]));
     And('he switches the reader to Greek', switchToGreek);
-    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n), HOLD_MS));
+    When('he long presses the word {string} in verse {int}', (_, text: string, n: number) => press(wordEl(text, n)));
     Then('the phone gives one light buzz of {int} ms', (_, ms: number) => expect(vibrations).toEqual([ms]));
     And('the bus has heard word-spoken for {string} in {string} in verse {int}', async (_, text: string, language: string, n: number) => {
       await expectLatest('word-spoken', (e) => expect(e).toEqual({ kind: 'word-spoken', text, language, verse: n }));

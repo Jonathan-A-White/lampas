@@ -1,7 +1,7 @@
 // features/steps/in-logos.steps.tsx — runs features/in-logos.feature: the chooser behind "In another book…" (src/library/InLogosChooser.tsx) and the two doors of a verse (src/library/InLogosDoors.tsx),
 // over a small catalogue of its own (the real one holds one commentary on Romans) and the Dexie shelf.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -14,6 +14,7 @@ import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import type { StudyPlace } from '../../src/resources/types';
 import { closeDatabase } from './close-database';
 import { keepImport } from '../../tests/support/logos-import';
+import { afterTurns } from '../../tests/support/turns';
 
 afterAll(async () => {
   cleanup();
@@ -219,7 +220,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('Logos is Off', () => setResourceOn('logos', false));
     When('the verse\'s doors are drawn at {string}', (_, at: string) => doors(at));
     Then('the door {string} is not drawn', async (_, name: string) => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // the doors' live queries (Logos On, his Bibles, his shelf) have answered by then: turns of the task queue, not a clock
+      await act(async () => { await afterTurns(100); });
       expect(screen.queryByRole('link', { name })).toBeNull();
       expect(screen.queryByRole('button', { name })).toBeNull();
     });

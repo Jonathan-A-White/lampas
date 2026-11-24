@@ -1,7 +1,7 @@
 // features/steps/immersive-hint.steps.tsx — runs features/immersive-hint.feature: the card that says how the Immersive reader works
 // (src/ImmersiveHint.tsx). How it looks at 390 px is tests/e2e/immersive-hint.spec.ts.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -14,6 +14,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { leaveSettings, openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
+import { afterTurns } from '../../tests/support/turns';
 
 afterAll(async () => {
   cleanup();
@@ -71,8 +72,8 @@ describeFeature(feature, ({ Scenario }) => {
     expect(text).toContain('To leave immersive reading: Settings > Immersive reader.');
   };
   const gone = async () => {
-    // the setting is read after the screen draws: give it the time a late card would need
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // the setting is read after the screen draws: give it the turns a late card would need
+    await act(async () => { await afterTurns(); });
     expect(card()).toBeNull();
   };
 
