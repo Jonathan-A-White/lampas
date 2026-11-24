@@ -58,6 +58,10 @@ describe('the real-data Septuagint tests in the gate', () => {
 
   it('watches the paths the real-data describe depends on, and the test reads its directories from the decision, not a bare existsSync', () => {
     expect(WATCHED).toEqual(expect.arrayContaining(['scripts/lxx/', 'data/lxx/choices/']));
+    // a book's own real-data test file (mw-u2w5klk.349.99) is a change worth a run, whatever its code
+    for (const f of ['tests/unit/lxx-align-choose.test.ts', 'tests/unit/lxx-align-choose-gen.test.ts', 'tests/unit/lxx-align-choose-xyz.test.ts', 'docs/lxx-align/gen-notes.txt']) {
+      expect(WATCHED.some((w) => f === w || f.startsWith(w)), f).toBe(true);
+    }
     const test = readFileSync('tests/unit/lxx-align-choose.test.ts', 'utf8');
     expect(test).toContain('lxxRealData()');
     expect(test).not.toMatch(/existsSync\('data\/raw\/lxx'\)/);
