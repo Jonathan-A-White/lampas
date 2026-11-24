@@ -364,3 +364,28 @@ describe("LXX2012's Genesis 22, 31 and 37 and Psalm 149 stand at the Greek verse
     ]);
   });
 });
+
+// mw-u2w5klk.349.110: LXX2012 numbers Deuteronomy 5:17 and 5:18 as the English Bible does ('murder', then 'adultery'), Swete the other way round (μοιχεύσεις, then φονεύσεις; TVTMS's section
+// Deu.5:17-5:18 has no Brenton column), so each verse's English stood under the other's Greek: 'murder' had no Greek word to open and φονεύσεις no English.
+describe("LXX2012's Deuteronomy 5:17 and 5:18 stand at the Greek verses their text is", () => {
+  const book = parseUsfm(fixture('lxx2012-deu-5.usfm'));
+  const deuMaps = buildMaps(parseTvtms(fixture('tvtms-deu-5-slice.txt')));
+
+  it("puts Brenton's 5:17 at the Greek 5:18 and his 5:18 at the Greek 5:17, and leaves the verses either side", () => {
+    expect(deuMaps.lxx2012ToGreek('deu 5:16')).toEqual({ state: 'same', refs: ['deu 5:16'] });
+    expect(deuMaps.lxx2012ToGreek('deu 5:17')).toEqual({ state: 'one', refs: ['deu 5:18'] });
+    expect(deuMaps.lxx2012ToGreek('deu 5:18')).toEqual({ state: 'one', refs: ['deu 5:17'] });
+    expect(deuMaps.lxx2012ToGreek('deu 5:19')).toEqual({ state: 'same', refs: ['deu 5:19'] });
+  });
+
+  it("weaves 'adultery' at the Greek 5:17 and 'murder' at the Greek 5:18, nothing unplaced and no verse of the four left without English", () => {
+    const { byGreek, placedAt } = englishByGreekVerse(book, deuMaps);
+    const text = (ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' | ');
+    expect(text('deu 5:17')).toBe('You shall not commit adultery.');
+    expect(text('deu 5:18')).toBe('You shall not commit murder.');
+    expect(text('deu 5:19')).toBe('You shall not steal.');
+    const swete = [16, 17, 18, 19, 20].map((v) => `deu 5:${v}`);
+    expect(versesWithoutEnglish(byGreek, swete)).toEqual([]);
+    expect(unplacedVerses(placedAt, swete)).toEqual([]);
+  });
+});

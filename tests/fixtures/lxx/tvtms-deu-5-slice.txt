@@ -1,0 +1,8 @@
+TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY
+A slice for tests (mw-u2w5klk.349.110): the Deu.5:17-5:18 section of the condensed data, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge).
+#DataStart(Condensed)
+$Deu.5:17-5:18	English KJV	Hebrew	Latin	Greek*								
+TEST: If...	Exo.37:29=Last	Exo.37:29=Last	Exo.37:29=Last	Exo.37:21=Last								
+OneToOne	Deu.5:17	Deu.5:17	Deu.5:17	Deu.5:18								
+OneToOne	Deu.5:18	Deu.5:18	Deu.5:18	Deu.5:17								
+#DataEnd(Condensed)
