@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.365",
+    "date": "2026-11-24",
+    "story": "mw-r9xo1pj.26",
+    "kind": "fixed",
+    "text": "Today no longer says new Morning RePhil episodes need an app update when they now show up on their own."
+  },
+  {
+    "version": "0.7.365",
+    "date": "2026-11-24",
+    "story": "mw-qtu3zvz.282",
+    "kind": "new",
+    "text": "A Brookfield First sermon you ask the tutor to play now starts by itself, with no tap."
+  },
+  {
+    "version": "0.7.365",
+    "date": "2026-11-24",
+    "story": "mw-1l901so.1",
+    "kind": "new",
+    "text": "Where your Logos library has no David Guzik volume for a book, Lampas now offers his Enduring Word commentary on the web for that chapter, from the \"In another book…\" list and, without Logos, from a \"Commentary\" button on the verse."
+  },
+  {
+    "version": "0.7.365",
+    "date": "2026-11-24",
+    "story": "mw-zbgo4ep.24",
+    "kind": "new",
+    "text": "David's recording now plays, with the highlight following, for Nahum, Habakkuk, Zephaniah, Haggai, Zechariah and Malachi."
+  },
+  {
+    "version": "0.7.365",
+    "date": "2026-11-24",
+    "story": "mw-zbgo4ep.23",
+    "kind": "new",
+    "text": "David's recording now plays for Daniel, Hosea, Joel, Amos, Obadiah, Jonah and Micah."
+  },
+  {
     "version": "0.7.364",
     "date": "2026-11-24",
     "story": "mw-zbgo4ep.25",

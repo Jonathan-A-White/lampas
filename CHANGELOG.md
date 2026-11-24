@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.365
+_2026-11-24_
+- Fixed: Today no longer says new Morning RePhil episodes need an app update when they now show up on their own.
+- New: A Brookfield First sermon you ask the tutor to play now starts by itself, with no tap.
+- New: Where your Logos library has no David Guzik volume for a book, Lampas now offers his Enduring Word commentary on the web for that chapter, from the "In another book…" list and, without Logos, from a "Commentary" button on the verse.
+- New: David's recording now plays, with the highlight following, for Nahum, Habakkuk, Zephaniah, Haggai, Zechariah and Malachi.
+- New: David's recording now plays for Daniel, Hosea, Joel, Amos, Obadiah, Jonah and Micah.
+
 ## 0.7.364
 _2026-11-24_
 - New: David's recorded reading now follows along with highlighting in Matthew and Mark.
