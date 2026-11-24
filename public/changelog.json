@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.367",
+    "date": "2026-11-24",
+    "story": "mw-1l901so.4",
+    "kind": "fixed",
+    "text": "Enduring Word's commentary now opens at once, instead of waiting on a service that never had it."
+  },
+  {
+    "version": "0.7.367",
+    "date": "2026-11-24",
+    "story": "mw-zbgo4ep.28",
+    "kind": "new",
+    "text": "David's recorded reading now covers Galatians through Philemon, with the highlight following along."
+  },
+  {
     "version": "0.7.366",
     "date": "2026-11-24",
     "story": "mw-r9xo1pj.27",

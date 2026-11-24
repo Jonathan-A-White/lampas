@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.367
+_2026-11-24_
+- Fixed: Enduring Word's commentary now opens at once, instead of waiting on a service that never had it.
+- New: David's recorded reading now covers Galatians through Philemon, with the highlight following along.
+
 ## 0.7.366
 _2026-11-24_
 - Fixed: an episode of Morning RePhil that you had marked seen before the church posted its link now stays seen.
