@@ -22,6 +22,7 @@ import { setHand } from '../../src/settings/hand';
 import { openDoorTarget, registerDoorTarget, useDoorTarget, useNoDoor } from '../../src/tutor/door';
 import { WordSheet, type WordHelp } from '../../src/WordSheet';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { afterTurns } from '../support/turns';
 
 afterAll(() => {
   cleanup();
@@ -70,6 +71,12 @@ const two = [
   { x: 100, y: 300 },
   { x: 190, y: 310 },
 ];
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
+
 function twoFingerTap(target: EventTarget = document): void {
   touch('touchstart', two, target);
   touch('touchend', [], target);
@@ -169,7 +176,7 @@ describe('the floating ?', () => {
         <FloatingTutor />
       </Phone>,
     );
-    await new Promise((r) => setTimeout(r, 50));
+    await letItRun();
     expect(document.querySelector('[data-floating-tutor]')).toBeNull();
   });
 
@@ -251,7 +258,7 @@ describe('the floating ?', () => {
         <Screen ask={() => undefined} hidden />
       </Phone>,
     );
-    await new Promise((r) => setTimeout(r, 50));
+    await letItRun();
     expect(document.querySelector('[data-floating-tutor]')).toBeNull();
     rerender(
       <Phone licence="licensed">
@@ -338,7 +345,7 @@ describe('the word sheet', () => {
       </Phone>,
     );
     await screen.findByRole('dialog', { name: 'Word' });
-    await new Promise((r) => setTimeout(r, 50));
+    await letItRun();
     twoFingerTap();
     expect(document.querySelector('[data-floating-tutor]')).toBeNull();
     expect(asked).toEqual([]);
@@ -368,7 +375,7 @@ describe('the lesson (idea) sheet', () => {
       </Phone>,
     );
     await screen.findByRole('dialog', { name: 'Idea' });
-    await new Promise((r) => setTimeout(r, 50));
+    await letItRun();
     twoFingerTap();
     expect(document.querySelector('[data-floating-tutor]')).toBeNull();
     expect(screen.queryByRole('dialog', { name: /Ask the tutor: / })).toBeNull();
@@ -420,7 +427,7 @@ describe('the teach sheet (the new word)', () => {
     const asked: NewWordAsk[] = [];
     render1(undefined, () => undefined, 'not-licensed');
     await screen.findByRole('dialog', { name: 'New word' });
-    await new Promise((r) => setTimeout(r, 50));
+    await letItRun();
     expect(document.querySelector('[data-floating-tutor]')).toBeNull();
     expect(openDoorTarget()).toBe(false);
     expect(asked).toEqual([]);

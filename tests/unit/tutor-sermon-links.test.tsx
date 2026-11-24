@@ -2,22 +2,30 @@
 // leave the Talk sheet; an id the request's rows lack draws nothing. sermonChip finds it among the rows.
 import '@testing-library/jest-dom/vitest';
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { sermonChip } from '../../src/resources/tutorLinks';
 import { TutorLinks } from '../../src/TutorLinks';
 import { setSermonSources } from '../../src/sermons';
+import { talkSermonsFor } from '../../src/sermons/forTutor';
 import { closeSermon, useOpenedSermon } from '../../src/sermons/player';
 import { closeSermonText, useOpenedText } from '../../src/sermons/sermonText';
 import { openWebSetting } from '../../src/settings/definitions/sermons';
 import { setSetting } from '../../src/settings/store';
 import { row, sourceOf } from '../support/sermon-sources';
+import { afterTurns } from '../support/turns';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
 
 const place = { book: 'rom', chapter: 5 };
 const rows = [row('testsermons', 'love', 'Love Commended', ['rom', 5, 8, 8], 'Test Preacher'), row('testsermons', 'peace', 'Peace with God', ['rom', 5, 1, 11], 'Test Preacher')];
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 afterAll(() => {
   cleanup();
@@ -200,14 +208,15 @@ describe('the sermon chip', () => {
 
   it('is not drawn for an id the passage lacks, and nothing at all is drawn when it is the only link', async () => {
     render(<TutorLinks links={[{ kind: 'sermon', sermon: 'testsermons:invented' }]} place={place} verse={8} onLeave={() => undefined} />);
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await talkSermonsFor({ book: place.book, chapter: place.chapter, from: 8 }); // the very read the chip waits on: it has answered, and no row is the id
+    await letItRun();
     expect(screen.queryByRole('link', { name: /^Sermon:/ })).toBeNull();
     expect(document.querySelector('[data-tutor-links]')).toBeNull();
   });
 
   it('is not drawn in a talk with no place (a talk from a screen)', async () => {
     render(<TutorLinks links={[{ kind: 'sermon', sermon: 'testsermons:love' }]} onLeave={() => undefined} />);
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await letItRun(); // no place: nothing is read, and nothing is left to wait for
     expect(screen.queryByRole('link', { name: /^Sermon:/ })).toBeNull();
   });
 });

@@ -24,8 +24,10 @@ const scope: TalkScope = { title: 'Romans 8', chapter, verse: chapter.verses[10]
 const inputSchema = JSON.parse(readFileSync('grinds/bible-talk.input.schema.json', 'utf8')) as Schema;
 const answerSchema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
 const good = { answer: 'Done.', question: 'What does it say?', words: [] };
+// each turn is made a millisecond after the last, by its own stamp: two made in one millisecond have no order to find the newest by
+let stamp = Date.now();
 const turnWith = async (done: Parameters<typeof addTurn>[5]) => {
-  await addTurn('rom.8.11:quiz', 'q', 'a', [], Date.now(), done);
+  await addTurn('rom.8.11:quiz', 'q', 'a', [], ++stamp, done);
   return (await listTurns('rom.8.11:quiz')).at(-1)!;
 };
 const none = { changes: [], refused: [] };
@@ -41,9 +43,7 @@ describe('the offer a turn holds', () => {
 
   it('is the newest turn with an offer still waiting', async () => {
     await turnWith({ ...none, feedbackOffer: 'old' });
-    await new Promise((r) => setTimeout(r, 2));
     const newer = await turnWith({ ...none, quizGoalOffer: 'learning English' });
-    await new Promise((r) => setTimeout(r, 2));
     await turnWith(none);
     const found = pendingOfferOf(await listTurns('rom.8.11:quiz'));
     expect(found?.turn.id).toBe(newer.id);

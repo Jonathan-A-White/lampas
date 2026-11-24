@@ -7,14 +7,21 @@ import { useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChapterNav } from '../../src/ChapterNav';
 import { db } from '../../src/data/db';
-import { setTips } from '../../src/data/repositories';
+import { getTips, setTips } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { crossChapter } from '../../src/reader/crossChapter';
 import { useChapterSwipe } from '../../src/reader/useChapterSwipe';
 import { chapterButtonsSetting } from '../../src/settings/definitions/chapterButtons';
 import { writeSetting } from '../support/settings';
 import { setSetting } from '../../src/settings/store';
-import { chapterSwiped, hints } from '../../src/tips/hints';
+import { CHAPTER_BUTTONS_OFFER, chapterSwiped, hints } from '../../src/tips/hints';
+import { afterTurns } from '../support/turns';
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 beforeEach(async () => {
   window.localStorage.clear();
@@ -86,7 +93,8 @@ describe('ChapterNav', () => {
     first.unmount();
     render(<ChapterNav book="1jn" chapter={3} />);
     expect(await screen.findByRole('button', { name: '1 John 4 ›' })).toBeInTheDocument();
-    await new Promise((r) => setTimeout(r, 50));
+    expect(await hints.nextTip(CHAPTER_BUTTONS_OFFER)).toBeNull(); // the very question the offer asks of the tips store
+    await letItRun();
     expect(screen.queryByRole('note')).toBeNull();
   });
 
@@ -95,7 +103,8 @@ describe('ChapterNav', () => {
     crossChapter('1jn', 1, 1, true);
     const { container } = render(<ChapterNav book="1jn" chapter={2} />);
     expect(await screen.findByRole('button', { name: '1 John 3 ›' })).toBeInTheDocument();
-    await new Promise((r) => setTimeout(r, 50));
+    expect(await getTips()).toBe('off'); // the very read the offer waits on
+    await letItRun();
     expect(screen.queryByRole('note')).toBeNull();
     await act(async () => {
       await setSetting(chapterButtonsSetting, 'hide');

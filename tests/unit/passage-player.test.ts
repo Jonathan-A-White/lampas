@@ -14,6 +14,7 @@ import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePa
 import { stopReading } from '../../src/speech/readAloud';
 import { spokenReference } from '../../src/speech/spokenReference';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { afterTurns } from '../support/turns';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 
 const timeout = ASYNC_WAIT_MS;
@@ -227,15 +228,18 @@ function holdChapter(path: string): { requested: () => boolean; release: () => v
 
 /** Lets the voice finish what it says until `done()`, the player fetching the next reference in between. */
 async function finishUntil(done: () => boolean): Promise<void> {
-  for (let i = 0; i < 50 && !done(); i++) {
-    if (synth.speaking) synth.finishAll();
-    await Promise.resolve();
-    await new Promise((r) => setTimeout(r, 0));
-  }
-  expect(done()).toBe(true);
+  await vi.waitFor(
+    () => {
+      if (done()) return;
+      if (synth.speaking) synth.finishAll();
+      expect(done()).toBe(true);
+    },
+    { timeout, interval: 1 },
+  );
 }
 
-const quiet = () => new Promise((r) => setTimeout(r, 50));
+// Nothing is to happen here, and no event ends the wait: the work already queued (the held chapter's answer, the player's reading of it) is let run, counted in turns of the task queue (tests/support/turns.ts).
+const quiet = () => afterTurns();
 
 describe('Pause or Stop pressed in a wait between two references (mw-9q8wp1.7)', () => {
   it('waiting for the next chapter to load: Pause holds the player on the next reference, and Resume reads it from its start', async () => {
@@ -363,7 +367,7 @@ describe('Pause, Resume and Stop', () => {
     expect(synth.calls).toContain('cancel');
     expect(synth.speaking).toBe(false);
     const heard = synth.spoken.length;
-    await new Promise((r) => setTimeout(r, 50));
+    await quiet();
     expect(synth.spoken.length).toBe(heard);
     expect(changes.at(-1)).toEqual(['idle', null]);
   });
@@ -373,7 +377,7 @@ describe('Pause, Resume and Stop', () => {
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     synth.finishAll();
     stopPassage();
-    await new Promise((r) => setTimeout(r, 50));
+    await quiet();
     expect(synth.spoken.map((s) => s.text)).toEqual([say('Isaiah 30:21: skipping, no Old Testament present')]);
   });
 

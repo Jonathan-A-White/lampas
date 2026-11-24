@@ -1,7 +1,7 @@
 // The tutor's copy and share chips (mw-5r3p30.1075): {kind: 'copy' | 'share', reference} in a Bible talk answer is a chip 'Copy Hebrews 9:11-10:4' that, in one tap, puts the
 // text of the range on the clipboard (or hands it to the share sheet), says 'Copied' for COPIED_MS, and says 'Could not read Hebrews 10' when a chapter cannot be read.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { COPIED_MS } from '../../src/copy/useCopyHold';
@@ -9,6 +9,13 @@ import { db } from '../../src/data/db';
 import { forgetChapters } from '../../src/data/chapter';
 import { TutorLinks } from '../../src/TutorLinks';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { afterTurns } from '../support/turns';
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 let written: string[];
 let shared: ShareData[];
@@ -35,7 +42,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
   // the chips made their text as they were drawn: let the last of that finish before the database closes
-  await new Promise((r) => setTimeout(r, 200));
+  await afterTurns();
   cleanup();
   vi.unstubAllGlobals();
   db.close();
@@ -84,7 +91,7 @@ describe('the copy chip', () => {
 
   it('draws no chip for a reference it cannot read, and nothing at all when that is the only link', async () => {
     const { container } = render(<TutorLinks links={[{ kind: 'copy', reference: 'every verse about faith' }]} onLeave={() => undefined} />);
-    await new Promise((r) => setTimeout(r, 50));
+    await letItRun();
     expect(container.querySelector('[data-tutor-links]')).toBeNull();
   });
 });
@@ -111,10 +118,13 @@ describe('the share chip', () => {
   });
 
   it('says nothing more when he closes the share sheet (AbortError)', async () => {
-    setShare(() => Promise.reject(new DOMException('closed', 'AbortError')));
+    let closed: Promise<void> | undefined;
+    setShare(() => (closed = Promise.reject(new DOMException('closed', 'AbortError'))));
     render(<TutorLinks links={[{ kind: 'share', reference: 'Hebrews 9:11' }]} onLeave={() => undefined} />);
     await userEvent.click(await screen.findByRole('button', { name: 'Share Hebrews 9:11' }));
-    await new Promise((r) => setTimeout(r, 50));
+    await closed?.catch(() => undefined); // the share sheet has been closed: what the chip makes of it is drawn after
+    expect(closed).toBeDefined();
+    await letItRun();
     expect(screen.getByRole('button', { name: 'Share Hebrews 9:11' })).toHaveTextContent('Share');
     expect(written).toEqual([]);
   });
