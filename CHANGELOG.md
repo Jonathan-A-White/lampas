@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.368
+_2026-11-24_
+- New: Pastor Paul LeBoutillier's Through the Bible teachings from Life Bible Ministry can be listed under each passage in Sermons and played in the app, once you switch them on in Settings.
+- New: David's recording now follows the highlight in Romans (except chapters 14 and 16), 1 Corinthians and 2 Corinthians.
+
 ## 0.7.367
 _2026-11-24_
 - Fixed: Enduring Word's commentary now opens at once, instead of waiting on a service that never had it.
