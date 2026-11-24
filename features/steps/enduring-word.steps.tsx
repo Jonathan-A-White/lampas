@@ -1,4 +1,4 @@
-// features/steps/enduring-word.steps.tsx — runs features/enduring-word.feature (mw-1l901so.1): Enduring Word, David Guzik's commentary on the web, as a row of the "In another book…" chooser
+// features/steps/enduring-word.steps.tsx — runs features/enduring-word.feature (mw-1l901so.1, mw-1l901so.2): Enduring Word, David Guzik's commentary on the web, as a row of the "In another book…" chooser
 // (src/library/InLogosChooser.tsx, where his library holds no DGCB volume of the book) and as the Verse view's "Commentary" door (src/library/EnduringWordDoor.tsx), both opening Lampas's reader
 // (src/sermons/SermonReader.tsx). The sermon index service is not reached (SERMONS_URL is empty in the tests): the reader cannot get the words, so the page opens on the web.
 import '@testing-library/react/dont-cleanup-after-each';
@@ -30,6 +30,7 @@ afterAll(async () => {
 
 const user = userEvent.setup();
 let windows: string[] = [];
+let at = '';
 
 const entry = (resource: string, short: string, covers: string[]): CatalogueEntry => ({ resource, kind: 'commentary', title: short, short, lang: 'en', opens: 'verse', value: 'a test book', covers, via: 'id' });
 const DGCB_IS = entry('LLS:GUZIKCOMM23IS', 'DGCB Is', ['isa']);
@@ -39,6 +40,7 @@ const BOOKS: readonly CatalogueEntry[] = [DGCB_IS, JOHN];
 const PLACES: Record<string, { book: string; chapter: number; verse: number }> = {
   'Isaiah 1:1': { book: 'isa', chapter: 1, verse: 1 },
   'John 3:16': { book: 'jhn', chapter: 3, verse: 16 },
+  'John 3:40': { book: 'jhn', chapter: 3, verse: 40 },
 };
 
 /** The windows the reader opens are noted, not opened (each step is a test of its own: this is set in the Given, not in a beforeEach). */
@@ -78,6 +80,7 @@ const reader = () => screen.findByRole('dialog', { name: /Enduring Word$/ });
 
 async function opened(text: string): Promise<void> {
   cleanup();
+  at = text;
   const place = PLACES[text] ?? expect.unreachable(`no place ${text}`);
   render(
     <>
@@ -95,6 +98,10 @@ const creditShown = async (_: unknown, credit: string) => {
 };
 const pageOpened = async (_: unknown, url: string) => {
   await waitFor(() => expect(windows).toEqual([url]));
+};
+
+const tapRow = async (_: unknown, short: string) => {
+  await user.click(await within(await chooser()).findByRole('link', { name: `Open ${at} in ${short}` }));
 };
 
 const feature = await loadFeature('features/enduring-word.feature');
@@ -126,12 +133,17 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario("Its row opens the chapter's page in Lampas's reader, with its credit line", ({ Given, When, And, Then }) => {
     Given(held, () => library(BOOKS));
     When('he opens the chooser at {string}', chooserAt);
-    And('he taps the row {string}', async (_, short: string) => {
-      await user.click(await within(await chooser()).findByRole('link', { name: `Open John 3:16 in ${short}` }));
-    });
+    And('he taps the row {string}', tapRow);
     Then('the reader is headed {string}', readerHeaded);
     And('the reader shows the credit {string}', creditShown);
     And('the page {string} is opened on the web, as the reader cannot get its words', pageOpened);
+  });
+
+  Scenario("A verse no section's range holds opens the chapter's top", ({ Given, When, And, Then }) => {
+    Given(held, () => library(BOOKS));
+    When('he opens the chooser at {string}', chooserAt);
+    And('he taps the row {string}', tapRow);
+    Then('the page {string} is opened on the web, as the reader cannot get its words', pageOpened);
   });
 
   Scenario('With Logos Off the Verse view has the Commentary door', ({ Given, Then, When, And }) => {

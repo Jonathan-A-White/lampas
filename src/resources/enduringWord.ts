@@ -97,10 +97,48 @@ export const ENDURING_WORD_SLUGS: Readonly<Record<string, string>> = {
 /** Whether the commentary has the book (a book of ours it names: the Apocrypha is not in it). */
 export const hasEnduringWord = (book: string): boolean => ENDURING_WORD_SLUGS[book] !== undefined;
 
-/** The address of a chapter's commentary: `https://enduringword.com/bible-commentary/john-3/`; undefined for a book it has none of. A one-chapter book is chapter 1 ('obadiah-1'). */
-export function enduringWordUrl(book: string, chapter: number): string | undefined {
+/**
+ * The verse range a section heading names (mw-1l901so.2): the page's outline headings read '2. (4) Nicodemus answers...' or '3. (5-8) Jesus explains...', and the range is the first parenthesis after the heading's number,
+ * as 'from-to' or the one verse ('4'); an en dash is a dash. undefined for a heading that names none.
+ */
+export function headingRange(heading: string): string | undefined {
+  const m = /^\s*\d+\.\s*\(\s*(\d+)\s*(?:[-–—]\s*(\d+)\s*)?\)/.exec(heading);
+  if (!m) return undefined;
+  return m[2] === undefined ? m[1] : `${m[1]}-${m[2]}`;
+}
+
+/** The ranges of a page's outline headings, one for each heading in the page's order: heading N is the anchor `section-N` (the page's own numbering starts again in its parts, the ids do not). */
+export const rangesOfHeadings = (headings: readonly string[]): (string | undefined)[] => headings.map(headingRange);
+
+/** The section (its N, of `section-N`) whose range holds the verse; undefined where none does. The first that does wins, should two ranges meet. */
+export function enduringWordSectionOf(ranges: readonly (string | undefined)[], verse: number): number | undefined {
+  const at = ranges.findIndex((range) => {
+    if (range === undefined) return false;
+    const [from, to] = range.split('-').map(Number);
+    return from !== undefined && verse >= from && verse <= (to ?? from);
+  });
+  return at < 0 ? undefined : at + 1;
+}
+
+/**
+ * The outline of the chapters whose page's headings were read, by the page's slug ('john-3'): each section's verse range, in order (only the numbers, none of the commentary's words). A chapter not here opens at its top
+ * (the page cannot be read from the app: the site sends no CORS headers). Add a chapter by `rangesOfHeadings` of its page's `h4#section-N` headings. PROVISIONAL: the chapters other than John 3 are still to be read.
+ */
+export const ENDURING_WORD_SECTIONS: Readonly<Record<string, readonly (string | undefined)[]>> = {
+  'john-3': ['1-3', '4', '5-8', '9-13', '14-15', '16', '17-21', '22-24', '25-26', '27-30', '31-33', '34-36'],
+};
+
+/**
+ * The address of a chapter's commentary: `https://enduringword.com/bible-commentary/john-3/`; undefined for a book it has none of. A one-chapter book is chapter 1 ('obadiah-1'). With a verse, the page opens at the
+ * outline section whose range holds it (`#section-6`, the site has no anchor of a verse); where no section does, or the chapter's outline is not known, it opens at the chapter's top.
+ */
+export function enduringWordUrl(book: string, chapter: number, verse?: number): string | undefined {
   const slug = ENDURING_WORD_SLUGS[book];
-  return slug === undefined ? undefined : `https://enduringword.com/bible-commentary/${slug}-${chapter}/`;
+  if (slug === undefined) return undefined;
+  const url = `https://enduringword.com/bible-commentary/${slug}-${chapter}/`;
+  const ranges = verse === undefined ? undefined : ENDURING_WORD_SECTIONS[`${slug}-${chapter}`];
+  const section = ranges === undefined || verse === undefined ? undefined : enduringWordSectionOf(ranges, verse);
+  return section === undefined ? url : `${url}#section-${section}`;
 }
 
 /** The row the chooser lists, in the place of a DGCB volume he does not have: a web page, so no Logos Resource ID. */
@@ -119,9 +157,9 @@ export const ENDURING_WORD_ENTRY: CatalogueEntry = {
 /** Whether a catalogue row is this web commentary. */
 export const isEnduringWord = (entry: Pick<CatalogueEntry, 'resource'>): boolean => entry.resource === ENDURING_WORD_RESOURCE;
 
-/** The reader's row for the chapter of a place: its id is the page's slug ('john-3'), its title the chapter named. */
-export function enduringWordRow(place: Pick<StudyPlace, 'book' | 'chapter'>): LinkRow | undefined {
-  const url = enduringWordUrl(place.book, place.chapter);
+/** The reader's row for the chapter of a place: its id is the page's slug ('john-3'), its title the chapter named, its address the section of the place's verse (enduringWordUrl). */
+export function enduringWordRow(place: Pick<StudyPlace, 'book' | 'chapter'> & { verse?: number }): LinkRow | undefined {
+  const url = enduringWordUrl(place.book, place.chapter, place.verse);
   const slug = ENDURING_WORD_SLUGS[place.book];
   if (url === undefined || slug === undefined) return undefined;
   const name = bookOf(place.book)?.name ?? slug;
@@ -129,7 +167,7 @@ export function enduringWordRow(place: Pick<StudyPlace, 'book' | 'chapter'>): Li
 }
 
 /** Opens the chapter's commentary: in Lampas's web reader when it can get the page's words, else (the reader's own fall-back) in the browser. */
-export function openEnduringWord(place: Pick<StudyPlace, 'book' | 'chapter'>): void {
+export function openEnduringWord(place: Pick<StudyPlace, 'book' | 'chapter'> & { verse?: number }): void {
   const row = enduringWordRow(place);
   if (row) openSermonText(row);
 }

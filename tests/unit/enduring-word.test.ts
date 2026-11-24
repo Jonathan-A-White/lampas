@@ -40,10 +40,10 @@ describe('where the row stands among the commentaries', () => {
   const place = { book: 'jhn', chapter: 3, verse: 16 };
   const names = (rows: readonly InLogosRow[]) => rows.map((r) => r.entry.short);
 
-  it('is added where he holds no DGCB volume of the book, at the chapter’s page', () => {
+  it('is added where he holds no DGCB volume of the book, at the section of the verse (John 3:16)', () => {
     const rows = withEnduringWord([row(before), row(after)], [before, after], place);
     expect(names(rows)).toEqual(['Commentary A', 'Commentary B', ENDURING_WORD_ENTRY.short]);
-    expect(rows[2]?.link.url).toBe('https://enduringword.com/bible-commentary/john-3/');
+    expect(rows[2]?.link.url).toBe('https://enduringword.com/bible-commentary/john-3/#section-6');
   });
 
   it('stands where the DGCB volume would in the catalogue’s order, so it is not folded away under “N more”', () => {

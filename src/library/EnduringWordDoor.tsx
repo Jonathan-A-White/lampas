@@ -15,7 +15,7 @@ const QUIET_DOOR = 'inline-flex min-h-11 items-center justify-center rounded-lg 
 export function EnduringWordDoor({ place, entries = CATALOGUE }: { place: StudyPlace; entries?: readonly CatalogueEntry[] }) {
   const logos = useLiveQuery(async () => (await getStudyResources()).on.includes('logos'), []);
   const rows = useInLogosRows(place, entries);
-  const url = enduringWordUrl(place.book, place.chapter);
+  const url = enduringWordUrl(place.book, place.chapter, place.verse);
   // nothing is drawn until the shelf is read; with Logos On and a book that opens at the verse the chooser has the row
   if (url === undefined || logos === undefined || rows === undefined || (logos && hasAnotherBook(rows))) return null;
   return (
