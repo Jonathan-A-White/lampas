@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.366
+_2026-11-24_
+- Fixed: an episode of Morning RePhil that you had marked seen before the church posted its link now stays seen.
+- New: David's recording now plays, with the highlight following, in Luke and Acts.
+
 ## 0.7.365
 _2026-11-24_
 - Fixed: Today no longer says new Morning RePhil episodes need an app update when they now show up on their own.
