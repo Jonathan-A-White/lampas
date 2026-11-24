@@ -83,7 +83,8 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const quietly = async () => {
     await waitFor(() => expect(turn()).toHaveTextContent('Paul keeps coming back'));
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // the row draws nothing until its lookups have answered; when they have and no chip is left it draws the hidden mark [data-tutor-links-done] (src/TutorLinks.tsx)
+    await waitFor(() => expect(turn().querySelector('[data-tutor-links-done]')).not.toBeNull());
     expect(turn().querySelector('[data-tutor-links]')).toBeNull();
   };
 

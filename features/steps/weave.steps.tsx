@@ -16,6 +16,7 @@ import { SETTINGS } from '../../tests/support/settings';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings, openTool } from '../../tests/unit/openSettings';
@@ -172,8 +173,6 @@ const wovenWord = (form: string): HTMLElement => {
 const sheetWords = (): string[] => within(screen.getByRole('dialog')).getAllByTestId('sheet-word').map((e) => e.textContent ?? '');
 
 let synth: FakeSynth;
-/** past the app's 500 ms hold */
-const HOLD_MS = 650;
 
 const feature = await loadFeature('features/weave.feature');
 
@@ -610,8 +609,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he long presses the woven Greek word {string} in verse {int}', async (_, form: string) => {
       const el = wovenWord(form);
-      await user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } });
-      await new Promise<void>((resolve) => setTimeout(resolve, HOLD_MS)); // clock: a press's own hold time (HOLD_MS), the finger staying down
+      await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } }));
       await user.pointer({ keys: '[/MouseLeft]', target: el, coords: { clientX: 100, clientY: 100 } });
     });
     Then('the phone is told to speak only {string}', (_, form: string) => {

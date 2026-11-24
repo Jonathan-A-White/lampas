@@ -7,7 +7,8 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
-import { dayOf } from '../../src/data/repositories/usage';
+import { overdueNow } from '../../src/data/learnerRusty';
+import { dayOf, lastUsageDayBefore } from '../../src/data/repositories';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -59,11 +60,12 @@ const open = async () => {
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
 };
 const card = () => screen.queryByRole('region', { name: CARD });
+/** The card's check of the break has ended: the usage writes are done, and the card's own two reads (the last day of use, the overdue items) have been repeated here, queued behind its own, and the screen has taken them in. */
 const settled = async () => {
   await usageWritesSettled();
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-  });
+  await lastUsageDayBefore(dayOf(Date.now()));
+  await overdueNow();
+  await act(async () => {});
 };
 
 const feature = await loadFeature('features/welcome-back.feature');

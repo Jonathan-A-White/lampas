@@ -1,7 +1,7 @@
 // features/steps/turn-pages.steps.tsx — runs features/turn-pages.feature: Settings > Reading, Scroll | Turn pages, and the Reader laid out in pages
 // (src/reader/usePages.ts). jsdom has no layout: how the pages look and turn at 390x844 is tests/e2e/turn-pages.spec.ts.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -10,6 +10,8 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { readingModeSetting } from '../../src/settings/definitions/readingMode';
+import { getSetting } from '../../src/settings/store';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { leaveSettings, openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
@@ -109,7 +111,9 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('With Scroll the chapter scrolls and the place line says how far, not a page', ({ Given, Then, And }) => {
     Given('Lampas is opened on Romans 8 with nothing chosen', open);
     Then('the chapter scrolls as one long text', async () => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // the Reader draws 'scroll' until its own read of the setting comes back: a read of ours is queued behind it, and the screen takes both in
+      expect(await getSetting(readingModeSetting)).toBe('scroll');
+      await act(async () => {});
       expect(reader()).toHaveAttribute('data-paging', 'scroll');
       expect(reader()?.querySelector('[data-pages]')).toBeNull();
     });
