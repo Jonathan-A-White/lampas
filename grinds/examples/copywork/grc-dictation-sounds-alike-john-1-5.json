@@ -61,14 +61,14 @@
     "words.7.mark": {
       "equals": "right"
     },
-    "words.9.mark": {
-      "equals": "right"
+    "words.9.written": {
+      "equals": "σκοτία"
     },
     "words.11.mark": {
       "equals": "right"
     },
-    "words.12.mark": {
-      "equals": "right"
+    "words.12.written": {
+      "equals": "κατέλαβεν"
     },
     "fix_first": {
       "present": true
