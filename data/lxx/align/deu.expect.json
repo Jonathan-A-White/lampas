@@ -1,54 +1,37 @@
 {
   "reasons": {
-    "paired-deu-1-5": "The Greek word that renders it is a pair the aligner made to another English word of its phrase that no fix row has yet moved ('commanded' of 1:3 beside ἐνετείλατο, paired to 'things'; the 'rulers of thousands' of 1:15 beside χιλιάρχους, paired to 'officers'; 'bear', 'nurse' and 'nursling' of 1:31 beside ἐτροφοφόρησεν and τροφοφορήσει, paired to 'how' and 'any'; 'inherit' of 1:38; 'went' of 5:5; 'brought' and 'thence' of 5:15), or one Greek verb or noun stands in two English words, and the aligner paired it to the other ('came out', 'draw near', 'give rest', 'prolong days', 'strong cities'); each was read against its verse (mw-u2w5klk.349.11).",
-    "added-deu-1-5": "Brenton's English has it with no Greek word of its own: it turns a Greek phrase into English ('came to pass' for ἐγενήθη; 'go', 'river', 'forth', 'thing', 'things', 'hand' of 'right hand', 'other' of 'other side', 'one' of 'one end'), or it renders one Greek word in two English words ('gold works' for Καταχρύσεα, 'give rest', 'hewn' rock for λαξευτήν, 'to witness' with 'I call' for διαμαρτύρομαι), or Swete's Greek lacks it (the 'rulers of fifties' of 1:15, 'Lord' where Swete has ὁ θεός alone in 2:14 and 4:34); each was read against its verse (mw-u2w5klk.349.11).",
+    "added-deu-1-5": "Brenton's English has it with no Greek word of its own: it turns a Greek phrase into English ('came to pass' for ἐγενήθη; 'go', 'river', 'forth', 'thing', 'things', 'hand' of 'right hand', 'other' of 'other side', 'one' of 'one end'), or it renders one Greek word in two English words ('gold works' for Καταχρύσεα, 'hewn' rock for λαξευτήν, 'to witness' with 'I call' for διαμαρτύρομαι), or Swete's Greek lacks it (the 'rulers of fifties' of 1:15, 'Lord' where Swete has ὁ θεός alone in 2:14 and 4:34); each was read against its verse (mw-u2w5klk.349.11).",
     "swapped-order-deu-5": "LXX2012's English of Deuteronomy 5:17 and 5:18 has the commandments in the order murder, adultery; Swete's Greek has μοιχεύσεις (adultery) at 5:17 and φονεύσεις (murder) at 5:18, so the Greek word that renders each is in the other verse and has no chunk here to point at, as in the neighbouring-verse leftovers of Leviticus (mw-u2w5klk.349.11)."
   },
   "chapters": {
     "1": {
       "gaps": 0,
-      "model": 27,
+      "model": 16,
       "leftovers": [
         ["1:1:sea", "added-deu-1-5"],
         ["1:1:works", "added-deu-1-5"],
         ["1:3:came", "added-deu-1-5"],
-        ["1:3:commanded", "paired-deu-1-5"],
         ["1:3:pass", "added-deu-1-5"],
         ["1:7:go", "added-deu-1-5"],
         ["1:7:river", "added-deu-1-5"],
         ["1:8:god", "added-deu-1-5"],
-        ["1:11:thousandfold", "paired-deu-1-5"],
         ["1:15:fifties", "added-deu-1-5"],
-        ["1:15:rulers", "paired-deu-1-5"],
-        ["1:15:rulers", "paired-deu-1-5"],
-        ["1:15:rulers", "paired-deu-1-5"],
-        ["1:15:thousands", "paired-deu-1-5"],
+        ["1:15:rulers", "added-deu-1-5"],
         ["1:16:causes", "added-deu-1-5"],
         ["1:17:equally", "added-deu-1-5"],
-        ["1:20:far", "paired-deu-1-5"],
         ["1:30:effectually", "added-deu-1-5"],
         ["1:30:together", "added-deu-1-5"],
-        ["1:31:bear", "paired-deu-1-5"],
-        ["1:31:nurse", "paired-deu-1-5"],
-        ["1:31:nursling", "paired-deu-1-5"],
         ["1:34:greatly", "added-deu-1-5"],
         ["1:37:sake", "added-deu-1-5"],
-        ["1:38:inherit", "paired-deu-1-5"],
-        ["1:44:came", "paired-deu-1-5"],
         ["1:46:many", "added-deu-1-5"]
       ]
     },
     "2": {
       "gaps": 0,
-      "model": 20,
+      "model": 11,
       "leftovers": [
-        ["2:4:going", "paired-deu-1-5"],
-        ["2:7:consider", "paired-deu-1-5"],
-        ["2:8:passed", "paired-deu-1-5"],
-        ["2:9:aroer", "paired-deu-1-5"],
         ["2:13:said", "added-deu-1-5"],
         ["2:14:lord", "added-deu-1-5"],
-        ["2:15:destroy", "paired-deu-1-5"],
         ["2:16:came", "added-deu-1-5"],
         ["2:16:pass", "added-deu-1-5"],
         ["2:19:inheritance", "added-deu-1-5"],
@@ -57,23 +40,16 @@
         ["2:24:day", "added-deu-1-5"],
         ["2:27:aside", "added-deu-1-5"],
         ["2:27:hand", "added-deu-1-5"],
-        ["2:30:stubborn", "paired-deu-1-5"],
-        ["2:32:forth", "added-deu-1-5"],
-        ["2:34:living", "paired-deu-1-5"],
-        ["2:34:prey", "paired-deu-1-5"],
-        ["2:35:took", "paired-deu-1-5"]
+        ["2:32:forth", "added-deu-1-5"]
       ]
     },
     "3": {
       "gaps": 0,
-      "model": 14,
+      "model": 11,
       "leftovers": [
-        ["3:1:came", "paired-deu-1-5"],
-        ["3:5:strong", "paired-deu-1-5"],
         ["3:8:extending", "added-deu-1-5"],
         ["3:16:border", "added-deu-1-5"],
         ["3:16:brook", "added-deu-1-5"],
-        ["3:16:far", "paired-deu-1-5"],
         ["3:16:land", "added-deu-1-5"],
         ["3:18:yourselves", "added-deu-1-5"],
         ["3:20:given", "added-deu-1-5"],
@@ -86,12 +62,11 @@
     },
     "4": {
       "gaps": 0,
-      "model": 19,
+      "model": 16,
       "leftovers": [
         ["4:3:case", "added-deu-1-5"],
         ["4:10:happened", "added-deu-1-5"],
         ["4:10:things", "added-deu-1-5"],
-        ["4:11:drew", "paired-deu-1-5"],
         ["4:12:heard", "added-deu-1-5"],
         ["4:19:go", "added-deu-1-5"],
         ["4:21:things", "added-deu-1-5"],
@@ -103,21 +78,16 @@
         ["4:32:other", "added-deu-1-5"],
         ["4:32:thing", "added-deu-1-5"],
         ["4:34:lord", "added-deu-1-5"],
-        ["4:36:made", "paired-deu-1-5"],
-        ["4:40:longlived", "paired-deu-1-5"],
         ["4:46:other", "added-deu-1-5"],
         ["4:49:hewn", "added-deu-1-5"]
       ]
     },
     "5": {
       "gaps": 0,
-      "model": 17,
+      "model": 11,
       "leftovers": [
-        ["5:5:went", "paired-deu-1-5"],
         ["5:14:midst", "added-deu-1-5"],
         ["5:14:well", "added-deu-1-5"],
-        ["5:15:brought", "paired-deu-1-5"],
-        ["5:15:thence", "paired-deu-1-5"],
         ["5:17:murder", "swapped-order-deu-5"],
         ["5:18:adultery", "swapped-order-deu-5"],
         ["5:18:commit", "added-deu-1-5"],
@@ -125,11 +95,8 @@
         ["5:23:came", "added-deu-1-5"],
         ["5:23:pass", "added-deu-1-5"],
         ["5:26:heard", "added-deu-1-5"],
-        ["5:27:draw", "paired-deu-1-5"],
         ["5:32:aside", "added-deu-1-5"],
-        ["5:32:hand", "added-deu-1-5"],
-        ["5:33:prolong", "paired-deu-1-5"],
-        ["5:33:rest", "paired-deu-1-5"]
+        ["5:32:hand", "added-deu-1-5"]
       ]
     }
   }

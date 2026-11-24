@@ -120,4 +120,47 @@ describe.skipIf(!real.run)('Deuteronomy with the model pass', () => {
     expect(chunk).toBeDefined();
     expect(chunk!.g.map((g) => verse.g[g].t)).toContain('ἐπιθυμήσεις');
   });
+
+  // Story mw-u2w5klk.349.109: the aligner gave a Greek verb to the wrong English word of its phrase, so the word that renders it had no Greek and a tap on it opened the Verse view.
+  // Each row: the verse, the English chunk as it reads after the fix rows (a regex on the chunk's text), and the Greek words that chunk now renders (it may render more).
+  const FIXED: [number, number, RegExp, string[]][] = [
+    [1, 3, /^commanded$/, ['ἐνετείλατο']],
+    [1, 11, /thousand-fold more/, ['χιλιοπλασίως']],
+    [1, 15, /^as rulers of thousands,$/, ['χιλιάρχους']],
+    [1, 15, /^rulers of tens,$/, ['δεκαδάρχους']],
+    [1, 15, /^officers$/, ['γραμματοεισαγωγεῖς']],
+    [1, 20, /^as far as$/, ['ἕως']],
+    [1, 31, /how/, ['ὡς']],
+    [1, 31, /will bear/, ['ἐτροφοφόρησέν']],
+    [1, 31, /man should nurse/, ['τροφοφορήσει']],
+    [1, 38, /inherit/, ['κατακληρονομήσει']],
+    [1, 44, /came out/, ['ἐξῆλθεν']],
+    [2, 4, /are going/, ['παραπορεύεσθε']],
+    [2, 7, /^Consider$/, ['διάγνωθι']],
+    [2, 8, /and passed by/, ['παρήλθομεν']],
+    [2, 9, /^Aroer$/, ['Σηεὶρ']],
+    [2, 15, /to destroy/, ['ἐξαναλῶσαι']],
+    [2, 30, /stubborn/, ['κατίσχυσεν']],
+    [2, 34, /living prey/, ['ζωγρείαν']],
+    [2, 35, /we took/, ['ἐπρονομεύσαμεν']],
+    [3, 1, /came out/, ['ἐξῆλθεν']],
+    [3, 5, /strong cities/, ['ὀχυραί']],
+    [3, 16, /as far as Jaboc/, ['ἕως']],
+    [4, 11, /drew near/, ['προσήλθετε']],
+    [4, 36, /was made audible/, ['ἐγένετο']],
+    [4, 40, /long-lived/, ['μακροήμεροι']],
+    [5, 5, /went not up/, ['ἀνέβητε']],
+    [5, 15, /brought you out/, ['ἐξήγαγέν']],
+    [5, 15, /^thence$/, ['ἐκεῖθεν']],
+    [5, 27, /draw near/, ['πρόσελθε']],
+    [5, 33, /prolong your days/, ['μακροημερεύσητε']],
+    [5, 33, /give you rest/, ['καταπαύσῃ']],
+  ];
+  it.each(FIXED)('Deuteronomy %i:%i: the chunk %s renders %j', (n, v, text, greek) => {
+    const verse = withModel.get(n)!.verses.find((x) => x.n === v)!;
+    const chunk = verse.e.find((c) => text.test(c.t));
+    expect(chunk, `Deu ${n}:${v} ${text}`).toBeDefined();
+    const words = chunk!.g.map((g) => verse.g[g].t.replace(/[.,;·:]+$/, ''));
+    for (const w of greek) expect(words, `Deu ${n}:${v} '${chunk!.t}'`).toContain(w);
+  });
 });
