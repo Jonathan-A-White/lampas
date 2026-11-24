@@ -6,11 +6,11 @@ Derived without a Morpheus cache: none.
 
 | Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Deuteronomy 1 | 46 | 987 | 777 | 78.7% | 54.3% | — |
-| Deuteronomy 2 | 37 | 834 | 653 | 78.3% | 50.7% | — |
-| Deuteronomy 3 | 29 | 703 | 545 | 77.5% | 53.1% | — |
-| Deuteronomy 4 | 49 | 1,245 | 980 | 78.7% | 54.5% | — |
-| Deuteronomy 5 | 33 | 769 | 593 | 77.1% | 53.4% | — |
+| Deuteronomy 1 | 46 | 987 | 939 | 95.1% | 70.4% | 162 (16.4%) |
+| Deuteronomy 2 | 37 | 834 | 791 | 94.8% | 66.9% | 138 (16.5%) |
+| Deuteronomy 3 | 29 | 703 | 661 | 94.0% | 69.4% | 116 (16.5%) |
+| Deuteronomy 4 | 49 | 1,245 | 1,190 | 95.6% | 71.2% | 210 (16.9%) |
+| Deuteronomy 5 | 33 | 769 | 708 | 92.1% | 68.1% | 115 (15.0%) |
 | Deuteronomy 6 | 25 | 538 | 402 | 74.7% | 53.3% | — |
 | Deuteronomy 7 | 26 | 699 | 524 | 75.0% | 49.1% | — |
 | Deuteronomy 8 | 20 | 480 | 365 | 76.0% | 52.1% | — |
@@ -41,4 +41,4 @@ Derived without a Morpheus cache: none.
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Deuteronomy | 905 | 21,077 | 16,362 | 77.6% | 50.9% | — |
+| Deuteronomy | 905 | 21,077 | 17,103 | 81.1% | 54.3% | 741 (3.5%) |
