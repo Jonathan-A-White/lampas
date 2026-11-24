@@ -1,0 +1,7 @@
+{
+ "v":1,"edition":"msb-david","book":"amo","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"8:4","edge":"tail","reason":"the narrator reads on into verse 5: no quiet between 'land' and 'asking'; cut at the quietest instant between them","room":0.0,"cut":41.09,"judge":[{"kind":"tail-extra","by":0.11,"readsOn":true,"level":-1.9,"heard":{"next":"ASKING","letters":"PAY WITH THE POOR OF THE LAND","words":"of the land up"}},{"kind":"tail-clipped","by":0.037,"readsOn":true,"level":-1.5,"heard":{"letters":"WAY WITH THE POOR OF THE LAND","words":"poor of the land"}}]},
+  {"verse":"8:5","edge":"head","reason":"the narrator reads on from verse 4: no quiet between 'land' and 'asking'; cut at the quietest instant between them","room":0.0,"cut":41.09,"judge":[{"kind":"head-clipped","by":0.11,"readsOn":true,"level":-1.9,"heard":{"letters":"ASKING WHEN","words":"asking when will the"}}]}
+ ]
+}
