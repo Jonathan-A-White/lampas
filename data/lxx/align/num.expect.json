@@ -1,0 +1,73 @@
+{
+  "reasons": {
+    "other-verse-num": "LXX2012's English of this verse renders the Greek of the neighbouring verse, so the Greek words that render it are in that verse and have no chunk here to point at (Numbers 1:2's 'every male' is Swete's 1:3 πᾶς ἄρσην; 1:10's 'sons of Joseph, of Ephraim, Elisama the son of Emiud' is Swete's 1:9 τῶν υἱῶν Ἰωσήφ, τῶν Ἐφράιμ Ἐλεισαμὰ υἱὸς Ἐμιούδ; 3:27's 'according to number' is Swete's 3:28 κατὰ ἀριθμόν): the like of Genesis 37:32 (mw-u2w5klk.349.10).",
+    "paired-or-added-num": "Either the Greek word that renders it is a pair the aligner made to another English word of its phrase that no fix row has moved ('fathers' families' beside πατριῶν, 'conducted' beside ἐπεσκέψαντο, 'removing' beside ἐξαίρειν, 'move' beside ἐξαροῦσιν, 'number' beside ἐπισκέψασθε, 'bear' and 'borne' beside αἴρειν and αἰρομένων, 'skins' beside δέρρεις, 'commanded' beside συνέταξεν, 'lineage' beside δήμους), or Brenton's English adds it to turn a Greek phrase into English ('came', 'family of', 'veil of', 'furniture', 'things', 'put', 'charge', 'respective', 'severally', 'included', 'order', 'fellow'); each was read against its verse (mw-u2w5klk.349.10)."
+  },
+  "chapters": {
+    "1": {
+      "gaps": 0,
+      "model": 11,
+      "leftovers": [
+        ["1:2:fathers", "paired-or-added-num"],
+        ["1:2:male", "other-verse-num"],
+        ["1:10:elisama", "other-verse-num"],
+        ["1:10:emiud", "other-verse-num"],
+        ["1:10:ephraim", "other-verse-num"],
+        ["1:10:joseph", "other-verse-num"],
+        ["1:10:son", "other-verse-num"],
+        ["1:10:sons", "other-verse-num"],
+        ["1:44:conducted", "paired-or-added-num"],
+        ["1:45:came", "paired-or-added-num"],
+        ["1:51:removing", "paired-or-added-num"]
+      ]
+    },
+    "2": {
+      "gaps": 0,
+      "model": 6,
+      "leftovers": [
+        ["2:9:move", "paired-or-added-num"],
+        ["2:17:fellow", "paired-or-added-num"],
+        ["2:17:next", "paired-or-added-num"],
+        ["2:17:one", "paired-or-added-num"],
+        ["2:17:order", "paired-or-added-num"],
+        ["2:34:commanded", "paired-or-added-num"]
+      ]
+    },
+    "3": {
+      "gaps": 0,
+      "model": 9,
+      "leftovers": [
+        ["3:15:number", "paired-or-added-num"],
+        ["3:15:number", "paired-or-added-num"],
+        ["3:21:family", "paired-or-added-num"],
+        ["3:26:veil", "paired-or-added-num"],
+        ["3:27:according", "other-verse-num"],
+        ["3:27:number", "other-verse-num"],
+        ["3:33:family", "paired-or-added-num"],
+        ["3:36:included", "paired-or-added-num"],
+        ["3:46:number", "paired-or-added-num"]
+      ]
+    },
+    "4": {
+      "gaps": 0,
+      "model": 15,
+      "leftovers": [
+        ["4:11:put", "paired-or-added-num"],
+        ["4:15:bear", "paired-or-added-num"],
+        ["4:15:furniture", "paired-or-added-num"],
+        ["4:15:things", "paired-or-added-num"],
+        ["4:15:things", "paired-or-added-num"],
+        ["4:16:charge", "paired-or-added-num"],
+        ["4:25:skins", "paired-or-added-num"],
+        ["4:29:lineage", "paired-or-added-num"],
+        ["4:32:bear", "paired-or-added-num"],
+        ["4:32:bear", "paired-or-added-num"],
+        ["4:32:borne", "paired-or-added-num"],
+        ["4:32:things", "paired-or-added-num"],
+        ["4:46:lineage", "paired-or-added-num"],
+        ["4:49:respective", "paired-or-added-num"],
+        ["4:49:severally", "paired-or-added-num"]
+      ]
+    }
+  }
+}
