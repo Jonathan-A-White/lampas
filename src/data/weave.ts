@@ -85,18 +85,35 @@ export const withBeside = <T extends Woven[]>(woven: T, verse: Verse, lemmas: We
   Object.defineProperty(woven, 'beside', { value: besideVerse(verse, woven, lemmas), enumerable: false, configurable: true }) as T & Pick<WovenVerse, 'beside'>;
 
 /**
+ * Whether the Septuagint chunk `i`, which the pairing has not reached (`y` 'align?', no Greek word), may be the English of a Greek word that no chunk holds (mw-u2w5klk.349.108: 'fullness thereof;' of Psalm 23:1, the only English
+ * of πλήρωμα αὐτῆς): any such word but an article, wherever it stands, for Brenton's order is not always Swete's; or an article that stands between the Greek of the nearest chunks with Greek on either side of it in the English
+ * ('that' of οἱ κατοικοῦντες). An article elsewhere with no English is carried by its noun's ('God' for ὁ θεός), so the 'the' of 'In the beginning' is still an added word.
+ */
+function awaitsGreek(verse: Verse, i: number): boolean {
+  const held = new Set(verse.e.flatMap((chunk) => chunk.g));
+  const hasGreek = (chunk: Verse['e'][number]): boolean => chunk.g.length > 0;
+  const before = verse.e.slice(0, i).reverse().find(hasGreek);
+  const after = verse.e.slice(i + 1).find(hasGreek);
+  const ends = [before ? Math.max(...before.g) : -1, after ? Math.min(...after.g) : verse.g.length];
+  return verse.g.some((word, k) => !held.has(k) && (!word.p.startsWith('T-') || (k > Math.min(...ends) && k < Math.max(...ends))));
+}
+
+/**
  * The English words added by design that fall away (mw-u2w5klk.349.69, the Governor: they go once the words on both sides are in Greek), chunk by chunk in `verse.e`'s own indexes. A chunk is English by design when it has no
- * Greek of its own (`g` empty, not a '-'), or when its English is supplied words only ('While' of Acts 18:12): the Greek is not there to be shown in its place. It is gone when the nearest chunk on each side of it, in the order
+ * Greek of its own (`g` empty, not a '-'), or, outside the Septuagint, when its English is supplied words only ('While' of Acts 18:12): the Greek is not there to be shown in its place. It is gone when the nearest chunk on each side of it, in the order
  * the weave draws them (`woven.order`, else the English order), that is not itself English by design is woven; at a verse's start or end the one neighbour decides, and a verse with none has no word to fall away
  * after. A chunk English for any other reason (its Greek not known yet, a Septuagint chunk not paired yet, a '-') is a neighbour that is not woven, so the word beside it stays; so does a design-English chunk that has a known
  * Greek word drawn in gold beside it (besideVerse), for that word would go with it.
+ * No Greek word is lost with a chunk of the Septuagint (a chunk with `y`, mw-u2w5klk.349.108): one that holds Greek words is their only English, and one the pairing has not reached that may be a Greek word's English
+ * (awaitsGreek) is waiting for that word, not added.
  */
 export function goneVerse(verse: Verse, woven: WovenVerse): boolean[] {
   const order = drawnOrder(verse, woven);
   const design = (i: number): boolean => {
     const chunk = verse.e[i];
     if (woven[i] || chunk.t.trim() === '-' || woven.beside?.[i]) return false;
-    return chunk.g.length === 0 || (chunk.s !== undefined && ownEnglish(chunk) === '');
+    if (chunk.g.length === 0) return chunk.y !== 'align?' || !awaitsGreek(verse, i);
+    return chunk.y === undefined && chunk.s !== undefined && ownEnglish(chunk) === '';
   };
   const gone = verse.e.map(() => false);
   order.forEach((i, p) => {
