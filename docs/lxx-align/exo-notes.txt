@@ -1,0 +1,5 @@
+Exodus: what its pairing passes did (hand-kept; the generated file beside it is exo.txt). Written by the stories of the epic mw-u2w5klk.349 that went through the book, one paragraph a pass, oldest first
+(moved here from docs/lxx-align.md by mw-u2w5klk.349.99). The real-data checks of Exodus are tests/unit/lxx-align-choose-exo.test.ts; the counts and each leftover's reason are data/lxx/align/exo.expect.json;
+the method is docs/lxx-align.md, 'A pairing pass'.
+
+Exodus 1, 6, 8, 11, 14, 15, 17, 18 and 19 are done (story mw-u2w5klk.349.8: 1,342 runs, `data/lxx/align/exo-01` to `exo-19`, `exo.expect.json`); the first chapter left is Exodus 20, then 22, 24, 25, 27, 35, 37, 39 and 40, about 1,000 runs. `npm run lxx:unpaired -- --book exo` says what is left at any time.
