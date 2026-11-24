@@ -121,6 +121,25 @@ describe.skipIf(!real.run)('Deuteronomy with the model pass', () => {
     expect(chunk!.g.map((g) => verse.g[g].t)).toContain('ἐπιθυμήσεις');
   });
 
+  // Story mw-u2w5klk.349.110: LXX2012 numbers the sixth and seventh commandments the other way round from Swete, so 'murder' stood under μοιχεύσεις, 'adultery' under φονεύσεις, and a tap on either, and the
+  // Greek word φονεύσεις, led nowhere.
+  it.each([
+    [17, 'You shall not commit adultery.', 'adultery', 'μοιχεύσεις'],
+    [18, 'You shall not commit murder.', 'murder', 'φονεύσεις'],
+  ])('Deuteronomy 5:%i reads "%s", the chunk with "%s" renders %s and every Greek word has its English', (n, english, word, greek) => {
+    const verse = withModel.get(5)!.verses.find((x) => x.n === n)!;
+    expect(joined(verse)).toBe(english);
+    const chunk = verse.e.find((c) => c.t.includes(word));
+    expect(chunk, `Deu 5:${n} ${word}`).toBeDefined();
+    expect(chunk!.g.map((g) => verse.g[g].t.replace(/[.,;·:]+$/, ''))).toContain(greek);
+    expect(verse.g.filter((w) => w.e === undefined).map((w) => w.t)).toEqual([]);
+  });
+
+  it('leaves neither "murder" nor "adultery" in the sidecar as an English word with no Greek word', () => {
+    const left = readExpect('deu')!.chapters['5'].leftovers!.map(([key]) => key);
+    expect(left.filter((key) => /:(murder|adultery)$/.test(key))).toEqual([]);
+  });
+
   // Story mw-u2w5klk.349.109: the aligner gave a Greek verb to the wrong English word of its phrase, so the word that renders it had no Greek and a tap on it opened the Verse view.
   // Each row: the verse, the English chunk as it reads after the fix rows (a regex on the chunk's text), and the Greek words that chunk now renders (it may render more).
   const FIXED: [number, number, RegExp, string[]][] = [

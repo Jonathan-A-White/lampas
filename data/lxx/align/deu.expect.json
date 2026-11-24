@@ -1,7 +1,6 @@
 {
   "reasons": {
-    "added-deu-1-5": "Brenton's English has it with no Greek word of its own: it turns a Greek phrase into English ('came to pass' for ἐγενήθη; 'go', 'river', 'forth', 'thing', 'things', 'hand' of 'right hand', 'other' of 'other side', 'one' of 'one end'), or it renders one Greek word in two English words ('gold works' for Καταχρύσεα, 'hewn' rock for λαξευτήν, 'to witness' with 'I call' for διαμαρτύρομαι), or Swete's Greek lacks it (the 'rulers of fifties' of 1:15, 'Lord' where Swete has ὁ θεός alone in 2:14 and 4:34); each was read against its verse (mw-u2w5klk.349.11).",
-    "swapped-order-deu-5": "LXX2012's English of Deuteronomy 5:17 and 5:18 has the commandments in the order murder, adultery; Swete's Greek has μοιχεύσεις (adultery) at 5:17 and φονεύσεις (murder) at 5:18, so the Greek word that renders each is in the other verse and has no chunk here to point at, as in the neighbouring-verse leftovers of Leviticus (mw-u2w5klk.349.11)."
+    "added-deu-1-5": "Brenton's English has it with no Greek word of its own: it turns a Greek phrase into English ('came to pass' for ἐγενήθη; 'go', 'river', 'forth', 'thing', 'things', 'hand' of 'right hand', 'other' of 'other side', 'one' of 'one end'), or it renders one Greek word in two English words ('gold works' for Καταχρύσεα, 'hewn' rock for λαξευτήν, 'to witness' with 'I call' for διαμαρτύρομαι), or Swete's Greek lacks it (the 'rulers of fifties' of 1:15, 'Lord' where Swete has ὁ θεός alone in 2:14 and 4:34); each was read against its verse (mw-u2w5klk.349.11)."
   },
   "chapters": {
     "1": {
@@ -84,13 +83,10 @@
     },
     "5": {
       "gaps": 0,
-      "model": 11,
+      "model": 8,
       "leftovers": [
         ["5:14:midst", "added-deu-1-5"],
         ["5:14:well", "added-deu-1-5"],
-        ["5:17:murder", "swapped-order-deu-5"],
-        ["5:18:adultery", "swapped-order-deu-5"],
-        ["5:18:commit", "added-deu-1-5"],
         ["5:22:stone", "added-deu-1-5"],
         ["5:23:came", "added-deu-1-5"],
         ["5:23:pass", "added-deu-1-5"],

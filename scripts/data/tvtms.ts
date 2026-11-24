@@ -305,6 +305,7 @@ export const SUPPLEMENT_ROWS: readonly TvtmsRow[] = [
  * - Gen 37: LXX2012 37:32 holds the Greek 32-33 ("... know if it be your son's coat ... It is my son's coat"), so its 33-35 are the Greek 34-36 (TVTMS's section for 36:43--37:2
  *   already carries Brenton's 36:44 = Greek 37:1 and 37:1 = Greek 37:2).
  * - Ps 149: LXX2012 has 8 verses; its 8 holds the Greek 8-9 ("... to execute on them the judgment written: this honor have all his saints").
+ * - Deu 5:17-18 (mw-u2w5klk.349.110): LXX2012 has 'murder' then 'adultery', the English Bible's order, and Swete μοιχεύσεις then φονεύσεις; the table's section Deu.5:17-5:18 says so but has no Brenton column.
  */
 export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Psa.10:Title', 'Absent [=Psa.10:1]'],
@@ -318,6 +319,8 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Gen.37:32', 'Gen.37:32-33'],
   ['Gen.37:33-35', 'Gen.37:34-36'],
   ['Psa.149:8', 'Psa.149:8-9'],
+  ['Deu.5:17', 'Deu.5:18'],
+  ['Deu.5:18', 'Deu.5:17'],
 ].map(([lxx2012, greek]) => ({ section: 'LXX2012', type: 'OneToOne', cells: { 'Brenton (LXX2012)': lxx2012, Greek: greek } }));
 
 /** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows). */
