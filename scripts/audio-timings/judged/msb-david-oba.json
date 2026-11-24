@@ -1,0 +1,36 @@
+{
+ "v":1,
+ "judge":"4",
+ "edition":"msb-david",
+ "book":"oba",
+ "timings":{"file":"public/data/audio/msb-david/oba.json","sha256":"97492b1cc0b838e37035b44a8eb62afe471c0070ed2e5454bbb284040533574a"},
+ "slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "tolerance":0.02,
+ "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
+ "summary":{"verses":21,"ok":21,"flagged":0,"flags":{"head-extra":0,"head-clipped":0,"tail-extra":0,"tail-clipped":0,"text-differs":0}},
+ "chapters":{
+  "1":{"announcement":"AUDIO BIBLE OBEDIAH CHAPTER ONE","between":[],"closing":"","speech":-15.2,"verses":[
+   {"n":1,"verdict":"ok","sound":[3.535,6.16,19.755,21.115]},
+   {"n":2,"verdict":"ok","sound":[19.755,21.115,26.645,27.38]},
+   {"n":3,"verdict":"ok","sound":[26.645,27.38,37.71,38.305]},
+   {"n":4,"verdict":"ok","sound":[37.71,38.305,45.905,46.81]},
+   {"n":5,"verdict":"ok","sound":[45.905,46.81,59.485,60.38]},
+   {"n":6,"verdict":"ok","sound":[59.485,60.38,64.455,65.23]},
+   {"n":7,"verdict":"ok","sound":[64.455,65.23,76.75,77.555]},
+   {"n":8,"verdict":"ok","sound":[76.75,77.555,85.85,86.51]},
+   {"n":9,"verdict":"ok","sound":[85.85,86.51,94.735,95.625]},
+   {"n":10,"verdict":"ok","sound":[94.735,95.625,101.64,102.49]},
+   {"n":11,"verdict":"ok","sound":[101.64,102.49,111.615,112.225]},
+   {"n":12,"verdict":"ok","sound":[111.615,112.225,123.635,124.585]},
+   {"n":13,"verdict":"ok","sound":[123.635,124.585,135.19,135.81]},
+   {"n":14,"verdict":"ok","sound":[135.19,135.81,142.895,143.775]},
+   {"n":15,"verdict":"ok","sound":[142.895,143.775,152.93,153.595]},
+   {"n":16,"verdict":"ok","sound":[152.93,153.595,163.74,164.245]},
+   {"n":17,"verdict":"ok","sound":[163.74,164.245,171.545,172.25]},
+   {"n":18,"verdict":"ok","sound":[171.545,172.25,190.595,191.21]},
+   {"n":19,"verdict":"ok","sound":[190.595,191.21,204.775,205.48]},
+   {"n":20,"verdict":"ok","sound":[204.775,205.48,217.845,218.735]},
+   {"n":21,"verdict":"ok","sound":[217.845,218.735,226.435,null]}
+  ]}
+ }
+}
