@@ -2,7 +2,7 @@
 // The schema (made from the registry by npm run grind:build), the guard, the chip and the grind instructions agree.
 import '@testing-library/react/dont-cleanup-after-each';
 import { readFileSync } from 'node:fs';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AnswerLink } from '../../src/data/db';
@@ -10,10 +10,17 @@ import { db } from '../../src/data/db';
 import { MAX_LINKS, isTalkAnswer } from '../../src/services/talk';
 import { keySaid } from '../../src/settings/grindText';
 import { SETTINGS } from '../support/settings';
+import { afterTurns } from '../support/turns';
 import { TutorLinks } from '../../src/TutorLinks';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { validate, type Schema } from '../support/schema-validate';
 import '../support/grinds-in-graph';
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as Schema;
 const base = { answer: 'Make the text bigger in Settings.', question: 'What does it say?', words: [] };
@@ -72,7 +79,7 @@ describe('the chip', () => {
     cleanup();
     const { container } = render(<TutorLinks links={[{ kind: 'setting', key: 'noSuchSetting' }]} onLeave={() => {}} />);
     await waitFor(() => expect(db.settings.count()).resolves.toBe(0));
-    await new Promise((r) => setTimeout(r, 50));
+    await letItRun();
     expect(container.querySelector('[data-tutor-links]')).toBeNull();
     expect(screen.queryByRole('group')).toBeNull();
     cleanup();

@@ -21,16 +21,23 @@ vi.mock('../../src/data/repositories/memory', async (original) => {
 
 const FILE_LINE = /Saved lampas-memory-\d{4}-\d{2}-\d{2}\.json\./;
 const timeout = ASYNC_WAIT_MS;
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// The guard's moment is counted on performance.now (src/ui/settle.ts, tapGuard.ts), so a test lets it pass by moving that clock on, not by sleeping: the offset only grows,
+// so a tap kept from an earlier test is never ahead of the clock.
+const realNow = performance.now.bind(performance);
+let movedOn = 0;
+const letTheMomentPass = (): void => {
+  movedOn += SETTLE_MS + 50; // clock: the page's clock moves on past the settle moment
+};
 const clip: Clip = { bytes: new Uint8Array([1, 2, 3]).buffer, mime: 'audio/webm' };
 const NAME = 'lampas-rom.8.28-20261009T120000Z.webm';
 
 let saved: string[];
 let before: number;
 let stopGuard: () => void;
-beforeEach(async () => {
+beforeEach(() => {
+  vi.spyOn(performance, 'now').mockImplementation(() => realNow() + movedOn);
   // oneTap remembers the last tap for the whole page: let the previous test's moment pass, as a later tap would
-  await wait(SETTLE_MS + 50);
+  letTheMomentPass();
   before = settle.ms;
   settle.ms = SETTLE_MS;
   // 'Download my recording' has no oneTap of its own: the app-wide guard drops the second tap on the same button
@@ -63,7 +70,7 @@ describe('Download my recording', () => {
   it('saves again for a tap after the moment, with the same label and file name', async () => {
     const button = await show();
     fireEvent.click(button);
-    await wait(SETTLE_MS + 50);
+    letTheMomentPass();
     fireEvent.click(button);
     expect(saved).toEqual([NAME, NAME]);
   });
@@ -102,7 +109,7 @@ describe('Export', () => {
     render(<MemoryScreen />);
     const button = await screen.findByRole('button', { name: 'Export' });
     fireEvent.click(button);
-    await wait(SETTLE_MS + 50);
+    letTheMomentPass();
     fireEvent.click(button);
     await act(async () => release('{}'));
     await screen.findByText(FILE_LINE);
@@ -114,7 +121,7 @@ describe('Export', () => {
     const button = await screen.findByRole('button', { name: 'Export' });
     await act(async () => fireEvent.click(button));
     await screen.findByText(FILE_LINE);
-    await wait(SETTLE_MS + 50);
+    letTheMomentPass();
     await act(async () => fireEvent.click(button));
     await vi.waitFor(() => expect(saved).toHaveLength(2), { timeout });
     expect(saved[1]).toMatch(FILE);

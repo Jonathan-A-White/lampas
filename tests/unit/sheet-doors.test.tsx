@@ -3,7 +3,7 @@
 // picker each draw a Talk INSIDE their own layer (src/tutor/sheetTalk.ts, a DialogAskTutor), so a tap on the ? opens the tutor in front of the sheet, and the tutor is told what the sheet is about.
 import '@testing-library/jest-dom/vitest';
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactElement, ReactNode } from 'react';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -36,12 +36,19 @@ import { composerIn, messageBox } from '../support/composer';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../support/fake-postern';
 import { forgetTestMaps, registerTestMaps } from '../support/test-maps';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
+import { afterTurns } from '../support/turns';
 import { within } from '@testing-library/react';
 import { ReferenceLink } from '../../src/markdown/ReferenceCard';
 import { SeptuagintSources } from '../../src/reader/SeptuagintSources';
 import { Rp2026Sheet } from '../../src/reader/Rp2026Sheet';
 import { VariantFilterSheet } from '../../src/reader/VariantFilterSheet';
 import { VariantKeySheet } from '../../src/reader/VariantKey';
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 const PHONE_KEY = '00'.repeat(31) + '02';
 const FLOATING = 'Ask the tutor about what is on screen';
@@ -324,7 +331,7 @@ describe('the floating ? over a sheet that stands over the Talk sheet opens the 
       </LicenceContext.Provider>,
     );
     await screen.findByRole('dialog', { name: 'All lexicons' });
-    await new Promise((r) => setTimeout(r, 50));
+    await letItRun();
     expect(document.querySelector('[data-floating-tutor]')).toBeNull();
   });
 });

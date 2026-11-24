@@ -42,28 +42,29 @@ class CoarseAudio extends EventTarget {
   private truePosition(): number {
     return this.playedAt === null ? this.position : this.position + (performance.now() - this.playedAt) / 1000;
   }
-  /** The promise settles when the sound starts, as the element's does. */
+  /** The promise settles when the sound starts, as the element's does. It is no sleep: the element's own timers run on the fake clock of the test (vi.useFakeTimers). */
   play(): Promise<void> {
     this.paused = false;
-    return new Promise((resolve) => {
-      const sound = () => {
-        this.playedAt = performance.now();
-        this.dispatchEvent(new Event('playing'));
-        resolve();
-        const update = () => {
-          this.shown = this.truePosition();
-          this.dispatchEvent(new Event('timeupdate'));
-          this.timer = setTimeout(update, this.step * 1000);
-        };
-        this.timer = setTimeout(update, this.phase * 1000);
-      };
-      if (this.seekMs > 0) {
-        this.dispatchEvent(new Event('waiting'));
-        this.timer = setTimeout(sound, this.seekMs);
-      } else {
-        sound();
-      }
-    });
+    const started = new Promise<void>((resolve) => (this.sounded = resolve));
+    if (this.seekMs > 0) {
+      this.dispatchEvent(new Event('waiting'));
+      this.timer = setTimeout(() => this.sound(), this.seekMs); // clock: the element's seek, on the fake clock
+    } else {
+      this.sound();
+    }
+    return started;
+  }
+  private sounded: () => void = () => undefined;
+  private sound(): void {
+    this.playedAt = performance.now();
+    this.dispatchEvent(new Event('playing'));
+    this.sounded();
+    const update = () => {
+      this.shown = this.truePosition();
+      this.dispatchEvent(new Event('timeupdate'));
+      this.timer = setTimeout(update, this.step * 1000); // clock: the element's timeupdate, on the fake clock
+    };
+    this.timer = setTimeout(update, this.phase * 1000); // clock: the element's first timeupdate, on the fake clock
   }
   pause(): void {
     this.position = this.truePosition();

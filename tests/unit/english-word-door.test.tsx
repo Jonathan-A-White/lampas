@@ -1,7 +1,7 @@
 // The floating ? over an English word's sheet (mw-5r3p30.1121; his words, Postern general 2026-11-06: he tapped "Aggai" in Genesis 13 and the sheet had only a Logos link and no ?): the sheet draws the ?, a tap closes the sheet
 // and asks the tutor about the word as tapped, and the question says what the lexicons found, or that they found nothing. The sheet is z-35 over the Talk (z-10), so the ? never opens a Talk beneath it.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import type { ReactNode } from 'react';
@@ -15,6 +15,13 @@ import { englishWordQuestion, lexiconFound, type EnglishWordAsk } from '../../sr
 import { setCurrentLicence } from '../../src/services/licenceNow';
 import { WordSheet } from '../../src/WordSheet';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { afterTurns } from '../support/turns';
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 afterAll(() => {
   cleanup();
@@ -139,7 +146,7 @@ describe('the English word sheet and the English part of the word sheet draw the
         </Phone>,
       );
       await screen.findByRole('dialog', { name: sheet });
-      await new Promise((r) => setTimeout(r, 50));
+      await letItRun();
       expect(document.querySelector('[data-floating-tutor]')).toBeNull();
     });
   }

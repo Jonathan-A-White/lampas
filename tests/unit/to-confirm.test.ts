@@ -218,7 +218,8 @@ describe('a miss in a drill (mw-74h98vg.3)', () => {
     await confirmAnswer(await freshQuestion(), true);
     expect(await isToConfirm(IDEA)).toBe(false);
     expect(await missedBefore(IDEA)).toBe(false);
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    // the later miss is a later moment: the page's clock moves on, not the test's (restored with the other mocks after each test)
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 5_000); // clock: the clock moves 5 s on
     await confirmAnswer(BUILT, false);
     expect(await missedBefore(IDEA)).toBe(true);
   });

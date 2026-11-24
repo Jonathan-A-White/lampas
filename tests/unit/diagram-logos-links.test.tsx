@@ -1,7 +1,7 @@
 // tests/unit/diagram-logos-links.test.ts — 'See it in Logos' under a verse's diagram (mw-5r3p30.893): a Greek verse opens the Lexham Syntactic Greek New Testament and its Notes at the verse, a Hebrew
 // verse opens his two Hebrew syntax grammars as books, both Diagrammatical Analysis; each link as src/resources/logosRes.ts builds one, and the row is drawn only while Logos is On.
 import 'fake-indexeddb/auto';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
@@ -11,9 +11,16 @@ import { clearBus } from '../../src/events/bus';
 import { DiagramPane } from '../../src/diagram/DiagramPane';
 import { diagramLogosLinks } from '../../src/diagram/logosLinks';
 import { loadFixture } from '../support/diagram-fixtures';
+import { afterTurns } from '../support/turns';
 
 vi.mock('../../src/diagram/fetchDiagram', () => ({ fetchDiagram: vi.fn() }));
 import { fetchDiagram } from '../../src/diagram/fetchDiagram';
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const gen1 = JSON.parse(readFileSync('public/data/gen/1.json', 'utf8')) as Chapter;
@@ -85,7 +92,7 @@ describe('the row under the diagram', () => {
   it('is not drawn while Logos is Off', async () => {
     drawn(rom8, 'greek');
     await screen.findByRole('button', { name: 'Redraw' });
-    await new Promise((r) => setTimeout(r, 50));
+    await letItRun();
     expect(screen.queryByRole('group', { name: 'See it in Logos' })).toBeNull();
     expect(screen.queryByText('See it in Logos')).toBeNull();
   });

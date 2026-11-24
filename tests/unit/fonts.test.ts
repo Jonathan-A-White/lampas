@@ -2,7 +2,7 @@
 // the bundled faces are declared, licensed, credited and precached. Where the face is drawn (English text changes, Greek does not) is
 // tests/e2e/fonts.spec.ts, because jsdom has no built CSS.
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { injectManifestOptions } from '../../pwa-precache';
 import { applyFont, restoreAppearance, startAppearanceSync } from '../../src/appearance/appearanceSync';
 import { DEFAULT_FONT, ENGLISH_FONT_VAR, FONTS, PHONE_STACK, isFont, stackOf } from '../../src/appearance/fonts';
@@ -11,10 +11,13 @@ import { clearBus } from '../../src/events/bus';
 import { fontSetting } from '../../src/settings/definitions/font';
 import { SETTINGS, writeSetting } from '../support/settings';
 import { getSetting } from '../../src/settings/store';
+import { afterTurns } from '../support/turns';
+import { ASYNC_WAIT_MS } from '../support/timeouts';
+
+const timeout = ASYNC_WAIT_MS;
 
 const root = document.documentElement;
 const english = () => root.style.getPropertyValue(ENGLISH_FONT_VAR);
-const settle = () => new Promise((r) => setTimeout(r, 20));
 
 beforeEach(async () => {
   clearBus();
@@ -78,7 +81,7 @@ describe('the Font setting', () => {
   it('sets the English font variable only: not the Greek, the Hebrew, the size or the theme', async () => {
     const stop = startAppearanceSync();
     try {
-      await settle();
+      await afterTurns(); // the start-up read has been taken and applied (tests/support/turns.ts), before the test writes the other two
       root.style.setProperty('--lp-scale', '1.3');
       root.dataset.theme = 'sepia';
       await writeSetting('font', 'atkinson');
@@ -109,8 +112,7 @@ describe('the Font setting', () => {
     await db.settings.put({ key: 'font', value: 'lexend' });
     const stop = startAppearanceSync();
     try {
-      await settle();
-      expect(english()).toBe(stackOf('lexend'));
+      await vi.waitFor(() => expect(english()).toBe(stackOf('lexend')), { timeout });
     } finally {
       stop();
     }

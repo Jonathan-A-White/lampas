@@ -1,12 +1,12 @@
 // tests/unit/reader-header-flip.test.tsx — the Reader header's last language button takes a hold (mw-u2w5klk.293): a tap still chooses the view, a hold asks for the flip and says in a toast what it answers.
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { ReaderHeader, type ReaderHeaderProps } from '../../src/reader/ReaderHeader';
-import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { getReaderView } from '../../src/data/repositories';
+import { stayDownPastLongPress } from '../support/finger-down';
 
 const user = userEvent.setup();
 afterAll(() => db.close());
@@ -35,8 +35,7 @@ const props = (extra: Partial<ReaderHeaderProps> = {}): ReaderHeaderProps => ({
 
 async function hold(name: string): Promise<void> {
   const target = screen.getByRole('button', { name });
-  await user.pointer({ keys: '[MouseLeft>]', target });
-  await act(() => new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150)));
+  await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target })); // the press's own LONG_PRESS_MS is run, not slept (tests/support/finger-down.ts)
   await user.pointer({ keys: '[/MouseLeft]', target });
 }
 

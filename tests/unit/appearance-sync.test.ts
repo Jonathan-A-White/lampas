@@ -19,13 +19,15 @@ import { startAppearanceSync } from '../../src/appearance/appearanceSync';
 import { clearBus, latest, publish } from '../../src/events/bus';
 import { themeSetting } from '../../src/settings/definitions/theme';
 import { announceSetting, toldSetting } from '../../src/settings/store';
+import { afterTurns } from '../support/turns';
 
 function deferred<T>() {
   let resolve!: (v: T) => void;
   const promise = new Promise<T>((r) => (resolve = r));
   return { resolve, promise };
 }
-const settle = () => new Promise((r) => setTimeout(r, 0));
+// the two start-up reads have been taken and applied: turns of the task queue, not time (tests/support/turns.ts)
+const settle = () => afterTurns();
 const scale = () => document.documentElement.style.getPropertyValue('--lp-scale');
 
 let stop: () => void;

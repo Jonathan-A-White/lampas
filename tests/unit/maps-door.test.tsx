@@ -1,11 +1,19 @@
 // The Maps door (src/maps/MapsDoor.tsx, mw-zbjgn3r.2): a 44 px button 'Maps · N', drawn only when N is above 0; a chapter's foot draws none (src/reader/ChapterActions.tsx is gone), the Verse
 // view's tools line is where it is (mw-5r3p30.1028).
 import '@testing-library/jest-dom/vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { mapsFor } from '../../src/maps';
 import { MapsDoor } from '../../src/maps/MapsDoor';
 import { db } from '../../src/data/db';
 import { forgetTestMaps, registerTestMaps } from '../support/test-maps';
+import { afterTurns } from '../support/turns';
+
+// what is queued has run and React has drawn what it made of it: turns of the task queue, not time (tests/support/turns.ts)
+const letItRun = (): Promise<void> =>
+  act(async () => {
+    await afterTurns();
+  });
 
 beforeEach(() => registerTestMaps());
 afterEach(() => {
@@ -22,7 +30,8 @@ describe('the Maps door', () => {
 
   it('is not drawn where a chapter has no maps', async () => {
     render(<MapsDoor mapRef={{ book: 'gen', chapter: 11 }} />);
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(await mapsFor({ book: 'gen', chapter: 11 })).toEqual([]); // the very read the door makes
+    await letItRun();
     expect(screen.queryByRole('button', { name: /^Maps/ })).toBeNull();
   });
 });

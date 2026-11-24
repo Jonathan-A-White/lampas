@@ -2,13 +2,14 @@
 // pages other than Words, are what they were before the Septuagint word card took the clean form and Help explained the five layers (mw-u2w5klk.17). tests/fixtures/septuagint-off-cards.json holds each card's text and HTML
 // (ids stripped) and each page's words as the code of 0.7.152 drew them; RECORD_PAGES=1 writes it afresh (only ever on code that has not changed those cards or pages).
 import 'fake-indexeddb/auto';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { afterAll, describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { HELP_PAGES } from '../../src/help';
 import { WordSheet } from '../../src/WordSheet';
+import { afterTurns } from '../support/turns';
 
 const FILE = 'tests/fixtures/septuagint-off-cards.json';
 const RECORD = process.env.RECORD_PAGES === '1';
@@ -22,11 +23,13 @@ type Taken = Record<string, { text: string; html: string } | string[]>;
 
 const chapter = (code: string, n: number): Chapter => JSON.parse(readFileSync(`public/data/${code}/${n}.json`, 'utf8')) as Chapter;
 
-/** Waits until the screen has not changed for a moment: the card draws from live queries and a loaded host takes longer than a fixed wait. */
+/** Waits until the screen has not changed over a stretch of turns of the task queue: the card draws from live queries and a loaded host takes longer than a fixed wait. */
 async function stillScreen(): Promise<void> {
   let last = '';
   for (let tries = 0; tries < 100; tries += 1) {
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await act(async () => {
+      await afterTurns(); // turns of the task queue, not time (tests/support/turns.ts): the same on a quiet host and a loaded one
+    });
     const now = document.body.innerHTML;
     if (now === last) return;
     last = now;

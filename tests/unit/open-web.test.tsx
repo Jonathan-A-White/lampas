@@ -18,6 +18,7 @@ import { getSetting, setSetting } from '../../src/settings/store';
 import { setSermonSources } from '../../src/sermons';
 import { sourceOf as testSourceOf } from '../support/sermon-sources';
 import { forgetTestSermons, registerTestSermons, TEST_ROWS } from '../support/test-sermons';
+import { afterTurns } from '../support/turns';
 
 const testSermonRow = () => TEST_ROWS.rom[1];
 
@@ -246,7 +247,9 @@ describe('the Sermons sheet', () => {
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(DESKTOP);
     await setSetting(openWebSetting, 'firefox');
     const sheet = await open();
-    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 100)));
+    await act(async () => {
+      await afterTurns(); // nothing is to change, and no event ends the wait: what is queued has run (tests/support/turns.ts)
+    });
     expect(hrefs(sheet)[0]).toBe('https://sermons.test/testsermons/love');
   });
 

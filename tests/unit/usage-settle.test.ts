@@ -12,13 +12,15 @@ vi.mock('../../src/data/repositories', async (original) => ({
 }));
 
 import { startUsageLog, usageWritesSettled } from '../../src/tips/usageLog';
+import { afterTurns } from '../support/turns';
 
 afterEach(() => {
   clearBus();
   held.length = 0;
 });
 
-const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+// what is queued has run: turns of the task queue, not time (tests/support/turns.ts)
+const flush = () => afterTurns();
 
 describe('the usage log settles', () => {
   it('waits for a write still pending after its stop() was dropped', async () => {
