@@ -1,0 +1,69 @@
+{
+ "v":1,
+ "judge":"4",
+ "edition":"msb-david",
+ "book":"jon",
+ "timings":{"file":"public/data/audio/msb-david/jon.json","sha256":"f0f65f0922ad13ade7d0ca853c9869d100c0080860f564985599ee08a31344a8"},
+ "slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "tolerance":0.02,
+ "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
+ "summary":{"verses":48,"ok":46,"flagged":2,"flags":{"head-extra":1,"head-clipped":1,"tail-extra":1,"tail-clipped":1,"text-differs":0}},
+ "chapters":{
+  "1":{"announcement":"AUDIO BIBLE JONAH CHAPTER ONE","between":[],"closing":"","speech":-16.9,"verses":[
+   {"n":1,"verdict":"ok","sound":[9.885,12.115,15.435,15.76]},
+   {"n":2,"verdict":"ok","sound":[15.435,15.76,21.425,22.08]},
+   {"n":3,"verdict":"ok","sound":[21.425,22.08,38.45,39.205]},
+   {"n":4,"verdict":"ok","sound":[38.45,39.205,46.835,47.84]},
+   {"n":5,"verdict":"ok","sound":[46.835,47.84,61.975,63.055]},
+   {"n":6,"verdict":"ok","sound":[61.975,63.055,72.915,74.395]},
+   {"n":7,"verdict":"ok","sound":[72.915,74.395,86.22,87.385]},
+   {"n":8,"verdict":"ok","sound":[86.22,87.385,99.13,100.865]},
+   {"n":9,"verdict":"ok","sound":[99.13,100.865,109.62,110.455]},
+   {"n":10,"verdict":"ok","sound":[109.62,110.455,120.95,121.7]},
+   {"n":11,"verdict":"ok","sound":[120.95,121.7,130.185,131.91]},
+   {"n":12,"verdict":"ok","sound":[130.185,131.91,142.53,143.985]},
+   {"n":13,"verdict":"ok","sound":[142.53,143.985,151.565,152.25]},
+   {"n":14,"verdict":"ok","sound":[151.565,152.25,165.19,166.02]},
+   {"n":15,"verdict":"ok","sound":[165.19,166.02,171.515,172.56]},
+   {"n":16,"verdict":"ok","sound":[171.515,172.56,179.4,180.275]},
+   {"n":17,"verdict":"ok","sound":[179.4,180.275,188.51,null]}
+  ]},
+  "2":{"announcement":"AUDIO BIBLE JONA CHAPTER TWO","between":[],"closing":"","speech":-18.4,"verses":[
+   {"n":1,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.045,"readsOn":true,"level":-3.0,"heard":{"next":"SAYING","letters":"PRAYED TO THE LORD HIS GODS","words":"the lord his gods"}},{"kind":"tail-clipped","by":0.102,"readsOn":true,"level":-4.6,"heard":{"lost":"D","letters":"WHEN A PRADE TO THE LORD HIS GOD","words":"the lord his god"}}],"sound":[4.9,7.85,11.245,11.245]},
+   {"n":2,"verdict":"flagged","flags":[{"kind":"head-extra","by":0.055,"readsOn":true,"level":-9.2,"heard":{"before":"GOD","letters":"SAYING","words":"saying in my distress"}},{"kind":"head-clipped","by":0.045,"readsOn":true,"level":-3.0,"heard":{"letters":"SAYING","words":"saying in my distress"}}],"sound":[11.245,11.245,20.67,21.37]},
+   {"n":3,"verdict":"ok","sound":[20.67,21.37,30.445,31.155]},
+   {"n":4,"verdict":"ok","sound":[30.445,31.155,38.27,39.415]},
+   {"n":5,"verdict":"ok","sound":[38.27,39.415,46.765,47.485]},
+   {"n":6,"verdict":"ok","sound":[46.765,47.485,57.155,58.05]},
+   {"n":7,"verdict":"ok","sound":[57.155,58.05,64.93,65.2]},
+   {"n":8,"verdict":"ok","sound":[64.93,65.2,69.03,69.38]},
+   {"n":9,"verdict":"ok","sound":[69.03,69.38,79.185,80.23]},
+   {"n":10,"verdict":"ok","sound":[79.185,80.23,84.425,null]}
+  ]},
+  "3":{"announcement":"ARDI BIBLE JONAH CHAPTER THREE","between":[],"closing":"","speech":-16.6,"verses":[
+   {"n":1,"verdict":"ok","sound":[4.19,6.68,9.825,10.39]},
+   {"n":2,"verdict":"ok","sound":[9.825,10.39,15.66,16.46]},
+   {"n":3,"verdict":"ok","sound":[15.66,16.46,27.56,28.45]},
+   {"n":4,"verdict":"ok","sound":[27.56,28.45,35.975,36.875]},
+   {"n":5,"verdict":"ok","sound":[35.975,36.875,45.39,46.375]},
+   {"n":6,"verdict":"ok","sound":[45.39,46.375,55.45,56.215]},
+   {"n":7,"verdict":"ok","sound":[55.45,56.215,69.385,70.21]},
+   {"n":8,"verdict":"ok","sound":[69.385,70.21,81.96,82.585]},
+   {"n":9,"verdict":"ok","sound":[81.96,82.585,89.49,90.945]},
+   {"n":10,"verdict":"ok","sound":[89.49,90.945,99.55,null]}
+  ]},
+  "4":{"announcement":"I BEAM ODIO BIBLE JONA CHAPTER FOUR","between":[],"closing":"","speech":-16.0,"verses":[
+   {"n":1,"verdict":"ok","sound":[3.775,6.1,9.655,10.245]},
+   {"n":2,"verdict":"ok","sound":[9.655,10.245,30.985,31.47]},
+   {"n":3,"verdict":"ok","sound":[30.985,31.47,37.22,38.49]},
+   {"n":4,"verdict":"ok","sound":[37.22,38.49,41.79,42.82]},
+   {"n":5,"verdict":"ok","sound":[41.79,42.82,50.21,51.115]},
+   {"n":6,"verdict":"ok","sound":[50.21,51.115,60.63,62.165]},
+   {"n":7,"verdict":"ok","sound":[60.63,62.165,67.54,68.52]},
+   {"n":8,"verdict":"ok","sound":[67.54,68.52,81.06,82.23]},
+   {"n":9,"verdict":"ok","sound":[81.06,82.23,91.16,92.675]},
+   {"n":10,"verdict":"ok","sound":[91.16,92.675,102.21,102.905]},
+   {"n":11,"verdict":"ok","sound":[102.21,102.905,113.435,null]}
+  ]}
+ }
+}

@@ -1,0 +1,7 @@
+{
+ "v":1,"edition":"msb-david","book":"hos","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"4:10","edge":"tail","reason":"the narrator reads on into verse 11: no quiet between 'themselves' and 'to'; cut at the quietest instant between them","room":0.0,"cut":93.45,"judge":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":-0.2,"heard":{"extra":"T","next":"TO","letters":"ORD TO GIVE THEMSELVES TO","words":"to give themselves to"}},{"kind":"tail-clipped","by":0.105,"readsOn":true,"level":-2.8,"heard":{"lost":"S","letters":"LORD TO GIVE THEMSELVES","words":"lord to give themselves"}}]},
+  {"verse":"4:11","edge":"head","reason":"the narrator reads on from verse 10: no quiet between 'themselves' and 'to'; cut at the quietest instant between them","room":0.0,"cut":93.45,"judge":[{"kind":"head-extra","by":0.06,"readsOn":true,"level":-4.3,"heard":{"before":"THEMSELVES","letters":"TO PROMISCUITY","words":"to promiscuity wine and"}},{"kind":"head-clipped","by":0.04,"readsOn":true,"level":-0.2,"heard":{"lost":"T","letters":"THE PROMISCUITY WAT","words":"to promiscuity wine and"}}]}
+ ]
+}
