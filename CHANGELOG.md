@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.378
+_2026-11-24_
+- Fixed: In the Greek Old Testament, the commandments against adultery and murder in Deuteronomy 5 now have English that matches the Greek beside it.
+- Fixed: the tutor no longer adds a link you did not ask for, such as a forms table when you ask why an ending is so, a second map, or a sermon settings button when no sermon is listed.
+
 ## 0.7.377
 _2026-11-24_
 - Fixed: When you read a verse with Greek mixed into the English, hard-to-score Greek words should no longer make the tutor say it could not hear you.
