@@ -22,25 +22,19 @@ import {
   type SettingsSection as KitSection,
   type Values,
 } from 'pwa-kit/settings';
-import { getDeveloper, ownedResources } from '../data/repositories';
 import { resourceOf } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
 import { DEFINITION_MODULES } from './definitions';
-import { greekLevelOf, type GreekLevel } from './definitions/greekInterest';
-import { hebrewLevelOf } from './definitions/hebrewInterest';
+import type { GreekLevel } from './definitions/greekInterest';
 import { DEPTH_KEY } from './definitions/interest';
 import { SEPARATE_KEYS } from './definitions/pronunciation';
-import { LOGOS_RANDOM_KEY, LOGOS_REPHIL_KEY } from './definitions/daily';
-import { MORNING_REPHIL_ID, RANDOM } from '../data/daily/devotionals';
 import { EXTRA_MODULES } from './extraRows';
-import { doorsOf, extraRowsOf, layoutOf, rowsWith } from './gather';
+import { derivedOf, doorsOf, extraRowsOf, layoutOf, rowsWith } from './gather';
 import { helpPlain } from './helpText';
 import type { GroupId } from './define';
-import type { HomeDoor, SettingsRow } from './row';
+import type { DerivedValue, HomeDoor, SettingsRow } from './row';
 import { forgetGrownSermonEntries, growSermonEntries, isGrownSermon, SETTINGS, settingOf, type SectionId } from './registry';
 import { knownSermonSources, onKnownSermonSources } from '../sermons/known';
-import { OWNS_PREFIX, ownsKey, sourceOffered } from '../sermons/enabled';
-import { SOURCES as SERMON_SOURCES } from '../sermons/sources';
 import type { KnownSermonSource } from '../data/repositories/sermonSources';
 
 export type { GroupId, HomeDoor, SettingsRow };
@@ -231,41 +225,20 @@ export function forgetGrownSermonRows(): void {
 growSermonRows(knownSermonSources());
 onKnownSermonSources(growSermonRows);
 
-const DEPENDED_ON = [...new Set([...ROWS, ...TOOL_ROWS].flatMap((r) => (r.dependsOn ? [r.dependsOn.key] : [])))];
+/** The values a row depends on that no setting holds, gathered from the files of src/settings/definitions/ and src/settings/extraRows/ (mw-6ww.175.112). */
+const DERIVED = derivedOf(DEFINITION_MODULES, EXTRA_MODULES);
 
-/** The current value of every row some other row depends on: a setting's value as text (a resource switch is 'on' or 'off'). */
-export async function readValues(): Promise<Values> {
+/** The keys some row of `rows` depends on, once each. */
+const dependedOn = (rows: readonly SettingsRow[]): string[] => [...new Set(rows.flatMap((r) => (r.dependsOn ? [r.dependsOn.key] : [])))];
+
+/** The current value of every row some other row depends on: a setting's value as text (a resource switch is 'on' or 'off'). `rows` and `derived` are the real ones; a test gives its own (mw-6ww.175.112). */
+export async function readValues(rows: readonly SettingsRow[] = [...ROWS, ...TOOL_ROWS], derived: readonly DerivedValue[] = DERIVED): Promise<Values> {
   // the sermon sources the index service gave on an earlier day have their rows before the screen draws (growSermonRows); the screen draws once the values are read
   const entries = await Promise.all(
-    DEPENDED_ON.map(async (key) => {
-      if (key === 'developerMode') return [key, await getDeveloper()] as const;
-      // the key of a row both languages share: the higher of the two dials (no setting of its own)
-      if (key === DEPTH_KEY) {
-        const [greek, hebrew] = await Promise.all([settingOf('greekInterest')?.read(), settingOf('hebrewInterest')?.read()]);
-        return [key, String(Math.max(greekLevelOf(greek), hebrewLevelOf(hebrew)))] as const;
-      }
-      // the key of a language's own pronunciation row: On while Set each language on its own is On and that language's dial is at Curious or above (no setting of its own)
-      const separate = (Object.keys(SEPARATE_KEYS) as (keyof typeof SEPARATE_KEYS)[]).find((lang) => SEPARATE_KEYS[lang] === key);
-      if (separate) {
-        const [on, dial] = await Promise.all([settingOf('pronunciationSeparate')?.read(), settingOf(separate === 'grc' ? 'greekInterest' : 'hebrewInterest')?.read()]);
-        const level = separate === 'grc' ? greekLevelOf(dial) : hebrewLevelOf(dial);
-        return [key, on === 'on' && level >= 1 ? 'on' : 'off'] as const;
-      }
-      // the key of the Logos draw's rows: On while Which devotional is Random, the Logos switch is On and 'Logos devotionals' is On (no setting of its own)
-      if (key === LOGOS_RANDOM_KEY) {
-        const [which, logos, source] = await Promise.all([settingOf('devotional')?.read(), settingOf('resource.logos')?.read(), settingOf('devotionalLogos')?.read()]);
-        return [key, which === RANDOM && logos === 'on' && source !== 'off' ? 'on' : 'off'] as const;
-      }
-      // the key of the Morning RePhil backup row: On while Which devotional is Random or Morning RePhil and the Logos switch is On (no setting of its own; mw-r9xo1pj.11)
-      if (key === LOGOS_REPHIL_KEY) {
-        const [which, logos] = await Promise.all([settingOf('devotional')?.read(), settingOf('resource.logos')?.read()]);
-        return [key, (which === RANDOM || which === MORNING_REPHIL_ID) && logos === 'on' ? 'on' : 'off'] as const;
-      }
-      // a Logos sermon collection: On while his Library import holds one of its resources or Logos gives it free (mw-qtu3zvz.94)
-      if (key.startsWith(OWNS_PREFIX)) {
-        const source = SERMON_SOURCES.find((candidate) => ownsKey(candidate) === key);
-        return [key, source && sourceOffered(source, await ownedResources()) ? 'on' : 'off'] as const;
-      }
+    dependedOn(rows).map(async (key) => {
+      // a value no setting holds (the higher of the two dials, a pair of settings both On, Developer mode, a sermon source his import holds): a file of definitions/ or extraRows/ derives it (row.ts derivedValue)
+      const own = derived.find((d) => d.matches(key));
+      if (own) return [key, await own.read(key, async (name) => settingOf(name)?.read())] as const;
       return [key, String(await settingOf(key)?.read())] as const;
     }),
   );

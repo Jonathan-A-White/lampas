@@ -5,7 +5,7 @@ import type { SettingDef, SettingValue } from './define';
 import type { Control, ControlGroup } from './controls/types';
 import type { EntryGroup, SettingEntry } from './entry';
 import type { GroupId, SectionId } from './define';
-import type { ExtraRows, HomeDoor, SettingsRow } from './row';
+import type { DerivedValue, ExtraRows, HomeDoor, SettingsRow } from './row';
 
 /** The exports of each file, as import.meta.glob(..., { eager: true }) gives them. */
 export type Modules = Readonly<Record<string, Readonly<Record<string, unknown>>>>;
@@ -142,6 +142,22 @@ export function doorsOf(modules: Modules): HomeDoor[] {
   const twice = doors.find((d, i) => doors.findIndex((other) => other.id === d.id) !== i);
   if (twice) throw new Error(`two doors of the Settings home have the id '${twice.id}'`);
   return doors;
+}
+
+/** A value a row depends on that is no setting's own, as src/settings/row.ts derivedValue makes it. */
+export const isDerivedValue = (value: unknown): value is DerivedValue => isRecord(value) && value.derivedValue === true && typeof value.matches === 'function' && typeof value.read === 'function';
+
+/** The derived values of the modules (mw-6ww.175.112), in file order, each once. */
+export function derivedOf(...lists: readonly Modules[]): DerivedValue[] {
+  const seen = new Set<unknown>();
+  const found: DerivedValue[] = [];
+  for (const modules of lists)
+    for (const value of exportsOf(modules)) {
+      if (!isDerivedValue(value) || seen.has(value)) continue;
+      seen.add(value);
+      found.push(value);
+    }
+  return found;
 }
 
 /** A section of the Settings screen and a page of it, as rows.ts lists them (the kit's shapes, over Lampas's ids). */

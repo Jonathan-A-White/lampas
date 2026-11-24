@@ -5,6 +5,7 @@ import { ALL_TICKED, DEFAULT_BACKUP, DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_RE
 import { DEFAULT_ORDER, type EpisodeOrder } from '../../data/daily/morningRephil';
 import { devotionalDraw, setDevotionalDraw } from '../../data/repositories/library';
 import { defineSetting, type Allowed, type Dependency, type SectionId } from '../define';
+import { derivedValue } from '../row';
 
 export type DailySwitch = 'on' | 'off';
 
@@ -74,13 +75,23 @@ export const devotionalSetting = defineSetting<string>({
   help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library or Morning RePhil; Morning and Evening (${DEFAULT_DEVOTIONAL}) to start.`,
 });
 
-/** The key of the dependency the Logos draw hangs from (no setting of its own, read in rows.ts readValues): 'on' while Which devotional is Random and the Logos switch is On, since a Logos draw does nothing with Logos Off. */
+/** The key of the dependency the Logos draw hangs from (its value is derived below, row.ts derivedValue): 'on' while Which devotional is Random and the Logos switch is On, since a Logos draw does nothing with Logos Off. */
 export const LOGOS_RANDOM_KEY = 'devotional.logosRandom';
 export const logosRandom: Dependency = { key: LOGOS_RANDOM_KEY, shown: (value) => value === 'on' };
+/** Its value: On while Which devotional is Random, the Logos switch is On and 'Logos devotionals' is On (gathered by src/settings/gather.ts derivedOf, mw-6ww.175.112). */
+export const logosRandomValue = derivedValue(LOGOS_RANDOM_KEY, async (_key, setting) => {
+  const [which, logos, source] = await Promise.all([setting('devotional'), setting('resource.logos'), setting('devotionalLogos')]);
+  return which === RANDOM && logos === 'on' && source !== 'off' ? 'on' : 'off';
+});
 
-/** The key of the dependency the Morning RePhil backup hangs from (no setting of its own, read in rows.ts readValues): 'on' while Which devotional is Random or Morning RePhil and the Logos switch is On, since with Logos Off Today shows no backup (mw-r9xo1pj.11). */
+/** The key of the dependency the Morning RePhil backup hangs from (its value is derived below, row.ts derivedValue): 'on' while Which devotional is Random or Morning RePhil and the Logos switch is On, since with Logos Off Today shows no backup (mw-r9xo1pj.11). */
 export const LOGOS_REPHIL_KEY = 'devotional.logosRephil';
 export const logosRephil: Dependency = { key: LOGOS_REPHIL_KEY, shown: (value) => value === 'on' };
+/** Its value: On while Which devotional is Random or Morning RePhil and the Logos switch is On. */
+export const logosRephilValue = derivedValue(LOGOS_REPHIL_KEY, async (_key, setting) => {
+  const [which, logos] = await Promise.all([setting('devotional'), setting('resource.logos')]);
+  return (which === RANDOM || which === MORNING_REPHIL_ID) && logos === 'on' ? 'on' : 'off';
+});
 
 export const devotionalDrawSetting = defineSetting<string>({
   order: 320,
