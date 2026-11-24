@@ -207,6 +207,10 @@ const lastRate = async (page: Page) => (await spoken(page)).at(-1)?.rate;
 test('a slower Greek rate slows a Greek speaker button and leaves English at its own rate, and a slower English rate slows English only', async ({ page }) => {
   await withVoices(page);
   await openReader(page);
+  // Romans 8 is timed, so the default Bible voice (Recording on Wi-Fi only) would play David's recording and the phone voice would never speak: this spec is about the phone voice's rate
+  await openSettingsPage(page, 'Listening');
+  await choose(page, 'Bible voice', 'Phone voice');
+  await backToReader(page);
   const play = page.locator('[data-verse="1"]').getByRole('button', { name: 'Hear the verse' });
   await play.click();
   expect(await lastRate(page)).toBe(1);
