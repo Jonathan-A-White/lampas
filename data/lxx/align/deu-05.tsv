@@ -1,0 +1,243 @@
+ref	run	text	g	mark	confidence
+Deu.5:1	1	all that	16		0.80
+Deu.5:1	2	your	20		0.80
+Deu.5:1	3	shall	-		0.80
+Deu.5:1	4	to	-		0.80
+Deu.5:2	1	The	1		0.80
+Deu.5:2	2	a	-		0.80
+Deu.5:3	1	did	-		0.80
+Deu.5:3	2	with your	1		0.80
+Deu.5:3	3	are	-		0.80
+Deu.5:3	4	this	-		0.80
+Deu.5:4	1	The	-		0.80
+Deu.5:4	2	to	1		0.80
+Deu.5:4	3	of the	-		0.80
+Deu.5:4	4	of	-		0.80
+Deu.5:5	1	I	-		0.80
+Deu.5:5	2	the	-		0.80
+Deu.5:5	3	at	7,8		0.80
+Deu.5:5	4	to	-		0.80
+Deu.5:5	5	to	-		0.80
+Deu.5:5	6	the	-		0.80
+Deu.5:5	7	you⌃ were afraid	17		0.80
+Deu.5:5	7	before	19		0.80
+Deu.5:5	8	you⌃ went	-		0.80
+Deu.5:6	1	am the	2		0.80
+Deu.5:6	2	your	-		0.80
+Deu.5:6	3	who brought	5		0.80
+Deu.5:6	4	of	-		0.80
+Deu.5:6	5	land	9		0.80
+Deu.5:6	6	of the	-		0.80
+Deu.5:6	7	of	-		0.80
+Deu.5:7	1	shall have	1		0.80
+Deu.5:8	1	You shall	-		0.80
+Deu.5:8	2	to	-		0.80
+Deu.5:8	3	an	-		0.80
+Deu.5:8	4	of any thing,	5		0.80
+Deu.5:8	4	whatever things are	7		0.80
+Deu.5:8	5	whatever are	13		0.80
+Deu.5:8	6	beneath,	17		0.80
+Deu.5:8	7	whatever are	19		0.80
+Deu.5:9	1	You shall	-		0.80
+Deu.5:9	2	down	-		0.80
+Deu.5:9	3	shall	4		0.80
+Deu.5:9	4	am the	11		0.80
+Deu.5:9	5	your	-		0.80
+Deu.5:9	6	a jealous	15		0.80
+Deu.5:9	7	visiting the	16		0.80
+Deu.5:9	8	of the	-		0.80
+Deu.5:9	9	the	-		0.80
+Deu.5:9	10	the	-		0.80
+Deu.5:9	11	to them that	26		0.80
+Deu.5:10	1	of them that	5		0.80
+Deu.5:10	2	that	9		0.80
+Deu.5:10	3	commandments.	11,12		0.80
+Deu.5:11	1	shall	-		0.80
+Deu.5:11	2	of the	5		0.80
+Deu.5:11	3	your	-		0.80
+Deu.5:11	4	in	8		0.80
+Deu.5:11	5	the	-		0.80
+Deu.5:11	6	your	-		0.80
+Deu.5:11	7	will certainly	10		0.80
+Deu.5:11	8	acquit him that	15		0.80
+Deu.5:11	9	in	20		0.80
+Deu.5:12	1	to	-		0.80
+Deu.5:12	2	as	7,8		0.80
+Deu.5:12	3	your	-		0.80
+Deu.5:12	4	commanded	9		0.80
+Deu.5:13	1	you shall	-		0.80
+Deu.5:13	2	shall	-		0.80
+Deu.5:13	3	your	6		0.80
+Deu.5:14	1	is	-		0.80
+Deu.5:14	2	of the	7		0.80
+Deu.5:14	3	shall	-		0.80
+Deu.5:14	4	your	22		0.80
+Deu.5:14	5	man-servant,	25,26		0.80
+Deu.5:14	6	ass,	36,37		0.80
+Deu.5:14	7	that sojourns	43	unsure	0.50
+Deu.5:14	8	the midst of	-		0.80
+Deu.5:14	9	your man-servant	71,72		0.80
+Deu.5:14	9	may	-		0.80
+Deu.5:14	10	ox,	32		0.80
+Deu.5:14	10	as well	-		0.80
+Deu.5:15	1	you shall	-		0.80
+Deu.5:15	2	you	-		0.80
+Deu.5:15	3	a	-		0.80
+Deu.5:15	4	the	-		0.80
+Deu.5:15	5	of	-		0.80
+Deu.5:15	6	your	-		0.80
+Deu.5:15	7	brought	-		0.80
+Deu.5:15	8	thence	-		0.80
+Deu.5:15	9	a	-		0.80
+Deu.5:15	10	a	-		0.80
+Deu.5:15	11	to	31		0.80
+Deu.5:15	12	to	-		0.80
+Deu.5:16	1	your	1		0.80
+Deu.5:16	2	as	8,9		0.80
+Deu.5:16	3	your	-		0.80
+Deu.5:16	4	commanded	10		0.80
+Deu.5:16	5	it may	-		0.80
+Deu.5:16	6	with	-		0.80
+Deu.5:16	7	may live	22		0.80
+Deu.5:16	8	the	28		0.80
+Deu.5:16	9	your	-		0.80
+Deu.5:17	1	You shall	-		0.80
+Deu.5:17	2	murder.	-		0.80
+Deu.5:18	1	You shall	-		0.80
+Deu.5:18	2	commit adultery.	1		0.80
+Deu.5:19	1	You shall	-		0.80
+Deu.5:20	1	shall	-		0.80
+Deu.5:20	2	bear	1		0.80
+Deu.5:20	3	witness	6		0.80
+Deu.5:20	4	your	3		0.80
+Deu.5:21	1	shall	-		0.80
+Deu.5:21	2	covet	1		0.80
+Deu.5:21	2	your	-		0.80
+Deu.5:21	3	wife;	2,3		0.80
+Deu.5:21	4	shall	-		0.80
+Deu.5:21	5	covet	8		0.80
+Deu.5:21	5	your	-		0.80
+Deu.5:21	6	house,	9,10		0.80
+Deu.5:21	6	nor	14		0.80
+Deu.5:21	7	nor	18		0.80
+Deu.5:21	8	nor	22		0.80
+Deu.5:21	9	nor	26		0.80
+Deu.5:21	10	nor	30		0.80
+Deu.5:21	11	nor	34		0.80
+Deu.5:21	12	of	-		0.80
+Deu.5:21	13	nor	38		0.80
+Deu.5:21	13	any thing that	39		0.80
+Deu.5:22	1	These words	1		0.80
+Deu.5:22	2	the	-		0.80
+Deu.5:22	3	of	-		0.80
+Deu.5:22	4	of the	-		0.80
+Deu.5:22	5	of	-		0.80
+Deu.5:22	6	was	-		0.80
+Deu.5:22	7	a loud	20		0.80
+Deu.5:22	8	more,	21	unsure	0.50
+Deu.5:22	9	he	-		0.80
+Deu.5:22	10	of stone,	-		0.80
+Deu.5:22	11	he	-		0.80
+Deu.5:22	12	them to	-		0.80
+Deu.5:23	1	it came	-		0.80
+Deu.5:23	2	pass	-		0.80
+Deu.5:23	3	of the	-		0.80
+Deu.5:23	4	of	-		0.80
+Deu.5:23	5	for	10		0.80
+Deu.5:23	6	with	-		0.80
+Deu.5:23	7	that	15		0.80
+Deu.5:23	8	even	-		0.80
+Deu.5:23	9	heads	20,21		0.80
+Deu.5:23	9	of your	-		0.80
+Deu.5:23	10	your	26		0.80
+Deu.5:24	1	you⌃	-		0.80
+Deu.5:24	2	the	5		0.80
+Deu.5:24	3	our	-		0.80
+Deu.5:24	4	has	-		0.80
+Deu.5:24	5	us	-		0.80
+Deu.5:24	6	have	-		0.80
+Deu.5:24	7	his	12		0.80
+Deu.5:24	8	of the	-		0.80
+Deu.5:24	9	of	-		0.80
+Deu.5:24	10	we have	-		0.80
+Deu.5:24	11	shall	-		0.80
+Deu.5:24	12	shall	-		0.80
+Deu.5:25	1	let us	-		0.80
+Deu.5:25	2	will	-		0.80
+Deu.5:25	3	us,	6		0.80
+Deu.5:25	4	shall	-		0.80
+Deu.5:25	5	of the	19		0.80
+Deu.5:25	6	our	-		0.80
+Deu.5:25	7	any more,	13,22		0.80
+Deu.5:25	8	shall	-		0.80
+Deu.5:26	1	what	0		0.80
+Deu.5:26	2	is there	-		0.80
+Deu.5:26	3	has	-		0.80
+Deu.5:26	4	the	-		0.80
+Deu.5:26	5	of the	-		0.80
+Deu.5:26	6	of the	-		0.80
+Deu.5:26	7	of	-		0.80
+Deu.5:26	8	have heard,	-		0.80
+Deu.5:26	9	shall	-		0.80
+Deu.5:27	1	Do	-		0.80
+Deu.5:27	2	draw	-		0.80
+Deu.5:27	3	all that	4,5		0.80
+Deu.5:27	3	the	8		0.80
+Deu.5:27	4	our	10		0.80
+Deu.5:27	5	shall	-		0.80
+Deu.5:27	6	shall	-		0.80
+Deu.5:27	7	us	15		0.80
+Deu.5:27	8	things whatever	17,18		0.80
+Deu.5:27	8	the	21		0.80
+Deu.5:27	9	our	-		0.80
+Deu.5:27	10	shall	-		0.80
+Deu.5:27	11	will	-		0.80
+Deu.5:28	1	the	-		0.80
+Deu.5:28	2	of your	5		0.80
+Deu.5:28	3	the	-		0.80
+Deu.5:28	4	me,	-		0.80
+Deu.5:28	5	have	-		0.80
+Deu.5:28	6	of	-		0.80
+Deu.5:28	7	of	21		0.80
+Deu.5:28	8	even	-		0.80
+Deu.5:28	8	all things that	30		0.80
+Deu.5:28	8	they have said	25		0.80
+Deu.5:28	9	They have well said	28		0.80
+Deu.5:28	10	that they have	-		0.80
+Deu.5:29	1	O that there	0,1		0.80
+Deu.5:29	2	such a	2		0.80
+Deu.5:29	3	that	9		0.80
+Deu.5:29	4	should	-		0.80
+Deu.5:29	5	always,	17,18,19		0.80
+Deu.5:29	6	might	-		0.80
+Deu.5:29	7	with	-		0.80
+Deu.5:29	8	with their	25		0.80
+Deu.5:30	1	to	-		0.80
+Deu.5:31	1	here	2		0.80
+Deu.5:31	2	I will	-		0.80
+Deu.5:31	3	all	-		0.80
+Deu.5:31	4	which you shall	18		0.80
+Deu.5:31	5	let them	-		0.80
+Deu.5:31	6	so	-		0.80
+Deu.5:31	7	for an	30		0.80
+Deu.5:32	1	you⌃ shall take heed to	1		0.80
+Deu.5:32	2	as	3,4		0.80
+Deu.5:32	3	your	-		0.80
+Deu.5:32	4	commanded	5		0.80
+Deu.5:32	4	you;	-		0.80
+Deu.5:32	5	shall	-		0.80
+Deu.5:32	6	aside	-		0.80
+Deu.5:32	7	the	-		0.80
+Deu.5:32	8	hand	-		0.80
+Deu.5:32	8	or	15		0.80
+Deu.5:32	9	the	-		0.80
+Deu.5:33	1	to	-		0.80
+Deu.5:33	2	your	-		0.80
+Deu.5:33	3	commanded	5		0.80
+Deu.5:33	4	to	-		0.80
+Deu.5:33	5	he may	-		0.80
+Deu.5:33	6	rest;	-		0.80
+Deu.5:33	7	that it may	-		0.80
+Deu.5:33	8	with	-		0.80
+Deu.5:33	9	you⌃ may prolong your	-		0.80
+Deu.5:33	10	you⌃ shall	-		0.80
