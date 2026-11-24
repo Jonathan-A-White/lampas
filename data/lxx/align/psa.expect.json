@@ -1,0 +1,308 @@
+{
+  "reasons": {
+    "added-2-36": "Either Brenton adds it to make English of a Greek phrase ('away' of 'cast away', 'back', 'forth', 'aside', 'own', 'very', 'highly', 'round', 'because', 'cause', 'means', 'together', 'ever', 'thing') or the Greek word that renders it is a pair the aligner made to another English word, which the model pass does not move ('scorn' of 'laugh them to scorn', 'pieces' of 'dash them in pieces', 'afflict', 'chasten', 'enrich', 'tends', 'cheers', 'week' of 'the first day of the week', 'overlook', 'compassion', 'honored', 'fret' of 'fret not yourself'), each read against its verse (mw-u2w5klk.349.13).",
+    "other-verse-2-36": "LXX2012's English here renders Greek of the verse before or after, or Greek that Swete's verse does not have, so a chunk cannot point at it (the like of Genesis 37:32): the last clause of Psalm 16:3 is the Greek of 16:4's first words, 16:8's 'from those that resist your right hand' is the end of the Greek 16:7, 33:17's 'The righteous cried, and the Lord listened to them' and the 'delivered' of 33:18 are the Greek of 33:18, 33:20's 'Lord will deliver' the Greek 33:21's Κύριος, and 15:2's 'have no need of my goodness' has no Greek in the verse as Swete has it (mw-u2w5klk.349.13)."
+  },
+  "chapters": {
+    "2": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["2:4:scorn", "added-2-36"],
+        ["2:9:pieces", "added-2-36"]
+      ]
+    },
+    "3": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["3:2:afflict", "added-2-36"],
+        ["3:4:one", "added-2-36"]
+      ]
+    },
+    "4": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["4:7:manifested", "added-2-36"],
+        ["4:9:caused", "added-2-36"]
+      ]
+    },
+    "5": {
+      "gaps": 0,
+      "model": 3,
+      "leftovers": [
+        ["5:1:concerning", "added-2-36"],
+        ["5:5:worker", "added-2-36"],
+        ["5:9:make", "added-2-36"]
+      ]
+    },
+    "6": {
+      "gaps": 0,
+      "model": 5,
+      "leftovers": [
+        ["6:2:chasten", "added-2-36"],
+        ["6:3:lord", "added-2-36"],
+        ["6:6:give", "added-2-36"],
+        ["6:8:because", "added-2-36"],
+        ["6:11:back", "added-2-36"]
+      ]
+    },
+    "7": {
+      "gaps": 0,
+      "model": 11,
+      "leftovers": [
+        ["7:3:enemy", "added-2-36"],
+        ["7:5:good", "added-2-36"],
+        ["7:5:means", "added-2-36"],
+        ["7:7:lord", "added-2-36"],
+        ["7:8:cause", "added-2-36"],
+        ["7:11:coming", "added-2-36"],
+        ["7:13:furbish", "added-2-36"],
+        ["7:16:dug", "added-2-36"],
+        ["7:17:come", "added-2-36"],
+        ["7:17:own", "added-2-36"],
+        ["7:17:own", "added-2-36"]
+      ]
+    },
+    "8": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["8:6:less", "added-2-36"],
+        ["8:7:put", "added-2-36"]
+      ]
+    },
+    "11": {
+      "gaps": 0,
+      "model": 6,
+      "leftovers": [
+        ["11:3:one", "added-2-36"],
+        ["11:6:because", "added-2-36"],
+        ["11:6:because", "added-2-36"],
+        ["11:7:fire", "added-2-36"],
+        ["11:7:times", "added-2-36"],
+        ["11:9:exalted", "added-2-36"]
+      ]
+    },
+    "12": {
+      "gaps": 0,
+      "model": 3,
+      "leftovers": [
+        ["12:2:away", "added-2-36"],
+        ["12:5:ever", "added-2-36"],
+        ["12:6:psalms", "added-2-36"]
+      ]
+    },
+    "13": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["13:3:shed", "added-2-36"],
+        ["13:3:way", "added-2-36"]
+      ]
+    },
+    "15": {
+      "gaps": 0,
+      "model": 8,
+      "leftovers": [
+        ["15:2:goodness", "other-verse-2-36"],
+        ["15:2:need", "other-verse-2-36"],
+        ["15:6:most", "added-2-36"],
+        ["15:7:chastened", "added-2-36"],
+        ["15:8:face", "added-2-36"],
+        ["15:8:hand", "added-2-36"],
+        ["15:9:exulted", "added-2-36"],
+        ["15:11:known", "added-2-36"]
+      ]
+    },
+    "16": {
+      "gaps": 0,
+      "model": 17,
+      "leftovers": [
+        ["16:1:uttered", "added-2-36"],
+        ["16:2:come", "added-2-36"],
+        ["16:3:amiss", "other-verse-2-36"],
+        ["16:3:fire", "added-2-36"],
+        ["16:3:mouth", "other-verse-2-36"],
+        ["16:3:purposed", "other-verse-2-36"],
+        ["16:3:speak", "other-verse-2-36"],
+        ["16:4:ways", "added-2-36"],
+        ["16:7:marvels", "added-2-36"],
+        ["16:8:hand", "other-verse-2-36"],
+        ["16:8:resist", "other-verse-2-36"],
+        ["16:8:right", "other-verse-2-36"],
+        ["16:10:own", "added-2-36"],
+        ["16:11:round", "added-2-36"],
+        ["16:13:draw", "added-2-36"],
+        ["16:14:because", "added-2-36"],
+        ["16:14:filled", "added-2-36"]
+      ]
+    },
+    "18": {
+      "gaps": 0,
+      "model": 4,
+      "leftovers": [
+        ["18:5:gone", "added-2-36"],
+        ["18:9:ordinances", "added-2-36"],
+        ["18:14:attack", "added-2-36"],
+        ["18:14:gain", "added-2-36"]
+      ]
+    },
+    "19": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["19:4:enrich", "added-2-36"],
+        ["19:9:overthrown", "added-2-36"]
+      ]
+    },
+    "22": {
+      "gaps": 0,
+      "model": 4,
+      "leftovers": [
+        ["22:1:tends", "added-2-36"],
+        ["22:2:made", "added-2-36"],
+        ["22:5:cheers", "added-2-36"],
+        ["22:5:thoroughly", "added-2-36"]
+      ]
+    },
+    "23": {
+      "gaps": 0,
+      "model": 3,
+      "leftovers": [
+        ["23:1:week", "added-2-36"],
+        ["23:7:lift", "added-2-36"],
+        ["23:9:lift", "added-2-36"]
+      ]
+    },
+    "25": {
+      "gaps": 0,
+      "model": 6,
+      "leftovers": [
+        ["25:3:well", "added-2-36"],
+        ["25:4:transgressors", "added-2-36"],
+        ["25:5:doers", "added-2-36"],
+        ["25:5:sit", "added-2-36"],
+        ["25:6:lord", "added-2-36"],
+        ["25:9:together", "added-2-36"]
+      ]
+    },
+    "26": {
+      "gaps": 0,
+      "model": 12,
+      "leftovers": [
+        ["26:2:drew", "added-2-36"],
+        ["26:3:rise", "added-2-36"],
+        ["26:4:earnestly", "added-2-36"],
+        ["26:4:thing", "added-2-36"],
+        ["26:5:set", "added-2-36"],
+        ["26:6:psalms", "added-2-36"],
+        ["26:7:pity", "added-2-36"],
+        ["26:8:diligently", "added-2-36"],
+        ["26:9:away", "added-2-36"],
+        ["26:9:overlook", "added-2-36"],
+        ["26:9:turn", "added-2-36"],
+        ["26:12:risen", "added-2-36"]
+      ]
+    },
+    "28": {
+      "gaps": 0,
+      "model": 1,
+      "leftovers": [
+        ["28:2:due", "added-2-36"]
+      ]
+    },
+    "29": {
+      "gaps": 0,
+      "model": 8,
+      "leftovers": [
+        ["29:2:exalt", "added-2-36"],
+        ["29:2:rejoice", "added-2-36"],
+        ["29:6:wait", "added-2-36"],
+        ["29:8:away", "added-2-36"],
+        ["29:10:go", "added-2-36"],
+        ["29:11:become", "added-2-36"],
+        ["29:11:compassion", "added-2-36"],
+        ["29:13:praise", "added-2-36"]
+      ]
+    },
+    "31": {
+      "gaps": 0,
+      "model": 6,
+      "leftovers": [
+        ["31:3:waxed", "added-2-36"],
+        ["31:6:come", "added-2-36"],
+        ["31:6:fit", "added-2-36"],
+        ["31:8:fix", "added-2-36"],
+        ["31:8:go", "added-2-36"],
+        ["31:9:come", "added-2-36"]
+      ]
+    },
+    "32": {
+      "gaps": 0,
+      "model": 6,
+      "leftovers": [
+        ["32:2:platy", "added-2-36"],
+        ["32:3:play", "added-2-36"],
+        ["32:9:made", "added-2-36"],
+        ["32:12:own", "added-2-36"],
+        ["32:19:alive", "added-2-36"],
+        ["32:22:according", "added-2-36"]
+      ]
+    },
+    "33": {
+      "gaps": 0,
+      "model": 11,
+      "leftovers": [
+        ["33:5:diligently", "added-2-36"],
+        ["33:6:draw", "added-2-36"],
+        ["33:11:become", "added-2-36"],
+        ["33:11:diligently", "added-2-36"],
+        ["33:11:thing", "added-2-36"],
+        ["33:16:open", "added-2-36"],
+        ["33:17:cried", "other-verse-2-36"],
+        ["33:17:listened", "other-verse-2-36"],
+        ["33:17:lord", "other-verse-2-36"],
+        ["33:17:righteous", "other-verse-2-36"],
+        ["33:18:delivered", "other-verse-2-36"]
+      ]
+    },
+    "34": {
+      "gaps": 0,
+      "model": 11,
+      "leftovers": [
+        ["34:2:buckler", "added-2-36"],
+        ["34:4:confounded", "added-2-36"],
+        ["34:13:own", "added-2-36"],
+        ["34:14:one", "added-2-36"],
+        ["34:19:enemies", "added-2-36"],
+        ["34:20:imagined", "added-2-36"],
+        ["34:22:keep", "added-2-36"],
+        ["34:22:withdraw", "added-2-36"],
+        ["34:26:swelling", "added-2-36"],
+        ["34:26:words", "added-2-36"],
+        ["34:27:exult", "added-2-36"]
+      ]
+    },
+    "36": {
+      "gaps": 0,
+      "model": 13,
+      "leftovers": [
+        ["36:1:fret", "added-2-36"],
+        ["36:2:away", "added-2-36"],
+        ["36:5:bring", "added-2-36"],
+        ["36:6:forth", "added-2-36"],
+        ["36:8:fret", "added-2-36"],
+        ["36:15:own", "added-2-36"],
+        ["36:20:honored", "added-2-36"],
+        ["36:21:compassion", "added-2-36"],
+        ["36:23:pleasure", "added-2-36"],
+        ["36:23:take", "added-2-36"],
+        ["36:27:aside", "added-2-36"],
+        ["36:35:highly", "added-2-36"],
+        ["36:35:very", "added-2-36"]
+      ]
+    }
+  }
+}
