@@ -19,6 +19,7 @@ import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/cha
 import { applyFixes, applyModel, type ModelRow } from './align-choose';
 import { morpheusLine, refuseOtherCaches } from './morpheus';
 import type { ShipOptions } from './ship';
+import { requireSources } from './sources';
 
 /** Where the aligned share of each book's chapters is written, one file a book (mw-u2w5klk.349.73): docs/lxx-align/<code>.txt. Not .md: CLAUDE.md names every .md under docs/. */
 export const ALIGN_REPORT_DIR = join('docs', 'lxx-align');
@@ -756,6 +757,7 @@ export async function runAlign(argv: readonly string[], options: AlignOptions = 
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  requireSources('lxx:align', process.argv.slice(2));
   runAlign(process.argv.slice(2), { log: console.log }).catch((error: unknown) => {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

@@ -17,6 +17,7 @@ import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/cha
 import { CONFIDENCE_CHOSEN, CONFIDENCE_GUESS, CONFIDENCE_UNSURE, type ChoiceMark } from './choices';
 import { MORPHEUS_DIR, morpheusBuildCommand } from './morpheus';
 import type { ShipOptions } from './ship';
+import { requireSources } from './sources';
 
 /** Where the model pass's rows are kept: `<book>-<chapter>.tsv`, one file a chapter, so the stories of one book never touch the same file. */
 export const ALIGN_CHOICES_DIR = join('data', 'lxx', 'align');
@@ -551,6 +552,7 @@ export async function runAlignChoose(argv: readonly string[], options: AlignChoo
 const runsOfChapter = (chapter: Chapter): number => chapter.verses.reduce((a, v) => a + runsOf(v).length, 0);
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  requireSources('lxx:align-choose', process.argv.slice(2));
   runAlignChoose(process.argv.slice(2), { log: console.log }).catch((error: unknown) => {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

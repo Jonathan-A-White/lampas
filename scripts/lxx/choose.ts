@@ -24,6 +24,7 @@ import {
 } from './choices';
 import { OUT_DIR, type PendingWord } from './derive';
 import { recheckWords } from './pending';
+import { requireSources } from './sources';
 
 /** One line of a model session's file. */
 export interface ModelLine {
@@ -195,6 +196,7 @@ export async function runChoose(argv: readonly string[], options: RunOptions = {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  requireSources('lxx:choose', process.argv.slice(2));
   runChoose(process.argv.slice(2), { log: console.log }).catch((error: unknown) => {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);

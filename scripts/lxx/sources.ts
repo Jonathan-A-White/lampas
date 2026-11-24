@@ -69,3 +69,30 @@ export async function fetchPinned(rawDir: string, src: PinnedSource, fetcher: Fe
 
 /** A pinned file's text, with a byte-order mark taken off. */
 export const readPinned = (rawDir: string, src: PinnedSource, file: string): string => readFileSync(pinnedPath(rawDir, src, file), 'utf8').replace(/^\uFEFF/, '');
+
+// ------------------------------------------------------------------------------------------------------------------------ a host without the sources (story mw-u2w5klk.381)
+
+/** The two git-ignored directories the model-story and pairing commands read, relative to the repo root. */
+export const SOURCE_DIRS = [RAW_DIR, join('data', 'lxx', 'morpheus')] as const;
+
+/**
+ * The one line a command says, in place of running thin, on a host that has neither the Laptop's data (a worktree linked with `npm run lxx:link`, or the Laptop's own checkout)
+ * nor an archive linked from it; undefined when both directories are there (a link to a place that is gone counts as not there), or when `--no-morpheus` says to go on without them.
+ */
+export function sourcesGuard(script: string, argv: readonly string[], cwd: string = process.cwd(), exists: (path: string) => boolean = existsSync): string | undefined {
+  if (argv.includes('--no-morpheus')) return undefined;
+  const missing = SOURCE_DIRS.filter((d) => !exists(join(cwd, d)));
+  if (missing.length === 0) return undefined;
+  return (
+    `${script}: this host has no Septuagint sources (${missing.join(' and ')} not here): run npm run lxx:link ` +
+    `(on the Laptop; on another host: npm run lxx:link -- --from <archive from npm run lxx:pack>). Nothing was run.`
+  );
+}
+
+/** At a command's entry: says the line and exits 1 when the host lacks the sources. */
+export function requireSources(script: string, argv: readonly string[]): void {
+  const line = sourcesGuard(script, argv);
+  if (!line) return;
+  console.error(line);
+  process.exit(1);
+}
