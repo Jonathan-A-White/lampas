@@ -4,10 +4,10 @@
 import { Found as FoundRows, GroupButton as KitGroupButton, SettingsSearch } from 'pwa-kit/settings';
 import { openLibrary } from '../nav/route';
 import { openTool } from '../tools';
-import { openCounted, openFoundRow, openSermonSources, openSettingsGroup } from './link';
+import { openDoor, openFoundRow, openSermonSources, openSettingsGroup } from './link';
 import { keepHomeSearch } from './useHomeSearch';
 import type { ListMatches } from './useListMatches';
-import { GROUPS, HOME_SECTIONS, type COUNTED_DOOR, type GroupId, type SettingsRow } from './rows';
+import { GROUPS, HOME_SECTIONS, type GroupId, type HomeDoor, type SettingsRow } from './rows';
 
 /** The search field at the top: it filters the rows by name and hint as he types. It is pinned under the header (sticky), so it is in view however far he scrolls (mw-5r3p30.617). */
 export { SettingsSearch };
@@ -18,10 +18,10 @@ export function GroupButton({ id, title, hint }: { id: GroupId; title: string; h
 }
 
 /** A row of the home that is no group (What Lampas has counted, rows.ts COUNTED_DOOR): drawn as the kit draws a group's button (its classes: title, hint, chevron) but marked data-door, not data-group, since it is no group. */
-export function DoorButton({ id, title, hint, onOpen }: { id: string; title: string; hint: string; onOpen: () => void }) {
+export function DoorButton({ id, title, hint, link }: { id: string; title: string; hint: string; link: string }) {
   return (
     <li>
-      <button type="button" data-door={id} onClick={onOpen} className="bk-settings__group">
+      <button type="button" data-door={id} onClick={() => openDoor(link)} className="bk-settings__group">
         <span className="bk-settings__group-text">
           <span className="bk-settings__group-title">{title}</span>
           <span className="bk-settings__group-hint">{hint}</span>
@@ -50,7 +50,7 @@ export function Found({
   query,
 }: {
   rows: readonly SettingsRow[];
-  doors: readonly (typeof COUNTED_DOOR)[];
+  doors: readonly HomeDoor[];
   tools: readonly SettingsRow[];
   lists: ListMatches;
   query: string;
@@ -67,13 +67,13 @@ export function Found({
   );
 }
 /** The doors of the home that hold the search (What Lampas has counted, mw-6ww.175.103), drawn as the kit draws a found setting (its classes) but saying 'in Settings', since a door is in no group:
- *  it is a row of the Settings home itself. A tap opens the door's own page, as its row of the home does. */
-function FoundDoors({ doors }: { doors: readonly (typeof COUNTED_DOOR)[] }) {
+ *  it is a row of the Settings home itself. A tap opens the door's own page (its `link`), as its row of the home does. */
+function FoundDoors({ doors }: { doors: readonly HomeDoor[] }) {
   return (
     <ul aria-label="Matching pages" className="bk-settings__list">
       {doors.map((door) => (
         <li key={door.id}>
-          <button type="button" data-found={door.id} onClick={openCounted} className="bk-settings__found">
+          <button type="button" data-found={door.id} onClick={() => openDoor(door.link)} className="bk-settings__found">
             <span className="bk-settings__found-label">{door.title}</span>
             <span className="bk-settings__found-hint">{door.hint}</span>
             <span className="bk-settings__found-where">in Settings</span>

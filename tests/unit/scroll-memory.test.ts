@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { forgetScrolls, hasKeptScroll, restoreScrolls, scrollAddress } from '../../src/nav/scrollMemory';
-import { COUNTED_LINK, groupLink, openCounted, openFoundRow, openSermonSources, openSetting, openSettingsGroup, openSettingsSection, sermonSourcesLink } from '../../src/settings/link';
+import { COUNTED_LINK, groupLink, openDoor, openFoundRow, openSermonSources, openSetting, openSettingsGroup, openSettingsSection, sermonSourcesLink } from '../../src/settings/link';
 
 describe('the address a Reader scroll offset is kept under', () => {
   const chapter = '#/?b=act&c=18';
@@ -63,7 +63,7 @@ describe('opening a page of Settings at its top', () => {
     { name: 'openSettingsSection', open: () => openSettingsSection('sermons'), link: '#/settings?section=sermons', slot: 'settings' },
     { name: 'openSermonSources', open: () => openSermonSources(), link: '#/settings?sources=sermons', slot: 'sermon-sources' },
     { name: 'openSermonSources at a source', open: () => openSermonSources('sermons.spurgeon'), link: '#/settings?sources=sermons&at=sermons.spurgeon', slot: 'sermon-sources' },
-    { name: 'openCounted', open: () => openCounted(), link: COUNTED_LINK, slot: 'counted' },
+    { name: 'openDoor', open: () => openDoor(COUNTED_LINK), link: COUNTED_LINK, slot: 'counted' },
     { name: 'openSettingsGroup', open: () => openSettingsGroup('study'), link: groupLink('study'), slot: 'settings' },
   ];
 

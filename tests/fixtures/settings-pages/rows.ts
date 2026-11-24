@@ -26,5 +26,6 @@ export const fixtureDoor = homeDoor({
   id: "fixtureDoor",
   title: "Fixture door",
   hint: "A door only a test has.",
+  link: "#/settings?page=fixtureDoor",
   before: "listening",
 });

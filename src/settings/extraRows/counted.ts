@@ -8,5 +8,6 @@ export const COUNTED_DOOR = homeDoor({
   id: "counted",
   title: "What Lampas has counted",
   hint: "How often you opened each screen.",
+  link: "#/settings?page=counted",
   before: "developer",
 });
