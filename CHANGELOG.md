@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.376
+_2026-11-24_
+- New: In Hands-free, saying Enduring Word opens David Guzik's commentary for the verse you are on.
+- New: Mike Winger's book-by-book series from Bible Thinker (1 Peter, Hebrews, Mark and Romans) can be turned on in Sermon sources, so its episodes show against their passage and play here.
+
 ## 0.7.375
 _2026-11-24_
 - Fixed: In Deuteronomy 1 to 5, tapping an English word of the Septuagint such as 'officers', 'commanded' or 'came out' now opens the Greek word that renders it, not the Verse view or a neighbour's word.
