@@ -74,7 +74,7 @@ A source id that is not in the repository at that commit stops the build, naming
 booleans, a date); it refuses anything else rather than reading it wrong. `kind = "themes"` sources are built by the same run, from the `themes` list of `sources.json`: see 'The themes'.
 
 **A reference** is read by `src/sermons/osis.ts` (`parseOsisRef`, moved from `scripts/sermons/osis.ts` by mw-qtu3zvz.5, which re-exports it): `Rom.5.8`, `Rom.5.1-Rom.5.11`, `Rom.5.12-Rom.6.4`, a whole chapter (`Ps.23`, `Rom.5-Rom.6`) or a whole book (`Jude`), by OSIS name or Lampas's code (`src/data/canon.ts`), in
-Lampas's chapters and verses (the verse counts of `public/data/index.json`; a whole chapter is its first verse to its last). A range over books is **listed under every book it touches**, in each cut at that book's ends. A reference the
+Lampas's chapters and verses (the verse counts of `public/data/index.json`; a whole chapter is its first verse to its last; where our text omits a verse inside a chapter the last verse NUMBER is past the count, so Acts 8 counts 39 and ends at 40: `LAST_VERSE` in `src/sermons/osis.ts` holds those five chapters, and `tests/unit/sermons-build.test.ts` fails when it is stale). A range over books is **listed under every book it touches**, in each cut at that book's ends. A reference the
 canon cannot hold (a book Lampas lacks, such as Tobit; a chapter or verse past the end) leaves the row out, and the build's report lists it (`left out: <source> row <id> (<ref>): <reason>`). A row with no preaching text (`ref` absent) is counted
 in the report (`no preaching text`) and not listed. **A cited reference (`cited`) is not built yet**: such a row is listed under its preaching text only.
 
