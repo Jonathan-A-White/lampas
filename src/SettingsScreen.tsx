@@ -16,7 +16,7 @@ import { CONTROLS } from './settings/controls';
 import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
 import { bringRowIntoView, HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
-import { backToSettingsHome, groupIdOf, isCountedPage, movedTool, openCounted, sermonSourcesOf, settingKeyOf } from './settings/link';
+import { backToSettingsHome, groupIdOf, isCountedPage, movedTool, sermonSourcesOf, settingKeyOf } from './settings/link';
 import { DoorButton, Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { greekLevelOf } from './settings/definitions/greekInterest';
 import { HOME_SECTIONS, SECTIONS, dialOf, foundDoors, groupById, groupOf, homeEntries, isHomeRow, isSermonSourceRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleRows, visibleToolRows, type GroupId } from './settings/rows';
@@ -131,7 +131,7 @@ function SettingsPages({ query, setQuery }: { query: string; setQuery: (query: s
                   </HighlightedSetting.Provider>
                   <ul aria-label="Settings groups">
                     {homeEntries(values).map((g) =>
-                      'homeDoor' in g ? <DoorButton key={g.id} id={g.id} title={g.title} hint={g.hint} onOpen={openCounted} /> : <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />,
+                      'homeDoor' in g ? <DoorButton key={g.id} id={g.id} title={g.title} hint={g.hint} link={g.link} /> : <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />,
                     )}
                   </ul>
                 </>

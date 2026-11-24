@@ -1,8 +1,11 @@
 // The settings lists are gathered from the files of src/settings/definitions/ and src/settings/entries/ (mw-6ww.175.105): a definition file added to a directory is in DEFINITIONS and in
 // SETTINGS with no edit to src/settings/definitions/index.ts or src/settings/registry.ts.
 import { readFileSync } from 'node:fs';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { groupOf as groupIn, rowsInOrder } from 'pwa-kit/settings';
 import { describe, expect, it } from 'vitest';
+import { DoorButton } from '../../src/settings/SettingsHome';
 import { DEFINITIONS } from '../../src/settings/definitions';
 import type { SectionId } from '../../src/settings/define';
 import { fromDefinition } from '../../src/settings/entry';
@@ -113,6 +116,15 @@ describe('a definition file with a page, a section and a place', () => {
     const ids = homeEntries({ developerMode: 'on' }, ROWS, doors).map((e) => e.id);
     expect(ids.indexOf('fixtureDoor')).toBe(ids.indexOf('listening') - 1);
     expect(ids.indexOf('counted')).toBe(ids.indexOf('developer') - 1);
+  });
+
+  it('opens the address the door names, on the home and not What Lampas has counted', async () => {
+    const [door] = doorsOf(FIXTURE_PAGES);
+    expect(door.link).toBe('#/settings?page=fixtureDoor');
+    window.location.hash = '#/settings';
+    render(<DoorButton id={door.id} title={door.title} hint={door.hint} link={door.link} />);
+    await userEvent.click(screen.getByRole('button', { name: /Fixture door/ }));
+    expect(window.location.hash).toBe(door.link);
   });
 
   it('is refused when it names a page its section is not on, or brings a section with no title, naming the setting', () => {

@@ -35,6 +35,8 @@ export interface HomeDoor {
   id: string;
   title: string;
   hint: string;
+  /** The address its page opens at (a Settings address such as '#/settings?page=counted'): the door's own, so a second door opens its own page. */
+  link: string;
   before?: GroupId;
 }
 
