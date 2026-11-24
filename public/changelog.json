@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.374",
+    "date": "2026-11-24",
+    "story": "mw-1l901so.2",
+    "kind": "new",
+    "text": "The Enduring Word commentary link now opens at the part of the chapter that explains the verse you started from (John 3 so far)."
+  },
+  {
+    "version": "0.7.374",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.13",
+    "kind": "fixed",
+    "text": "Tapping an English word in the first Psalms of the Greek Old Testament (Psalms 2 to 36) now opens the Greek word it translates, not the whole verse."
+  },
+  {
     "version": "0.7.373",
     "date": "2026-11-24",
     "story": "mw-u2w5klk.349.92",

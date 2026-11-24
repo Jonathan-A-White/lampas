@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.374
+_2026-11-24_
+- New: The Enduring Word commentary link now opens at the part of the chapter that explains the verse you started from (John 3 so far).
+- Fixed: Tapping an English word in the first Psalms of the Greek Old Testament (Psalms 2 to 36) now opens the Greek word it translates, not the whole verse.
+
 ## 0.7.373
 _2026-11-24_
 - Fixed: In the Septuagint's Genesis 24 to 36, tapping the English of a phrase such as 'it came to pass', 'from thence' or 'drew water' now opens the Greek word that renders it, on every word of the phrase.
