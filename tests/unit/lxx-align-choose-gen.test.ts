@@ -7,7 +7,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Chapter, EnglishChunk, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
 import { septuagintChunkLinked } from '../../src/reader/septuagint';
-import { alignReportFile, lettersOf, renderBookReport } from '../../scripts/lxx/align';
+import { alignReportFile, lettersOf, renderBookReport, stemOf } from '../../scripts/lxx/align';
+import { FUNCTION_WORDS } from '../../scripts/lxx/unpaired';
 import { recordedWithout, withoutList } from '../../scripts/lxx/morpheus';
 import { alignFileChapters, checkFiles, checkLeftovers, expectBooks, expectCommand, measureShipped, readExpect } from '../../scripts/lxx/align-expect';
 import { ALIGN_CHOICES_DIR, alignChoicesName, FIX_RUN, readModelRows } from '../../scripts/lxx/align-choose';
@@ -365,6 +366,171 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
       expect(chunk, `${n}:${v} ${text}`).toBeDefined();
       expect(greekOf(n, v, chunk!), `${n}:${v} ${text}`).toEqual(greek);
     }
+  });
+
+  // Genesis 24 to 36 (mw-u2w5klk.349.92, folding mw-u2w5klk.349.38 and .82 for these chapters): the same two faults as Genesis 12 to 23. 'it came to pass' renders one Greek word (ἐγένετο, Hebrew's 'and it was'), which the
+  // aligner paired to the 'to' alone (and, in eight verses, to an 'it' that has the next word's Greek), so 'it', 'came' and 'pass' had none; and a Greek word the aligner paired to one English word of its phrase left the
+  // other words of the phrase with none ('from' ἐκεῖθεν and 'thence', 'drew' and 'water', 'sent' and 'away', 'two' and 'hundred'). Each is a fix row (applyFixes) of data/lxx/align/gen-24.tsv to gen-36.tsv, named here with the
+  // Greek words its one chunk renders. A verse of 35:12 is the one 'it shall come to pass that' the Greek has no word for (the sidecar says so).
+  const IT_CAME_24_36: Array<[number, number, string, string[]]> = [
+    [24, 22, 'it came to pass', ['ἐγένετο']],
+    [24, 30, 'it came to pass', ['ἐγένετο']],
+    [24, 45, 'it came to pass', ['ἐγένετο']],
+    [24, 52, 'it came to pass', ['ἐγένετο']],
+    [25, 11, 'it came to pass', ['ἐγένετο']],
+    [26, 32, 'it came to pass', ['ἐγένετο']],
+    [27, 1, 'it came to pass', ['Ἐγένετο']],
+    [27, 30, 'it came to pass', ['ἐγένετο']],
+    [27, 30, 'it even came to pass, just when', ['καὶ', 'ἐγένετο', 'ὡς']],
+    [27, 34, 'it came to pass', ['ἐγένετο']],
+    [29, 10, 'it came to pass', ['ἐγένετο']],
+    [29, 13, 'it came to pass', ['ἐγένετο']],
+    [30, 25, 'it came to pass', ['Ἐγένετο']],
+    [30, 41, 'it came to pass', ['ἐγένετο']],
+    [31, 10, 'it came to pass', ['ἐγένετο']],
+    [34, 25, 'it came to pass', ['ἐγένετο']],
+    [35, 17, 'it came to pass', ['ἐγένετο']],
+    [35, 18, 'it came to pass', ['ἐγένετο']],
+    [35, 21, 'it came to pass', ['ἐγένετο']],
+  ];
+  const PHRASES_24_36: Array<[number, number, string, string[]]> = [
+    [24, 4, 'from thence', ['ἐκεῖθεν,']],
+    [24, 5, 'came forth,', ['ἐξῆλθες']],
+    [24, 7, 'from thence.', ['ἐκεῖθεν.']],
+    [24, 11, 'to draw water.', ['ὑδρευόμεναι.']],
+    [24, 14, 'this one', ['ταύτην']],
+    [24, 16, 'came up.', ['ἀνέβη.']],
+    [24, 19, 'draw water', ['ὑδρεύσομαι']],
+    [24, 20, 'drew water', ['ὑδρεύσατο']],
+    [24, 43, 'come forth', ['ἐξελεύσονται']],
+    [24, 44, 'I will draw water', ['ὑδρεύσομαι,']],
+    [24, 45, 'she went down', ['κατέβη']],
+    [24, 45, 'drew water;', ['ὑδρεύσατο.']],
+    [24, 49, 'right hand', ['δεξιὰν']],
+    [24, 50, 'has come forth', ['ἐξῆλθεν']],
+    [24, 53, 'brought forth', ['ἐξενέγκας']],
+    [24, 59, 'sent forth', ['ἐξέπεμψαν']],
+    [25, 6, 'sent them away', ['ἐξαπέστειλεν', 'αὐτοὺς']],
+    [25, 7, 'as many as', ['ὅσα']],
+    [25, 7, 'one hundred and seventy-five years.', ['ἑκατὸν', 'ἑβδομήκοντα', 'πέντε', 'ἔτη·']],
+    [25, 8, 'old man', ['πρεσβύτης']],
+    [25, 11, 'his son,', ['υἱὸν', 'αὐτοῦ·']],
+    [25, 25, 'came out', ['ἐξῆλθεν']],
+    [26, 8, 'long time,', ['πολυχρόνιος']],
+    [26, 27, 'sent me away', ['ἀπεστείλατέ', 'με']],
+    [27, 2, 'grown old,', ['γεγήρακα,']],
+    [27, 30, 'his son', ['υἱὸν', 'αὐτοῦ,']],
+    [27, 30, 'his father,', ['πατρὸς', 'αὐτοῦ,']],
+    [27, 36, 'second time', ['δεύτερον']],
+    [27, 40, 'there shall be a time when', ['ἔσται', 'ἡνίκα']],
+    [28, 5, 'sent away', ['ἀπέστειλεν']],
+    [28, 14, 'the north,', ['βορρᾶν']],
+    [29, 3, 'roll away', ['ἀπεκύλιον']],
+    [29, 7, 'gathered together;', ['συναχθῆναι']],
+    [29, 8, 'gathered together,', ['συναχθῆναι']],
+    [29, 8, 'they shall roll away', ['ἀποκυλίσωσι']],
+    [29, 10, "his mother's brother,", ['ἀδελφοῦ', 'τῆς', 'μητρὸς', 'αὐτοῦ,']],
+    [29, 10, "and the sheep of Laban, his mother's brother, that", ['καὶ']],
+    [29, 10, 'rolled away', ['ἀπεκύλισεν']],
+    [29, 22, 'gathered together', ['συνήγαγεν']],
+    [29, 33, 'this one', ['τοῦτον·']],
+    [30, 29, 'how many', ['ὅσα']],
+    [30, 36, "days' journey", ['ἡμερῶν']],
+    [30, 37, 'plane tree;', ['πλατάνου,']],
+    [30, 13, 'blessed,', ['Μακαρία']],
+    [30, 13, 'will pronounce me blessed;', ['μακαρίζουσίν', 'με']],
+    [31, 20, 'he ran away.', ['ἀποδιδράσκει·']],
+    [31, 24, 'evil things.', ['πονηρά.']],
+    [31, 26, 'did you run away', ['ἀπέδρας,']],
+    [31, 26, 'lead away', ['ἀπήγαγες']],
+    [31, 32, 'your property,', ['σῶν']],
+    [31, 39, 'taken of beasts', ['θηριάλωτον']],
+    [31, 55, 'turned back,', ['ἀποστραφεὶς']],
+    [32, 1, 'having looked up,', ['ἀναβλέψας']],
+    [32, 5, 'there were born to', ['ἐγένοντό']],
+    [32, 6, 'four hundred', ['τετρακόσιοι']],
+    [32, 14, 'two hundred', ['διακόσια,']],
+    [33, 1, 'four hundred', ['τετρακόσιοι']],
+    [33, 3, 'seven times,', ['ἑπτάκις']],
+    [33, 5, 'has mercifully blessed', ['ἠλέησεν']],
+    [33, 11, 'had mercy on', ['ἠλέησέν']],
+    [33, 8, 'are these things', ['ταῦτά', 'ἐστιν,']],
+    [33, 8, 'to', []],
+    [34, 12, 'very much,', ['σφόδρα,']],
+    [34, 19, 'young man', ['νεανίσκος']],
+    [34, 25, 'man his sword,', ['μάχαιραν', 'αὐτοῦ,']],
+    [34, 29, 'they took captive', ['ᾐχμαλώτευσαν·']],
+    [34, 19, 'for he was much attached to', ['ἐνέκειτο', 'γὰρ']],
+    [34, 19, "his father's", ['πατρὸς', 'αὐτοῦ.']],
+    [34, 19, 'this thing,', ['τὸ', 'ῥῆμα', 'τοῦτο·']],
+    [35, 1, 'go up', ['ἀνάβηθι']],
+    [35, 14, 'offered a libation', ['ἔσπεισεν']],
+    [35, 17, 'her hard labor,', ['σκληρῶς', 'αὐτὴν', 'τίκτειν']],
+    [35, 18, 'she called his name,', ['ἐκάλεσεν', 'ὄνομα', 'αὐτοῦ']],
+    [35, 21, 'of his father', ['τοῦ', 'πατρὸς', 'αὐτοῦ·']],
+    [35, 26, 'were born to', ['ἐγένοντο']],
+    [35, 10, 'your name;', ['ὄνομά', 'σου.']],
+    [35, 10, 'and he called his name Israel.', []],
+    [36, 5, 'were born to', ['ἐγένοντο']],
+  ];
+  const chunkAt = (n: number, v: number, text: string, greek: string[]): EnglishChunk | undefined =>
+    withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t === text && greekOf(n, v, c).join('|') === greek.join('|'));
+
+  it("gives 'it came to pass' of Genesis 24 to 36 one chunk of ἐγένετο, and leaves no chunk of those chapters with 'came' or 'pass' and no Greek word but 35:12's 'it shall come to pass that'", () => {
+    for (const [n, v, text, greek] of IT_CAME_24_36) {
+      const chunk = chunkAt(n, v, text, greek);
+      expect(chunk, `${n}:${v} ${text}`).toBeDefined();
+      expect(septuagintChunkLinked(chunk!), `${n}:${v} ${text}`).toBe(true);
+    }
+    const bare: string[] = [];
+    for (const [n, chapter] of withModel) {
+      if (n < 24 || n > 36) continue;
+      for (const verse of chapter.verses) for (const c of verse.e) if (c.g.length === 0 && c.t.split(/\s+/).some((w) => /^(came|come|pass)$/.test(lettersOf(w)))) bare.push(`${n}:${verse.n} ${c.t}`);
+    }
+    expect(bare).toEqual(['35:12 it shall come to pass that']);
+  });
+
+  it('gives the English of Genesis 24 to 36 that stood beside the Greek word of its phrase (from thence, came forth, drew water, sent away, two hundred, were born to and the rest) one chunk with it, and some pairs by place their own Greek word', () => {
+    for (const [n, v, text, greek] of PHRASES_24_36) expect(chunkAt(n, v, text, greek), `${n}:${v} ${text}`).toBeDefined();
+  });
+
+  // The oracle that found them: an English content word of a chunk with no Greek word that the lexicon's entry of a Greek word on the chunk next to it says, and that chunk's own English does not. After the fix rows the
+  // five that are left were read against their verses and are English Brenton adds: the 'same' of 24:15, the 'continually' of 28:15, the 'God' of 30:30's 'the Lord God', the 'thing, to' of 34:14 and the 'name' of 35:10's
+  // 'and he called his name Israel.' (the Hebrew's; Swete's Greek has only 'your name').
+  it('leaves no English word of Genesis 24 to 36 without Greek beside the chunk of the Greek word whose entry says it, but the five named', () => {
+    const lexicon = JSON.parse(readFileSync(join(shippedDir, 'lexicon-grc-lxx.json'), 'utf8')) as Record<string, { g?: string; d?: string }>;
+    const stems = (text: string): Set<string> => new Set(text.split(/[^\p{L}]+/u).map(lettersOf).filter((x) => x.length > 1).map(stemOf));
+    const found: string[] = [];
+    for (const [n, chapter] of withModel) {
+      if (n < 24 || n > 36) continue;
+      for (const verse of chapter.verses) {
+        verse.e.forEach((c, i) => {
+          if (c.g.length > 0) return;
+          const content = c.t.split(/\s+/).map(lettersOf).filter((w) => w && !FUNCTION_WORDS.has(w));
+          for (const d of [i - 1, i + 1]) {
+            const next = verse.e[d];
+            if (!next || next.g.length === 0) continue;
+            const own = next.t.split(/\s+/).map((x) => stemOf(lettersOf(x)));
+            const says = next.g.some((gi) => {
+              const entry = lexicon[verse.g[gi].l];
+              const said = stems(`${entry?.g ?? ''} ${entry?.d ?? ''}`);
+              return content.some((w) => {
+                const st = stemOf(w);
+                return (said.has(st) || (st.length > 3 && [...said].some((x) => x.startsWith(st.slice(0, 4))))) && !own.includes(st);
+              });
+            });
+            if (says) found.push(`${n}:${verse.n} ${d < i ? `${next.t} ${c.t}` : `${c.t} ${next.t}`}`);
+          }
+        });
+      }
+    }
+    expect(found).toEqual([
+      '24:15 the same the brother',
+      '28:15 you continually',
+      '30:30 the Lord God',
+      '34:14 thing, to give',
+      '35:10 your name; and he called his name Israel.',
+    ]);
   });
 
   it('applies every fix row it has: none is stale, and none of a chapter leaves a Greek word it had paired without English', () => {
