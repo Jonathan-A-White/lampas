@@ -1,0 +1,7 @@
+{
+ "v":1,"edition":"msb-david","book":"hag","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"1:1","edge":"tail","reason":"the narrator reads on into verse 2: no quiet between 'stating' and 'that'; cut at the quietest instant between them","room":0.0,"cut":23.33,"judge":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":6.7,"heard":{"extra":"TH","next":"THAT","letters":"HIGH PRIEST STATING THE","words":"high priest stating the"}},{"kind":"tail-clipped","by":0.107,"readsOn":true,"level":6.4,"heard":{"lost":"NG","letters":"THE HIGH PRIEST STATING","words":"the high priest stating"}}]},
+  {"verse":"1:2","edge":"head","reason":"the narrator reads on from verse 1: no quiet between 'stating' and 'that'; cut at the quietest instant between them","room":0.0,"cut":23.33,"judge":[{"kind":"head-extra","by":0.06,"readsOn":true,"level":6.3,"heard":{"before":"STATING","letters":"THAT THIS IS WHAT THE LORD OF HOPE","words":"that this is what"}},{"kind":"head-clipped","by":0.04,"readsOn":true,"level":6.7,"heard":{"lost":"TH","letters":"THAT THIS IS WHAT THE LORD OF HOST","words":"that this is what"}}]}
+ ]
+}
