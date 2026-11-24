@@ -2,6 +2,7 @@
 // `Rom.5.8`, `Rom.5.1-Rom.5.11`, `Rom.5.12-Rom.6.4`, a whole chapter (`Ps.23`, `Rom.5-Rom.6`) or a whole book (`Jude`). A range over books is split into one part for each book it
 // touches, cut at that book's ends, so a row can be listed under every book (scripts/sermons-build.ts). The book is the OSIS name or Lampas's code, in any case.
 // The verse counts come from the caller (public/data/index.json), so a chapter or verse past the end is refused and a whole chapter has its last verse.
+// A count is not always the last verse NUMBER: our text omits the verses the critical text brackets (Acts 8:37), so Acts 8 counts 39 and ends at 40; LAST_VERSE holds those chapters.
 import { CANON } from '../data/canon';
 import type { SermonRef } from '../data/sermonIndex';
 
@@ -30,6 +31,15 @@ interface Point {
   verse: number;
 }
 
+/**
+ * The chapters whose last verse number is past their verse count in public/data/index.json, because the text omits a verse inside them (Neh 7:68, Luke 17:36, Acts 8:37, 15:34, 24:7), by `code.chapter`.
+ * index.json keeps only the count (the phone's data cache reads it), so this small table carries the number; tests/unit/sermons-build.test.ts reads every chapter file and fails when it is stale.
+ */
+const LAST_VERSE: Readonly<Record<string, number>> = { 'neh.7': 73, 'luk.17': 37, 'act.8': 40, 'act.15': 41, 'act.24': 27 };
+
+/** The last verse number of a chapter: its count, unless the text omits a verse of it. */
+const lastVerse = (book: string, chapter: number, counts: readonly number[]): number => LAST_VERSE[`${book}.${chapter}`] ?? counts[chapter - 1];
+
 const fail = (reason: string, book?: string): OsisResult => ({ ok: false, reason, ...(book === undefined ? {} : { book }) });
 
 /**
@@ -46,10 +56,10 @@ function endpoint(text: string, side: 'first' | 'last', verses: VerseCounts): Po
   const chapter = c === undefined ? (side === 'first' ? 1 : counts.length) : number(c);
   if (chapter === undefined) return `'${text}': '${c}' is not a chapter`;
   if (chapter < 1 || chapter > counts.length) return `'${text}': chapter ${chapter} is past the end of ${book} (${counts.length} chapters)`;
-  const last = counts[chapter - 1];
+  const last = lastVerse(book, chapter, counts);
   const verse = v === undefined ? (side === 'first' ? 1 : last) : number(v);
   if (verse === undefined) return `'${text}': '${v}' is not a verse`;
-  if (verse < 1 || verse > last) return `'${text}': verse ${verse} is not a verse of ${book} ${chapter} (${last} verses)`;
+  if (verse < 1 || verse > last) return `'${text}': verse ${verse} is not a verse of ${book} ${chapter} (last verse ${last})`;
   return { book, chapter, verse };
 }
 
@@ -75,7 +85,7 @@ export function parseOsisRef(ref: string, verses: VerseCounts): OsisResult {
     const book = CANON[i].code;
     const counts = verses(book)!;
     const from = i === first ? a : { chapter: 1, verse: 1 };
-    const to = i === last ? b : { chapter: counts.length, verse: counts[counts.length - 1] };
+    const to = i === last ? b : { chapter: counts.length, verse: lastVerse(book, counts.length, counts) };
     parts.push({ book, chapter: from.chapter, from: from.verse, to: to.verse, ...(to.chapter === from.chapter ? {} : { toChapter: to.chapter }) });
   }
   return { ok: true, parts };

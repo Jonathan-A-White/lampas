@@ -55,6 +55,38 @@ describe('parseOsisRef: an OSIS reference in Lampas\'s book codes', () => {
     expect(ref('')).toMatchObject({ ok: false });
   });
 
+  it('keeps a verse number up to a chapter\'s last verse where the text omits an earlier verse (Acts 8:37 is not in the text, 8:40 is the last)', () => {
+    expect(ref('Acts.8.40')).toEqual({ ok: true, parts: [{ book: 'act', chapter: 8, from: 40, to: 40 }] });
+    expect(ref('Acts.8.30-Acts.8.40')).toEqual({ ok: true, parts: [{ book: 'act', chapter: 8, from: 30, to: 40 }] });
+    expect(ref('Acts.15.36-Acts.15.41')).toMatchObject({ ok: true, parts: [{ book: 'act', chapter: 15, from: 36, to: 41 }] });
+    expect(ref('Luke.17.20-Luke.17.37')).toMatchObject({ ok: true, parts: [{ book: 'luk', chapter: 17, from: 20, to: 37 }] });
+    expect(ref('Neh.7.73')).toMatchObject({ ok: true });
+    // a whole chapter ends at its last verse number, not at the count
+    expect(ref('Acts.8')).toEqual({ ok: true, parts: [{ book: 'act', chapter: 8, from: 1, to: 40 }] });
+    // a verse truly past the chapter is still refused
+    expect(ref('Acts.8.41')).toMatchObject({ ok: false, reason: expect.stringContaining('verse') });
+    expect(ref('Acts.15.42')).toMatchObject({ ok: false });
+    expect(ref('Luke.17.38')).toMatchObject({ ok: false });
+    // a chapter with no omitted verse keeps its count
+    expect(ref('Acts.9.44')).toMatchObject({ ok: false });
+  });
+
+  it('knows each chapter whose last verse number is past its verse count: the chapters of public/data, all of them', () => {
+    const found: Array<[string, number, number]> = [];
+    for (const b of index.books) {
+      for (let c = 1; c <= b.verses.length; c++) {
+        const chapter = JSON.parse(readFileSync(`public/data/${b.code}/${c}.json`, 'utf8')) as { verses: Array<{ n: number }> };
+        const last = Math.max(...chapter.verses.map((v) => v.n));
+        if (last !== b.verses[c - 1]) found.push([b.code, c, last]);
+      }
+    }
+    expect(found.length).toBeGreaterThan(0);
+    for (const [book, chapter, last] of found) {
+      expect(ref(`${book}.${chapter}.${last}`), `${book} ${chapter}:${last}`).toMatchObject({ ok: true });
+      expect(ref(`${book}.${chapter}.${last + 1}`), `${book} ${chapter}:${last + 1}`).toMatchObject({ ok: false });
+    }
+  });
+
   it('splits a range over books into one part for each book it touches, cut at the book\'s ends', () => {
     expect(ref('Rom.16.20-1Cor.1.3')).toEqual({
       ok: true,
