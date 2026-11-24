@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.377
+_2026-11-24_
+- Fixed: When you read a verse with Greek mixed into the English, hard-to-score Greek words should no longer make the tutor say it could not hear you.
+- Fixed: Tapping an English word in Judges 1 to 4 now opens its Greek word where it used to open the whole verse.
+- Fixed: Tapping an English word in the Septuagint's Hosea 1, 5 and 6 now opens the Greek word it renders instead of the whole verse.
+- Fixed: In the Septuagint Weave, English phrases not yet matched to their Greek no longer vanish from a verse.
+
 ## 0.7.376
 _2026-11-24_
 - New: In Hands-free, saying Enduring Word opens David Guzik's commentary for the verse you are on.

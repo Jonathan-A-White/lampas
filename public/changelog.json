@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.377",
+    "date": "2026-11-24",
+    "story": "mw-5r3p30.1245",
+    "kind": "fixed",
+    "text": "When you read a verse with Greek mixed into the English, hard-to-score Greek words should no longer make the tutor say it could not hear you."
+  },
+  {
+    "version": "0.7.377",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.59",
+    "kind": "fixed",
+    "text": "Tapping an English word in Judges 1 to 4 now opens its Greek word where it used to open the whole verse."
+  },
+  {
+    "version": "0.7.377",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.61",
+    "kind": "fixed",
+    "text": "Tapping an English word in the Septuagint's Hosea 1, 5 and 6 now opens the Greek word it renders instead of the whole verse."
+  },
+  {
+    "version": "0.7.377",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.108",
+    "kind": "fixed",
+    "text": "In the Septuagint Weave, English phrases not yet matched to their Greek no longer vanish from a verse."
+  },
+  {
     "version": "0.7.376",
     "date": "2026-11-24",
     "story": "mw-1l901so.3",
