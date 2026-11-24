@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.364",
+    "date": "2026-11-24",
+    "story": "mw-zbgo4ep.25",
+    "kind": "new",
+    "text": "David's recorded reading now follows along with highlighting in Matthew and Mark."
+  },
+  {
+    "version": "0.7.364",
+    "date": "2026-11-24",
+    "story": "mw-zbgo4ep.21",
+    "kind": "new",
+    "text": "David's recording now reads the rest of Jeremiah (chapters 27 to 52) and Lamentations with the highlight following along."
+  },
+  {
+    "version": "0.7.364",
+    "date": "2026-11-24",
+    "story": "mw-qtu3zvz.281",
+    "kind": "new",
+    "text": "Settings search now shows your matching settings first, and gathers sermon sources and library books into one row each with a count that opens that list already filtered."
+  },
+  {
+    "version": "0.7.364",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.91",
+    "kind": "fixed",
+    "text": "A few English words of Genesis 12 to 23 in the Septuagint (Abram's age 'old,', 'openly', 'price' and others) now open the Greek word that renders them, not a neighbour's."
+  },
+  {
     "version": "0.7.363",
     "date": "2026-11-24",
     "story": "mw-r9xo1pj.24",

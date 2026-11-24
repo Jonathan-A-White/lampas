@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.364
+_2026-11-24_
+- New: David's recorded reading now follows along with highlighting in Matthew and Mark.
+- New: David's recording now reads the rest of Jeremiah (chapters 27 to 52) and Lamentations with the highlight following along.
+- New: Settings search now shows your matching settings first, and gathers sermon sources and library books into one row each with a count that opens that list already filtered.
+- Fixed: A few English words of Genesis 12 to 23 in the Septuagint (Abram's age 'old,', 'openly', 'price' and others) now open the Greek word that renders them, not a neighbour's.
+
 ## 0.7.363
 _2026-11-24_
 - New: Today's Morning RePhil now picks up new episodes by itself when you are online, including the November 20 one.
