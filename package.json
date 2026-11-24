@@ -45,6 +45,7 @@
     "lxx:grammar-gaps": "tsx scripts/lxx/grammar-gaps.ts",
     "lxx:lone-support": "tsx scripts/lxx/lone-support.ts",
     "lxx:morpheus-check": "tsx scripts/lxx/morpheus-check.ts",
+    "lxx:pack": "tsx scripts/lxx/archive.ts",
     "lxx:pending": "tsx scripts/lxx/pending.ts",
     "lxx:release": "tsx scripts/lxx/release.ts",
     "lxx:report": "tsx scripts/lxx/report.ts",
