@@ -2,7 +2,7 @@
 // in two of his last five readings (src/ReadingDrill.tsx, src/data/readingDrill.ts), its review kind `sound` (src/review/kinds.ts) and the Review screen asking it.
 // The readings go through a fake Postern whose mill opens the grist (tests/support/fake-postern.ts) and a fake recorder.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -11,7 +11,8 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { scoreWords } from '../../src/data/ladderScore';
 import { forgetFrequency } from '../../src/data/frequency';
-import { keepVerseReading, setReaderView, type FixWord } from '../../src/data/repositories';
+import { drillOffer } from '../../src/data/readingDrill';
+import { getMissTally, keepVerseReading, setReaderView, type FixWord } from '../../src/data/repositories';
 import { mulberry32 } from '../../src/data/quiz';
 import { STEP_DAYS, DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
@@ -147,9 +148,10 @@ describeFeature(feature, ({ Scenario }) => {
     And('he misread an ου word in {int} of his last 5 readings in Greek', missedGreek);
     When('he opens the reading check of verse 28', openReadCheck);
     Then('the reading panel offers neither {string} nor {string}', async (_, a: string, b: string) => {
-      // the tally is read live: give it the moment it needs before saying nothing is there
+      // the panel reads the tally live and offers a drill only when it holds two misses: a read of ours is queued behind the panel's own, and the screen takes both in
       await waitFor(async () => expect((await db.missTally.toArray()).length).toBeGreaterThan(0));
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(drillOffer('el', await getMissTally('el'))).toBeNull();
+      await act(async () => {});
       expect(offered(a)).toBeNull();
       expect(offered(b)).toBeNull();
     });

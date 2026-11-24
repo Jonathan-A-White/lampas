@@ -84,44 +84,14 @@
       "count": 1
     }
   },
-  "features/steps/reader-weave-switch.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "features/steps/reading-drill.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "features/steps/speaking-interruptions.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 2
     }
   },
-  "features/steps/talk-pictures.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "features/steps/tips.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "features/steps/turn-pages.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "features/steps/tutor-aloud.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 4
-    }
-  },
-  "features/steps/tutor-works.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
     }
   },
   "features/steps/unsent-draft.steps.tsx": {
@@ -137,31 +107,6 @@
   "features/steps/verse-view.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 2
-    }
-  },
-  "features/steps/voice-offers.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "features/steps/weave.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "features/steps/welcome-back.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "features/steps/whats-new.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "features/steps/word-tip.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
     }
   },
   "tests/e2e/appearance.spec.ts": {

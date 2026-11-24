@@ -2,7 +2,7 @@
 // Reader's header, and the Tips setting. fetch is stubbed: /data/ files from disk, https://postern.allmymind.org to the fake mill
 // (tests/support/fake-postern.ts).
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -13,7 +13,7 @@ import { dayOf, setTips } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { tutorTimings } from '../../src/services/tutor';
-import { TIPS_DAY_KEY } from '../../src/tips/offer';
+import { offerTip, TIPS_DAY_KEY, type Offered } from '../../src/tips/offer';
 import { TipsSitting } from '../../src/tips/TipsSitting';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TIP_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -34,6 +34,9 @@ let fake: FakePostern;
 const TRY_REVIEW = TIP_ANSWER;
 const NO_SCREEN = { tip: { id: 'hold-a-word', title: 'Hold a word', body: 'Press and hold any Greek word to hear it.' } };
 
+/** The start-of-sitting offer the last `sit()` began (offerTip gives a call made while one runs that one's result). */
+let sitting: Promise<Offered> = Promise.resolve('failed');
+
 /** Opens Lampas as a sitting does: the app, and the sender that runs at its start. Nothing of the stores is cleared. */
 async function sit(): Promise<void> {
   cleanup();
@@ -50,6 +53,7 @@ async function sit(): Promise<void> {
       <App />
     </>,
   );
+  sitting = offerTip(); // the effect of TipsSitting has started the offer in render: this is its result, so the offer's end is a thing to wait on
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
@@ -67,7 +71,11 @@ async function freshPhone(answer: unknown, tips: 'on' | 'off' = 'on'): Promise<v
 
 const card = () => document.querySelector('[data-testid="tip-card"]') as HTMLElement | null;
 const chip = () => document.querySelector('[data-testid="tip-chip"]');
-const settle = () => new Promise((resolve) => setTimeout(resolve, 150));
+/** Waits for the sitting's offer to end (it says what it did) and for the screen to take that in: after it, a send or a card that was going to come has come. */
+const settle = async (did: Offered): Promise<void> => {
+  expect(await sitting).toBe(did);
+  await act(async () => {});
+};
 
 /** The tip waits as the 'Tip' chip in the Reader's row; a tap on it opens the card. */
 async function cardShows(title: string): Promise<HTMLElement> {
@@ -122,7 +130,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened again the same day', () => sit());
     Then('the mill received no more grists', async () => {
-      await settle();
+      await settle('today');
       expect(fake.received).toHaveLength(1);
     });
     And('no tip card shows', () => {
@@ -151,7 +159,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect((fake.received[1].input as { shown: string[] }).shown).toEqual([id]);
     });
     And('no tip card shows', async () => {
-      await settle();
+      await settle('none');
       expect(card()).toBeNull();
       expect(chip()).toBeNull();
     });
@@ -165,7 +173,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened again the same day', () => sit());
     Then('the mill received no more grists', async () => {
-      await settle();
+      await settle('today');
       expect(fake.received).toHaveLength(1);
     });
     And('the tip card under the Reader\'s header says {string} with Show me and Not now', async (_, title: string) => {
@@ -212,7 +220,7 @@ describeFeature(feature, ({ Scenario }) => {
       await sit();
     });
     Then('the mill received no grist', async () => {
-      await settle();
+      await settle('off');
       expect(fake.received).toHaveLength(0);
     });
     And('no tip card shows', () => {
@@ -228,7 +236,7 @@ describeFeature(feature, ({ Scenario }) => {
       await sit();
     });
     Then('the mill received no grist', async () => {
-      await settle();
+      await settle('offline');
       expect(fake.received).toHaveLength(0);
       vi.restoreAllMocks();
     });
@@ -248,7 +256,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(fake.received[0].grist).toMatchObject({ app: 'lampas', kind: 'tips' });
     });
     And('no tip card shows', async () => {
-      await settle();
+      await settle('none');
       expect(card()).toBeNull();
       expect(chip()).toBeNull();
     });

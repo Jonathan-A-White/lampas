@@ -2,7 +2,7 @@
 // change) can be answered by voice (mw-5r3p30.186). The next turn carries `pending_offer`; the fake tutor's answer says confirm, decline or
 // read_back in `offer_reply` (the decision is the grind's); the app does what the tap does. Postern is the fake (tests/support/fake-postern.ts).
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -152,6 +152,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const exactlyOneFeedback = async () => {
     await allAnswered();
+    await act(async () => {}); // a second send the yes's answer made would be made as that answer is drawn: count after the screen has taken it in
     expect(feedbackGrists()).toHaveLength(1);
   };
   const yesAnswerShown = async () => {
@@ -172,7 +173,6 @@ describeFeature(feature, ({ Scenario }) => {
       await send(words);
       // the yes is answered (its grist reached the mill) while the tap is still sending
       await waitFor(() => expect(talkGrists()).toHaveLength(2));
-      await new Promise((resolve) => setTimeout(resolve, 150));
     });
     And('the mill takes the feedback', () => releaseFeedback());
     Then('the mill received exactly {int} feedback grist', exactlyOneFeedback);

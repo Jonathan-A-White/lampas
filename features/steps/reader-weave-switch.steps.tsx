@@ -10,10 +10,10 @@ import { App } from '../../src/App';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { putAtLevels } from './levels';
-import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { forgetScrolls } from '../../src/nav/scrollMemory';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
@@ -76,8 +76,7 @@ async function setWeaveSolid(): Promise<void> {
 
 async function longPress(name: string): Promise<void> {
   const target = choice(name);
-  await user.pointer({ keys: '[MouseLeft>]', target });
-  await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
+  await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target }));
   await user.pointer({ keys: '[/MouseLeft]', target });
 }
 

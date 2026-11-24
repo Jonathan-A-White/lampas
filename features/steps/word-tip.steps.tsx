@@ -1,13 +1,15 @@
 // features/steps/word-tip.steps.tsx — runs features/word-tip.feature: the one-time tip on a word's sheet (pwa-kit/tips, kept in localStorage).
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { forgetChapters } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { getTips } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
+import { hints, WORD_SHEET_OPENED } from '../../src/tips/hints';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { closeDatabase } from './close-database';
 
@@ -55,8 +57,10 @@ const showsTip = async (_: unknown, text: string): Promise<void> => {
   expect(within(tip).getByRole('button', { name: 'Got it' })).toBeInTheDocument();
 };
 const showsNoTip = async (): Promise<void> => {
-  // give a late answer from the tips list time to come
-  await new Promise<void>((resolve) => setTimeout(resolve, 60));
+  // the card draws once its two reads have come back (the list's next tip, the Tips setting): the same two reads, ours queued behind its own, and the screen has taken them in
+  expect(await hints.nextTip(WORD_SHEET_OPENED)).toBeNull();
+  expect(await getTips()).toBe('on');
+  await act(async () => {});
   expect(within(sheet()).queryByRole('note')).toBeNull();
 };
 

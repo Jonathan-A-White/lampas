@@ -338,9 +338,10 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(viewer).getByRole('img', { name: `${name} (full screen)` })).toBeInTheDocument();
     });
     When('he presses Back', async () => {
+      const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
       await act(async () => {
         window.history.back();
-        await new Promise((resolve) => setTimeout(resolve, 30));
+        await popped;
       });
     });
     Then('no picture is open full screen', () => {

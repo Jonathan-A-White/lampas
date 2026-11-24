@@ -96,10 +96,9 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
       openWithWaiting(fixtureChangelog().filter((e) => e.version !== nextVersion())),
     );
     Then('there is no update banner', async () => {
-      // the changelog is read after the app starts: give it the turns it needs, then look
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
+      // the changelog is read after the app starts: with nothing new in it the waiting build takes over by itself, and that is the end of the check; then look
+      await waitFor(() => expect(waiting!.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' }));
+      await act(async () => {});
       expect(screen.queryByRole('button', { name: 'Update ready, tap to reload' })).toBeNull();
     });
     And('the waiting build takes over by itself', () => {
