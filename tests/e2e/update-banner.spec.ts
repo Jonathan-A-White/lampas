@@ -81,6 +81,11 @@ test('a newer build with nothing to show gets no banner, and takes over by itsel
     const response = await route.fetch();
     await route.fulfill({ response, body: `${await response.text()}\n// build ${build}\n`, headers: { ...response.headers(), 'cache-control': 'no-store' } });
   });
+  // The gate's lookups wedge a take-over that lands while one is in flight (test 1 above): the hide below waits for them to end, as its tap does.
+  let lastChainAsk = performance.now();
+  const chainAsked = (request: Request) => /whatsonchain\.com/.test(request.url()) && (lastChainAsk = performance.now());
+  page.on('request', chainAsked);
+  page.on('requestfailed', chainAsked);
   const navigations: string[] = [];
   page.on('framenavigated', (frame) => frame.parentFrame() === null && navigations.push(frame.url()));
   // The app judges a waiting build by reading the changelog fresh (pwa-kit's hasNewsSince): the read after the newer build is up is the judging.
@@ -105,6 +110,7 @@ test('a newer build with nothing to show gets no banner, and takes over by itsel
   await expect.poll(() => changelogReads, { message: 'the app has read the changelog to judge the waiting build' }).toBeGreaterThan(readsBefore);
   await afterFrames(page); // the judge's answer is drawn by the frames after the read
   await expect(page.getByRole('button', { name: 'Update ready, tap to reload' })).toHaveCount(0);
+  await expect.poll(() => performance.now() - lastChainAsk, { timeout: 20_000 }).toBeGreaterThan(1500);
   const before = navigations.length;
   expect(await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting !== null)).toBe(true);
 

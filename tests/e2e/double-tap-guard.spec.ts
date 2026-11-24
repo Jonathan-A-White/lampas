@@ -319,7 +319,11 @@ test.describe("a verse's number (mw-fnvjof.17.69)", () => {
 
   test('a single tap on a word of the Verse view, after it has opened, still opens the Word sheet', async ({ page }) => {
     await open(page, '#/?b=mrk&c=12&view=greek', {}, () => page.locator('[data-verse="2"] [data-verse-number]').waitFor());
-    await page.locator('[data-verse="2"] [data-verse-number]').tap();
+    // the Reader puts a saved place back after a reload (data-restoring, src/nav/scrollMemory.ts) and the verse number stands still only once it has: a tap before then lands on text that moves
+    await expect(page.locator('[data-reader]')).not.toHaveAttribute('data-restoring', /.*/);
+    const number = page.locator('[data-verse="2"] [data-verse-number]');
+    await centre(number);
+    await number.tap();
     const verseView = page.getByRole('region', { name: 'Verse view' });
     await expect(verseView).toBeVisible();
     await pageTime(page, 650); // 600 ms or more after the view opened
