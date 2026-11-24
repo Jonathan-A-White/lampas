@@ -34,7 +34,9 @@ export function scrollAddress(hash: string): string {
     const sources = params.get('sources');
     if (sources) {
       const at = params.get('at');
-      return at ? `#/settings?sources=${sources}&at=${encodeURIComponent(at)}` : `#/settings?sources=${sources}`;
+      // the list the Settings search opened, filtered (&q=, mw-qtu3zvz.281), is its own place again
+      const q = params.get('q');
+      return `#/settings?sources=${sources}${at ? `&at=${encodeURIComponent(at)}` : ''}${q ? `&q=${encodeURIComponent(q)}` : ''}`;
     }
     return '#/settings';
   }

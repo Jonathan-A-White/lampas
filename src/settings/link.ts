@@ -54,25 +54,27 @@ export function openSettingsSection(id: string): void {
 }
 
 /** The address of the one list of sermon sources (mw-qtu3zvz.92, src/sermons/SermonSourcesPage.tsx), a page of its own behind the row Sermon sources; `at` is the source its row is marked at: the key of a list's
- *  setting ('sermons.<id>') or a Logos book's Resource ID. */
-export const sermonSourcesLink = (at?: string): string => (at ? `#/settings?sources=sermons&at=${encodeURIComponent(at)}` : '#/settings?sources=sermons');
+ *  setting ('sermons.<id>') or a Logos book's Resource ID; `search` is the text the list is filtered to when the Settings search opens it (mw-qtu3zvz.281). */
+export const sermonSourcesLink = (at?: string, search?: string): string =>
+  `#/settings?sources=sermons${at ? `&at=${encodeURIComponent(at)}` : ''}${search ? `&q=${encodeURIComponent(search)}` : ''}`;
 
-/** What an address says of the list of sermon sources: `{}` for the page, `{ at }` for the page at a source's row, null for any other address. A link to a source's setting ('#/settings?setting=sermons.<id>': the
+/** What an address says of the list of sermon sources: `{}` for the page, `{ at }` for the page at a source's row, `{ q }` for the page filtered to what the Settings search held (mw-qtu3zvz.281), null for any other address. A link to a source's setting ('#/settings?setting=sermons.<id>': the
  *  tutor's link, a Settings search result) is the page at that source's row, since no source has a row on the Study resources page. */
-export function sermonSourcesOf(hash: string): { at?: string } | null {
+export function sermonSourcesOf(hash: string): { at?: string; q?: string } | null {
   if (pathOf(hash) !== '#/settings') return null;
-  const q = hash.indexOf('?');
-  const params = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1));
+  const mark = hash.indexOf('?');
+  const params = new URLSearchParams(mark < 0 ? '' : hash.slice(mark + 1));
   const setting = params.get('setting');
   if (setting !== null && setting.startsWith('sermons.')) return { at: setting };
   if (params.get('sources') !== 'sermons') return null;
   const at = params.get('at');
-  return at ? { at } : {};
+  const q = params.get('q');
+  return { ...(at ? { at } : {}), ...(q ? { q } : {}) };
 }
 
-/** Opens the list of sermon sources as a new Back step, at a source's row when one is named; it starts at the top (or the row), not where he last left it. */
-export function openSermonSources(at?: string): void {
-  const link = sermonSourcesLink(at);
+/** Opens the list of sermon sources as a new Back step, at a source's row when one is named, filtered to `search` when the Settings search opens it; it starts at the top (or the row), not where he last left it. */
+export function openSermonSources(at?: string, search?: string): void {
+  const link = sermonSourcesLink(at, search);
   forgetScrollsAt(link);
   openHash(link);
 }

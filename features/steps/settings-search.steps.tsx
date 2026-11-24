@@ -10,6 +10,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
@@ -25,7 +26,7 @@ afterAll(async () => {
   await closeDatabase();
 });
 
-async function openSettingsPage(seed: Record<string, string> = {}): Promise<void> {
+async function openSettingsPage(seed: Record<string, string> = {}, imported = false): Promise<void> {
   cleanup();
   clearBus();
   forgetTrail();
@@ -36,6 +37,7 @@ async function openSettingsPage(seed: Record<string, string> = {}): Promise<void
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   for (const [key, value] of Object.entries(seed)) await db.settings.put({ key, value });
+  if (imported) await keepImport(EVERY_BOOK_IDS);
   await seedHisWords();
   render(<App />);
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
@@ -200,27 +202,112 @@ describeFeature(feature, ({ Scenario }) => {
     And('Settings lists no groups', listsNoGroups);
   });
 
+  // mw-qtu3zvz.281: a list too long to read among the settings is ONE row with its count (data-found-list), and a tap opens the list filtered to the search
+  const listRow = (list: 'sermons' | 'library'): HTMLElement | null => document.querySelector<HTMLElement>(`[data-found-list="${list}"]`);
+  const waitForListRow = (list: 'sermons' | 'library'): Promise<HTMLElement> =>
+    waitFor(() => {
+      const row = listRow(list);
+      expect(row, `the row of ${list}`).not.toBeNull();
+      return row!;
+    });
+  /** How many the row says match: 'Sermon sources · 14 match ›' is 14. */
+  const said = (row: HTMLElement): number => Number(/· (\d+) match/.exec(row.textContent ?? '')?.[1]);
+  let saidSermons = 0;
+  const oneRowOfSermons = async (): Promise<void> => {
+    const row = await waitForListRow('sermons');
+    expect(row.textContent).toMatch(/^Sermon sources · \d+ match/);
+    saidSermons = said(row);
+    expect(saidSermons).toBeGreaterThan(0);
+    expect(document.querySelectorAll('[data-found^="sermons."]')).toHaveLength(0);
+  };
+  const tapsSermonRow = async (): Promise<void> => {
+    await user.click(await waitForListRow('sermons'));
+  };
+
   Scenario('The search keeps what he typed when he comes back from the sermon sources', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Settings with nothing chosen', openNothing);
     When('he types {string} in the Settings search', typed);
-    And('he chooses a sermon source among the found', async () => {
-      // a source's own switch ('sermons.<id>') is drawn on the page of sermon sources, so its found row opens that page at the source
-      const hit = await waitFor(() => {
-        const el = document.querySelector<HTMLElement>('[data-found^="sermons."]');
-        expect(el, 'a found sermon source').not.toBeNull();
-        return el!;
-      });
-      await user.click(hit);
-    });
+    And('he taps the row of sermon sources among the found', tapsSermonRow);
     Then('the {string} page is open', pageOpen);
-    // the list's back arrow puts the Study resources page in the list's place, and that page's arrow is a step Back to the home
     When('he taps the back arrow {string}', tapsBack);
-    And('he taps the next back arrow {string}', async (_, label: string) => {
-      await pageOpen(_, 'Study resources');
-      await tapsBack(_, label);
-    });
     Then('the Settings search holds {string}', searchHolds);
     And('Settings lists no groups', listsNoGroups);
+  });
+
+  Scenario('Typing sermons lists the settings first and the sermon sources as one row with their count', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    When('he types {string} in the Settings search', typed);
+    Then('Settings finds {string} in {string}', findsIn);
+    And('Settings finds {string} in {string}', findsIn);
+    And('the sermon sources are one row that says how many match', oneRowOfSermons);
+    And('that row comes after the found settings', async () => {
+      const row = await waitForListRow('sermons');
+      for (const label of ['Sermon sources', 'Open web sermons in']) {
+        expect(found(label)!.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING, label).toBeTruthy();
+      }
+    });
+    And('no single sermon source is listed', () => {
+      expect(document.querySelectorAll('[data-found^="sermons."]')).toHaveLength(0);
+      expect(document.querySelectorAll('[data-found-book]')).toHaveLength(0);
+    });
+  });
+
+  Scenario('Tapping the row of sermon sources opens the list filtered, and Back returns to the same search', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    When('he types {string} in the Settings search', typed);
+    And('he taps the row of sermon sources among the found', async () => {
+      await oneRowOfSermons();
+      await tapsSermonRow();
+    });
+    Then('the {string} page is open', pageOpen);
+    And('the page lists only the sources the row said matched', async () => {
+      await waitFor(() => expect(document.querySelectorAll('[data-source]')).toHaveLength(saidSermons));
+      expect(within(document.querySelector<HTMLElement>('[data-testid="sources-line"]')!).getByText(new RegExp(`${saidSermons} shown`))).toBeInTheDocument();
+    });
+    When('he taps the back arrow {string}', tapsBack);
+    Then('the Settings search holds {string}', searchHolds);
+    And('the sermon sources are one row that says how many match', async () => {
+      await oneRowOfSermons();
+    });
+    And('Settings finds {string} in {string}', findsIn);
+  });
+
+  Scenario('A search that matches one sermon source still answers it as the row of sermon sources', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    When('he types {string} in the Settings search', typed);
+    Then('the sermon sources are one row that says how many match', oneRowOfSermons);
+    And('no single sermon source is listed', () => {
+      expect(document.querySelectorAll('[data-found^="sermons."]')).toHaveLength(0);
+    });
+  });
+
+  Scenario('The books of his library that match are one row that opens the Library filtered', ({ Given, When, Then, And }) => {
+    let saidBooks = 0;
+    Given('Lampas is opened on Settings with Logos On and a library import holding every book', () => openSettingsPage({ 'resource.logos': 'on' }, true));
+    When('he types {string} in the Settings search', typed);
+    Then('the books of his library are one row that says how many match', async () => {
+      const row = await waitForListRow('library');
+      expect(row.textContent).toMatch(/^Books of your library · \d+ match/);
+      saidBooks = said(row);
+      expect(saidBooks).toBeGreaterThan(1);
+    });
+    And('no single book of the library is listed', () => {
+      expect(document.querySelectorAll('[data-found-book]')).toHaveLength(0);
+    });
+    When('he taps the row of the books of his library among the found', async () => {
+      await user.click(await waitForListRow('library'));
+    });
+    Then('the {string} page is open', pageOpen);
+    And('the Library search holds {string} and lists as many books as the row said', async (_, text: string) => {
+      expect(await screen.findByRole('searchbox', { name: 'Search your books' })).toHaveValue(text);
+      const results = await screen.findByTestId('library-results');
+      expect(within(results).getAllByRole('button')).toHaveLength(saidBooks);
+    });
+    When('he taps the back arrow {string}', tapsBack);
+    Then('the Settings search holds {string}', searchHolds);
+    And('the books of his library are one row that says how many match', async () => {
+      expect(said(await waitForListRow('library'))).toBe(saidBooks);
+    });
   });
 
   Scenario("The search keeps what he typed when he comes back from a group's page", ({ Given, When, Then, And }) => {

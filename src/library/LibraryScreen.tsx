@@ -10,7 +10,7 @@ import { useAiAllowed } from '../gate/licenceContext';
 import { askedLine } from '../services/bookRequests';
 import { backTo, libraryOf, openLibrary, replaceHash, useAddress } from '../nav/route';
 import { CATALOGUE, entryOf, type CatalogueEntry } from '../resources/catalogue';
-import { sermonSourcesLink } from '../settings/link';
+import { backToSettingsHome, sermonSourcesLink } from '../settings/link';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
@@ -33,7 +33,7 @@ const importedOn = (at: number): string => new Date(at).toLocaleDateString('en-G
 const BUTTON = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
 export function LibraryScreen() {
-  const { kind, book, import: importing } = libraryOf(useAddress());
+  const { kind, book, import: importing, search } = libraryOf(useAddress());
   // the page of sermon books the Library once had: the one list of sermon sources, in place of this entry so Back does not come back here
   const moved = !importing && kind === 'sermons';
   useEffect(() => {
@@ -42,10 +42,11 @@ export function LibraryScreen() {
   if (moved) return null;
   if (importing) return <ImportLibrary />;
   const known = LIBRARY_KINDS.find((k) => k === kind);
-  return known ? <KindPage kind={known} book={book} /> : <LibraryHome />;
+  return known ? <KindPage kind={known} book={book} /> : <LibraryHome key={search ?? ''} search={search} />;
 }
 
-function LibraryHome() {
+/** The Library home. `search` is the text its search starts with, when the Settings search opened it filtered (mw-qtu3zvz.281): its back arrow then says ‹ Settings and brings him back to that search. */
+function LibraryHome({ search }: { search?: string }) {
   const states = useShelf();
   const bibles = useBibles();
   const owned = useOwned();
@@ -56,7 +57,7 @@ function LibraryHome() {
   const asked = useLiveQuery(async () => (await libraryAsked()) ?? null, []);
   const ai = useAiAllowed();
   const [asking, setAsking] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(search ?? '');
   const on = states ? booksOn(states) : 0;
   const searching = query.trim() !== '';
   const found = searching ? matching(items, query) : [];
@@ -67,7 +68,7 @@ function LibraryHome() {
   });
   return (
     <>
-      <ScreenHeader title={SCREEN_NAMES.library} back={<HeaderButton onClick={() => backTo('tools')}>‹ Tools</HeaderButton>} />
+      <ScreenHeader title={SCREEN_NAMES.library} back={search ? <HeaderButton onClick={backToSettingsHome}>‹ Settings</HeaderButton> : <HeaderButton onClick={() => backTo('tools')}>‹ Tools</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4">
         <section data-testid="library-card" className="mt-3 rounded-xl border border-line bg-surface p-3">
           {states === undefined ? null : on > 0 || note ? (

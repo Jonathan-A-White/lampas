@@ -83,12 +83,50 @@ Feature: Settings has a search field and one registry behind every row
   Scenario: The search keeps what he typed when he comes back from the sermon sources
     Given Lampas is opened on Settings with nothing chosen
     When he types "sermon" in the Settings search
-    And he chooses a sermon source among the found
+    And he taps the row of sermon sources among the found
     Then the "Sermon sources" page is open
-    When he taps the back arrow "‹ Study resources"
-    And he taps the next back arrow "‹ Settings"
+    When he taps the back arrow "‹ Settings"
     Then the Settings search holds "sermon"
     And Settings lists no groups
+
+  # mw-qtu3zvz.281: the search answers in layers. A list too long to read among the settings (the sermon sources, the books of his library) is one row with its count, never its members one by one
+  Scenario: Typing sermons lists the settings first and the sermon sources as one row with their count
+    Given Lampas is opened on Settings with nothing chosen
+    When he types "sermons" in the Settings search
+    Then Settings finds "Sermon sources" in "Study resources"
+    And Settings finds "Open web sermons in" in "Study resources"
+    And the sermon sources are one row that says how many match
+    And that row comes after the found settings
+    And no single sermon source is listed
+
+  Scenario: Tapping the row of sermon sources opens the list filtered, and Back returns to the same search
+    Given Lampas is opened on Settings with nothing chosen
+    When he types "sermons" in the Settings search
+    And he taps the row of sermon sources among the found
+    Then the "Sermon sources" page is open
+    And the page lists only the sources the row said matched
+    When he taps the back arrow "‹ Settings"
+    Then the Settings search holds "sermons"
+    And the sermon sources are one row that says how many match
+    And Settings finds "Open web sermons in" in "Study resources"
+
+  Scenario: A search that matches one sermon source still answers it as the row of sermon sources
+    Given Lampas is opened on Settings with nothing chosen
+    When he types "Spurgeon" in the Settings search
+    Then the sermon sources are one row that says how many match
+    And no single sermon source is listed
+
+  Scenario: The books of his library that match are one row that opens the Library filtered
+    Given Lampas is opened on Settings with Logos On and a library import holding every book
+    When he types "lexicon" in the Settings search
+    Then the books of his library are one row that says how many match
+    And no single book of the library is listed
+    When he taps the row of the books of his library among the found
+    Then the "Your Logos library" page is open
+    And the Library search holds "lexicon" and lists as many books as the row said
+    When he taps the back arrow "‹ Settings"
+    Then the Settings search holds "lexicon"
+    And the books of his library are one row that says how many match
 
   Scenario: The search keeps what he typed when he comes back from a group's page
     Given Lampas is opened on Settings with nothing chosen

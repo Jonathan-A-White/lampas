@@ -2,7 +2,7 @@ Feature: Settings after the library
   His Logos library has a screen of its own (#/library), so Settings no longer lists books (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8). Its door is a row of Tools since mw-5r3p30.754 (it was one of Study resources, under the Logos switch, mw-rfjjzd.23: the Logos switch governs everything Logos);
   with Logos Off it is not drawn, nor is Bible in Logos. It says "N books on" and opens the Library; the lexicon list, Grammar books and the Works list
   are gone from Settings. Bible in Logos is a picker for each part with a door to Library > Bibles, where the Resource ID can still be typed. Daily's Which devotional is a searchable picker of the devotionals that are on, with Random,
-  and In the draw follows the shelf. The Settings search finds a book by its title and opens the Library at it.
+  and In the draw follows the shelf. The Settings search finds a book by its title, as one row with the count that opens the Library filtered to it (mw-qtu3zvz.281).
 
   Scenario: The Settings home has no Your Logos library row; Which languages? is first
     Given the shelf holds the books "BDAG, Louw-Nida, Kairos" and Settings is open at its home
@@ -78,6 +78,6 @@ Feature: Settings after the library
   Scenario: The Settings search finds a book by its title
     Given the shelf holds the books "BDAG" and Settings is open at its home
     When he searches Settings for "bdag"
-    Then the search answers the book "BDAG · Your Logos library"
-    When he taps the answer "BDAG · Your Logos library"
-    Then the Library opens at Lexicons at the book "BDAG"
+    Then the search answers the books of the library as one row "Books of your library · 1 match"
+    When he taps the answer "Books of your library · 1 match"
+    Then the Library opens filtered to "bdag" and lists the book "BDAG"

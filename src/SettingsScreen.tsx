@@ -6,7 +6,7 @@
 // (src/settings/controls/, one file per section) names for its key. A row that depends on a setting that is off is not drawn. An address '#/settings?section=resources' opens the
 // page holding that section, scrolled to it (a link from elsewhere, such as the reference card's 'Link Logos in Settings'). An address '#/settings?setting=textSize' (src/settings/link.ts,
 // docs/links.md) opens the page holding that row, at the row: it is drawn whatever its dependency would hide (rowsAt), scrolled to and marked until his next tap, and a row that
-// depends on a setting that is off says to turn that on first. The home lays out no block under the groups: What Lampas has counted is a row of that list, last before Developer, and opens its own page, '#/settings?page=counted' (mw-6ww.175.87); the search finds it too, 'in Settings' (mw-6ww.175.103). Words, Review, Paradigms, Verse lists, Memorize and Your Logos library left for the Tools screen (src/ToolsScreen.tsx, mw-5r3p30.754); the search still finds them, 'in Tools'. docs/layout/settings.md.
+// depends on a setting that is off says to turn that on first. The home lays out no block under the groups: What Lampas has counted is a row of that list, last before Developer, and opens its own page, '#/settings?page=counted' (mw-6ww.175.87); the search finds it too, 'in Settings' (mw-6ww.175.103). The search answers in layers (mw-qtu3zvz.281): the settings that match first, then each long list (the sermon sources, the books of his library) as one row with its count that opens the list filtered. Words, Review, Paradigms, Verse lists, Memorize and Your Logos library left for the Tools screen (src/ToolsScreen.tsx, mw-5r3p30.754); the search still finds them, 'in Tools'. docs/layout/settings.md.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { useAiAllowed } from './gate/licenceContext';
@@ -17,25 +17,20 @@ import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
 import { bringRowIntoView, HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
 import { backToSettingsHome, groupIdOf, isCountedPage, movedTool, openCounted, sermonSourcesOf, settingKeyOf } from './settings/link';
-import { ownedResources } from './data/repositories';
-import { searchLibrary } from './settings/librarySearch';
 import { DoorButton, Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { greekLevelOf } from './settings/definitions/greekInterest';
 import { HOME_SECTIONS, SECTIONS, dialOf, foundDoors, groupById, groupOf, homeEntries, isHomeRow, isSermonSourceRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleRows, visibleToolRows, type GroupId } from './settings/rows';
 import { SermonSourcesPage } from './sermons/SermonSourcesPage';
-import { useSourceList } from './sermons/useSourceList';
 import { neededText } from './settings/neededText';
 import { settingsForTutor } from './settings/tutorSettings'; import { useGrownRows } from './settings/useGrownRows';
 import { useHomeSearch } from './settings/useHomeSearch';
+import { useListMatches } from './settings/useListMatches';
 import { useReportScreen } from './tutor/screenContext';
 import { UsageCountedPage } from './tips/UsageCounted';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
 /** How long a row that a link opened Settings at is kept in view while the controls above it arrive. */
 const KEEP_IN_VIEW_MS = 2500;
-
-/** The books of his Logos library found while Logos is Off: none (the library is under the Logos switch, mw-rfjjzd.23). */
-const NO_BOOKS: ReturnType<typeof searchLibrary> = { books: [], total: 0 };
 
 /** The section id an address asks for ('#/settings?section=resources'), or null. */
 function sectionOf(hash: string): string | null {
@@ -49,7 +44,7 @@ export function SettingsScreen() {
   // the home's search text is held here, above the pages drawn in the home's place, so their back arrow brings him back to what he searched for (useHomeSearch, mw-6ww.175.108)
   const [query, setQuery] = useHomeSearch(address);
   const sources = sermonSourcesOf(address);
-  if (sources) return <SermonSourcesPage key={sources.at ?? ''} at={sources.at} />;
+  if (sources) return <SermonSourcesPage key={`${sources.at ?? ''}|${sources.q ?? ''}`} at={sources.at} search={sources.q} />;
   return isCountedPage(address) ? <UsageCountedPage /> : <SettingsPages query={query} setQuery={setQuery} />;
 }
 
@@ -93,18 +88,15 @@ function SettingsPages({ query, setQuery }: { query: string; setQuery: (query: s
   const grown = useGrownRows(); const values = useLiveQuery(readValues, [grown]); // a sermon source the index service gave grows its row
   // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3); the Hand row is not drawn at all (mw-5r3p30.880: no tutor door exists)
   const aiAllowed = useAiAllowed();
-  // a sermon source's own switch is drawn on the page of sermon sources, not here (mw-qtu3zvz.92): the search still finds it
+  // a sermon source's own switch is drawn on the page of sermon sources, not here (mw-qtu3zvz.92): the search counts them in one row that opens that page filtered (mw-qtu3zvz.281)
   const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest)).filter((r) => (aiAllowed || !r.licenceOnly) && !isSermonSourceRow(r));
   const needed = values && linked ? neededFor(values, linked) : undefined;
   // a row both languages share depends on no row (the key 'depth' is read, not drawn): it says to raise either dial though there is nothing to turn on first
   const sharedHidden = values && linked && linkedRow && dialOf(linkedRow) === 'depth' && !visibleRows(values, '').some((r) => r.key === linked);
   // the tutor is told every setting, shown or not (mw-5r3p30.107): he can say what a setting that is off would give
   const forTutor = useLiveQuery(settingsForTutor, []);
-  // the sermon books the search may answer: those in the one list of sermon sources (his import holds them)
-  const sourceList = useSourceList();
-  // the books of his import: the search answers no other book (src/data/owned.ts)
-  const owned = useLiveQuery(ownedResources, []);
-  const listedBooks = new Set((sourceList?.items ?? []).filter((item) => item.sort === 'book').map((item) => item.id));
+  // the long lists the search answers as one row each, with how many of their members match (useListMatches, mw-qtu3zvz.281)
+  const matches = useListMatches(query, values?.['resource.logos'] === 'on');
   useReportScreen({ name: 'Settings', facts: [], settings: forTutor ?? [] });
   const drawn = values !== undefined;
   useEffect(() => {
@@ -114,7 +106,7 @@ function SettingsPages({ query, setQuery }: { query: string; setQuery: (query: s
   }, [wanted, drawn]);
   if (!page) {
     const searching = query.trim() !== '';
-    const found = searching && values ? visibleRows(values, query).filter((r) => aiAllowed || !r.licenceOnly) : [];
+    const found = searching && values ? visibleRows(values, query).filter((r) => (aiAllowed || !r.licenceOnly) && !isSermonSourceRow(r)) : [];
     const foundTools = searching && values ? visibleToolRows(values, query) : [];
     // 'Which languages?' is the first thing on the home, and under it the dial of each language chosen (mw-3ased2.2, mw-gdcyf98.2); a search lists matching rows instead
     // (a link to a dial whose language is not chosen draws it all the same, marked, as a link does for any row: rowsAt)
@@ -126,7 +118,7 @@ function SettingsPages({ query, setQuery }: { query: string; setQuery: (query: s
           <div ref={contentRef}>
             <SettingsSearch query={query} onChange={setQuery} />
             {searching ? (
-              values ? <Found rows={found} doors={foundDoors(query)} tools={foundTools} books={values['resource.logos'] === 'on' && owned !== undefined ? searchLibrary(query, owned, listedBooks) : NO_BOOKS} query={query} /> : null
+              values ? <Found rows={found} doors={foundDoors(query)} tools={foundTools} lists={matches} query={query} /> : null
             ) : (
               // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
               values ? (

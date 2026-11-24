@@ -126,6 +126,16 @@ describe('the library import address', () => {
   });
 });
 
+describe('the library address filtered to a search (mw-qtu3zvz.281)', () => {
+  it('carries the Settings search to the Library home, and to no page of it', () => {
+    expect(libraryHash({ search: 'bdag' })).toBe('#/library?q=bdag');
+    expect(libraryOf('#/library?q=bdag')).toEqual({ search: 'bdag' });
+    expect(libraryOf(libraryHash({ search: 'a b&c' }))).toEqual({ search: 'a b&c' });
+    expect(libraryOf('#/library?kind=lexicon&q=bdag')).toEqual({ kind: 'lexicon' });
+    expect(libraryHash({ kind: 'lexicon', search: 'bdag' })).toBe('#/library?kind=lexicon');
+  });
+});
+
 describe('the address of one verse list (#/lists/<id>)', () => {
   it('reads the id of a list, and nothing from the lists screen or an address that is no id', () => {
     expect(verseListOf('#/lists/7')).toBe(7);

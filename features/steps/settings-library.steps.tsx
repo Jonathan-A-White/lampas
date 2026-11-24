@@ -167,7 +167,7 @@ describeFeature(feature, ({ Scenario }) => {
       await openAt('#/settings');
       await user.type(await screen.findByRole('searchbox', { name: 'Search settings' }), text);
       await waitFor(() => expect(screen.getByRole('searchbox', { name: 'Search settings' })).toHaveValue(text));
-      expect(screen.queryByRole('list', { name: 'Matching books' })).toBeNull();
+      expect(document.querySelector('[data-found-list="library"]')).toBeNull();
       expect(screen.queryByRole('button', { name: /BDAG/ })).toBeNull();
     });
   });
@@ -291,16 +291,20 @@ describeFeature(feature, ({ Scenario }) => {
     When('he searches Settings for {string}', async (_, text: string) => {
       await user.type(await screen.findByRole('searchbox', { name: 'Search settings' }), text);
     });
-    Then('the search answers the book {string}', async (_, title: string) => {
-      const books = await screen.findByRole('list', { name: 'Matching books' });
-      expect(await within(books).findByRole('button', { name: new RegExp(`^${title}`) })).toBeInTheDocument();
+    Then('the search answers the books of the library as one row {string}', async (_, title: string) => {
+      const lists = await screen.findByRole('list', { name: 'Matching lists' });
+      expect(await within(lists).findByRole('button', { name: title })).toBeInTheDocument();
+      expect(document.querySelector('[data-found-book]')).toBeNull();
     });
     When('he taps the answer {string}', async (_, title: string) => {
       await user.click(await screen.findByRole('button', { name: new RegExp(`^${title}`) }));
     });
-    Then('the Library opens at Lexicons at the book {string}', async (_, short: string) => {
-      expect(await screen.findByRole('heading', { name: 'Lexicons', level: 1 })).toBeInTheDocument();
-      expect(libraryOf(window.location.hash)).toEqual({ kind: 'lexicon', book: book(short).resource });
+    Then('the Library opens filtered to {string} and lists the book {string}', async (_, text: string, short: string) => {
+      expect(await screen.findByRole('heading', { name: 'Your Logos library', level: 1 })).toBeInTheDocument();
+      expect(libraryOf(window.location.hash)).toEqual({ search: text });
+      expect(await screen.findByRole('searchbox', { name: 'Search your books' })).toHaveValue(text);
+      const results = await screen.findByTestId('library-results');
+      expect(within(results).getByRole('button', { name: new RegExp(`^${book(short).short}`) })).toBeInTheDocument();
     });
   });
 });
