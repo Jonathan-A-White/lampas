@@ -12,6 +12,8 @@ import { openVerseView } from './verse-view';
 test.use({ viewport: { width: 390, height: 844 } });
 
 const PAGE = 'https://enduringword.com/bible-commentary/john-3/';
+/** John 3:16 is in the range of section 6, '6. (16) ...' (mw-1l901so.2); a request leaves the fragment out, so the stub sees PAGE */
+const SECTION = `${PAGE}#section-6`;
 const CREDIT = '(c)1996-present The Enduring Word Bible Commentary by David Guzik - enduringword.com';
 
 /** The sermon index service has no words of it, and the site's page is a stub: nothing leaves the test. Returns the addresses the browser was sent to. */
@@ -34,7 +36,7 @@ test('with Logos Off the Verse view has the Commentary door, which opens the cha
   const view = await openVerseView(page, 16);
   const door = view.getByRole('link', { name: 'Commentary', exact: true });
   await door.scrollIntoViewIfNeeded();
-  await expect(door).toHaveAttribute('href', PAGE);
+  await expect(door).toHaveAttribute('href', SECTION);
   expect((await door.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
   await shot(page, 'enduring-word-door');
 
@@ -44,7 +46,7 @@ test('with Logos Off the Verse view has the Commentary door, which opens the cha
   await expect(reader).toBeVisible();
   await expect(reader.locator('[data-enduring-credit]')).toHaveText(CREDIT);
   await expect(reader.getByRole('status')).toHaveText('Lampas could not get the words of this commentary, so it opens on the web.');
-  await expect(reader.getByRole('link', { name: 'Open on the web' })).toHaveAttribute('href', PAGE);
+  await expect(reader.getByRole('link', { name: 'Open on the web' })).toHaveAttribute('href', SECTION);
   await shot(page, 'enduring-word-reader');
   await (await popup).waitForLoadState();
   expect(opened).toContain(PAGE);

@@ -117,7 +117,7 @@ export const hasDgcb = (rows: readonly InLogosRow[]): boolean => rows.some((r) =
  * the commentaries; a book the site has no commentary of (the Apocrypha) gets none. Not part of `inLogosRows`: it is no book of his shelf and no Logos link, so it opens no second door by itself (hasAnotherBook).
  */
 export function withEnduringWord(rows: readonly InLogosRow[], entries: readonly CatalogueEntry[], place: StudyPlace): InLogosRow[] {
-  const url = enduringWordUrl(place.book, place.chapter);
+  const url = enduringWordUrl(place.book, place.chapter, place.verse);
   if (url === undefined || hasDgcb(rows)) return [...rows];
   const row: InLogosRow = { entry: ENDURING_WORD_ENTRY, state: 'on', link: { url, fallback: url } };
   const order = (entry: CatalogueEntry): number => entries.findIndex((e) => e.resource === entry.resource);
