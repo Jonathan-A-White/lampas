@@ -15,6 +15,15 @@ Feature: Ask the Bible talk for a sermon and it plays in the app (mw-qtu3zvz.84,
     And the request told the tutor that "testvideo:clay" plays in the app and "testvideo:notes" does not
 
   @uc-sermons @greek
+  Scenario: A Subsplash sermon he asks for opens Subsplash's media page with autoplay, so it starts with no tap
+    Given Lampas is opened on Romans 8 with video sermons, and the tutor answers a sermon ask by playing "testvideo:church"
+    And he opens Talk
+    When he sends "play the sermon from the church app"
+    Then the sermon player opens on "Church App Sermon"
+    And the sermon frame shows "https://subsplash.com/u/brookfieldfirst/media/d/q59d572?autoplay"
+    And the frame may play with no tap
+
+  @uc-sermons @greek
   Scenario: Several sermons fit, the tutor names them and the first plays
     Given Lampas is opened on Romans 8 with video sermons, and the tutor answers a sermon ask by playing "testvideo:faith"
     And he opens Talk

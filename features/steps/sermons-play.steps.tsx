@@ -44,7 +44,7 @@ let played = 0;
 
 /** Two video rows (YouTube) and one text row of Romans 8, from a source of the tests' own. */
 const video = (id: string, title: string, videoId: string): SermonRow => ({ ...row('testvideo', id, title, ['rom', 8, 1, 4], 'Phil Morgan'), open: { url: `https://www.youtube.com/watch?v=${videoId}` } });
-const ROWS: SermonRow[] = [video('clay', 'Lightning in Clay Pots', 'clay_pots_1'), video('faith', 'Faith that Works', 'faith_works'), row('testvideo', 'notes', 'Notes on Grace', ['rom', 8, 1, 4], 'Phil Morgan')];
+const ROWS: SermonRow[] = [video('clay', 'Lightning in Clay Pots', 'clay_pots_1'), video('faith', 'Faith that Works', 'faith_works'), row('testvideo', 'notes', 'Notes on Grace', ['rom', 8, 1, 4], 'Phil Morgan'), { ...video('church', 'Church App Sermon', 'church_app_1'), alt: 'https://brookfieldfirst.subspla.sh/q59d572' }];
 
 class FakePlayer {
   constructor(_target: unknown, opts: { events?: { onReady?: (e: { target: FakePlayer }) => void } }) {
@@ -129,6 +129,27 @@ describeFeature(feature, ({ Scenario }) => {
       expect(byId(plays)?.plays).toBe(true);
       expect(byId(doesNot)).toBeDefined();
       expect(byId(doesNot)?.plays).toBeUndefined();
+    });
+  });
+
+  Scenario("A Subsplash sermon he asks for opens Subsplash's media page with autoplay, so it starts with no tap", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with video sermons, and the tutor answers a sermon ask by playing {string}', (async (_: unknown, id: string) => {
+      await open(() => answered('Church App Sermon, preached by Phil Morgan on Romans 8:1-4.', playing(id)));
+    }) as never);
+    And('he opens Talk', async () => {
+      await openTutor();
+      await screen.findByRole('dialog', { name: /^Talk about / });
+    });
+    When('he sends {string}', (_, question: string) => send(question));
+    Then('the sermon player opens on {string}', async (_, title: string) => {
+      expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument();
+    });
+    And('the sermon frame shows {string}', (_, address: string) => {
+      expect(document.querySelector('[data-sermon-player] iframe')?.getAttribute('src')).toBe(address);
+    });
+    And('the frame may play with no tap', () => {
+      expect(document.querySelector('[data-sermon-player] iframe')?.getAttribute('allow')).toContain('autoplay');
+      expect(played).toBe(0);
     });
   });
 

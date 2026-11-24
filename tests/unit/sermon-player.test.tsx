@@ -64,8 +64,16 @@ describe('videoOf: the address a video row plays from', () => {
     }
   });
   it('makes the Subsplash embed address of a media page and of a church short link', () => {
-    expect(videoOf('https://subsplash.com/u/brookfieldfirst/media/d/q59d572-the-day-of-the-lord')).toEqual({ kind: 'subsplash', embed: 'https://subsplash.com/u/brookfieldfirst/media/embed/d/q59d572-the-day-of-the-lord' });
-    expect(videoOf('https://brookfieldfirst.subspla.sh/q59d572')).toEqual({ kind: 'subsplash', embed: 'https://subsplash.com/u/brookfieldfirst/media/embed/d/q59d572' });
+    expect(videoOf('https://subsplash.com/u/brookfieldfirst/media/d/q59d572-the-day-of-the-lord')).toEqual({
+      kind: 'subsplash',
+      embed: 'https://subsplash.com/u/brookfieldfirst/media/embed/d/q59d572-the-day-of-the-lord',
+      page: 'https://subsplash.com/u/brookfieldfirst/media/d/q59d572-the-day-of-the-lord',
+    });
+    expect(videoOf('https://brookfieldfirst.subspla.sh/q59d572')).toEqual({
+      kind: 'subsplash',
+      embed: 'https://subsplash.com/u/brookfieldfirst/media/embed/d/q59d572',
+      page: 'https://subsplash.com/u/brookfieldfirst/media/d/q59d572',
+    });
   });
   it('leaves a Subsplash page that is not one media item, a look-alike and a text page to the web', () => {
     for (const url of ['https://subsplash.com/u/brookfieldfirst/media', 'https://subsplash.com.evil.example/u/x/media/d/y', 'https://youtube.com.evil.example/watch?v=abc', 'https://www.youtube.com/@channel', 'https://www.youtube.com/watch?v=', 'https://ccel.org/ccel/spurgeon/sermons1.i.html', 'not a url']) {
@@ -122,12 +130,22 @@ describe('openSermon', () => {
     expect(screen.getByRole('button', { name: 'Play' })).toBeInTheDocument();
   });
 
-  it('plays a Subsplash row (its alt address) in Subsplash\'s own embed player', async () => {
+  it('opens a Subsplash row a tap chose in Subsplash\'s embed player, whose own Play button is the one tap', async () => {
+    render(<SermonPlayerHost />);
+    openSermon(yt('https://www.youtube.com/watch?v=vid1_abcdEF', 'https://brookfieldfirst.subspla.sh/q59d572'));
+    const sheet = await screen.findByRole('dialog', { name: 'The Day of the Lord' });
+    const frame = sheet.querySelector('iframe');
+    expect(frame?.getAttribute('src')).toBe('https://subsplash.com/u/brookfieldfirst/media/embed/d/q59d572');
+    expect(frame?.getAttribute('allow')).toContain('autoplay');
+    expect(made).toHaveLength(0);
+  });
+
+  it('opens a Subsplash row Lampas starts itself (auto) on Subsplash\'s media page with ?autoplay, which plays with no tap (mw-qtu3zvz.282)', async () => {
     render(<SermonPlayerHost />);
     openSermon(yt('https://www.youtube.com/watch?v=vid1_abcdEF', 'https://brookfieldfirst.subspla.sh/q59d572'), { auto: true });
     const sheet = await screen.findByRole('dialog', { name: 'The Day of the Lord' });
     const frame = sheet.querySelector('iframe');
-    expect(frame?.getAttribute('src')).toBe('https://subsplash.com/u/brookfieldfirst/media/embed/d/q59d572');
+    expect(frame?.getAttribute('src')).toBe('https://subsplash.com/u/brookfieldfirst/media/d/q59d572?autoplay');
     expect(frame?.getAttribute('allow')).toContain('autoplay');
     expect(made).toHaveLength(0);
   });
