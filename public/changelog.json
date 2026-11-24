@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.373",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.92",
+    "kind": "fixed",
+    "text": "In the Septuagint's Genesis 24 to 36, tapping the English of a phrase such as 'it came to pass', 'from thence' or 'drew water' now opens the Greek word that renders it, on every word of the phrase."
+  },
+  {
+    "version": "0.7.373",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.10",
+    "kind": "fixed",
+    "text": "Tapping an English word in Numbers 1 to 4 of the Septuagint, such as 'old' in 'twenty years old', now opens its Greek word instead of the Verse view."
+  },
+  {
+    "version": "0.7.373",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.12",
+    "kind": "fixed",
+    "text": "Tapping an English word in Joshua 1 to 8, 13 and 16 of the Septuagint now opens its Greek word instead of the Verse view."
+  },
+  {
+    "version": "0.7.373",
+    "date": "2026-11-24",
+    "story": "mw-qtu3zvz.280.5",
+    "kind": "fixed",
+    "text": "A few Life Bible Ministry sermons on Acts 8, Acts 15 and Luke 17 that were missing from the sermon list now show."
+  },
+  {
     "version": "0.7.371",
     "date": "2026-11-24",
     "story": "mw-u2w5klk.349.11",

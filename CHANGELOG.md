@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.373
+_2026-11-24_
+- Fixed: In the Septuagint's Genesis 24 to 36, tapping the English of a phrase such as 'it came to pass', 'from thence' or 'drew water' now opens the Greek word that renders it, on every word of the phrase.
+- Fixed: Tapping an English word in Numbers 1 to 4 of the Septuagint, such as 'old' in 'twenty years old', now opens its Greek word instead of the Verse view.
+- Fixed: Tapping an English word in Joshua 1 to 8, 13 and 16 of the Septuagint now opens its Greek word instead of the Verse view.
+- Fixed: A few Life Bible Ministry sermons on Acts 8, Acts 15 and Luke 17 that were missing from the sermon list now show.
+
 ## 0.7.371
 _2026-11-24_
 - Fixed: In Deuteronomy 1 to 5 of the Septuagint, tapping an English word now opens its Greek word instead of the Verse view.
