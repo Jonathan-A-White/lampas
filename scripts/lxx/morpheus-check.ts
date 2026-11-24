@@ -5,17 +5,21 @@
 //                         How often a candidate Morpheus offers is the right one, and what the misses are.
 //   --coverage            over the forms the sweep asked (the cache's, data/lxx/morpheus): forms asked, known, readings, mapped, and the readings left out by reason;
 //                         then the words that still have no candidate, by the reason their form's readings are left out.
-// Needs Docker and the image (morpheus.ts's dockerEngine); nothing is written. The pure parts are tested on a captured sample (tests/unit/lxx-morpheus.test.ts).
-import { readdirSync } from 'node:fs';
+//   --all                 (story mw-u2w5klk.381) builds the Morpheus cache of every book that has none (data/lxx/morpheus/<book>.tsv, the 39 books), resumably (a book's file is written as
+//                         its forms are answered, and a book whose cache is there asks Morpheus nothing), and prints a line a book with the wall time, then how many books have a cache.
+//                         It writes only the caches. On the Laptop: sg docker -c 'npm run lxx:morpheus-check -- --all'; then `npm run lxx:pack -- --out <archive>` carries them to the other hosts.
+// Needs Docker and the image (morpheus.ts's dockerEngine); --coverage and --known write nothing. The pure parts are tested on a captured sample (tests/unit/lxx-morpheus.test.ts).
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { OUT_DIR, deriveBook, loadInput, splitBooks, train } from './derive';
+import { OUT_DIR, deriveBook, loadInput, splitBooks, train, withMorpheus, type DeriveInput } from './derive';
 import { chapterRows, parseChapter } from './known';
 import {
   dockerEngine,
   formOf,
   mapAnalysis,
   morpheusKey,
+  cacheIsCurrent,
   parseCruncher,
   readMorpheusCache,
   toBeta,
@@ -156,16 +160,83 @@ export function knownLines(c: KnownCheck): string[] {
   ];
 }
 
+// ------------------------------------------------------------------------------------------------------------------------------------- every book's cache
+
+export interface BuiltBook {
+  book: string;
+  /** 'built' (no file before), 'rebuilt' (a file of an earlier mapping), 'grown' (forms added), 'cache there' (nothing to ask), 'no cache' (Morpheus could not run), 'no forms to ask' */
+  status: 'built' | 'rebuilt' | 'grown' | 'cache there' | 'no cache' | 'no forms to ask';
+  forms: number;
+  /** wall time of the book, in milliseconds */
+  ms: number;
+}
+
+/**
+ * The cache of each of `books` (Swete's codes in lower case; default the 39 of the Old Testament) made or completed under `outDir`/morpheus, in the order of Swete's file: the book is derived as
+ * `lxx:derive` does (the forms with no candidate, thin lone candidates, guesses and unattested words are asked), and only a form the cache lacks goes to Morpheus, so a second run asks nothing.
+ * Nothing but the cache files is written.
+ */
+export function buildAll(
+  input: DeriveInput,
+  outDir: string,
+  engine: MorpheusEngine,
+  log: (line: string) => void,
+  books: readonly string[] = OLD_TESTAMENT.map(([code]) => code.toLowerCase()),
+  now: () => number = Date.now,
+): BuiltBook[] {
+  const wanted = new Set(books.map((b) => b.toLowerCase()));
+  const trained = train(input);
+  const rows: BuiltBook[] = [];
+  const step = { engine, choicesDir: join(outDir, 'choices'), said: false };
+  for (const [code, tokens] of splitBooks(input)) {
+    if (tokens.words.length === 0 || !wanted.has(code.toLowerCase())) continue;
+    const book = code.toLowerCase();
+    const file = join(outDir, 'morpheus', `${book}.tsv`);
+    const text = existsSync(file) ? readFileSync(file, 'utf8') : undefined;
+    const before = text === undefined ? 0 : readMorpheusCache(join(outDir, 'morpheus'), book)!.size;
+    const started = now();
+    const first = deriveBook(input, code, undefined, trained, tokens);
+    withMorpheus(first, (cache) => deriveBook(input, code, undefined, trained, tokens, cache), outDir, step, log);
+    const after = existsSync(file) ? readMorpheusCache(join(outDir, 'morpheus'), book)!.size : 0;
+    const status: BuiltBook['status'] =
+      after === 0 && !existsSync(file) ? (step.said ? 'no cache' : 'no forms to ask') : text === undefined ? 'built' : !cacheIsCurrent(text) && after > 0 ? 'rebuilt' : after > before ? 'grown' : 'cache there';
+    rows.push({ book, status, forms: after, ms: now() - started });
+  }
+  return rows;
+}
+
+/** The lines of a `--all` run: a line a book (its status, forms, wall time), then how many books have a cache and which were built. */
+export function allLines(rows: readonly BuiltBook[]): string[] {
+  const secs = (ms: number): string => `${(ms / 1000).toFixed(1)} s`;
+  const lines = rows.map((r) => `${r.book.padEnd(4)}  ${r.status.padEnd(15)}  ${String(r.forms).padStart(6)} forms  ${secs(r.ms).padStart(9)}`);
+  const have = rows.filter((r) => r.status !== 'no cache');
+  const built = rows.filter((r) => r.status === 'built' || r.status === 'rebuilt' || r.status === 'grown');
+  const without = rows.filter((r) => r.status === 'no cache').map((r) => r.book);
+  lines.push(
+    `${have.length} of ${rows.length} books have a Morpheus cache; ` +
+      (without.length > 0 ? `without: ${without.join(', ')}` : `built in this run: ${built.length > 0 ? built.map((r) => r.book).join(', ') : 'none'} (${secs(built.reduce((n, r) => n + r.ms, 0))})`),
+  );
+  return lines;
+}
+
 // ---------------------------------------------------------------------------------------------------------------------------------------- the runs
 
 async function main(argv: readonly string[]): Promise<void> {
+  if (argv[0] === '--all') {
+    const engine = dockerEngine();
+    const input = await loadInput();
+    const rows = buildAll(input, OUT_DIR, engine, console.log);
+    for (const line of allLines(rows)) console.log(line);
+    if (rows.some((r) => r.status === 'no cache')) process.exitCode = 1;
+    return;
+  }
   const engine = dockerEngine();
   const why = engine.unavailable();
   if (why) throw new Error(`Morpheus is not available: ${why}`);
   const input = await loadInput();
   if (argv[0] === '--known') {
     const chapters = argv.slice(1);
-    if (chapters.length === 0) throw new Error('usage: npm run lxx:morpheus-check -- --known <chapter>... | --coverage');
+    if (chapters.length === 0) throw new Error('usage: npm run lxx:morpheus-check -- --known <chapter>... | --coverage | --all');
     const sum = { words: 0, hits: 0, offered: 0 };
     for (const chapter of chapters) {
       const rows = chapterRows(input.tagnt, parseChapter(chapter));
@@ -218,7 +289,7 @@ async function main(argv: readonly string[]): Promise<void> {
     for (const line of table(only)) console.log(line);
     return;
   }
-  throw new Error('usage: npm run lxx:morpheus-check -- --known <chapter>... | --coverage');
+  throw new Error('usage: npm run lxx:morpheus-check -- --known <chapter>... | --coverage | --all');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

@@ -516,7 +516,7 @@ export function splitBooks(input: Pick<DeriveInput, 'versification' | 'words'>):
 }
 
 /** The second method as one run uses it: the engine, where the choices files are, and whether it has said it was skipped. */
-interface MorpheusStep extends MorpheusState {
+export interface MorpheusStep extends MorpheusState {
   engine: MorpheusEngine;
   choicesDir: string;
 }
@@ -525,7 +525,7 @@ interface MorpheusStep extends MorpheusState {
  * A book with Morpheus's analyses: its forms with no candidate, its forms with one candidate on thin support, its pending words the New Testament does not show, and its guessed words (the choices files' `guess` marks) are asked of Morpheus unless the cache
  * under <outDir>/morpheus has them, and the book is derived again with the cache. A step that is skipped, or a cache with nothing in it, leaves `result` as it was.
  */
-function withMorpheus(result: BookResult, again: (cache: MorpheusCache) => BookResult, outDir: string, step: MorpheusStep | undefined, log: (line: string) => void): BookResult {
+export function withMorpheus(result: BookResult, again: (cache: MorpheusCache) => BookResult, outDir: string, step: MorpheusStep | undefined, log: (line: string) => void): BookResult {
   if (!step) return result;
   const formOf = new Map(result.words.map((w) => [w.ref, w.form]));
   // a word given a name from its form alone is asked of Morpheus too: a reading from a lexicon outranks it
