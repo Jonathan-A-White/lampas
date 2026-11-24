@@ -1,0 +1,6 @@
+{
+ "v":1,"edition":"msb-david","book":"1jn","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"3:1","edge":"text","judge":[{"kind":"text-differs","heard":{"expected":"you","words":"us"}}],"reason":"the judge's two ears heard 'us' where the text has 'you': not a cut's fault"}
+ ]
+}

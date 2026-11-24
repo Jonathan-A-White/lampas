@@ -1,0 +1,28 @@
+{
+ "v":1,
+ "judge":"4",
+ "edition":"msb-david",
+ "book":"2jn",
+ "timings":{"file":"public/data/audio/msb-david/2jn.json","sha256":"b04430a726a9db97549afed3c79eccaeda67a78c01d8e3dab9f7def9afcdc48e"},
+ "slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "tolerance":0.02,
+ "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
+ "summary":{"verses":13,"ok":13,"flagged":0,"flags":{"head-extra":0,"head-clipped":0,"tail-extra":0,"tail-clipped":0,"text-differs":0}},
+ "chapters":{
+  "1":{"announcement":"ONO ODIA BIBLE SECOND JOHN CHAPTER ONE","between":[],"closing":"","speech":-17.5,"verses":[
+   {"n":1,"verdict":"ok","sound":[3.875,6.41,13.965,14.415]},
+   {"n":2,"verdict":"ok","sound":[13.965,14.415,18.175,18.835]},
+   {"n":3,"verdict":"ok","sound":[18.175,18.835,27.275,28.295]},
+   {"n":4,"verdict":"ok","sound":[27.275,28.295,34.365,35.405]},
+   {"n":5,"verdict":"ok","sound":[34.365,35.405,44.23,45.015]},
+   {"n":6,"verdict":"ok","sound":[44.23,45.015,54.955,56.01]},
+   {"n":7,"verdict":"ok","sound":[54.955,56.01,67.71,68.59]},
+   {"n":8,"verdict":"ok","sound":[67.71,68.59,74.725,75.185]},
+   {"n":9,"verdict":"ok","sound":[74.725,75.185,85.185,85.705]},
+   {"n":10,"verdict":"ok","sound":[85.185,85.705,91.98,92.875]},
+   {"n":11,"verdict":"ok","sound":[91.98,92.875,96.19,97.285]},
+   {"n":12,"verdict":"ok","sound":[96.19,97.285,108.85,109.845]},
+   {"n":13,"verdict":"ok","sound":[108.85,109.845,114.03,null]}
+  ]}
+ }
+}
