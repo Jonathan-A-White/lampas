@@ -16,7 +16,7 @@ import { join, resolve } from 'node:path';
 export const SOURCE_CHECKOUT = '/home/jwhite/lampas';
 
 /** The paths whose change makes a borrowed-data run worth it. */
-export const WATCHED = ['scripts/lxx/', 'data/lxx/choices/', 'data/lxx/align/', 'data/lxx/known/', 'docs/lxx-align/', 'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose.test.ts', 'tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-align-low-confidence.test.ts'] as const;
+export const WATCHED = ['scripts/lxx/', 'data/lxx/choices/', 'data/lxx/align/', 'data/lxx/known/', 'docs/lxx-align/', 'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose', 'tests/support/lxx-align-choose.ts', 'tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-align-low-confidence.test.ts'] as const;
 
 export interface LxxRealData {
   /** run the real-data tests */

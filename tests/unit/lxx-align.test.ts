@@ -474,7 +474,8 @@ describe('the report', () => {
   });
 
   it('the docs have a file for each book the report holds, each a .txt (CLAUDE.md names every .md under docs/), and docs/lxx-align.md has no table of its own', () => {
-    const files = readdirSync(join('docs', 'lxx-align')).sort();
+    // the hand-kept <code>-notes.txt of a book (mw-u2w5klk.349.99) sits beside its generated file and is not one of the books' reports
+    const files = readdirSync(join('docs', 'lxx-align')).filter((f) => !/^[1-3a-z]{3}-notes\.txt$/.test(f)).sort();
     expect(files.length).toBeGreaterThan(0);
     for (const f of files) {
       expect(f).toMatch(/^[1-3a-z]{3}\.txt$/);
