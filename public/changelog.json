@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.371",
+    "date": "2026-11-24",
+    "story": "mw-u2w5klk.349.11",
+    "kind": "fixed",
+    "text": "In Deuteronomy 1 to 5 of the Septuagint, tapping an English word now opens its Greek word instead of the Verse view."
+  },
+  {
+    "version": "0.7.371",
+    "date": "2026-11-24",
+    "story": "mw-qtu3zvz.280.6",
+    "kind": "new",
+    "text": "The sermon player now has a link under the video back to the page of the talk, such as Life Bible Ministry's."
+  },
+  {
     "version": "0.7.370",
     "date": "2026-11-24",
     "story": "mw-zbgo4ep.29",

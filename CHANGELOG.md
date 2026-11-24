@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.371
+_2026-11-24_
+- Fixed: In Deuteronomy 1 to 5 of the Septuagint, tapping an English word now opens its Greek word instead of the Verse view.
+- New: The sermon player now has a link under the video back to the page of the talk, such as Life Bible Ministry's.
+
 ## 0.7.370
 _2026-11-24_
 - New: David's recording now reads Hebrews, James, 1 and 2 Peter, 1, 2 and 3 John, Jude and Revelation, with the highlight following.
