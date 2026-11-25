@@ -7,11 +7,12 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { buildSections, chaptersToRead, CLIENT_NAME, DELAY_MS, marksOfPage, type Page, type SectionsOptions } from '../../scripts/enduring-word-sections';
 import { BOOKS } from '../../src/data/books';
 import { rangesOfHeadings } from '../../src/resources/enduringWord';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const made: string[] = [];
 afterEach(() => {
   for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true });
-});
+}, HOOK_TIMEOUT_MS);
 
 const heading = (n: number, text: string) => `<h4 id="section-${n}">${text}</h4>\n<p>Zebra prose under heading ${n} (7).</p>`;
 const page = (...headings: string[]) => `<html><body><h1>Pelican title</h1><h4 class="summary">Walrus</h4>\n${headings.map((text, i) => heading(i + 1, text)).join('\n')}</body></html>`;
