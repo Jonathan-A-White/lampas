@@ -5,7 +5,10 @@ import type { Locator } from '@playwright/test';
 /** The sheet's 'Your message' text box, brought out if the bar is showing. */
 export async function talkField(sheet: Locator): Promise<Locator> {
   const field = sheet.getByRole('textbox', { name: 'Your message' });
-  if (!(await field.isVisible())) await sheet.getByRole('button', { name: 'Type a message' }).click();
+  const bar = sheet.getByRole('button', { name: 'Type a message' });
+  // isVisible() answers at once: a sheet still opening has neither yet, and a draft's box is drawn after it, so wait for whichever the sheet shows first.
+  await field.or(bar).first().waitFor();
+  if (!(await field.isVisible())) await bar.click();
   return field;
 }
 
