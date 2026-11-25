@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.384
+_2026-11-25_
+- Fixed: Tapping an English word in the Septuagint's Amos now opens a Greek word instead of the whole verse, though a few verses in chapter 6 are still off.
+- New: A Greek word's card now shows the lexicon's definition of the word, as the Hebrew card already did.
+
 ## 0.7.383
 _2026-11-25_
 - Fixed: Enduring Word now opens at the part of the chapter that explains your verse in every chapter, not only John 3.

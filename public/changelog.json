@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.384",
+    "date": "2026-11-25",
+    "story": "mw-u2w5klk.349.63",
+    "kind": "fixed",
+    "text": "Tapping an English word in the Septuagint's Amos now opens a Greek word instead of the whole verse, though a few verses in chapter 6 are still off."
+  },
+  {
+    "version": "0.7.384",
+    "date": "2026-11-25",
+    "story": "mw-5r3p30.1170",
+    "kind": "new",
+    "text": "A Greek word's card now shows the lexicon's definition of the word, as the Hebrew card already did."
+  },
+  {
     "version": "0.7.383",
     "date": "2026-11-25",
     "story": "mw-1l901so.7",
