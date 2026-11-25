@@ -4,7 +4,7 @@
 import { bookOf } from '../data/books';
 import { loadChapter, markSupplied, sourceLanguage, type Chapter, type SourceLanguage, type Verse } from '../data/chapter';
 import type { HeldPassage } from '../data/db';
-import { OSIS, parseReference } from '../nav/links';
+import { osisOf, parseCanonReference } from '../nav/links';
 import { hebrewPointedForm } from '../speech/hebrewPronunciation';
 
 export type { HeldPassage };
@@ -25,7 +25,7 @@ export const verseEnglish = (v: Verse): string => v.e.map(markSupplied).join(' '
 
 const bytesOf = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).length;
 
-/** What a fetch asks to read: a book of the New Testament, a chapter it has, and the verses from `from` to `to`. */
+/** What a fetch asks to read: a book of either Testament (never the Apocrypha, which Lampas holds no text of), a chapter it has, and the verses from `from` to `to`. */
 export interface Wanted {
   book: string;
   chapter: number;
@@ -34,13 +34,14 @@ export interface Wanted {
 }
 
 /** The passages `refs` name that the app could read, in the order named, each once: at most MAX_FETCH references and FETCH_MAX_VERSES verses in all. A chapter named whole is
- * its verses from the first. An Old Testament reference, a book or chapter that does not exist and a range across chapters are left out. */
+ * its verses from the first. A reference of either Testament is read (mw-fnvjof.17.314: an Old Testament one was left out, which shut the way to the rest of a chapter talk's chapter); an Apocrypha
+ * reference, a book or chapter that does not exist and a range across chapters are left out. */
 export function wantedOf(refs: readonly string[]): Wanted[] {
   const wanted: Wanted[] = [];
   let left = FETCH_MAX_VERSES;
   for (const ref of refs.slice(0, MAX_FETCH)) {
-    const r = parseReference(ref);
-    const book = r && bookOf(r.book);
+    const r = parseCanonReference(ref);
+    const book = r && r.testament !== 'ap' ? bookOf(r.book) : undefined;
     if (!r || !book || r.chapter === undefined || r.chapter < 1 || r.chapter > book.chapters || left <= 0) continue;
     const from = r.verse ?? 1;
     const to = Math.min(r.verse === undefined ? from + left - 1 : (r.to ?? r.verse), from + left - 1);
@@ -109,8 +110,8 @@ export const fetchPassages = async (refs: readonly string[], load?: (book: strin
 /** 'Rev 2:8-11', '1 John 1:9': a reference by its book's short name. */
 function shortReference(reference: string): string {
   const parts = /^(.+?) (\d+(?::\d+(?:-\d+)?)?)$/.exec(reference);
-  const r = parseReference(reference);
-  const code = r && OSIS[r.book];
+  const r = parseCanonReference(reference);
+  const code = r && r.testament !== 'ap' ? osisOf(r.book) : undefined;
   return parts && code ? `${code.replace(/^(\d)/, '$1 ')} ${parts[2]}` : reference;
 }
 

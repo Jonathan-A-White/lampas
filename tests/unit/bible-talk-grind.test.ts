@@ -1036,7 +1036,7 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     const part = instructionParts(grind.kind as string).find(({ file }) => file.endsWith('220-other-passages.md'));
     const text = (part?.text ?? '').replace(/\s+/g, ' ');
     expect(text).toContain('A passage in `held_passages` or `verses` is never fetched again: answer from it.');
-    expect(text).toContain('Only when the talk heads toward New Testament verses held in neither, name them in `fetch`');
+    expect(text).toContain('Only when the talk heads toward verses of either Testament held in neither, name them in `fetch`');
   });
 
   it('says when to give a map link and that no map is promised that `maps` does not list (mw-zbjgn3r.4), and has an example for the map and for none listed', () => {

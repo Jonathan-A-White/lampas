@@ -41,8 +41,8 @@ describe('what an answer\'s fetch reads', () => {
     expect(held).toHaveLength(1);
   });
 
-  it('leaves out what it cannot read: an Old Testament verse (Lampas holds the New), a book it does not know, a chapter or verse the book does not have, a range across chapters', async () => {
-    expect(await fetchPassages(['Isaiah 53:5', 'Hezekiah 1:1', 'Revelation 40:1'])).toEqual([]);
+  it('leaves out what it cannot read: an Apocrypha verse (Lampas holds no text of it), a book it does not know, a chapter or verse the book does not have, a range across chapters', async () => {
+    expect(await fetchPassages(['Sirach 1:1', 'Hezekiah 1:1', 'Revelation 40:1'])).toEqual([]);
     const held = await fetchPassages(['Jude 1:30', 'Revelation 2:29-3:6', 'Romans 8:28']);
     expect(held.map((p) => p.reference)).toEqual(['Romans 8:28']);
   });
@@ -81,10 +81,10 @@ describe('the quiet line under the answer', () => {
 });
 
 describe('a fetch that reads nothing is not silent (mw-5r3p30.825)', () => {
-  it('names the references it could not read: an Old Testament verse, a chapter the book lacks, a chapter that does not load', async () => {
-    const { read, unread } = await fetchOutcome(['Revelation 2:8-11', 'Isaiah 53:5', 'Revelation 40:1']);
+  it('names the references it could not read: an Apocrypha verse, a chapter the book lacks, a chapter that does not load', async () => {
+    const { read, unread } = await fetchOutcome(['Revelation 2:8-11', 'Sirach 1:1', 'Revelation 40:1']);
     expect(read.map((p) => p.reference)).toEqual(['Revelation 2:8-11']);
-    expect(unread).toEqual(['Isaiah 53:5', 'Revelation 40:1']);
+    expect(unread).toEqual(['Sirach 1:1', 'Revelation 40:1']);
     expect(await fetchOutcome(['Revelation 6:2-17'], () => Promise.reject(new Error('offline')))).toEqual({ read: [], unread: ['Revelation 6:2-17'] });
   });
 
