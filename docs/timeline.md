@@ -3,6 +3,17 @@
 The data under the timeline (mw-fnvjof.17.317.1; the screens are later stories of the epic mw-fnvjof.17.317): the dated events of the Bible, the people in them and where they happen, one file per book.
 His choice (grilling mw-fnvjof.17.288): Theographic's open data, one corrections file with each fix's reason and source, the raw data never edited, and sure fixes sent upstream.
 
+<!-- toc -->
+
+- [The source, and the credit](#the-source-and-the-credit)
+- [The build](#the-build)
+- [A book's file](#a-books-file)
+- [Reading it](#reading-it)
+- [Adding a correction](#adding-a-correction)
+- [Sending a sure fix upstream](#sending-a-sure-fix-upstream)
+
+<!-- /toc -->
+
 ## The source, and the credit
 
 [Theographic Bible Metadata](https://github.com/robertrouse/theographic-bible-metadata) by Robert Rouse, CC BY-SA 4.0, read at one pinned commit (`THEOGRAPHIC_COMMIT` in `scripts/timeline-import.ts`, a22047f of 2026-11-25).
