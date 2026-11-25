@@ -16,6 +16,8 @@ export const CHAPTER_STEP = 1000;
 
 export const listKey = (id: number): string => `list:${id}`;
 export const refKey = (heading: string): string => `ref:${heading}`;
+/** the Reader's own Play of a chapter (src/reader/useReadFrom.ts, mw-5r3p30.1239) */
+export const chapterKey = (book: string, chapter: number): string => `chapter:${book}.${chapter}`;
 
 let raw: string | null | undefined;
 let cache: Record<string, Place> = {};

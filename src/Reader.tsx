@@ -118,7 +118,7 @@ import { SeptuagintSources } from './reader/SeptuagintSources';
 import { englishRows, isSeptuagint, lampasNumber, SEPTUAGINT_SUBTITLE, septuagintAligned, septuagintSettings, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
 import { useNotReadyName } from './reader/useNotReadyName';
 import type { InterestLang } from './settings/definitions/interest';
-import { ReadingBar } from './speech/ReadControls';
+import { ReadingBar, ResumeOffer } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { useBarShown } from './speech/barShown';
 import { warmVoices } from './speech/greek';
@@ -458,7 +458,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const phase = checks.states[unitId(verse)]?.phase;
     return { onPress: () => checks.press(verse, viewWeave), onRelease: checks.release, onDrop: checks.drop, disabled: phase === 'sending' || phase === 'waiting' };
   };
-  const { plan, readFrom, listenTo, listenVerse, listenedView } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit, sheetView ? { view: sheetView, woven: sheetWoven } : undefined);
+  const { plan, readFrom, listenTo, listenVerse, listenedView, kept, resumeKept, fromTheStart } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit, sheetView ? { view: sheetView, woven: sheetWoven } : undefined);
   // Hands-free's 'play' with nothing paused (src/handsFree/commands.ts, mw-rl10piw.6) is answered here, by the same start as the header's Play, from where he is; it asks
   // no question that needs a tap (the data question waits for one: the decision's notice says which voice reads instead)
   useEffect(() => answerReadHere((verse) => readFrom(verse ?? selected ?? 1, true, false), BOOK, CHAPTER, selected ?? undefined), [readFrom, selected, BOOK, CHAPTER]);
@@ -731,6 +731,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {notice ? <LinkNotice text={notice} onDismiss={() => setNotice(null)} /> : null}
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
+      {kept && plan && (reading.status === 'idle' || reading.answer !== null) && viewUnit === undefined ? <ResumeOffer kept={kept} onResume={resumeKept} onStart={fromTheStart} /> : null}
       {chapter && !failed ? <ImmersiveHint enabled={immersive} away={away} mode={paging ? 'pages' : 'scroll'} /> : null}
       <div ref={boxRef} data-reader-box className={split.open ? `flex min-h-0 min-w-0 flex-1 ${split.axis === 'column' ? 'flex-col' : 'flex-row'}` : 'contents'}>
       <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} data-place-below={percentLine && away ? '' : undefined} className="screen min-h-0 min-w-0 flex-1 touch-pan-y px-1 pt-2">
