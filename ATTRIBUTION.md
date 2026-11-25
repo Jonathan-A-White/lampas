@@ -76,7 +76,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Sermon Starters, vol 3](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[Sermon Starters, vol 4](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[Sermon Starters, vol 5](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
-- **[Enduring Word](https://enduringword.com)** (David Guzik): a link to a chapter's commentary, at the section that holds the verse; of each page's outline headings only the verse numbers are kept. Linking needs no [permission](https://enduringword.com/permissions/). Changes: none.
+- **[Enduring Word](https://enduringword.com)** (David Guzik): a link to the commentary at the verse's section; only verse numbers kept. Linking needs no [permission](https://enduringword.com/permissions/). Changes: none.
 - **[Thompson Chain Topics](https://crosswire.org/study/fulllibrary.jsp?show=TCR)** (Frank Charles Thompson, 1934; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[Torrey's New Topical Textbook](https://crosswire.org/study/fulllibrary.jsp?show=Torrey)** (R. A. Torrey, 1897; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer: the clips for one-letter Greek words (ὁ, ἡ) on phones with no Greek voice. Licence: [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING); sound only. Changes: MP3.
