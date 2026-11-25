@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.391
+_2026-11-25_
+- Fixed: The timeline link beside a chapter's maps now opens at the time of the passage (Isaiah 1 at about 735 BC), and a map's own timeline link opens at that map's date.
+- New: Hands-free now shows a soft fading sign on the microphone mark while the tutor is working out an answer to a question you asked aloud.
+- Fixed: A sentence diagram of a verse like "by faith we walk, not by sight" that was drawn before the last fix is now drawn again in its right shape, in every such verse.
+- New: ask the tutor to show you a paradigm table (for example "show me the article table") and it opens that table for you, typed or in Hands-free, with no link to tap.
+
 ## 0.7.390
 _2026-11-25_
 - Fixed: The word sheet keeps its Study and Help with this word rows in view; the long dictionary definition now comes under them.
