@@ -52,7 +52,7 @@ async function card(book: Chapter, index: number): Promise<{ text: string; html:
   return { text: (document.body.textContent ?? '').replace(/\s+/g, ' ').trim(), html };
 }
 
-describe('with the Septuagint Off the Hebrew and the New Testament word cards and the Help pages are as they were', () => {
+describe('with the Septuagint Off the Hebrew word cards and the Help pages are as they were (the New Testament cards gained a Definition, mw-5r3p30.1170)', () => {
   it('draws words 0 and 2 of Genesis 1:1 and of Romans 8:1, and every Help page but Words, exactly as before', async () => {
     const taken: Taken = {};
     for (const [code, n] of [['gen', 1], ['rom', 8]] as const) {
