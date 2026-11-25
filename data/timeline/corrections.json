@@ -1,0 +1,10 @@
+[
+  {
+    "id": "event:129",
+    "field": "verses",
+    "from": "Gen.34.1,Deut.34.1,Deut.34.2,Deut.34.3,Deut.34.4,Deut.34.5,Deut.34.6,Deut.34.7,Deut.34.8,Deut.34.9,Deut.34.10,Deut.34.11,Deut.34.12",
+    "to": "Deut.34.1,Deut.34.2,Deut.34.3,Deut.34.4,Deut.34.5,Deut.34.6,Deut.34.7,Deut.34.8,Deut.34.9,Deut.34.10,Deut.34.11,Deut.34.12",
+    "reason": "Genesis 34:1 is the start of the story of Dinah, long before Moses was born, not part of his death. The list's other twelve verses are the whole of Deuteronomy 34, so Gen.34.1 is a mistyped Deut.34.1, which is already listed.",
+    "source": "Genesis 34:1 and Deuteronomy 34:1-12 (the text itself); Theographic CSV/Events.csv, eventID 129, at commit a22047f"
+  }
+]
