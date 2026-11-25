@@ -99,7 +99,10 @@ test('the dock stands below the passage at Half, its handle row 44 px with a tit
   const reader = await box(page);
   const chips = (await page.getByTestId('reader-chips').boundingBox())!;
   expect(reader.y).toBeGreaterThanOrEqual(chips.y + chips.height - 1);
-  expect(reader.y + reader.height).toBeGreaterThan(844 - 10);
+  // the place line stays at the foot with the dock open (mw-5r3p30.1247): a row of its own under the box, with the installed app's 48 px floor in it, so the box ends where the line begins
+  const place = (await page.locator('[data-place-line]').boundingBox())!;
+  expect(place.y + place.height).toBeGreaterThan(844 - 10);
+  expect(Math.abs(reader.y + reader.height - place.y)).toBeLessThanOrEqual(2);
 
   const at = await dockBox(page);
   expect(Math.abs(at.height - reader.height / 2)).toBeLessThanOrEqual(10);
@@ -158,7 +161,8 @@ test('the divider drags to any height and rests there, clamps to its smallest an
 test('Close closes the dock; a reload keeps it open at the size he left it, as a fraction of the box', async ({ page }) => {
   await openSplit(page);
   const reader = await box(page);
-  const height = reader.height * 0.41;
+  // a third of the box: the handle row then stands wholly below the floating ? (17 rem above the foot, over the Close of a taller dock), so Close can be tapped
+  const height = reader.height * 0.33;
   await dragTo(page, height);
   await expect.poll(async () => Math.abs((await dockBox(page)).height - height)).toBeLessThanOrEqual(2);
 
@@ -167,7 +171,7 @@ test('Close closes the dock; a reload keeps it open at the size he left it, as a
   const saved = Number(await kept(page, 'splitSize'));
   expect(saved).toBeGreaterThan(0.2);
   expect(saved).toBeLessThan(0.9);
-  expect(Math.abs(saved - 0.41)).toBeLessThan(0.01);
+  expect(Math.abs(saved - 0.33)).toBeLessThan(0.01);
   expect(await kept(page, 'readerSplit')).toBe('on');
 
   await page.reload();
