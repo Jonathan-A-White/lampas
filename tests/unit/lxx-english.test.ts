@@ -522,3 +522,39 @@ describe("LXX2012's Deuteronomy 14, Joshua 6, Exodus 25, 35 and 40, Leviticus 6 
     expect(textAt('num', 'num 27:6')).toBe('And the Lord spoke to Moses, saying,');
   });
 });
+
+// mw-u2w5klk.349.137: LXX2012 numbers Amos 6 with 15 verses (its 6:10 and 6:11 are the Greek's one verse 10), where Swete has 14: from 6:11 its English sat a verse off the Greek and 6:15 was shown nowhere. TVTMS's
+// section Amo.6:10-6:14 has no Brenton column. The sweep of the ship's 'no Greek verse to stand at' notes found Judges 5:32 the same way: Swete's 5:31 holds it.
+describe("LXX2012's Amos 6 and Judges 5 stand at the Greek verses their text is", () => {
+  const maps137 = buildMaps(parseTvtms(fixture('tvtms-v137-slice.txt')));
+  const woven = (code: string) => englishByGreekVerse(parseUsfm(fixture(`lxx2012-v137-${code}.usfm`)), maps137);
+  const range = (from: number, to: number): number[] => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
+  it("puts Brenton's Amos 6:10 and 6:11 at the Greek 6:10 and his 6:12-15 at the Greek 6:11-14", () => {
+    expect(maps137.lxx2012ToGreek('amo 6:9')).toEqual({ state: 'same', refs: ['amo 6:9'] });
+    expect(maps137.lxx2012ToGreek('amo 6:10')).toEqual({ state: 'part', refs: ['amo 6:10'] });
+    expect(maps137.lxx2012ToGreek('amo 6:11')).toEqual({ state: 'part', refs: ['amo 6:10'] });
+    for (const v of range(12, 15)) expect(maps137.lxx2012ToGreek(`amo 6:${v}`)).toEqual({ state: 'one', refs: [`amo 6:${v - 1}`] });
+  });
+
+  it("weaves 'I will raise up against you a nation' at the Greek Amos 6:14, nothing unplaced and no verse of the six left without English", () => {
+    const { byGreek, placedAt } = woven('amo');
+    const text = (ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' ');
+    expect(text('amo 6:10')).toMatch(/^But a remnant shall be left behind.* And he shall say, No one else\./);
+    expect(text('amo 6:11')).toMatch(/^For, behold, the Lord commands, and he will strike the great house/);
+    expect(text('amo 6:12')).toMatch(/^Will horses run upon rocks\?/);
+    expect(text('amo 6:13')).toMatch(/^you⌃ who rejoice at vanity/);
+    expect(text('amo 6:14')).toMatch(/I will raise up against you a nation/);
+    const swete = range(9, 14).map((v) => `amo 6:${v}`);
+    expect(versesWithoutEnglish(byGreek, swete)).toEqual([]);
+    expect(unplacedVerses(placedAt, swete)).toEqual([]);
+  });
+
+  it("puts Brenton's Judges 5:32 ('And the land had rest forty years') in the Greek 5:31, which ends with it", () => {
+    expect(maps137.lxx2012ToGreek('jdg 5:30')).toEqual({ state: 'same', refs: ['jdg 5:30'] });
+    for (const v of [31, 32]) expect(maps137.lxx2012ToGreek(`jdg 5:${v}`)).toEqual({ state: 'part', refs: ['jdg 5:31'] });
+    const { byGreek, placedAt } = woven('jdg');
+    expect((byGreek.get('jdg 5:31') ?? []).map((s) => s.text).join(' ')).toMatch(/^Thus let all your enemies perish.* And the land had rest forty years\.$/);
+    expect(unplacedVerses(placedAt, ['jdg 5:30', 'jdg 5:31'])).toEqual([]);
+  });
+});
