@@ -148,6 +148,27 @@ function rectsOf(scene: Scene): Rect[] {
   ];
 }
 
+/**
+ * Where to put a subordinate clause (its x offset `dx` so far) so the dotted join from (ax, y0) to its verb does not run through what stands above its base line
+ * (an address, an interjection and what hangs under it, mw-5r3p30.1238). The join may pass right of all of it (as when the verb is right of it); if it would cross,
+ * the clause moves right until the join passes left of it, slanting down to the verb.
+ */
+function clearOfAbove(dx: number, sub: ClauseScene, ax: number, y0: number, yc: number): number {
+  const above = sub.above;
+  if (!above) return dx;
+  const y2 = yc - LABEL_H;
+  const at = (x2: number, y: number): number => ax + ((x2 - ax) * (y - y0)) / (y2 - y0);
+  const ends = [yc + above.t, yc + above.b];
+  if (ends.every((y) => at(dx + sub.anchor, y) >= dx + above.r + WORD_GAP)) return dx;
+  // passing left: at each end of the band (t the share of the way down the join) the join's x must be <= dx + l - WORD_GAP, i.e. dx (1 - t) >= ax + (anchor - ax) t - l + WORD_GAP
+  let least = dx;
+  for (const y of ends) {
+    const t = (y - y0) / (y2 - y0);
+    least = Math.max(least, (ax + (sub.anchor - ax) * t - above.l + WORD_GAP) / (1 - t));
+  }
+  return least;
+}
+
 /** The x to put `next` at (not less than `least`) so that nothing of it meets anything of `placed` on a row they share, with WORD_GAP between. */
 function fitRight(placed: Scene, next: Scene, least: number): number {
   const before = rectsOf(placed);
@@ -219,7 +240,8 @@ function hang(ctx: Ctx, scene: Scene, list: Hanger[], head: LayoutLabel | null, 
       const sub = clauseScene(ctx, h.clause, clause);
       const yc = y0 + cur + CLAUSE_DROP + sub.rise;
       // verb under the word it hangs on, unless that would reach left past a later hanger's line: then the join slants to the verb
-      const dx = Math.max(ax - sub.anchor, keep - boundsOf(sub.scene).minX);
+      let dx = Math.max(ax - sub.anchor, keep - boundsOf(sub.scene).minX);
+      if (sub.above) dx = clearOfAbove(dx, sub, ax, y0, yc);
       merge(scene, sub.scene, dx, yc);
       const x2 = dx + sub.anchor;
       const y2 = yc - LABEL_H;
@@ -270,6 +292,8 @@ interface ClauseScene {
   depth: number;
   /** how far above the room a clause has by itself (its labels' height) the clause reaches: what stands on its own lines above the base line */
   rise: number;
+  /** what stands above the base line (the words outside the clause and what hangs under them), as its bounds from the clause's x 0 and base line y 0; none when nothing does */
+  above?: { l: number; r: number; t: number; b: number };
 }
 
 /** A clause on a base line at y 0 from x 0. */
@@ -306,15 +330,22 @@ function clauseScene(ctx: Ctx, clause: Clause, parent: number | null): ClauseSce
   scene.segments.unshift({ kind: 'base', x1: 0, y1: 0, x2: Math.max(wordsRight, attachMax), y2: 0, clause: id, parent }, ...bars);
   // the words outside the clause, side by side at its left, each on its own line high enough that what hangs under it clears the base line's labels
   let across = 0;
+  const crown = emptyScene();
   for (const element of clause.independent ?? []) {
     const part = slotScene(ctx, element.slot, element.kind, id, [], -Infinity);
     const y = -(LABEL_H + INDEPENDENT_GAP + part.depth);
-    merge(scene, part.scene, across + PAD, y);
-    scene.segments.push({ kind: 'independent', x1: across, y1: y, x2: across + PAD + part.wordsRight + PAD, y2: y, clause: id });
+    merge(crown, part.scene, across + PAD, y);
+    crown.segments.push({ kind: 'independent', x1: across, y1: y, x2: across + PAD + part.wordsRight + PAD, y2: y, clause: id });
     across = Math.max(across + PAD + part.wordsRight + PAD, boundsOf(part.scene).maxX + PAD) + WORD_GAP;
   }
+  let above: ClauseScene['above'];
+  const rects = rectsOf(crown);
+  if (rects.length) {
+    above = { l: Math.min(...rects.map((r) => r.l)), r: Math.max(...rects.map((r) => r.r)), t: Math.min(...rects.map((r) => r.t)), b: Math.max(...rects.map((r) => r.b)) };
+    merge(scene, crown, 0, 0);
+  }
   const rise = Math.max(0, -boundsOf(scene).minY - LABEL_H);
-  return { id, scene, anchor, depth: Math.max(0, boundsOf(scene).maxY), rise };
+  return { id, scene, anchor, depth: Math.max(0, boundsOf(scene).maxY), rise, above };
 }
 
 /** The picture of `tree`: lines and labels, from `words` (what {i} indexes) and `measure` (a label's width). `rtl`: a Hebrew diagram, whose slots read right to left. */
