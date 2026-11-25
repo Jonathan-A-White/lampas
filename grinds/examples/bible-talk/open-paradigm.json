@@ -1,0 +1,673 @@
+{
+  "description": "His ask (mw-5r3p30.1249): after a short Drill it on The neuter gender, every miss the article τό, he asks 'show me the article table'. The catalogue carries the command open-paradigm, so the answer does open-paradigm with table article (the app opens the Paradigms screen at The article with no tap) and carries no paradigm link and no go.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Drill it",
+    "question": "show me the article table",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {},
+    "resources": [],
+    "screen": {
+      "name": "Drill it",
+      "facts": [
+        {
+          "label": "Idea",
+          "value": "The neuter gender"
+        },
+        {
+          "label": "Kind",
+          "value": "A short drill on Finding it in a verse"
+        },
+        {
+          "label": "Result",
+          "value": "0 of 4 right"
+        }
+      ],
+      "drill": [
+        {
+          "idea": "The neuter gender",
+          "asked": "Which word in John 1:5 is neuter? τὸ φῶς",
+          "answer": "σκοτίᾳ",
+          "right_answer": "τό",
+          "right": false
+        },
+        {
+          "idea": "The neuter gender",
+          "asked": "Which word in John 1:4 is neuter? τό",
+          "answer": "ζωή",
+          "right_answer": "τό",
+          "right": false
+        },
+        {
+          "idea": "The neuter gender",
+          "asked": "Which word in John 3:6 is neuter? τὸ γεγεννημένον",
+          "answer": "σαρκός",
+          "right_answer": "τό",
+          "right": false
+        },
+        {
+          "idea": "The neuter gender",
+          "asked": "Which word in Mark 4:11 is neuter? τὸ μυστήριον",
+          "answer": "βασιλείας",
+          "right_answer": "τό",
+          "right": false
+        }
+      ]
+    },
+    "facts": {
+      "where-he-is": {
+        "screen": "Drill it",
+        "route": "goal"
+      },
+      "today-drill": [
+        {
+          "kind": "review",
+          "title": "Review: 17 due"
+        },
+        {
+          "kind": "memorize",
+          "title": "Memorize: pick verses in a list"
+        },
+        {
+          "kind": "psalm",
+          "title": "Psalm 5"
+        }
+      ],
+      "settings": {
+        "theme": "light",
+        "textSize": "normal",
+        "greekInterest": "2",
+        "weave": "solid",
+        "weaveOrder": "english",
+        "readTutor": "on"
+      }
+    },
+    "catalogue": [
+      {
+        "name": "about",
+        "is": "place",
+        "tell": "Opens About"
+      },
+      {
+        "name": "aboutyou",
+        "is": "place",
+        "tell": "Opens About you"
+      },
+      {
+        "name": "add-word",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Adds a word (its lemma) to his words to learn; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "word"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "word": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            }
+          }
+        }
+      },
+      {
+        "name": "askmore",
+        "is": "place",
+        "tell": "Opens Ask for more"
+      },
+      {
+        "name": "chapter",
+        "is": "place",
+        "tell": "Opens a chapter of the Bible in the Reader",
+        "args": {
+          "type": "object",
+          "required": [
+            "book",
+            "chapter"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "book": {
+              "type": "string",
+              "description": "its name: Colossians"
+            },
+            "chapter": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 150
+            }
+          }
+        }
+      },
+      {
+        "name": "conversations",
+        "is": "place",
+        "tell": "Opens Conversations"
+      },
+      {
+        "name": "diagram-lesson",
+        "is": "place",
+        "tell": "Opens How to read a sentence diagram"
+      },
+      {
+        "name": "drill",
+        "is": "place",
+        "tell": "Opens Parsing drill"
+      },
+      {
+        "name": "essay",
+        "is": "place",
+        "tell": "Opens The Case for Byzantine Priority"
+      },
+      {
+        "name": "goal",
+        "is": "place",
+        "tell": "Opens Goal"
+      },
+      {
+        "name": "help",
+        "is": "place",
+        "tell": "Opens Help"
+      },
+      {
+        "name": "import",
+        "is": "place",
+        "tell": "Opens Import"
+      },
+      {
+        "name": "ipa",
+        "is": "place",
+        "tell": "Opens Learn the IPA sounds"
+      },
+      {
+        "name": "lessons",
+        "is": "place",
+        "tell": "Opens Lessons on variant readings"
+      },
+      {
+        "name": "library",
+        "is": "place",
+        "tell": "Opens Your Logos library"
+      },
+      {
+        "name": "lists",
+        "is": "place",
+        "tell": "Opens Verse lists; with id (from verse-lists), one list",
+        "args": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      },
+      {
+        "name": "memorize",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Memorizes a verse (ref Rom.8.28; langs en, el, he, weave, en by default); undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "ref"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "langs": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "en",
+                  "el",
+                  "he",
+                  "weave"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "memorize-screen",
+        "is": "place",
+        "tell": "Opens Memorize; with ref and lang, a session of that verse",
+        "args": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "lang": {
+              "enum": [
+                "en",
+                "el",
+                "he",
+                "weave"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "memorizeEvidence",
+        "is": "fact",
+        "tell": "every recall of his verses and a summary: how memorizing is going"
+      },
+      {
+        "name": "memorizing",
+        "is": "fact",
+        "tell": "his memorized verses: summary, lists (ids), languages, step, due, last score, misses"
+      },
+      {
+        "name": "memory",
+        "is": "place",
+        "tell": "Opens Memory"
+      },
+      {
+        "name": "moveVerse",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Moves a ref between verse lists (ids from memorizing); stays memorized; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "ref",
+            "from",
+            "to"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "from": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "to": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      },
+      {
+        "name": "open-paradigm",
+        "is": "command",
+        "kind": "free",
+        "tell": "Opens a Paradigms table (table: a paradigm link id) after the answer",
+        "args": {
+          "type": "object",
+          "required": [
+            "table"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "table": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "open-work",
+        "is": "place",
+        "tell": "Opens a book of his shelf (from works) in Logos",
+        "args": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          }
+        }
+      },
+      {
+        "name": "paradigms",
+        "is": "place",
+        "tell": "Opens Paradigms"
+      },
+      {
+        "name": "path",
+        "is": "place",
+        "tell": "Opens The whole path"
+      },
+      {
+        "name": "placement",
+        "is": "place",
+        "tell": "Opens Placement"
+      },
+      {
+        "name": "play-sermon",
+        "is": "command",
+        "kind": "free",
+        "tell": "Plays a sermon (sermons.rows source:id, with plays) in the app after the answer",
+        "args": {
+          "type": "object",
+          "required": [
+            "sermon"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "sermon": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "preface",
+        "is": "place",
+        "tell": "Opens Preface"
+      },
+      {
+        "name": "progress",
+        "is": "fact",
+        "tell": "where he stands: the learner line (solid words, learning, due) and his grammar (goal, counts, suggested move)"
+      },
+      {
+        "name": "reader",
+        "is": "place",
+        "tell": "Opens the Reader"
+      },
+      {
+        "name": "requests",
+        "is": "place",
+        "tell": "Opens Your requests"
+      },
+      {
+        "name": "review",
+        "is": "place",
+        "tell": "Opens Review"
+      },
+      {
+        "name": "rusty-words",
+        "is": "fact",
+        "tell": "the solid words and ideas he now slips on or has been away from, worst first"
+      },
+      {
+        "name": "save-answer-references",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Saves the Bible references of the answer before as a new verse list; undoable",
+        "args": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 60
+            }
+          }
+        }
+      },
+      {
+        "name": "set-setting",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Changes a setting; the app can undo it",
+        "args": {
+          "type": "object",
+          "required": [
+            "name",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {},
+            "skipUnchanged": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      {
+        "name": "settings",
+        "is": "fact",
+        "core": true,
+        "tell": "what every setting holds now"
+      },
+      {
+        "name": "settings-screen",
+        "is": "place",
+        "tell": "Opens Settings"
+      },
+      {
+        "name": "share",
+        "is": "place",
+        "tell": "Opens Share"
+      },
+      {
+        "name": "sounds",
+        "is": "place",
+        "tell": "Opens Hard sounds"
+      },
+      {
+        "name": "start-review",
+        "is": "command",
+        "kind": "free",
+        "tell": "Opens Review; with items (from rusty-words) moves them to Frontier and practises just them",
+        "args": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "id"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "word",
+                      "idea"
+                    ]
+                  },
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "startSession",
+        "is": "command",
+        "kind": "free",
+        "tell": "Opens a memorize session of a verse, in one lang",
+        "args": {
+          "type": "object",
+          "required": [
+            "ref",
+            "lang"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "lang": {
+              "enum": [
+                "en",
+                "el",
+                "he",
+                "weave"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "studyway",
+        "is": "place",
+        "tell": "Opens My study way"
+      },
+      {
+        "name": "test",
+        "is": "place",
+        "tell": "Opens Quick test"
+      },
+      {
+        "name": "tick-today",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Ticks an item of today-drill by its title; on false unticks; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "item"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "item": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "on": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      {
+        "name": "today",
+        "is": "place",
+        "tell": "Opens Today"
+      },
+      {
+        "name": "today-drill",
+        "is": "fact",
+        "core": true,
+        "tell": "the items of today's drill (the Today chip), each with its title and whether he ticked it"
+      },
+      {
+        "name": "tools",
+        "is": "place",
+        "tell": "Opens Tools"
+      },
+      {
+        "name": "unlock",
+        "is": "place",
+        "tell": "Opens Licence"
+      },
+      {
+        "name": "unmemorize",
+        "is": "command",
+        "kind": "undoable",
+        "tell": "Stops memorizing a verse, one lang or all; undoable",
+        "args": {
+          "type": "object",
+          "required": [
+            "ref"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "ref": {
+              "type": "string"
+            },
+            "lang": {
+              "enum": [
+                "en",
+                "el",
+                "he",
+                "weave"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "name": "variants",
+        "is": "fact",
+        "tell": "where manuscripts differ in the verse he reads: each reading, who reads it; only while Variants is on"
+      },
+      {
+        "name": "verse-lists",
+        "is": "fact",
+        "tell": "his verse lists, newest first: id (for the place lists), name, count"
+      },
+      {
+        "name": "verseText",
+        "is": "fact",
+        "tell": "the words of each verse he memorizes, per language (en, el, weave)"
+      },
+      {
+        "name": "where-he-is",
+        "is": "fact",
+        "core": true,
+        "tell": "the screen he is on, the chapter and verse in the Reader, the sheets open"
+      },
+      {
+        "name": "words",
+        "is": "place",
+        "tell": "Opens Words"
+      },
+      {
+        "name": "works",
+        "is": "fact",
+        "tell": "the digest of his Logos shelf: pinned books, commentaries, grammars"
+      }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "do.0.name": {
+      "equals": "open-paradigm"
+    },
+    "do.0.args": {
+      "equals": {
+        "table": "article"
+      }
+    },
+    "do.1": {
+      "present": false
+    },
+    "links": {
+      "present": false
+    },
+    "go": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

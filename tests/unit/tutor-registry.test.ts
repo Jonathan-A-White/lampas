@@ -109,7 +109,8 @@ describe('the catalogue and the screen key', () => {
     // then the command save-answer-references (mw-5r3p30.929), about 260
     // then the place tools (mw-5r3p30.754), about 70
     // then the command play-sermon (mw-qtu3zvz.84), about 230
-    expect(JSON.stringify(catalogue).length).toBeLessThan(7200);
+    // then the command open-paradigm (mw-5r3p30.1249), about 250: its ids are the instructions' (Links to a paradigm table), not an enum here
+    expect(JSON.stringify(catalogue).length).toBeLessThan(7400);
   });
 
   it('keys the up-front list by the screen name, the Reader for the plain address', () => {

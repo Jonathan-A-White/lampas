@@ -29,6 +29,8 @@ import { ManualClock } from '../support/manual-clock';
 import { row, sourceOf } from '../support/sermon-sources';
 import { setSermonSources } from '../../src/sermons';
 import { closeSermon, hasQueuedSermon } from '../../src/sermons/player';
+import { dropQueuedParadigm, hasQueuedParadigm } from '../../src/tutor/paradigmQueue';
+import { afterTurns } from '../support/turns';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 
 const timeout = ASYNC_WAIT_MS;
@@ -119,6 +121,7 @@ beforeEach(() => {
 
 afterEach(() => {
   act(() => closeSermon());
+  dropQueuedParadigm();
   setSermonSources(undefined);
   cleanup();
   stopReading();
@@ -241,6 +244,44 @@ describe('Hands-free ask', () => {
       expect(player()).toBeNull();
       // and the sermon the late answer named is not left held for a later answer to start
       expect(hasQueuedSermon()).toBe(false);
+    });
+  });
+
+  describe("a table the answer opens (the tutor's open-paradigm, mw-5r3p30.1249)", () => {
+    const SAYS = 'Here is the article table.';
+    const opening = { answer: SAYS, words: [], do: [{ name: 'open-paradigm', args: { table: 'article' } }] };
+
+    it('opens the Paradigms screen at the table once the answer has been spoken, with no tap', async () => {
+      await openJohn3(opening);
+      const reader = window.location.hash;
+      const first = await wakeUp();
+      await says(first, 'ask show me the article table');
+      await untilAnswerIsSpoken();
+      await waitFor(() => expect(spoken().join(' ')).toContain(SAYS), { timeout });
+      // the answer is being said: the Reader stays under it
+      expect(synth.speaking).toBe(true);
+      expect(window.location.hash).toBe(reader);
+      act(() => synth.finish());
+      await waitFor(() => expect(window.location.hash).toBe('#/paradigms?t=article'), { timeout });
+      expect(await screen.findByRole('heading', { name: 'The article', level: 1 }, { timeout })).toBeInTheDocument();
+      expect(hasQueuedParadigm()).toBe(false);
+    });
+
+    it('does not open when his Stop cut the answer short', async () => {
+      await openJohn3(opening);
+      const reader = window.location.hash;
+      const first = await wakeUp();
+      await says(first, 'ask show me the article table');
+      await untilAnswerIsSpoken();
+      await waitFor(() => expect(spoken().join(' ')).toContain(SAYS), { timeout });
+      act(() => void within(screen.getByRole('region', { name: 'Speaking' })).getByRole('button', { name: 'Stop' }).click());
+      await waitFor(() => expect(synth.speaking).toBe(false), { timeout });
+      await waitFor(() => expect(wake.listening).toBe(true), { timeout });
+      await act(async () => {
+        await afterTurns();
+      });
+      expect(window.location.hash).toBe(reader);
+      expect(hasQueuedParadigm()).toBe(false);
     });
   });
 
