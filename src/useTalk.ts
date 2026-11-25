@@ -294,7 +294,7 @@ export function useTalk(
           // The table open-paradigm held (mw-5r3p30.1249) opens as a go does: only while this talk's sheet is open (or Hands-free waits for the answer), and never beside a place; else the turn says it did not.
           if (hasQueuedParadigm() && (target || !door?.allowed(ref))) {
             dropQueuedParadigm();
-            refused.push('Could not open the table: the talk was closed');
+            refused.push(target ? 'Could not open the table: the answer opened another place' : 'Could not open the table: the talk was closed');
           }
           // The tutor folded the turns this request carried in `fold` into the summary: keep it, and how many of the oldest turns it holds now; it never fails the talk.
           if (answer.summary && request.fold?.length) await keepTalkSummary(ref, answer.summary, (kept?.covered ?? 0) + request.fold.length).catch(() => undefined);
