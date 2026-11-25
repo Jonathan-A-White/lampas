@@ -1,0 +1,41 @@
+﻿TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY												
+A slice for tests (mw-u2w5klk.349.130): the sections of the condensed data for Deu.14, Exo.25:6-25:35, Exo.35:8-35:27, Jos.5:14--6:27 and Lev.6:1-6:30, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge).
+#DataStart(Condensed)
+$Exo.25:6-25:35	English KJV	Hebrew	Latin	Greek (NETS)	Greek2							
+TEST: If...	Exo.25:33>Exo.25:34	Exo.25:33>Exo.25:34	Exo.25:33>Exo.25:34	Exo.25:33<Exo.25:34	Exo.25:33>Exo.25:34							
+TextMayBeMissing	Exo.25:6	Exo.25:6	Exo.25:6	Absent	Empty							
+OneToOne	Exo.25:7-35	Exo.25:7-35	Exo.25:7-35	Exo.25:6-34	Exo.25:7-35							
+TextMayBeMissing	Exo.25:36	Exo.25:36	Exo.25:36	Exo.25:36	Exo.25:36							
+$Exo.35:8-35:27	English KJV	Hebrew	Latin	Greek*	Greek2 (NETS)*	Greek3 (Brenton)						
+TEST: If...	Exo.35:8=Exist	Exo.35:8=Exist	Exo.35:8=Exist	Exo.35:8=NotExist	Exo.35:8=Exist	Exo.35:8=Exist						
+TEST: If...	Exo.35:18=Exist	Exo.35:18=Exist	Exo.35:18=Exist	Exo.35:18=NotExist	Exo.35:18=Exist	Exo.35:18=notExist						
+TEST: If...	Exo.35:15>Exo.35:7	Exo.35:15>Exo.35:7	Exo.35:15>Exo.35:7	Exo.35:15<Exo.35:7	Exo.35:15<Exo.35:7	Exo.35:15<Exo.35:7						
+OneToOne	Exo.35:8	Exo.35:8	Exo.35:8	Exo.35:8 [Empty]	Exo.35:19	Exo.35:14						
+OneToOne	Exo.35:9	Exo.35:9	Exo.35:9	Exo.35:9	Exo.35:8	Exo.35:8						
+OneToOne	Exo.35:10	Exo.35:10	Exo.35:10	Exo.35:10	Exo.35:9	Exo.35:9						
+OneToOne	Exo.35:11	Exo.35:11	Exo.35:11	Exo.35:11	Exo.35:10	Exo.35:10						
+OneToOne	Exo.35:12	Exo.35:12	Exo.35:12	Exo.35:12	Exo.35:11	Exo.35:11						
+OneToOne	Exo.35:13	Exo.35:13	Exo.35:13	Exo.35:13	Exo.35:12	Exo.35:15						
+OneToOne	Exo.35:14	Exo.35:14	Exo.35:14	Exo.35:14	Exo.35:13	Exo.35:16						
+OneToOne	Exo.35:15	Exo.35:15	Exo.35:15	Exo.35:15 [Empty]	Exo.35:14	Exo.35:17						
+MergedPrevVerse	Exo.35:16	Exo.35:16	Exo.35:16	Exo.35:16	Exo.35:15	Absent [Exo.35:17]						
+OneToOne	Exo.35:17	Exo.35:17	Exo.35:17	Exo.35:17	Exo.35:16	Exo.35:12						
+MergedVerse	Exo.35:18	Exo.35:18	Exo.35:18	Exo.35:18 [Empty]	Exo.35:17	Exo.35:13						
+SubdividedVerse	Exo.35:19	Exo.35:19	Exo.35:19	Exo.35:19	Exo.35:18	Exo.35:18-19						
+$Lev.6:1-6:30	English KJV	Hebrew	Latin	Greek								
+TEST: If...	Lev.5:19=Last	Lev.5:26=Last	Lev.5:19=Last	Lev.5:19=Last								
+OneToOne	Lev.6:1-7	Lev.5:20-26	Lev.6:1-7	Lev.6:1-7								
+OneToOne	Lev.6:8-30	Lev.6:1-23	Lev.6:8-30	Lev.6:8-30								
+$Deu.14:14-14:29	English KJV	Hebrew	Latin	Greek								
+TEST: If...	Deu.14:29=Last	Deu.14:29=Last	Deu.14:29=Last	Deu.14:28=Last								
+OneToOne	Deu.14:14	Deu.14:14	Deu.14:14	Deu.14:14								
+MergedPrevVerse	Deu.14:15	Deu.14:15	Deu.14:15	Absent [=Deu.14:14]								
+OneToOne	Deu.14:16-29	Deu.14:16-29	Deu.14:16-29	Deu.14:15-28								
+$Jos.5:14--6:27	English KJV	Hebrew	Latin	Greek	Slavonic							
+TEST: If...	Jos.5:15=Last	Jos.5:15=Last	Jos.5:16=Last	Jos.5:15=Last	Jos.5:16=Last							
+TEST: & if... 	Jos.6:27=Last	Jos.6:27=Last	Jos.6:27=Last	Jos.6:27=Last	Jos.6:26=Last							
+SubdividedVerse	Jos.5:14	Jos.5:14	Jos.5:14-15	Jos.5:14	Jos.5:14							
+OneToOne	Jos.5:15	Jos.5:15	Jos.5:16	Jos.5:15	Jos.5:15							
+OneToOne	Jos.6:1	Jos.6:1	Jos.6:1	Jos.6:1	Jos.5:16							
+OneToOne	Jos.6:2-27	Jos.6:2-27	Jos.6:2-27	Jos.6:2-27	Jos.6:1-26							
+#DataEnd(Condensed)

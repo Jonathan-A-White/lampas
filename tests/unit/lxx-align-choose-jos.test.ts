@@ -106,6 +106,26 @@ describe.skipIf(!real.run)('Joshua with the model pass', () => {
     }
   });
 
+  // Story mw-u2w5klk.349.130: LXX2012's Joshua 6:7 and 6:8 are each the other's in Swete's order, so 'Charge the people' stood under 'καὶ ἑπτὰ ἱερεῖς' and 'let seven priests' under Παραγγείλατε.
+  it.each([
+    [7, 'Charge', 'Παραγγείλατε'],
+    [7, 'let your men of war', 'μάχιμοι'],
+    [7, 'go round,', 'περιελθεῖν'],
+    [8, 'proceed thus before', 'παρελθέτωσαν'],
+    [8, 'proceed thus before', 'ὡσαύτως'],
+  ])('Joshua 6:%i: the chunk "%s" renders %s', (n, text, greek) => {
+    const verse = withModel.get(6)!.verses.find((x) => x.n === n)!;
+    const chunk = verse.e.find((c) => c.t === text);
+    expect(chunk, `Jos 6:${n} ${text}`).toBeDefined();
+    expect(chunk!.g.map((g) => verse.g[g].t.replace(/[.,;·:]+$/, ''))).toContain(greek);
+    expect(verse.g.filter((w) => w.e === undefined).map((w) => w.t)).toEqual(n === 7 ? ['καὶ', 'εἶπεν', 'αὐτοῖς', 'λέγων'] : []);
+  });
+
+  it('leaves no English word of Joshua 6:7 or 6:8 in the sidecar as one whose Greek is in the other verse', () => {
+    const left = readExpect('jos')!.chapters['6'].leftovers!.map(([key]) => key);
+    expect(left.filter((key) => /^6:[78]:/.test(key))).toEqual([]);
+  });
+
   it('pairs the English of Joshua 3:14 "removed" with ἀπῆρεν, where a tap on "removed" opened the Verse view', () => {
     const verse = withModel.get(3)!.verses.find((v) => v.n === 14)!;
     const chunk = verse.e.find((c) => /removed/.test(c.t));

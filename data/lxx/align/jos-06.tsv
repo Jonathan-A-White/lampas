@@ -27,18 +27,18 @@ Jos.6:5	5	direct	16,17		0.80
 Jos.6:6	1	son of	4		0.80
 Jos.6:6	2	in	-		0.80
 Jos.6:6	3	and spoke to them, saying,	-		0.80
-Jos.6:7	1	let seven priests having seven sacred trumpets proceed thus before	-		0.80
-Jos.6:7	2	Lord,	-		0.80
-Jos.6:7	3	let	-		0.80
-Jos.6:7	4	let	-		0.80
-Jos.6:7	5	ark of the covenant of the	-		0.80
-Jos.6:7	6	follow.	-		0.80
-Jos.6:8	1	Charge the people to go round,	-		0.80
-Jos.6:8	2	encompass	-		0.80
-Jos.6:8	3	let your	-		0.80
-Jos.6:8	4	of	-		0.80
-Jos.6:8	5	on	-		0.80
-Jos.6:8	6	before	-		0.80
+Jos.6:7	1	Charge	4		0.80
+Jos.6:7	2	to	-		0.80
+Jos.6:7	3	round,	-		0.80
+Jos.6:7	4	let your men of war	13,14		0.80
+Jos.6:7	5	on	-		0.80
+Jos.6:7	6	before the	17		0.80
+Jos.6:8	1	let	-		0.80
+Jos.6:8	2	proceed thus before	7,8,9		0.80
+Jos.6:8	3	let them	-		0.80
+Jos.6:8	4	let	-		0.80
+Jos.6:8	5	of	-		0.80
+Jos.6:8	6	of the	-		0.80
 Jos.6:9	1	let	-		0.80
 Jos.6:9	2	men of war	2		0.80
 Jos.6:9	2	proceed	4		0.80
@@ -187,3 +187,4 @@ Jos.6:23	fix	spied out	6		0.80
 Jos.6:23	fix	without	43		0.80
 Jos.6:9	fix	sounding the trumpets.	16		0.80
 Jos.6:22	fix	young men	3		0.80
+Jos.6:7	fix	go round,	7		0.80
