@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { noRecording } from './no-recording';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -23,14 +24,14 @@ const ANSWER = {
     { printed: '2 Samuel 5–12', ref: '2Sam.5' },
   ],
 };
-// [heading as the player says it, book dir, first chapter, last chapter]
+// [heading as the voice says it (a range as words, src/speech/spokenReference.ts), book dir, first chapter, last chapter]
 const PASSAGES: [string, string, number, number][] = [
-  ['Judges 1-5', 'jdg', 1, 5],
-  ['1 Samuel 1-2', '1sa', 1, 2],
+  ['Judges 1 through 5', 'jdg', 1, 5],
+  ['1 Samuel 1 through 2', '1sa', 1, 2],
   ['1 Samuel 8', '1sa', 8, 8],
-  ['1 Samuel 12-17', '1sa', 12, 17],
+  ['1 Samuel 12 through 17', '1sa', 12, 17],
   ['1 Samuel 31', '1sa', 31, 31],
-  ['2 Samuel 5-12', '2sa', 5, 12],
+  ['2 Samuel 5 through 12', '2sa', 5, 12],
 ];
 
 interface Verse {
@@ -43,6 +44,7 @@ const englishOf = (v: Verse): string => squash(v.e.map((c) => c.t).join(' '));
 
 async function openShare(page: Page): Promise<void> {
   await openUnlocked(page);
+  await noRecording(page);
   await honestSpeech(page, { msPerWord: 1 });
   await page.goto('/');
   await expect(page.locator('[data-verse]').first()).toBeVisible();
