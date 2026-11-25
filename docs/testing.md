@@ -177,6 +177,7 @@ in every gate but the Laptop's main checkout and a story that broke their invari
   map `scripts/data/tvtms.ts` among them, the files it reads, the tests), so a leftover link cannot fail a gate on data the story did not change; if git cannot say what changed they run. An import or a file the ship gains
   goes into `WATCHED`, or into `tests/unit/lxx-real-data-watched.test.ts` with why not, which fails until it is in one (mw-u2w5klk.349.139);
 - no sources anywhere (cloud hosts): skipped with that one line, never a failure; `LAMPAS_LXX_REAL=run|skip` forces it.
+- the Psalms and Isaiah model-pass tests run the ship with `--no-morpheus`, so they ask `lxxRawData()`: the same directory and verdict, except that a checkout holding `data/raw/lxx` and no Morpheus cache still runs them (mw-u2w5klk.349.144).
 
 Other `skipIf` tests in `tests/` on a git-ignored path: `tests/unit/supplied-words.test.ts` (`data/raw/msb_nt_tables.tsv`); the catalogue, sermon-archives and match-export tests wait on the vault's Logos export (outside the repo).
 

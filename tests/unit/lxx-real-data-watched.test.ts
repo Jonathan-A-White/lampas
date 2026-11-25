@@ -116,8 +116,10 @@ describe('what makes the gate run the real-data Septuagint tests', () => {
   it('watches every test file that reads the real data', () => {
     const readers = readdirSync('tests/unit')
       .map((name) => `tests/unit/${name}`)
-      .filter((path) => isFile(path) && /^import \{[^}]*\blxxRealData\b[^}]*\} from '\.\.\/support\/lxx-real-data';/m.test(readFileSync(path, 'utf8')));
-    expect(readers).toContain('tests/unit/lxx-unpaired.test.ts');
+      // the helper's own test imports lxxRawData to give it a made-up probe: it reads no real data
+      .filter((path) => path !== 'tests/unit/lxx-real-data.test.ts')
+      .filter((path) => isFile(path) && /^import \{[^}]*\b(?:lxxRealData|lxxRawData)\b[^}]*\} from '\.\.\/support\/lxx-real-data';/m.test(readFileSync(path, 'utf8')));
+    expect(readers).toEqual(expect.arrayContaining(['tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-align-choose-psa.test.ts']));
     expect(readers.filter((path) => !watched(path))).toEqual([]);
   });
 });
