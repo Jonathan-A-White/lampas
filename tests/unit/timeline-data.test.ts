@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { THEOGRAPHIC_COMMIT, THEOGRAPHIC_FILES, parseCsv, runTimelineImport, type Correction } from '../../scripts/timeline-import';
 import { canonBookOf } from '../../src/data/canon';
 import { TIMELINE_CREDIT, chapterSpan, endYearOf, eventsOfChapter, loadTimeline, spanOf, yearsOf, type BookTimeline } from '../../src/timeline/timelineData';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const CREDIT = 'Theographic Bible Metadata, Robert Rouse, CC BY-SA 4.0; traditional dating (Floyd Nolen Jones, after Ussher)';
 const DATA_DIR = 'src/timeline/data';
@@ -138,7 +139,7 @@ describe('years and durations', () => {
 const made: string[] = [];
 afterEach(() => {
   for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true });
-});
+}, HOOK_TIMEOUT_MS);
 
 const fixture = (name: string): Buffer => readFileSync(`tests/fixtures/timeline/${name.replace('.csv', '-slice.csv')}`);
 const sha256 = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');
