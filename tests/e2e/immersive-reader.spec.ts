@@ -245,7 +245,8 @@ async function expectStillShown(page: Page, at: number, what: string) {
   await expect.poll(() => scrollTop(page), { message: `${what}: the saved place comes back` }).toBeGreaterThan(at - 50);
   await afterRestore(page);
   await expectAll(page, 'visible');
-  await expect(page.locator('[data-place-line]'), `${what}: no place line`).toHaveCount(0);
+  // the place line is at the foot with the bars up too (mw-5r3p30.1247)
+  await expect(page.locator('[data-place-line]'), `${what}: the place line`).toHaveCount(1);
 }
 
 test('with the bars shown, Settings and then ‹ Reader leaves them shown', async ({ page }) => {

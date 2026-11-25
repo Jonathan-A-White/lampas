@@ -589,25 +589,28 @@ describeFeature(feature, ({ Scenario }) => {
     Then(`${bars} in view`, inView);
   });
 
-  Scenario('One quiet place line at the foot while the bars are away', ({ Given, When, Then }) => {
+  Scenario('One quiet place line at the foot, with the bars up and with them away (mw-5r3p30.1247)', ({ Given, When, Then }) => {
     const placeLine = () => document.querySelector('[data-place-line]');
     const reads = async (_: unknown, text: string) => {
       await waitFor(() => expect(placeLine()).toHaveTextContent(text));
     };
     Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
-    Then('there is no place line', async () => {
-      // the Reader has taken its setting and the bars are in view (open() waited for data-immersive): the line is wanted only while they are away, so it is not drawn
+    Then('the place line reads {string} with the bars shown', async (_, text: string) => {
+      // the bars are in view (open() waited for data-immersive): his words, "I should see the chapter at the bottom regardless of whether it's immersive or not"
       await inView();
       expect(reader()).not.toHaveAttribute('data-place-below');
-      expect(placeLine()).toBeNull();
+      await reads(_, text);
     });
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     Then('the place line reads {string}', reads);
     When('he scrolls the text on down {int} px', (_, px: number) => scrollBy(px));
     Then('the place line now reads {string}', reads);
     When('he taps the text with two fingers', twoFingerTap);
-    Then('there is no place line while the bars are shown', async () => {
-      await waitFor(() => expect(placeLine()).toBeNull());
+    Then('the place line stays and reads {string} while the bars are shown', async (_, text: string) => {
+      await inView();
+      await reads(_, text);
+      // one line, not the away line sliding out beside the shown bars' line
+      await waitFor(() => expect(document.querySelectorAll('[data-place-line]')).toHaveLength(1));
     });
     When('he taps the text with two fingers again', async () => {
       pastTheClickGuard();

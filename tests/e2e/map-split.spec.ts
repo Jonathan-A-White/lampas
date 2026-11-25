@@ -140,10 +140,10 @@ test('Close closes the split at the same verse; Back with the split open does no
   await expect(page.getByRole('heading', { name: 'Genesis 14', level: 1 })).toBeVisible();
 });
 
-test('a word tap opens the word sheet over both panes and closing it leaves the split; the place line is not drawn while the dock is open', async ({ page }) => {
+test('a word tap opens the word sheet over both panes and closing it leaves the split; the place line stays at the foot while the dock is open (mw-5r3p30.1247)', async ({ page }) => {
   await splitTheBattle(page);
   await expect(dock(page).locator('img')).toBeVisible();
-  await expect(page.locator('[data-place-line]')).toHaveCount(0);
+  await expect(page.locator('[data-place-line]')).toHaveCount(1);
 
   await page.locator('[data-verse="15"] [data-chunk]').first().click();
   const sheet = page.getByRole('dialog').first();
@@ -156,7 +156,7 @@ test('a word tap opens the word sheet over both panes and closing it leaves the 
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(dock(page)).toBeVisible();
   await expect(dock(page).locator('img')).toBeVisible();
-  await expect(page.locator('[data-place-line]')).toHaveCount(0);
+  await expect(page.locator('[data-place-line]')).toHaveCount(1);
 });
 
 test('a reload keeps the same map in the dock (setting splitMap)', async ({ page }) => {

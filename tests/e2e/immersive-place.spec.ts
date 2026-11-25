@@ -7,8 +7,8 @@ import { asInstalledApp } from './installed';
 import { afterFrames, afterRestore, afterTwoFingerTap, untilPlaceKept, untilStill } from '../support/settled';
 
 // With Immersive reader On and the bars away, one quiet line at the foot says where he is: the book and chapter and how far through the chapter's
-// text he has scrolled, like a Kindle's "Page 9 of 187 · 12%" (mw-5r3p30.298). With the setting Off it is there all the time (mw-5r3p30.1028); with it On it is not there with the bars brought
-// back, it is smaller and dimmer than the text, and it takes a row of its own, so it covers none of the text. A phone-width layout claim: it runs
+// text he has scrolled, like a Kindle's "Page 9 of 187 · 12%" (mw-5r3p30.298). With the setting Off it is there all the time (mw-5r3p30.1028); with it On it is there with the bars brought
+// back too (mw-5r3p30.1247), it is smaller and dimmer than the text, and it takes a row of its own, so it covers none of the text. A phone-width layout claim: it runs
 // under --project=shots (390x844).
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 // The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none.
@@ -83,16 +83,19 @@ test('the Reader offset can be read before the Reader is drawn after a reload', 
   expect(await readerTop(page)).toBe(-1);
 });
 
-test('the place line is there only with Immersive reader On and the bars away', async ({ page }) => {
+test('the place line is at the foot with Immersive reader On, the bars up and away (mw-5r3p30.1247)', async ({ page }) => {
   await openMark12(page, 'on');
-  await expect(place(page)).toHaveCount(0);
+  // his words, "I should see the chapter at the bottom regardless of whether it's immersive or not": with the bars up it is there too
+  await expect(place(page)).toBeVisible();
+  await expect(place(page)).toHaveText(/^Mark 12 · \d+%$/);
 
   await scrollText(page, 300);
   await expect(place(page)).toBeVisible();
   await expect(place(page)).toHaveText(/^Mark 12 · \d+%$/);
 
   await twoFingerTap(page);
-  await expect(place(page)).toHaveCount(0);
+  await expect(place(page)).toHaveCount(1);
+  await expect(place(page)).toBeVisible();
   await expect(page.getByTestId('reader-chips')).toBeVisible();
 
   // the bars have finished sliding in before the second tap
@@ -239,7 +242,7 @@ for (const licensed of [true, false]) {
       // shown and a chapter read, the stack of rows is taller than the window (the box is squeezed to 136 px, mw-5r3p30.212).
       if (size.height < size.width) return;
       await twoFingerTap(page, size.height / 2);
-      await expect(place(page)).toHaveCount(0);
+      await expect(place(page)).toHaveCount(1);
       await untilStill(page);
       const shown = await page.evaluate(() => {
         const out: Array<{ name: string; bottom: number }> = [];
@@ -285,7 +288,7 @@ for (const licensed of [true, false]) {
       const before = await top();
       for (let cycle = 0; cycle < 2; cycle++) {
         await twoFingerTap(page);
-        await expect(place(page)).toHaveCount(0);
+        await expect(place(page)).toHaveCount(1);
         await settle();
         expect(await top(), `${where}: the bars shown, cycle ${cycle + 1}`).toBe(before);
         await twoFingerTap(page);
@@ -299,7 +302,7 @@ for (const licensed of [true, false]) {
 }
 
 // Coming back to the Reader at a scrolled place keeps the bars as he left them (mw-5r3p30.471): the Reader puts the saved place back, and that is not
-// him scrolling down, so with the bars shown (a two-finger tap) Settings and then '‹ Reader' leaves them shown and draws no place line; the same
+// him scrolling down, so with the bars shown (a two-finger tap) Settings and then '‹ Reader' leaves them shown (the place line is at the foot, mw-5r3p30.1247); the same
 // place after a reload keeps them shown. Licensed and not.
 for (const licensed of [true, false]) {
   test(`with the bars shown on a scrolled Mark 12, Settings and then ‹ Reader and a reload keep them shown, ${licensed ? 'licensed' : 'free'}`, async ({ page }) => {
@@ -313,7 +316,7 @@ for (const licensed of [true, false]) {
     await expect(page.locator('[data-verse="1"]')).toBeVisible();
     const top = () => readerTop(page);
     const shown = async (what: string) => {
-      await expect(place(page), `${what}: no place line`).toHaveCount(0);
+      await expect(place(page), `${what}: the place line`).toHaveCount(1);
       await expect(page.locator('header').first(), `${what}: the header`).toBeVisible();
       await expect(page.getByTestId('reader-chips'), `${what}: the chips`).toBeVisible();
     };

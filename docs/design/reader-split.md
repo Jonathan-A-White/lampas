@@ -113,7 +113,7 @@ column, Left and Right side by side) move it by a tenth of the box, Home goes to
 - **Portrait (the phone)**: stacked; the passage above, the dock below (decision D1). The header, the switch and the chips row stay above the passage unchanged. With
   the Immersive reader On the bars slide away on the passage's scroll as today (a scroll inside the dock does not hide them), the box grows and the dock keeps
   its fraction. The speaking bar of Read aloud, when it shows, stands under the dock as it stands under the text today, and the dock's body gives it the room.
-  The place line (`Genesis 14 · 45%`) is not drawn while a dock is open in Scroll (the dock's row is the passage's foot); in Turn pages it stays, since it says the page.
+  The place line (`Genesis 14 · 45%`) stays at the foot while a dock is open, in Scroll and in Turn pages (mw-5r3p30.1247; it was not drawn in Scroll before).
 - **Sideways** (`short:`, `max-height: 500px`): side by side; the passage at the left, the dock at the right half, the handle row at the dock's top with its pill
   standing on the divider at the left edge (text-sideways.png). The size is a fraction of the width; a drag right past the smallest size closes. Side by side the bounds are widths (built in mw-5r3p30.1129.3): the dock keeps at least 240 px (what its handle row needs for the title, the pill and Close) and the passage at least 280 px, since "two lines" mean nothing across; PROVISIONAL, the Governor to confirm. The passage keeps the left
   because reading begins there and the dock is the sheet that slid in from the right edge; the Hand setting does not move it (one rule to learn).
@@ -266,7 +266,7 @@ chapter has, `splitPairing.ts`), `src/settings/definitions/split.ts`, `src/maps/
 6. The next chapter (`Genesis 15 ›`) keeps the split and shows a map of Genesis 15 (the same map if it covers the chapter, else the chapter's first in the Maps sheet's order); on a chapter `mapsFor` answers nothing for (the Builder finds one from `src/maps/data/biblemapper.json`) the row reads `No map for <Book N>`, the body is empty, no picture is fetched, and the dock keeps its size (e2e).
 7. A reload keeps the split, the same map and the size (settings `readerSplit`, `splitMap`, `splitSize`, the last a fraction of the box) (e2e); each new setting is classified in `src/tutor/knows.ts` (unit test, tests/unit/tutor-knows.test.ts).
 8. Sideways at 844x390 the dock stands at the right with the passage at the left, its share of the width the share of the height it had, its handle row at the dock's top, and a drag right past the smallest size closes it (e2e, viewport 844x390).
-9. A word tap in the passage opens the word sheet over both panes and closing it leaves the split (e2e); the place line is not drawn while the dock is open in Scroll (e2e).
+9. A word tap in the passage opens the word sheet over both panes and closing it leaves the split (e2e); the place line stays at the foot while the dock is open (e2e, mw-5r3p30.1247).
 10. `docs/maps.md` and `docs/layout/reader.md` say where the split lives, and Help's maps page says what `Split` does, in one sentence (gate).
 11. The rig's gate passes (gate). Sweep, in the closing comment: every other bottom sheet of the Reader that shows reference matter beside the text, and whether it should dock; named for a follow-up, not built.
 
