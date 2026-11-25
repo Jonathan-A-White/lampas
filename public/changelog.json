@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.390",
+    "date": "2026-11-25",
+    "story": "mw-fnvjof.17.306",
+    "kind": "fixed",
+    "text": "The word sheet keeps its Study and Help with this word rows in view; the long dictionary definition now comes under them."
+  },
+  {
     "version": "0.7.389",
     "date": "2026-11-25",
     "story": "mw-fnvjof.17.298",
