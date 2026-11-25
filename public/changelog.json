@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.394",
+    "date": "2026-11-25",
+    "story": "mw-r9xo1pj.28",
+    "kind": "new",
+    "text": "Morning RePhil on Today now plays inside Lampas, in the same player as the video sermons."
+  },
+  {
+    "version": "0.7.394",
+    "date": "2026-11-25",
+    "story": "mw-fnvjof.17.318",
+    "kind": "fixed",
+    "text": "a copied talk no longer says 'tap the link below' where no link was shown."
+  },
+  {
+    "version": "0.7.394",
+    "date": "2026-11-25",
+    "story": "mw-u2w5klk.349.137",
+    "kind": "fixed",
+    "text": "In the Septuagint, the English of Amos 6 now stands beside the Greek it translates, and the end of the chapter is no longer missing."
+  },
+  {
     "version": "0.7.393",
     "date": "2026-11-25",
     "story": "mw-fnvjof.17.317.1",

@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.394
+_2026-11-25_
+- New: Morning RePhil on Today now plays inside Lampas, in the same player as the video sermons.
+- Fixed: a copied talk no longer says 'tap the link below' where no link was shown.
+- Fixed: In the Septuagint, the English of Amos 6 now stands beside the Greek it translates, and the end of the chapter is no longer missing.
+
 ## 0.7.393
 _2026-11-25_
 - New: About and the Preface now name Theographic, the source of the Bible dates for the coming timeline.
