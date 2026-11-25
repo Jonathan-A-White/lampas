@@ -18,6 +18,10 @@ const real = lxxRealData();
 const sources = { rawDir: real.rawDir, morpheusDir: real.morpheusDir };
 const MODELLED = alignFileChapters('lev');
 const joined = (verse: Verse): string => verse.e.map((c) => c.t).join(' ');
+// The verses the shared LXX2012 map moved (mw-u2w5klk.349.130: its 6:4 holds the Greek 4-5 and its 5-7 are the Greek 6-8; its 8:18 holds the Greek 18-19 and its 19-28 are the Greek 20-29): Lev 6:4-9 and 8:18-30 (mw-u2w5klk.349.134).
+const MOVED = /^(6:[4-9]|8:(1[89]|2\d|30))(?!\d)/;
+// Of those, only these still have English that renders a Greek word of another verse: 6:4 and 8:18 hold the English of two Greek verses, and Brenton cuts 8:20 and 8:22 a clause later than Swete.
+const OTHER_VERSE = new Set(['6:4', '8:18', '8:20', '8:22']);
 
 describe('the model pass files of Leviticus', () => {
   it('has one file a chapter, the chapters in order from 1, each with a row for a run and every row a model chunk', () => {
@@ -45,6 +49,14 @@ describe('the model pass files of Leviticus', () => {
       }
     }
   });
+
+  it('calls a leftover of Lev 6:4-9 or 8:18-30 another verse\'s only in 6:4, 8:18, 8:20 and 8:22', () => {
+    const wrong = Object.values(readExpect('lev')!.chapters)
+      .flatMap((c) => c.leftovers ?? [])
+      .filter(([key, why]) => MOVED.test(key) && /^other-verse/.test(why) && !OTHER_VERSE.has(key.split(':').slice(0, 2).join(':')))
+      .map(([key]) => key);
+    expect(wrong).toEqual([]);
+  });
 });
 
 describe.skipIf(!real.run)('Leviticus with the model pass', () => {
@@ -52,6 +64,7 @@ describe.skipIf(!real.run)('Leviticus with the model pass', () => {
   let withModel: Map<number, Chapter>;
   let base: Map<number, Chapter>;
   let stale: string[] = [];
+  let notes: string[] = [];
   const read = (dir: string): Map<number, Chapter> => {
     const out = new Map<number, Chapter>();
     for (const n of MODELLED) out.set(n, JSON.parse(readFileSync(join(dir, 'lev', `${n}.json`), 'utf8')) as Chapter);
@@ -66,7 +79,8 @@ describe.skipIf(!real.run)('Leviticus with the model pass', () => {
     await runShip(['--out', b], { ...sources, log: (l) => log.push(l) });
     base = read(a);
     withModel = read(b);
-    stale = log.filter((l) => /model pass/.test(l) && /stale|kept/.test(l) && /Lev\./.test(l));
+    notes = log.filter((l) => /model pass/.test(l) && /Lev\./.test(l));
+    stale = notes.filter((l) => /stale|kept/.test(l));
   }, 10 * HOOK_TIMEOUT_MS);
   afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
@@ -104,6 +118,31 @@ describe.skipIf(!real.run)('Leviticus with the model pass', () => {
         expect(verse.g.map((w) => w.t)).toEqual(was.verses[i].g.map((w) => w.t));
       });
     }
+  });
+
+  it('has no note for a run or a row of Lev 6:4-9 or 8:18-30: none stale, none without a choice, none unused', () => {
+    expect(notes.filter((l) => /Lev\.(6:[4-9]|8:(1[89]|2\d|30))(?!\d)/.test(l))).toEqual([]);
+  });
+
+  it.each([
+    [6, 6, 'προβάτων', 'flock'],
+    [6, 6, 'ἄμωμον', 'blemish'],
+    [6, 7, 'ἐξιλάσεται', 'atonement'],
+    [6, 7, 'ἀφεθήσεται', 'forgiven'],
+    [8, 20, 'ἐκρεανόμησεν', 'divided'],
+    [8, 21, 'ἀνήνεγκεν', 'offered up'],
+    [8, 21, 'εὐωδίας', 'sweet smelling'],
+    [8, 25, 'βραχίονα', 'shoulder'],
+    [8, 26, 'λάγανον', 'cake'],
+    [8, 28, 'ἀνήνεγκεν', 'offered'],
+    [8, 30, 'στολάς', 'garments'],
+  ])('pairs the English of Leviticus %i:%i with its own Greek verse: %s is under "%s"', (chapter, n, greek, english) => {
+    const verse = withModel.get(chapter)!.verses.find((v) => v.n === n)!;
+    const plain = (t: string): string => t.normalize('NFD').replace(/[^\p{L}]/gu, '');
+    const word = verse.g.find((w) => plain(w.t) === plain(greek));
+    expect(word, `${greek} in Lev ${chapter}:${n}`).toBeDefined();
+    expect(word!.e, `${greek} has an English chunk`).toBeDefined();
+    expect(verse.e[word!.e!].t).toContain(english);
   });
 
   it('pairs the English of Leviticus 1:16 "take away" with ἀφελεῖ, where a tap on "away" opened the Verse view', () => {
