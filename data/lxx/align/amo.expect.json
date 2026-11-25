@@ -2,8 +2,7 @@
   "reasons": {
     "supplied-word": "A word Brenton supplies; the Greek of this verse has no word for it.",
     "greek-in-the-next-verse": "The Greek this English renders stands in the next verse of Swete, so no word of this verse fits it.",
-    "greek-in-the-verse-before": "The Greek this English renders stands in the verse before in Swete, so no word of this verse fits it.",
-    "one-verse-off": "From Amos 6:10 to 6:14 each verse of Brenton renders the Greek of the verse before it in Swete (Brenton's 6:15 has no Greek verse to stand at), so no word of this verse fits it."
+    "greek-in-the-verse-before": "The Greek this English renders stands in the verse before in Swete, so no word of this verse fits it."
   },
   "chapters": {
     "1": {
@@ -121,49 +120,17 @@
     },
     "6": {
       "gaps": 0,
-      "model": 41,
+      "model": 9,
       "leftovers": [
         ["6:2:house", "greek-in-the-verse-before"],
         ["6:2:israel", "greek-in-the-verse-before"],
         ["6:2:see", "supplied-word"],
         ["6:6:occasion", "supplied-word"],
         ["6:8:saying", "supplied-word"],
-        ["6:10:behind", "one-verse-off"],
-        ["6:10:forth", "one-verse-off"],
-        ["6:10:left", "one-verse-off"],
-        ["6:10:one", "one-verse-off"],
-        ["6:10:remnant", "one-verse-off"],
-        ["6:11:else", "one-verse-off"],
-        ["6:11:name", "one-verse-off"],
-        ["6:11:one", "one-verse-off"],
-        ["6:11:other", "one-verse-off"],
-        ["6:11:say", "one-verse-off"],
-        ["6:11:say", "one-verse-off"],
-        ["6:11:silent", "one-verse-off"],
-        ["6:12:breaches", "one-verse-off"],
-        ["6:12:commands", "one-verse-off"],
-        ["6:12:great", "one-verse-off"],
-        ["6:12:house", "one-verse-off"],
-        ["6:12:lord", "one-verse-off"],
-        ["6:12:strike", "one-verse-off"],
-        ["6:13:bitterness", "one-verse-off"],
-        ["6:13:fruit", "one-verse-off"],
-        ["6:13:horses", "one-verse-off"],
-        ["6:13:judgment", "one-verse-off"],
-        ["6:13:mares", "one-verse-off"],
-        ["6:13:neighing", "one-verse-off"],
-        ["6:13:poison", "one-verse-off"],
-        ["6:13:refrain", "one-verse-off"],
-        ["6:13:righteousness", "one-verse-off"],
-        ["6:13:rocks", "one-verse-off"],
-        ["6:13:run", "one-verse-off"],
-        ["6:13:turned", "one-verse-off"],
-        ["6:14:horns", "one-verse-off"],
-        ["6:14:own", "one-verse-off"],
-        ["6:14:possessed", "one-verse-off"],
-        ["6:14:rejoice", "one-verse-off"],
-        ["6:14:strength", "one-verse-off"],
-        ["6:14:vanity", "one-verse-off"]
+        ["6:10:behind", "greek-in-the-verse-before"],
+        ["6:10:left", "greek-in-the-verse-before"],
+        ["6:10:other", "supplied-word"],
+        ["6:10:remnant", "greek-in-the-verse-before"]
       ],
       "placePairs": [
         ["6:1 heads @12", "read"],
@@ -182,10 +149,13 @@
         ["6:7 dominion @6", "read"],
         ["6:8 pride @10", "read"],
         ["6:10 heads @19", "read"],
-        ["6:11 name @13", "read"],
-        ["6:12 house @16", "read"],
-        ["6:12 little @15", "read"],
-        ["6:12 rents. @18", "read"]
+        ["6:11 breaches, @10", "read"],
+        ["6:12 run @1", "read"],
+        ["6:14 Aemath, @20", "read"],
+        ["6:14 hosts; @12", "read"],
+        ["6:14 river @24", "read"],
+        ["6:14 they shall afflict @14", "read"],
+        ["6:14 wilderness. @26", "read"]
       ]
     },
     "7": {

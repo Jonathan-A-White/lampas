@@ -134,6 +134,19 @@ describe.skipIf(!real.run)('Amos with the model pass', () => {
     expect(greek(3, 4, /^utter/)).toEqual(['δώσει']);
   });
 
+  // mw-u2w5klk.349.137: from 6:11 each verse of Brenton rendered the Greek of the verse before it, and his 6:15 was shown nowhere
+  it('stands each verse of Brenton from Amos 6:10 to 6:15 at the Greek it renders, his 6:15 at the Greek 6:14', () => {
+    const verse = (n: number): Verse => withModel.get(6)!.verses.find((v) => v.n === n)!;
+    expect(withModel.get(6)!.verses.map((v) => v.n)).toEqual(Array.from({ length: 14 }, (_, i) => i + 1));
+    expect(joined(verse(10))).toContain('you name not the name of the Lord.');
+    expect(joined(verse(11))).toMatch(/^For, behold,.*the little house with rents\.$/);
+    expect(joined(verse(14))).toContain('I will raise up against you a nation');
+    expect(greek(6, 11, /great/)).toContain('μέγαν');
+    expect(greek(6, 12, /horses/)).toContain('ἵπποι;');
+    expect(greek(6, 13, /horns/)).toContain('κέρατα;');
+    expect(greek(6, 14, /nation/)).toContain('ἔθνος,');
+  });
+
   it('gives back the aligner\'s wrong pairs of 5:9, 7:9 and 7:17 by fix rows', () => {
     expect(greek(5, 9, /brings/)).toEqual(['ἐπάγων.']);
     expect(greek(5, 9, /distress/)).toEqual(['ταλαιπωρίαν']);
