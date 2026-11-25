@@ -52,9 +52,11 @@ function lookupOfWord(verses: readonly Verse[], word: DiagramWord, septuagint: b
   if ('chunk' in word) {
     const chunk = verse.e[word.chunk];
     if (word.weft && chunk) return { words: word.weft.map((i) => verse.g[i]), english: chunk.t, fromEnglish: false };
+    // the Greek words drawn with this word that the chunk does not hold (a Septuagint word no chunk holds, src/diagram/weave.ts, mw-u2w5klk.349.124) open with it, or alone
+    const unheld = (word.beside ?? []).filter((i) => !chunk?.g.includes(i)).map((i) => verse.g[i]);
     // a Septuagint chunk paired to no Greek word names none to open (septuagintChunkLinked, mw-u2w5klk.278)
-    if (chunk && septuagint && !septuagintChunkLinked(chunk)) return undefined;
-    return chunk ? { words: chunk.g.map((i) => verse.g[i]), english: chunk.t, fromEnglish: true, verse: verse.n } : undefined;
+    if (chunk && septuagint && !septuagintChunkLinked(chunk)) return unheld.length > 0 ? { words: unheld, fromEnglish: false } : undefined;
+    return chunk ? { words: [...unheld, ...chunk.g.map((i) => verse.g[i])], english: chunk.t, fromEnglish: true, verse: verse.n } : undefined;
   }
   const greek = verse.g[word.word];
   return greek ? { words: [greek], english: greek.e === undefined ? undefined : verse.e[greek.e]?.t, fromEnglish: false } : undefined;

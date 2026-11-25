@@ -2,7 +2,7 @@
 import { Fragment, useState, type MouseEvent, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns, isGuess } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
-import { besideOf, chunkText, drawnOrder, goneOf, strayMarks, type WovenVerse } from '../data/weave';
+import { besideOf, chunkText, drawnOrder, goneOf, straysOf, type StrayMarks, type WovenVerse } from '../data/weave';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
@@ -248,13 +248,16 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
     const lookup = variantLookup(verse, word, reading, language, variantLabel(reading.chips));
     if (lookup) onLook(lookup);
   };
-  // a marked word the MSB gives no English of its own is in no chunk: it is drawn, marked, in its own place in the English and the weave (weave.ts strayMarks, mw-5r3p30.817)
-  const strays = view === 'greek' || marked === undefined ? { before: new Map<number, readonly number[]>(), end: [] as readonly number[] } : strayMarks(verse, marked, drawnOrder(verse, woven));
-  const strayWord = (i: number) => (
-    <Tap key={`w${i}`} still={still} data-word={String(i)} data-marked="" {...own} dir={ownDir} className={`${face} text-accent ${TAP_PAD} ${MARKED}`} onTap={() => lookGreek(verse.g[i])} onLongPress={() => sayGreek(verse.g[i], ownSpeech)}>
-      {verse.g[i].t}
-    </Tap>
-  );
+  // a Greek word no English chunk holds is drawn in its own place in the English and the weave (weave.ts strayMarks): a marked one, marked (mw-5r3p30.817), and in the Septuagint Weave each one he knows (WovenVerse.unheld, mw-u2w5klk.349.124)
+  const strays: StrayMarks = view === 'greek' ? { before: new Map(), end: [] } : straysOf(verse, woven, marked);
+  const strayWord = (i: number) => {
+    const isMark = marked?.has(i) === true;
+    return (
+      <Tap key={`w${i}`} still={still} data-word={String(i)} data-marked={isMark ? '' : undefined} {...own} dir={ownDir} className={`${face} text-accent ${TAP_PAD} ${isMark ? MARKED : ''}`} onTap={() => lookGreek(verse.g[i])} onLongPress={() => sayGreek(verse.g[i], ownSpeech)}>
+        {verse.g[i].t}
+      </Tap>
+    );
+  };
   // the variant units (mw-9ji6ek0.5): their words or chunks marked, a brace after them; a verse on a card (still) has none
   const plan = still ? NO_PLAN : planVariants(verse, view, woven, variants, chosen);
   const bracesAt = (items: readonly { shown: ShownUnit; language: 'greek' | 'english' }[] | undefined): Drawn[] =>

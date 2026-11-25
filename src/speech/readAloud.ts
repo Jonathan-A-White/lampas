@@ -17,7 +17,7 @@ import { spanOf, type ChapterTimings } from '../data/audioTimings';
 import { loadChapter, type SourceLanguage, type Verse } from '../data/chapter';
 import { neighbours } from '../data/neighbours';
 import type { ReaderView } from '../data/repositories';
-import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
+import { chunkText, drawnPieces, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
 import { septuagintVerseView } from '../reader/septuagint';
@@ -71,9 +71,11 @@ export function runsOf(verse: Verse, chapterView: ReaderView, woven: WovenVerse 
   const parts: Run[] =
     view === 'greek'
       ? verse.g.map((w) => ({ text: w.t, language }))
-      : drawnOrder(verse, woven).map((i) => {
-          const words = woven?.[i]?.words;
-          return words ? { text: words.map((w) => w.t).join(' '), language } : { text: chunkText(verse, woven, i), language: 'english' as const };
+      : drawnPieces(verse, woven).map((piece) => {
+          // a Greek word no chunk holds is said in Greek where it stands (the Septuagint Weave, mw-u2w5klk.349.124)
+          if ('word' in piece) return { text: verse.g[piece.word].t, language };
+          const words = woven?.[piece.chunk]?.words;
+          return words ? { text: words.map((w) => w.t).join(' '), language } : { text: chunkText(verse, woven, piece.chunk), language: 'english' as const };
         });
   const runs: Run[] = [];
   for (const part of parts) {

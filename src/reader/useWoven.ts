@@ -3,7 +3,8 @@
 import { useMemo } from 'react';
 import { sourceLanguage, type Chapter, type GreekWord } from '../data/chapter';
 import { formPasses } from '../data/grammar/formLevel';
-import { weaveVerse, withBeside, withGone, withWordRule, wovenInOrder, type WeaveLemmas, type WovenVerse } from '../data/weave';
+import { weaveVerse, withBeside, withGone, withUnheld, withWordRule, wovenInOrder, type WeaveLemmas, type WovenVerse } from '../data/weave';
+import { isSeptuagint } from './septuagint';
 import type { ReaderSettings } from './useReaderSettings';
 
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
@@ -25,10 +26,13 @@ export function wovenOf(chapter: Chapter | null, settings: Partial<ReaderSetting
         : (w: GreekWord) => formPasses(w.p, levels, weaveGrammar);
   const lemmas: WeaveLemmas = { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined, formPasses: formOk };
   // each verse's weave carries the rule for a single Greek word, which a variant chip follows word by word (mw-9ji6ek0.37)
-  // and the Greek words he knows that an English chunk still hides are shown beside it (mw-5r3p30.878); an English word added by design falls away between woven chunks (mw-u2w5klk.349.69)
+  // and the Greek words he knows that an English chunk still hides are shown beside it (mw-5r3p30.878); an English word added by design falls away between woven chunks (mw-u2w5klk.349.69);
+  // in the Septuagint a Greek word he knows that no chunk holds is drawn in its own place (mw-u2w5klk.349.124)
+  const septuagint = isSeptuagint(chapter);
   return chapter.verses.map((v) => {
     const woven = weaveVerse(v, lemmas);
-    return withWordRule(withGone(withBeside(wovenInOrder(v, woven, weaveOrder ?? 'english'), v, lemmas), v), lemmas);
+    const shown = withWordRule(withGone(withBeside(wovenInOrder(v, woven, weaveOrder ?? 'english'), v, lemmas), v), lemmas);
+    return septuagint ? withUnheld(shown, v, lemmas) : shown;
   });
 }
 

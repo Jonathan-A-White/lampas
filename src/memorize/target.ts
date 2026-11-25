@@ -2,7 +2,7 @@
 // of the moment. tokensOf is pure; memorizeTarget reads a canonical reference through refs.ts. The weave is never stored: it is wovenOf's, over his
 // words and the Reader's Weave settings as they are when it is asked, so a verse that has moved toward Greek is judged against the Greek.
 import { sourceLanguage, type SourceLanguage, type Verse } from '../data/chapter';
-import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
+import { chunkText, drawnPieces, type WovenVerse } from '../data/weave';
 import { wovenOf } from '../reader/useWoven';
 import type { ReaderSettings } from '../reader/useReaderSettings';
 import { versesOf } from './refs';
@@ -37,7 +37,10 @@ export function tokensOf(verse: Verse, lang: TargetLang, woven?: WovenVerse | nu
   const own = source === 'hbo' ? 'he' : 'el';
   if (lang === 'el' || lang === 'he') return verse.g.map((w, i) => ({ text: wordText(w.t, source), lang: own, chunk: w.e ?? -1, word: i }));
   if (lang === 'en') return verse.e.flatMap((c, i) => wordsOf(c.t).map((text): Token => ({ text, lang: 'en', chunk: i })));
-  return drawnOrder(verse, woven ?? null).flatMap((i): Token[] => {
+  return drawnPieces(verse, woven ?? null).flatMap((piece): Token[] => {
+    // a source word no chunk holds is said in its own language where it stands (the Septuagint Weave, mw-u2w5klk.349.124)
+    if ('word' in piece) return [{ text: wordText(verse.g[piece.word].t, source), lang: own, chunk: -1, word: piece.word }];
+    const i = piece.chunk;
     if (woven?.[i]) return verse.e[i].g.map((g) => ({ text: wordText(verse.g[g].t, source), lang: own, chunk: i, word: g }));
     return wordsOf(chunkText(verse, woven, i)).map((text): Token => ({ text, lang: 'en', chunk: i }));
   });

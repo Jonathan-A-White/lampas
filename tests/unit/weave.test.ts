@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter, GreekWord, Verse } from '../../src/data/chapter';
-import { chunkOrder, chunkText, drawnOrder, goneOf, weaveVerse, wovenInOrder } from '../../src/data/weave';
+import { chunkOrder, chunkText, drawnOrder, drawnPieces, goneOf, unheldVerse, weaveForTeaching, weaveVerse, withUnheld, wovenInOrder } from '../../src/data/weave';
+import { weaveDiagramWords } from '../../src/diagram/weave';
+import type { DiagramWords } from '../../src/diagram/types';
 import { wovenOf } from '../../src/reader/useWoven';
 import { alignChapter } from '../../scripts/lxx/align';
 
@@ -246,5 +248,64 @@ describe('an added English word falls away once the words around it are in Greek
       expect(goneIn(chapter, ['Χριστός'], 'greek')[1]).toBe(true);
       expect(goneIn(chapter, ['ἐν'], 'greek')[1]).toBe(false);
     });
+  });
+});
+
+// mw-u2w5klk.349.124 (the Governor: every Greek word shows in every weave and order): a Septuagint word he knows that no English chunk holds is drawn in its own place, before the chunk that holds the next Greek word, or after the last.
+describe('a Greek word no chunk holds', () => {
+  // ὁ(0) θεός(1) ἐν(2) αὐτός(3) γάρ(4): the English holds θεός, αὐτός; ὁ, ἐν and γάρ have none
+  const lxxVerse: Verse = {
+    n: 1,
+    g: [word('ὁ', 'ὁ'), word('θεὸς', 'θεός'), word('ἐν', 'ἐν'), word('αὐτῷ', 'αὐτός'), word('γάρ', 'γάρ')],
+    e: [{ t: 'in him', g: [3], y: 'model' }, { t: 'God', g: [1], y: 'model' }],
+  };
+  const all = new Set(['ὁ', 'θεός', 'ἐν', 'αὐτός', 'γάρ']);
+  const weave = (solid: ReadonlySet<string>, order: 'english' | 'greek' = 'english') => withUnheld(wovenInOrder(lxxVerse, weaveVerse(lxxVerse, { solid }), order), lxxVerse, { solid });
+
+  it('is each one he knows, and only those', () => {
+    expect([...unheldVerse(lxxVerse, { solid: all })]).toEqual([0, 2, 4]);
+    expect([...unheldVerse(lxxVerse, { solid: new Set(['ἐν']) })]).toEqual([2]);
+    expect([...unheldVerse(lxxVerse, { solid: new Set(['θεός']), learning: new Set(['γάρ']) })]).toEqual([4]);
+    expect([...unheldVerse(lxxVerse, { solid: all, formPasses: (w) => w.t !== 'ὁ' })]).toEqual([2, 4]);
+    expect([...unheldVerse(lxxVerse, { solid: new Set<string>() })]).toEqual([]);
+  });
+
+  it('is drawn before the chunk that holds the next Greek word, or after the chunk of the last, in the English order', () => {
+    expect(drawnPieces(lxxVerse, weave(all))).toEqual([{ word: 2 }, { chunk: 0 }, { word: 0 }, { word: 4 }, { chunk: 1 }]);
+  });
+
+  it('stands in the Greek word order in the Greek order', () => {
+    expect(drawnPieces(lxxVerse, weave(all, 'greek'))).toEqual([{ word: 0 }, { chunk: 1 }, { word: 2 }, { chunk: 0 }, { word: 4 }]);
+  });
+
+  it('is drawn when no chunk is known, and when the verse has no chunk at all', () => {
+    expect(drawnPieces(lxxVerse, weave(new Set(['ἐν'])))).toEqual([{ word: 2 }, { chunk: 0 }, { chunk: 1 }]);
+    const bare: Verse = { ...lxxVerse, e: [] };
+    expect(drawnPieces(bare, withUnheld(weaveVerse(bare, { solid: all }), bare, { solid: all }))).toEqual([0, 1, 2, 3, 4].map((w) => ({ word: w })));
+  });
+
+  it('is the Septuagint\'s only: wovenOf leaves a New Testament verse as it was', () => {
+    const settings = { view: 'english' as const, weave: 'solid' as const, weaveShown: true, weaveGrammar: 'any' as const, learning: new Set<string>(), levels: new Map(), solid: all };
+    const chapter: Chapter = { ...genesis1, lang: undefined, verses: [lxxVerse] };
+    expect(wovenOf(chapter, settings)?.[0].unheld).toBeUndefined();
+    expect(drawnPieces(lxxVerse, wovenOf(chapter, settings)?.[0] ?? null)).toEqual([{ chunk: 0 }, { chunk: 1 }]);
+    expect([...(wovenOf({ ...chapter, edition: 'swete' }, settings)?.[0].unheld ?? [])]).toEqual([0, 2, 4]);
+  });
+
+  it('is in the teach sheet\'s weave of a Septuagint verse, the new word too', () => {
+    expect([...(weaveForTeaching(lxxVerse, new Set(['ὁ']), 'ἐν', true).unheld ?? [])]).toEqual([0, 2]);
+    expect(weaveForTeaching(lxxVerse, new Set(['ὁ']), 'ἐν').unheld).toBeUndefined();
+  });
+
+  it('is drawn in the Diagram with the word it stands before, Greek or English, and after the last one', () => {
+    const words: DiagramWords = [{ text: 'in', chunk: 0 }, { text: 'him', chunk: 0 }, { text: 'God', chunk: 1 }];
+    // only ἐν, ὁ and γάρ known: αὐτῷ stays English; ἐν goes before 'in', ὁ and γάρ before 'God'
+    const english = weaveDiagramWords(words, [lxxVerse], () => weave(new Set(['ἐν', 'ὁ', 'γάρ'])));
+    expect(english.map((w) => w.text)).toEqual(['ἐν in', 'him', 'ὁ γάρ God']);
+    expect(english.map((w) => ('beside' in w ? w.beside : undefined))).toEqual([[2], undefined, [0, 4]]);
+    // all of them known: the chunks are Greek, the unheld words are drawn with them
+    const greek = weaveDiagramWords(words, [lxxVerse], () => weave(all, 'greek'));
+    expect(greek.map((w) => w.text)).toEqual(['ἐν αὐτῷ γάρ', '', 'ὁ θεὸς']);
+    expect(greek.map((w) => ('weft' in w ? w.weft : undefined))).toEqual([[2, 3, 4], [], [0, 1]]);
   });
 });
