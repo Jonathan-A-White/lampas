@@ -188,27 +188,27 @@ describe("copywork never calls a Hebrew yod or vav missing whose own point is on
   });
 });
 
-// mw-fnvjof.17.297: on both Hebrew Genesis 1:1 pages (`hbo-perfect-genesis-1-1`, `hbo-dictation-sounds-alike-genesis-1-1`) the right fifth word, whose shin carries a
-// dagesh inside and the shin dot above, was now and then marked wrong, 'the dagesh inside the shin is missing; you wrote הַשָׁמַיִם': the model found the dot above and took
-// it for the letter's only dot. The paragraph already says the two are two dots in two places, and was skimmed (mw-5r3p30.982, .1244); like the yod, it is said once
-// more as one short line in `## Never`, which the model heeds. It sends him to look inside the letter; it excuses no dagesh that is truly not there (hbo-errors-genesis-1-1
-// still catches its planted faults). The live proof is those two examples, which hold words.4 right.
-describe("copywork never calls a shin's or sin's dagesh missing for having found its dot above", () => {
+// mw-fnvjof.17.297: on both Hebrew Genesis 1:1 pages (`hbo-perfect-genesis-1-1`, `hbo-dictation-sounds-alike-genesis-1-1`) the right fifth word was now and then marked
+// wrong for a mark the page has: 'the dagesh inside the shin is missing; you wrote הַשָׁמַיִם', 'the yod is missing'. A Never line naming the shin's dagesh primed the
+// fault it named (6 false wrongs in 60 runs against 1 in 60 without it, the first word's hiriq 'missing' as well: mw-5r3p30.989 again), so the line names no mark: the
+// paragraph's 'more often overlooked than absent' moved into `## Never`, which the model heeds, as a second look before a point, dot or small letter is called missing.
+// It excuses nothing truly not there (hbo-errors-genesis-1-1 still catches its planted faults). The live proof is those two examples, which hold words.4 right.
+describe('copywork looks a second time before it calls a Hebrew mark or small letter missing', () => {
   const never = text.slice(text.indexOf('\n## Never'));
-  const line = never.split('\n').find((l) => l.includes('dagesh of a shin or sin')) ?? '';
+  const line = never.split('\n').find((l) => l.includes('looked at its place a second time')) ?? '';
 
-  it('says it in the Never list, once', () => {
-    expect(line).toMatch(/^- Never call the dagesh of a shin or sin missing because you found the dot above it/);
-    expect(text.match(/dagesh of a shin or sin/g) ?? []).toHaveLength(1);
+  it('says it in the Never list, once, and no longer in the paragraph', () => {
+    expect(line).toMatch(/^- Never mark a Hebrew word `wrong` for a point, dot or small letter you did not see at first glance before you have looked at its place a second time/);
+    expect(text.match(/more often overlooked than absent/g) ?? []).toHaveLength(1);
+    expect(hebrew).not.toMatch(/more often overlooked than absent/);
   });
 
-  it('sends him inside the letter for the second dot before he marks the word wrong', () => {
-    expect(line).toMatch(/second dot, inside the body of the letter/);
-    expect(line).toMatch(/look there before you mark the word `wrong`/);
+  it('still makes a mark missing on bare paper', () => {
+    expect(line).toMatch(/only bare paper there makes it missing/);
   });
 
-  // a worked word primes the model to find a fault in it (mw-5r3p30.989)
-  it('names no Hebrew word or letters of the examples', () => {
-    expect(line).not.toMatch(/[֐-׿]/);
+  // a worked word or a named mark primes the model to find that fault (mw-5r3p30.989, and this story's first try)
+  it('names no Hebrew word, letter or particular mark', () => {
+    expect(line).not.toMatch(/[֐-׿]|dagesh|shin|yod|vav|hiriq/);
   });
 });

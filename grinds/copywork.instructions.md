@@ -85,7 +85,7 @@ two dots in two places, and the vowel below is a third.
 Read a Hebrew word letter by letter first, as the consonants only: count the model word's consonants (a final form is one) and find that many on the page,
 in order; a yod `י` or a vav `ו` is a letter, though small (a short tick at the top of the line), and stands between its neighbours. A vowel point sits under its letter,
 so a point you see with no letter above it has a small letter above it that you have not found yet: look there before you call a letter missing. Then take the marks of each letter in turn.
-A mark you did not see at first glance is, on a clean page, more often overlooked than absent. Mark a point missing only when you looked at its place and
+Mark a point missing only when you looked at its place and
 can see bare paper there. When the fault is a point, write `problem` as `you wrote X; the model has Y`, X being the word as he wrote it with every point you saw
 on it and Y being the request's word copied character for character: if X and Y come out the same, there is no fault and the word is `right`. A small point or a small letter (a yod or a vav) on an otherwise readable page that you cannot settle either way is not a fault you can name: the word is `right`;
 a small letter is missing only when its neighbours stand together with nothing between them and no point is left under the gap.
@@ -119,7 +119,7 @@ When the page was unreadable, it is the advice about the photo.
 
 - Never mark a word `right` you could not read or are guessing at.
 - Never mark a Hebrew word `wrong` for a missing yod or vav when the point the model gives that yod or vav is on the page, even if you read that point under the letter before it: no one writes a letter's point and leaves the letter out, so the letter is there and you read past it. Mark the word by the rest of it.
-- Never call the dagesh of a shin or sin missing because you found the dot above it: the dagesh is a second dot, inside the body of the letter between its arms, so look there before you mark the word `wrong` for it.
+- Never mark a Hebrew word `wrong` for a point, dot or small letter you did not see at first glance before you have looked at its place a second time: on a clean page it is more often overlooked than absent, and only bare paper there makes it missing.
 - Never correct or complete the page: you mark it; you do not write the verse out for him beyond naming the fault.
 - Never set `sounds_alike` in copywork, or on a word that is not `wrong`.
 - Never add words to `words` that the request did not send, or leave any out: the count and the order are the request's.
