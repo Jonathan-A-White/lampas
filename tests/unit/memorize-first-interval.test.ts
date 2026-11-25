@@ -106,6 +106,20 @@ describe('advanceStep on a real review', () => {
     expect(await memorizedRowOf(ref, 'en')).toMatchObject({ step: 1, due: day2 + 500 + gapOf(1) });
   });
 
+  it('a review day climbed with Next step in one sitting (mw-5r3p30.1218) is due tomorrow at the last step, not after the growth rule\'s long gap', async () => {
+    await memorize(ref, ['en'], D);
+    await recordRecall(recall('en', 1, 0), D);
+    const day2 = D + DAY;
+    await recordRecall(recall('en', 1, 0), day2);
+    for (let step = 0; step < RARE_STEP; step++) {
+      if (step > 0) await recordRecall(recall('en', 1, step), day2 + step * 1000);
+      await advanceStep(ref, 'en', step, day2 + step * 1000 + 500);
+    }
+    const row = await memorizedRowOf(ref, 'en');
+    expect(row?.step).toBe(RARE_STEP);
+    expect(startOfDay(row?.due ?? 0)).toBe(startOfDay(day2) + DAY); // due the day after the review day (D+2)
+  });
+
   it('a verse with no recall at all and a due day come is put on the schedule and held to tomorrow, as a climb of the sitting', async () => {
     await advanceStep(ref, 'en', 0, D);
     expect(await memorizedRowOf(ref, 'en')).toMatchObject({ step: 1, due: D + DAY });

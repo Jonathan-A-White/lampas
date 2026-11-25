@@ -150,17 +150,24 @@ export async function recordRecall(input: RecallInput, now = Date.now()): Promis
 const inLearningSitting = (recalls: readonly RecallRow[], now: number): boolean => recalls.every((r) => startOfDay(r.when) >= startOfDay(now));
 
 /**
+ * Whether he is already climbing today (mw-5r3p30.1218): a recall of this verse today at a step below `from` means an earlier Next step of this sitting brought the session up to
+ * `from`, so this Next step is the climb of a review day and earns no review gap either. The first Next step of a review day (no recall today below `from`) keeps the growth rule.
+ */
+const climbingToday = (recalls: readonly RecallRow[], from: number, now: number): boolean => recalls.some((r) => startOfDay(r.when) === startOfDay(now) && r.rung < from);
+
+/**
  * Next step (mw-5r3p30.1145): after a passing recall of step `from` he moves the verse on at once. The row goes to the step after `from` (the last step at most), no rights counted
  * towards the next advance. In the sitting he began learning the verse in (no recall of it on an earlier day) the climb earns no review gap: the verse is due tomorrow, whatever step
  * it reaches (mw-5r3p30.1200, Jeremiah 17:9 climbed to step 7 of 7 and was due in 90 days); a verse he has recalled on an earlier day, a real review, is due after the gap of the step it
- * moves to. A verse that is not on the schedule is put there. Publishes 'memorize-due-changed'.
+ * moves to, but only for the first Next step of that day: one that follows a recall of a lower step the same day is a climb too and is due tomorrow (mw-5r3p30.1218). A verse that is not on the schedule is put there. Publishes 'memorize-due-changed'.
  */
 export async function advanceStep(ref: string, lang: MemorizeLang, from: number, now = Date.now()): Promise<void> {
   await db.transaction('rw', db.reviews, db.recalls, async () => {
     const id = verseId(ref, lang);
     const before = await db.reviews.get([VERSE_KIND, id]);
     const step = Math.min(RARE_STEP, Math.max(0, Math.trunc(from)) + 1);
-    const learning = inLearningSitting(await db.recalls.where('[ref+lang]').equals([ref, lang]).toArray(), now);
+    const recalls = await db.recalls.where('[ref+lang]').equals([ref, lang]).toArray();
+    const learning = inLearningSitting(recalls, now) || climbingToday(recalls, Math.max(0, Math.trunc(from)), now);
     await db.reviews.put({ lapses: 0, ...before, kind: VERSE_KIND, id, step, due: now + (learning ? Math.min(DAY, gapOf(step)) : gapOf(step)), lastWhen: now, rights: 0 });
   });
   await announceDueVerses(now);
