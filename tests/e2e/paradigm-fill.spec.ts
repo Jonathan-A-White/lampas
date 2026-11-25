@@ -1,6 +1,6 @@
 // Fill the table (mw-fnvjof.17.316), at 390x844: the Drill the other way round. 'Fill the table' empties the cells the filter shows and lays their forms, shuffled, as tiles under the table;
 // a tap on a tile then on a cell (or a drag) places it: a right one stays, a wrong one goes back with a shake; Show fills the rest; the first slip puts the table in Review, due now.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -49,6 +49,17 @@ const cells = (page: Page, state: string) => page.locator(`[data-cell][data-stat
 const tiles = (page: Page) => page.getByTestId('fill-tray').locator('[data-tile]');
 const tile = (page: Page, form: string) => tiles(page).filter({ hasText: new RegExp(`^${form}$`) }).first();
 const cell = (page: Page, place: string) => page.locator(`[data-cell="${place}"]`);
+/** A real drag by hand, in steps: the mouse goes down on the tile, leaves it a little (the browser starts the drag only on a move after the press), then walks to the cell and lets go. */
+async function drag(page: Page, from: Locator, to: Locator) {
+  await from.scrollIntoViewIfNeeded();
+  const a = (await from.boundingBox())!;
+  const b = (await to.boundingBox())!;
+  await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(a.x + a.width / 2 + 8, a.y + a.height / 2 - 8, { steps: 4 });
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 12 });
+  await page.mouse.up();
+}
 const extent = (page: Page, name: string) => page.getByRole('group', { name: 'How much of a table', exact: true }).getByRole('button', { name, exact: true });
 
 test('Fill the table empties the cells and lays the forms as tiles: a right tile stays, a wrong one goes back with a shake, a drag places, Show fills the rest', async ({ page }) => {
@@ -90,7 +101,7 @@ test('Fill the table empties the cells and lays the forms as tiles: a right tile
   await expect(tiles(page)).toHaveCount(11);
 
   // a drag works too
-  await tile(page, 'ὁ').dragTo(cell(page, 'Nominative Singular Masculine'));
+  await drag(page, tile(page, 'ὁ'), cell(page, 'Nominative Singular Masculine'));
   await expect(cell(page, 'Nominative Singular Masculine')).toHaveText('ὁ');
   await expect(tiles(page)).toHaveCount(10);
   await expect(cells(page, 'empty')).toHaveCount(10);
