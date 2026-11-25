@@ -17,7 +17,6 @@ import { TutorLinks } from '../../src/TutorLinks';
 import { Turn } from '../../src/Talk';
 import type { TalkTurn } from '../../src/data/db';
 import { afterTurns } from '../support/turns';
-import { ASYNC_WAIT_MS } from '../support/timeouts';
 import { dropHeldTalk, heldTalk } from '../../src/talkReturn';
 
 const scope: TalkScope = {
@@ -121,7 +120,7 @@ const shownTurn = async (turn: TalkTurn, overRun: boolean): Promise<HTMLElement>
     </OverRun.Provider>,
   );
   // the lookups have answered: the list is drawn, or its hidden mark that it has nothing to draw
-  await waitFor(() => expect(document.querySelector('[data-tutor-links], [data-tutor-links-done]')).not.toBeNull(), { timeout: ASYNC_WAIT_MS });
+  await waitFor(() => expect(document.querySelector('[data-tutor-links], [data-tutor-links-done]')).not.toBeNull());
   await act(async () => {
     await afterTurns();
   });
