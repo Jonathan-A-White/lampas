@@ -57,6 +57,7 @@
     "lxx:unpaired": "tsx scripts/lxx/unpaired.ts",
     "variants:sweep": "tsx scripts/variants-sweep.ts",
     "variants:align": "tsx scripts/variants-align.ts",
+    "ew:sections": "tsx scripts/enduring-word-sections.ts",
     "maps:build": "tsx scripts/maps-build.ts",
     "places:build": "tsx scripts/places-build.ts",
     "sermons:build": "tsx scripts/sermons-build.ts",

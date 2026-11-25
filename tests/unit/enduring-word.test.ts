@@ -17,6 +17,13 @@ describe('the chapter address', () => {
     expect(enduringWordUrl(book, chapter)).toBe(url);
   });
 
+  it.each([
+    ['isa', 1, 30, 'https://enduringword.com/bible-commentary/isaiah-1/#section-7'],
+    ['jhn', 3, 16, 'https://enduringword.com/bible-commentary/john-3/#section-6'],
+  ])('%s %i:%i opens at the section holding the verse', (book, chapter, verse, url) => {
+    expect(enduringWordUrl(book, chapter, verse)).toBe(url);
+  });
+
   it('holds a slug for each of the 66 books and none for a book it has not', () => {
     expect(Object.keys(ENDURING_WORD_SLUGS).sort()).toEqual(BOOKS.map((b) => b.code).sort());
     expect(new Set(Object.values(ENDURING_WORD_SLUGS)).size).toBe(66);
