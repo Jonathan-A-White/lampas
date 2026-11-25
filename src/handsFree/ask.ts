@@ -8,13 +8,14 @@
 //  - What the answer asks the app to do runs as it does for a typed question (useTalk): a free or undoable command, or a place; a command that needs his tap is not run, its offer waits in the Talk, and the words are still spoken.
 //  - When the tutor cannot answer it says 'The tutor could not answer' and the reason the Talk shows, and the exchange closes. With no Reader on screen it says 'Open a chapter first'.
 //  - A sermon the answer plays (the tutor's play-sermon, docs/sermons.md 'Play by asking') starts in the app's player when the speaking ends, with no tap.
-//  - A wake while the answer is spoken (the kit's onInterrupt, `interruptAsk`) stops the speaking and opens a new command; the Talk keeps the turn.
+//  - A wake while the answer is waited for (the kit's onInterrupt, `interruptAsk`) cuts the question short and opens a new command; the Talk keeps the turn. While the answer is spoken no
+//    microphone is open (session.ts, mw-rl10piw.74), so the wake word is not heard then: a tap on Stop cuts it instead, and the exchange closes (no follow-up, no sermon it named).
 import type { CommandDone } from 'voice-kit/handsfree';
 import { tutorSeat } from '../nav/tutorSeat';
 import { FAILURE_TITLES } from '../services/tutor';
 import { answerRuns } from '../speech/answerRuns';
 import { stopIfSpeaking } from '../speech/greek';
-import { getReading, stopReading, subscribeReading } from '../speech/readAloud';
+import { getReading, readingEndedWhole, stopReading, subscribeReading } from '../speech/readAloud';
 import { startAnswerWhenSeen } from '../speech/tutorVoice';
 import { dropQueuedSermon, playQueuedSermon } from '../sermons/player';
 import { parkForAnswer, SAID_KEY } from './playback';
@@ -57,7 +58,8 @@ let asking: Asking | null = null;
 /** The Talk sheet is open because Hands-free opened it ('tutor'): a command of the first set said in it puts it away; a sheet he opened himself is left. */
 let openedByVoice = false;
 
-/** Speaks the answer `id` (`answer`) in the voices of a spoken answer and resolves when it has been said, or cut by a wake (`stop`). */
+/** Speaks the answer `id` (`answer`) in the voices of a spoken answer and resolves when it has been said, or cut by a wake (`stop`); a Stop he tapped (the speaking bar, the
+ * answer's speaker) cuts it too (mine.cancelled), as a wake would: while the tutor speaks no microphone is open (session.ts, mw-rl10piw.74), so his tap is the way to cut it. */
 function speakAnswer(id: number, answer: string, mine: Asking): Promise<void> {
   return new Promise((resolve) => {
     const runs = answerRuns(answer);
@@ -71,7 +73,10 @@ function speakAnswer(id: number, answer: string, mine: Asking): Promise<void> {
     if (runs.length === 0) return done();
     mine.stop = done;
     unwatch = subscribeReading(() => {
-      if (getReading().answer !== id) done();
+      const reading = getReading();
+      if (reading.answer === id) return;
+      if (reading.status === 'idle' && !readingEndedWhole()) mine.cancelled = true;
+      done();
     });
     startAnswerWhenSeen(id, runs);
     // the page was hidden and the answer waits for his return, or nothing could be spoken: nothing to wait for

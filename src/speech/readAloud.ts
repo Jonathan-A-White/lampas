@@ -197,6 +197,7 @@ function finish(my: number, natural = false): void {
   letSleep();
   suspended = null;
   completed = natural ? state.listen : null;
+  endedWhole = natural;
   set(IDLE);
   publish({ kind: 'reading-stopped' });
 }
@@ -227,7 +228,7 @@ function syncWithEngine(): void {
   const my = epoch;
   queueMicrotask(() => {
     // a recorded reading never holds the package: its speech ending (a phone reading it took over from) is not its end
-    if (my !== epoch || state.status === 'idle' || state.crossing || loading || clipping || recording) return;
+    if (my !== epoch || state.status === 'idle' || state.crossing || loading || clipping || recording || gatedEpoch === epoch) return;
     const now = getSpeech();
     if (now.status === 'idle') return finish(my);
     if (now.key === READ_KEY) return;
@@ -517,8 +518,29 @@ export function startReading(options: StartOptions): void {
   keepAwake();
   // the narrator's announcement ('Audio Bible, John chapter one') belongs to a chapter, a book or the Bible read from its beginning, not to one verse or a pericope (mw-82lb97i.28)
   const title = options.title !== false && reach !== 'verse' && reach !== 'passage' && options.plan[0]?.n === options.from;
-  if (options.recorded && playFromRecording(options.recorded, options.from, epoch, title)) return;
-  readVerse(options.from, epoch);
+  const my = epoch;
+  const begin = (): void => {
+    if (my !== epoch) return;
+    gatedEpoch = -1;
+    if (options.recorded && playFromRecording(options.recorded, options.from, my, title)) return;
+    readVerse(options.from, my);
+  };
+  // an answer (the tutor's, or a text a speaker reads; not a Listen, which is the Bible's text) starts once Hands-free has let go of the microphone (answerGate, mw-rl10piw.74); with no
+  // microphone open the gate goes on at once
+  if (options.answer !== undefined && options.listen === undefined && answerGate) {
+    gatedEpoch = my;
+    answerGate(begin);
+  } else begin();
+}
+
+/** Waits, before an answer's voice starts, for the microphone to be let go (src/handsFree/session.ts sets it): `go` is called once, at once when no microphone is open. */
+let answerGate: ((go: () => void) => void) | null = null;
+/** The reading of this epoch waits at the gate: the engine is silent meanwhile, and the reading is not over. */
+let gatedEpoch = -1;
+
+/** Sets the wait an answer's voice takes before it starts (Hands-free: the wake's microphone shut and settled, mw-rl10piw.74), or none. */
+export function setAnswerGate(gate: ((go: () => void) => void) | null): void {
+  answerGate = gate;
 }
 
 /** The Reader that opened the chapter a reading was going on into hands over that chapter's plan, and the voice starts its
@@ -750,6 +772,12 @@ export const listenKeyOf = (book: string, chapter: number, unit: string): string
 /** The key of the Listen that last ran to its end by itself, or null: how a reading's owner tells its end from a Stop. */
 export const listenCompletedNow = (): string | null => completed;
 
+/** The last reading ran to its end by itself (not stopped: Stop on the bar or its speaker, another speech taking the voice). */
+let endedWhole = false;
+
+/** Whether the reading that last ended ran to its end by itself (Hands-free 'ask': an answer he stopped is cut, as a wake cut it, mw-rl10piw.74). */
+export const readingEndedWhole = (): boolean => endedWhole;
+
 /** The Listen that last ran to its end by itself, or null (it offers Play again). */
 export function useListenCompleted(): string | null {
   return useSyncExternalStore(subscribe, () => completed, () => completed);
@@ -757,6 +785,7 @@ export function useListenCompleted(): string | null {
 
 /** Stops for good. */
 export function stopReading(): void {
+  endedWhole = false;
   if (state.status === 'idle') {
     if (completed !== null) {
       completed = null;
