@@ -506,7 +506,12 @@ describeFeature(feature, ({ Scenario }) => {
       expect(screen.queryByRole('group', { name: 'Order' })).toBeNull();
     });
     When('he turns the Weave on in Settings', async () => {
-      await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
+      const weave = within(await screen.findByRole('group', { name: 'Weave' }));
+      await user.click(weave.getByRole('button', { name: 'Solid' }));
+      // the write lands, then the Weave row follows it by a live query, and the Grammar and Order rows are drawn after that (mw-3ased2.2):
+      // wait on each before the next step looks for a row, so a loaded host's slow write is not read as a missing row
+      await waitFor(async () => expect(await getWeave()).toBe('solid'));
+      await waitFor(() => expect(weave.getByRole('button', { name: 'Solid' })).toHaveAttribute('aria-pressed', 'true'));
     });
     Then('the Order row comes after the Grammar row and offers {string} and {string}', async (_, a: string, b: string) => {
       const order = await screen.findByRole('group', { name: 'Order' });
