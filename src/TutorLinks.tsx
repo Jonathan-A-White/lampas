@@ -10,7 +10,9 @@ import { getLogosBibles, getStudyResources, getWorks, setResourceOn, offeredShel
 import { offeredBibleFor } from './library/bibleParts';
 import { openParadigm, openReader, paradigmHash } from './nav/route';
 import { useOffRun } from './overRun';
-import { paradigmById } from './data/paradigms';
+import { paradigmById, type Paradigm } from './data/paradigms';
+import { TableAt } from './ParadigmsScreen';
+import { Layer } from './review/StudyLayer';
 import { holdTalk } from './talkReturn';
 import { rowOf } from './settings/rows';
 import { openSetting, settingLink } from './settings/link';
@@ -139,8 +141,8 @@ interface Group {
   place?: { book: string; chapter: number; verse?: number };
   /** the key of a setting link: its chip opens Settings at that row */
   setting?: string;
-  /** a paradigm link: its chip opens that table (openParadigm) and holds the talk, so Back brings the sheet back */
-  paradigm?: { id: string; name: string };
+  /** a paradigm link: its chip opens that table (openParadigm) and holds the talk, so Back brings the sheet back; over a run (`layer`) it opens the table as a layer over the talk instead */
+  paradigm?: { id: string; name: string; layer: boolean };
   /** a map link: its chip opens that map in the app (openMaps), or, for a card of a link-only source (`open`), is a link to it */
   map?: { id: string; label: string; open?: { url: string; fallback?: string } };
   /** a sermon link: its chip is a plain link to where the sermon lives (a Logos row arms its fallback; a text sermon read aloud opens the reader), and does not close the Talk sheet */
@@ -167,6 +169,8 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
   const sermonRows = useTalkSermons(place && shown.some((l) => l.kind === 'sermon') ? { book: place.book, chapter: place.chapter, ...(verse === undefined ? {} : { from: verse }) } : null);
   const strongs = useStrongs(shown.flatMap((l) => (l.kind === 'word' ? [l.lemma.normalize('NFC')] : [])));
   const [missing, setMissing] = useState<StudyResource | null>(null);
+  // the table a paradigm chip opened as a layer over a run
+  const [layer, setLayer] = useState<Paradigm | null>(null);
   // a chip that opens a page of this app (the Reader, Settings, a table, the Maps screen) leaves the screen the talk is over: in a talk over a run (a drill's floating ?, the
   // lesson's, a miss's Ask the tutor) the one guard gives nothing for it and the chip is not drawn (src/overRun.ts, mw-indx1x6.57). The chips that open another app or a new tab,
   // Copy and Share leave nothing, and stay.
@@ -185,9 +189,10 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
       const row = offRun(settingLink(link.key) ? rowOf(link.key) : undefined);
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
     } else if (link.kind === 'paradigm') {
-      // a table the Paradigms screen lacks draws nothing (the tutor was given the ids, but an id can be wrong)
-      const table = offRun(paradigmById(link.table));
-      if (table) groups.push({ key: `${i}`, name: table.name, greek: false, paradigm: { id: table.id, name: table.name }, chips: [] });
+      // a table the Paradigms screen lacks draws nothing (the tutor was given the ids, but an id can be wrong). Over a run (the talk from a drill's results) the Paradigms
+      // screen would take the run with it, so the table opens as a layer over the talk, as a Study row's does (mw-5r3p30.1248: 'Tap the link below', and no link was drawn)
+      const table = paradigmById(link.table);
+      if (table) groups.push({ key: `${i}`, name: table.name, greek: false, paradigm: { id: table.id, name: table.name, layer: offRun(false, true) === true }, chips: [] });
     } else if (link.kind === 'map') {
       const found = place && mapCards ? mapChip(link.map, mapCards) : null;
       // a map with a place of its own to open (another app, a new tab) stays; one that opens the Maps screen is a page of this app
@@ -264,7 +269,12 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
                 type="button"
                 aria-label={`Table: ${group.paradigm.name}`}
                 onClick={() => {
-                  const address = { table: (group.paradigm as NonNullable<Group['paradigm']>).id };
+                  const paradigm = group.paradigm as NonNullable<Group['paradigm']>;
+                  if (paradigm.layer) {
+                    setLayer(paradigmById(paradigm.id) ?? null);
+                    return;
+                  }
+                  const address = { table: paradigm.id };
                   if (scope) holdTalk(scope, paradigmHash(address));
                   onLeave();
                   openParadigm(address);
@@ -353,6 +363,16 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
             setMissing(null);
           }}
         />
+      ) : null}
+      {layer ? (
+        <Layer
+          title={layer.name}
+          back="Back to the talk"
+          talk={{ name: scope?.screen?.name ?? 'Paradigms', facts: [{ label: 'Showing', value: `The table ${layer.name}, which the tutor linked` }, ...(scope?.screen?.facts ?? [])], suggestions: ['How do I learn this table?', 'Which forms look alike?'] }}
+          onClose={() => setLayer(null)}
+        >
+          <TableAt table={layer} />
+        </Layer>
       ) : null}
     </>
   );
