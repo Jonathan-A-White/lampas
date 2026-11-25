@@ -4,7 +4,7 @@ Feature: Enduring Word, David Guzik's commentary on the web
   in its own reader (which opens the browser when it cannot get the words), and holds none of its text. In the "In another book…" chooser it is one row, "Enduring Word (David Guzik)", under
   "Commentaries on <book>", only where his library holds no DGCB volume of the book. Without Logos (Logos Off, or no library) the Verse view has a "Commentary" door that opens the same page.
   The page opens at the outline section whose verse range holds the verse he started from (mw-1l901so.2): the page's headings carry ids section-1, section-2 ... and name their range ("6. (16) ..."),
-  so John 3:16 opens at #section-6; a verse no range names opens the chapter's top. Lampas knows the outline of the chapters whose headings were read (John 3 so far).
+  so John 3:16 opens at #section-6; a verse no range names opens the chapter's top. Lampas holds the verse ranges, numbers only, of every chapter page that has an outline (mw-1l901so.7, npm run ew:sections).
 
   Scenario: Where his library holds the DGCB volume the chooser lists it and no Enduring Word row
     Given his library holds the DGCB volume "DGCB Is" and a commentary on John, all On
@@ -37,6 +37,13 @@ Feature: Enduring Word, David Guzik's commentary on the web
     When he taps the door "Commentary"
     Then the reader is headed "John 3 · Enduring Word"
     And the page "https://enduringword.com/bible-commentary/john-3/#section-6" is opened on the web, as the reader cannot get its words
+
+  Scenario: From Isaiah 1:30 in the Reader the Commentary door opens the Isaiah 1 page at the section holding the verse
+    Given Lampas is opened on Isaiah 1:30 with Logos Off
+    Then the Verse view has the door "Commentary", which is the link "https://enduringword.com/bible-commentary/isaiah-1/#section-7"
+    When he taps the door "Commentary"
+    Then the reader is headed "Isaiah 1 · Enduring Word"
+    And the page "https://enduringword.com/bible-commentary/isaiah-1/#section-7" is opened on the web, as the reader cannot get its words
 
   # By voice (mw-1l901so.3, PROVISIONAL, the Governor to confirm). In Hands-free the words "Enduring Word", "commentary" or "what does Guzik say" open the page of the passage he is on in the reader, at the
   # verse's section, and it reads it aloud, saying its credit line once at the start; "stop", "back", "forward" and "play" work as for a sermon. "read <place>", "next chapter" and "previous chapter" put the

@@ -121,8 +121,8 @@ let synth: FakeSynth;
 let said: string[] = [];
 let asked: string[] = [];
 
-/** Lampas is opened on John 3:16, Logos Off, the phone speaking English; `served`: the service answers the commentary's words (the reader asks for them), else it serves none of the site's. */
-async function openJohn316(served: boolean): Promise<void> {
+/** Lampas is opened on John 3:16 (or `hash`'s verse), Logos Off, the phone speaking English; `served`: the service answers John 3's commentary's words (the reader asks for them), else it serves none of the site's. */
+async function openOnVerse(served: boolean, hash = '#/?b=jhn&c=3&v=16'): Promise<void> {
   cleanup();
   closeSermonText();
   stopReading();
@@ -135,7 +135,7 @@ async function openJohn316(served: boolean): Promise<void> {
   serveTextOf(ENDURING_WORD_SOURCE, false);
   window.localStorage.clear();
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, '00'.repeat(31) + '02');
-  window.history.replaceState(null, '', '/#/?b=jhn&c=3&v=16');
+  window.history.replaceState(null, '', `/${hash}`);
   stubChapterFetch();
   synth = stubSpeech([ENGLISH_VOICE]);
   if (served) {
@@ -157,6 +157,19 @@ async function openJohn316(served: boolean): Promise<void> {
   render(<App />);
   await screen.findByRole('region', { name: 'Verse view' });
 }
+
+const doorIs = async (_: unknown, label: string, url: string) => {
+  const door = await waitFor(() => {
+    const found = [...document.querySelectorAll<HTMLAnchorElement>('a[data-enduring-word-door]')].find((a) => a.textContent === label);
+    if (!found) throw new Error(`no door ${label}`);
+    return found;
+  });
+  expect(door.getAttribute('href')).toBe(url);
+};
+const tapDoor = async (_: unknown, label: string) => {
+  const door = [...document.querySelectorAll<HTMLAnchorElement>('a[data-enduring-word-door]')].find((a) => a.textContent === label);
+  await user.click(door ?? expect.unreachable(`no door ${label}`));
+};
 
 const hear = async (_: unknown, words: string) => {
   await act(async () => {
@@ -220,19 +233,17 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('With Logos Off the Verse view has the Commentary door', ({ Given, Then, When, And }) => {
-    Given('Lampas is opened on John 3:16 with Logos Off', () => openJohn316(false));
-    Then('the Verse view has the door {string}, which is the link {string}', async (_, label: string, url: string) => {
-      const door = await waitFor(() => {
-        const found = [...document.querySelectorAll<HTMLAnchorElement>('a[data-enduring-word-door]')].find((a) => a.textContent === label);
-        if (!found) throw new Error(`no door ${label}`);
-        return found;
-      });
-      expect(door.getAttribute('href')).toBe(url);
-    });
-    When('he taps the door {string}', async (_, label: string) => {
-      const door = [...document.querySelectorAll<HTMLAnchorElement>('a[data-enduring-word-door]')].find((a) => a.textContent === label);
-      await user.click(door ?? expect.unreachable(`no door ${label}`));
-    });
+    Given('Lampas is opened on John 3:16 with Logos Off', () => openOnVerse(false));
+    Then('the Verse view has the door {string}, which is the link {string}', doorIs);
+    When('he taps the door {string}', tapDoor);
+    Then('the reader is headed {string}', readerHeaded);
+    And('the page {string} is opened on the web, as the reader cannot get its words', pageOpened);
+  });
+
+  Scenario('From Isaiah 1:30 in the Reader the Commentary door opens the Isaiah 1 page at the section holding the verse', ({ Given, Then, When, And }) => {
+    Given('Lampas is opened on Isaiah 1:30 with Logos Off', () => openOnVerse(false, '#/?b=isa&c=1&v=30'));
+    Then('the Verse view has the door {string}, which is the link {string}', doorIs);
+    When('he taps the door {string}', tapDoor);
     Then('the reader is headed {string}', readerHeaded);
     And('the page {string} is opened on the web, as the reader cannot get its words', pageOpened);
   });
@@ -243,7 +254,7 @@ describeFeature(feature, ({ Scenario }) => {
   const marksNot = 'the reader marks the paragraph {string} and is not reading';
 
   Scenario('In Hands-free on John 3:16 "Enduring Word" opens the John 3 page in the reader at section 6 and starts reading', ({ Given, When, Then, And }) => {
-    Given(served, () => openJohn316(true));
+    Given(served, () => openOnVerse(true));
     When('he says {string}', hear);
     Then(headed, readerHeaded);
     And('the service was asked for the commentary {string}', async (_, id: string) => {
@@ -256,7 +267,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('"stop", then the reading, then "Enduring Word" again goes on at the paragraph where he stopped', ({ Given, When, Then, And }) => {
-    Given(served, () => openJohn316(true));
+    Given(served, () => openOnVerse(true));
     When('he says {string}', hear);
     And('he then says {string}', hear);
     Then(marks, (_, text: string) => markedParagraph(text, 'reading'));
@@ -280,7 +291,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('The credit line is said once, at the start', ({ Given, When, Then, And }) => {
-    Given(served, () => openJohn316(true));
+    Given(served, () => openOnVerse(true));
     When('he says {string}', hear);
     Then('the first thing the phone says is the credit {string}', async (_, credit: string) => {
       expect(credit).toBe(ENDURING_WORD_CREDIT);
@@ -295,7 +306,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Where the service serves no words the page opens on the web and he is told', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on John 3:16 with Logos Off and a service that serves no words of the commentary', () => openJohn316(false));
+    Given('Lampas is opened on John 3:16 with Logos Off and a service that serves no words of the commentary', () => openOnVerse(false));
     When('he says {string}', hear);
     Then('the page {string} is opened on the web, as the reader cannot get its words', pageOpened);
     And('Hands-free says {string}', (_, line: string) => {
