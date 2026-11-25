@@ -14,6 +14,12 @@ export async function refuseChain(page: Page): Promise<void> {
   await page.route(/whatsonchain\.com/, (route) => route.abort());
 }
 
+/** The recorded voice streams from openbible.com (src/settings/definitions/bibleVoice.ts): no spec reaches the real site (mw-fnvjof.17.312). A spec that is about the recording
+ * routes it itself after openUnlocked, and a later route wins over this one (tests/e2e/recorded-voice.spec.ts). */
+export async function refuseOpenbible(page: Page): Promise<void> {
+  await page.route(/^https?:\/\/([a-z0-9-]+\.)*openbible\.com\//, (route) => route.abort());
+}
+
 export async function seedDeviceKey(page: Page, privateKeyHex: string = SEED_PRIVATE_KEY): Promise<void> {
   await page.addInitScript((hex) => window.localStorage.setItem('lampas.deviceKey', hex), privateKeyHex);
 }
@@ -41,6 +47,7 @@ export async function openUnlocked(page: Page, options: { tips?: boolean; welcom
   if (!options.empty && options.import !== false) await giveHisLibrary(page);
   if (!options.hints) await dismissScreenHints(page);
   await refuseChain(page);
+  await refuseOpenbible(page);
   await seedDeviceKey(page);
   await page.addInitScript(
     ([publicKeyHex, at]) => window.localStorage.setItem('lampas.licenceHeld', JSON.stringify({ publicKeyHex, at })),
@@ -59,6 +66,7 @@ export async function openUnlicensed(page: Page, options: { tips?: boolean; empt
   if (!options.empty && options.import !== false) await giveHisLibrary(page);
   if (!options.hints) await dismissScreenHints(page);
   await refuseChain(page);
+  await refuseOpenbible(page);
   await seedDeviceKey(page);
   await page.addInitScript(() => window.localStorage.setItem('lampas.settleMs', '0'));
   if (!options.tips) await page.addInitScript((day) => window.localStorage.setItem('lampas.tipsDay', day), today());
