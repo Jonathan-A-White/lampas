@@ -4,7 +4,7 @@
 // before it is returned, so the next opening draws it with no ask. A failure to ask at all (no licence, no answer) is the tutor's, askGrind's TutorError, and passes through.
 import type { Chapter, Verse } from '../data/chapter';
 import { DIAGRAM_VERSION, getDiagram, keepDiagram } from '../data/repositories';
-import { holdsVocative, keptVersion } from '../data/repositories/diagrams';
+import { holdsNegatedMember, holdsVocative, keptVersion } from '../data/repositories/diagrams';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askGrind, type AskOptions } from '../services/tutor';
 import { expandApart, type WireDiagram } from './apart';
@@ -95,7 +95,9 @@ export type DiagramResult =
 export async function fetchDiagram(chapter: Chapter, verses: readonly Verse[], view: DiagramMode, options: FetchDiagramOptions = {}): Promise<DiagramResult> {
   const { request, words } = buildDiagramRequest(chapter, verses, view, options.sentence);
   // a unit that holds a vocative is kept under its own mark: a tree kept before the vocative stood on its own line (mw-5r3p30.1251) is never read
-  const version = keptVersion(request.ref, view, holdsVocative((view === 'english' ? request.greek ?? [] : request.words).map((w) => w.parse)));
+  // and so is a unit with a negative before a member that has no verb of its own (mw-fnvjof.17.309)
+  const greek = view === 'english' ? request.greek ?? [] : request.words;
+  const version = keptVersion(request.ref, view, holdsVocative(greek.map((w) => w.parse)), holdsNegatedMember(greek));
   if (!options.redraw) {
     const kept = await getDiagram(request.ref, view, version);
     // a kept diagram the words no longer fit (the text changed under it) is drawn again, not shown wrong

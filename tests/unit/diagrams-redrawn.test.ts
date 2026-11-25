@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import type { Chapter } from '../../src/data/chapter';
-import { DIAGRAM_VERSION, REDRAWN, getDiagram, keepDiagram } from '../../src/data/repositories/diagrams';
+import { DIAGRAM_VERSION, REDRAWN, getDiagram, holdsNegatedMember, keepDiagram } from '../../src/data/repositories/diagrams';
 import { fetchDiagram, type AskDiagram } from '../../src/diagram/fetchDiagram';
 import { buildDiagramRequest } from '../../src/diagram/request';
 import type { Diagram } from '../../src/diagram/types';
@@ -129,6 +129,67 @@ describe('a tree kept before a vocative stood on its own line, of any verse that
       await keptBefore('Luke 5:6', lang, old);
       const { ask, asked } = askOnce(old);
       expect(await fetchDiagram(luke5, verse(6), lang, { ask, key })).toMatchObject({ ok: true, diagram: old, kept: true });
+      expect(asked).toHaveLength(0);
+    }
+  });
+});
+
+describe('a tree kept before a negative stood on its own member of a contrast (mw-5r3p30.800, mw-fnvjof.17.309)', () => {
+  // 2 Corinthians 5:7 'by faith we walk, not by sight' (περιπατοῦμεν οὐ διὰ εἴδους): οὐ (PRT-N) before a phrase with no verb of its own, as in Colossians 3:2; 2 Corinthians 5:6 holds no such negative.
+  const cor = JSON.parse(readFileSync('public/data/2co/5.json', 'utf8')) as Chapter;
+  const verse = (n: number) => [cor.verses.find((v) => v.n === n)!];
+  const key = new Uint8Array(32).fill(7);
+  const treeFor = (verses: Chapter['verses'], lang: 'greek' | 'english'): Diagram => flatDiagram(buildDiagramRequest(cor, verses, lang).request as unknown as Record<string, unknown>);
+  const askOnce = (fresh: Diagram): { ask: AskDiagram; asked: number[] } => {
+    const asked: number[] = [];
+    return { asked, ask: async () => (asked.push(1), fresh) };
+  };
+
+  it('holds a negative before a verb-less member in 2 Corinthians 5:7 and Colossians 3:2, and not in 5:6 (the real data)', () => {
+    const col = JSON.parse(readFileSync('public/data/col/3.json', 'utf8')) as Chapter;
+    const parses = (c: Chapter, n: number) => c.verses.find((v) => v.n === n)!.g.map((w) => ({ parse: w.p }));
+    expect(holdsNegatedMember(parses(cor, 7))).toBe(true);
+    expect(holdsNegatedMember(parses(col, 2))).toBe(true);
+    expect(holdsNegatedMember(parses(cor, 6))).toBe(false);
+  });
+
+  it('does not take for a negated member an exception (εἰ μὴ), nor a negative before a verb', () => {
+    const of = (...parse: string[]) => parse.map((p) => ({ parse: p }));
+    expect(holdsNegatedMember(of('V-PAI-1S', 'COND', 'PRT-N', 'T-ASM', 'N-ASM'))).toBe(false);
+    expect(holdsNegatedMember(of('PRT-N', 'T-NSM', 'N-NSM', 'V-PAI-3S'))).toBe(false);
+    expect(holdsNegatedMember(of('V-PAI-3S', 'PRT-N', 'T-NSM', 'N-NSM'))).toBe(true);
+    // a verb in the NEXT verse of a passage is not the negated member's verb
+    expect(holdsNegatedMember([{ parse: 'V-PAI-3S', verse: 1 }, { parse: 'PRT-N' }, { parse: 'N-NSM' }, { parse: 'V-PAI-3S', verse: 2 }])).toBe(true);
+  });
+
+  it.each(['greek', 'english'] as const)('is not read for 2 Corinthians 5:7 in %s: the tutor is asked, and the new tree is kept and read', async (lang) => {
+    const old = treeFor(verse(7), lang);
+    const fresh = structuredClone(old);
+    fresh.clauses.push({ clause: { subject: { words: [{ implied: 'we' }], modifiers: [] }, verb: { words: [{ implied: 'walk' }], modifiers: [] } } });
+    await keptBefore('2 Corinthians 5:7', lang, old);
+    const { ask, asked } = askOnce(fresh);
+    expect(await fetchDiagram(cor, verse(7), lang, { ask, key, now: 2 })).toMatchObject({ ok: true, diagram: fresh, kept: false });
+    expect(asked).toHaveLength(1);
+    const again = askOnce(old);
+    expect(await fetchDiagram(cor, verse(7), lang, { ask: again.ask, key })).toMatchObject({ ok: true, diagram: fresh, kept: true });
+    expect(again.asked).toHaveLength(0);
+  });
+
+  it('is not read for a passage of 2 Corinthians 5:6-7 either', async () => {
+    const both = [...verse(6), ...verse(7)];
+    const old = treeFor(both, 'greek');
+    await keptBefore('2 Corinthians 5:6-7', 'greek', old);
+    const { ask, asked } = askOnce(old);
+    expect(await fetchDiagram(cor, both, 'greek', { ask, key })).toMatchObject({ ok: true, kept: false });
+    expect(asked).toHaveLength(1);
+  });
+
+  it('still reads a kept tree of 2 Corinthians 5:6, which holds none: no needless redraw', async () => {
+    for (const lang of ['greek', 'english'] as const) {
+      const old = treeFor(verse(6), lang);
+      await keptBefore('2 Corinthians 5:6', lang, old);
+      const { ask, asked } = askOnce(old);
+      expect(await fetchDiagram(cor, verse(6), lang, { ask, key })).toMatchObject({ ok: true, diagram: old, kept: true });
       expect(asked).toHaveLength(0);
     }
   });
