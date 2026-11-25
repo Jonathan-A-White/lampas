@@ -40,7 +40,6 @@ const FIXED_LATER: Record<string, number> = {
   'features/steps/septuagint.steps.tsx': 1,
   'features/steps/sermons-settings.steps.tsx': 1,
   'features/steps/sermons.steps.tsx': 1,
-  'features/steps/tutor-aloud.steps.tsx': 1,
   // session 4
   'tests/support/fake-postern.ts': 1,
   'tests/support/gesture.ts': 1,
