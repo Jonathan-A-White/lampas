@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.388
+_2026-11-25_
+- Fixed: In the Septuagint, tapping an English word in parts of Leviticus 6 and 8 now opens the Greek word it translates.
+
 ## 0.7.387
 _2026-11-25_
 - Fixed: A sentence diagram drawn before the address fix, of any verse that speaks to someone ('Lord,' and the like), is now drawn again the next time it is opened, instead of staying in its old wrong shape.

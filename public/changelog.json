@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.388",
+    "date": "2026-11-25",
+    "story": "mw-u2w5klk.349.134",
+    "kind": "fixed",
+    "text": "In the Septuagint, tapping an English word in parts of Leviticus 6 and 8 now opens the Greek word it translates."
+  },
+  {
     "version": "0.7.387",
     "date": "2026-11-25",
     "story": "mw-5r3p30.1251",
