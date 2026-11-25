@@ -1,9 +1,4 @@
 {
-  "features/steps/tutor-aloud.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 4
-    }
-  },
   "tests/support/fake-postern.ts": {
     "local/no-real-time-wait": {
       "count": 1
