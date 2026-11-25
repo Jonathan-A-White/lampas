@@ -9,7 +9,7 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   Scenario: The service's newer rows replace and add to the bundled ones
     Given Lampas is opened on "Romans 5" with the sermon index answering
     When he taps verse 8
-    And he taps "Sermons · 4"
+    And he taps "Sermons · 5"
     Then the sheet is headed "Sermons for Romans 5:8"
     And the sheet says "Latest from the index · 1 new"
     And the part "On this verse" holds "Love Commended, Revised" and "Peace with God"
@@ -20,7 +20,7 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   Scenario: The service is asked for the chapter with the sources that are On, and for nothing of his
     Given Lampas is opened on "Romans 5" with the sermon index answering
     When he taps verse 8
-    And he taps "Sermons · 4"
+    And he taps "Sermons · 5"
     Then the sheet says "Latest from the index · 1 new"
     And the service was asked for "rom.5" in the source "testsermons"
     And the service was sent no cookie, key or header
@@ -37,7 +37,7 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   Scenario: A source the bundle lacks gets an Off row in the list of sermon sources, and its rows show only when it is On
     Given Lampas is opened on "Romans 5" with the sermon index answering
     When he taps verse 8
-    And he taps "Sermons · 4"
+    And he taps "Sermons · 5"
     Then the sheet says "Latest from the index · 1 new"
     And the service was asked for no source but "testsermons"
     When the list of sermon sources is opened
@@ -52,7 +52,7 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   Scenario: A source the service says is on by default shows its rows the first time it is seen
     Given Lampas is opened on "Romans 5" with the sermon index answering with a source that is on by default
     When he taps verse 8
-    And he taps "Sermons · 4"
+    And he taps "Sermons · 6"
     Then the part "On this verse" holds "Love Commended, Revised", "Peace with God" and "Love's Commendation"
     When the list of sermon sources is opened
     Then the list of sermon sources shows "C. H. Spurgeon's sermons" On
@@ -61,7 +61,7 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   Scenario: The search is answered by the service, after a pause, with sermons and themes
     Given Lampas is opened on "Romans 5" with the sermon index answering
     When he taps verse 8
-    And he taps "Sermons · 4"
+    And he taps "Sermons · 5"
     And he searches the sheet for "spurgeon grace"
     Then the part "Found" holds "Law and Grace", "Reigning Grace", "Justification by Grace", "Exposition of the Doctrines of Grace" and "Atonement"
     And the service was asked to search once, for "spurgeon grace"
@@ -71,7 +71,7 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   Scenario: A match on the open verse's chapter ranks above a general match (mw-qtu3zvz.66, tier order PROVISIONAL)
     Given Lampas is opened on "Romans 5" with the sermon index answering
     When he taps verse 8
-    And he taps "Sermons · 4"
+    And he taps "Sermons · 5"
     And he searches the sheet for "spurgeon grace"
     Then the part "Found" holds "Law and Grace", "Reigning Grace", "Justification by Grace", "Exposition of the Doctrines of Grace" and "Atonement"
 
@@ -79,7 +79,7 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   Scenario: A theme found by the search lists its sermons in the same sheet when it is tapped
     Given Lampas is opened on "Romans 5" with the sermon index answering
     When he taps verse 8
-    And he taps "Sermons · 4"
+    And he taps "Sermons · 5"
     And he searches the sheet for "spurgeon grace"
     And he taps the theme "Atonement"
     Then the theme "Atonement" lists "For Whom Did Christ Die?"
@@ -89,7 +89,7 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   Scenario: A theme with no sermons is not offered in Found, and a theme with some says how many
     Given Lampas is opened on "Romans 5" with the sermon index answering
     When he taps verse 8
-    And he taps "Sermons · 4"
+    And he taps "Sermons · 5"
     And he searches the sheet for "spurgeon grace"
     Then the theme "Atonement" says "Theme · 1 sermon · tap for its sermons"
     And Found offers no theme "Business Life"
@@ -107,7 +107,7 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   Scenario: A sermon linked from its notes is on the same theme
     Given Lampas is opened on "Romans 5" with the sermon index answering a sermon linked from its notes
     When he taps verse 8
-    And he taps "Sermons · 4"
+    And he taps "Sermons · 6"
     Then under "On the same theme" the topic "On Atonement" comes first and holds "The Peculiar Sleep of the Beloved" then "Running from God"
     And the row "The Peculiar Sleep of the Beloved" reads "From the sermon notes · preached on Psalms 127:2"
     And the row "Running from God" has no such line
