@@ -29,6 +29,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Matthew Henry's sermons](https://archive.org)**, from the Internet Archive's scans: titles, passages and links for the Sermons sheet. Public domain; the Archive's [terms](https://archive.org/about/terms.php).
 - **[Life Bible Ministry's Through the Bible](https://www.lifebibleministry.com/through-the-bible)** (Pastor Paul LeBoutillier): titles, passages, links and videos. Stated terms: none; free. Changes: none.
 - **[Bible Thinker](https://biblethinker.org/mark/)** (Mike Winger's teachings, series and others): titles, passages, links and videos. Stated terms: none. Changes: none.
+- **[The Martyn Lloyd-Jones Trust](https://www.mljtrust.org/sermons/)**: one link in each chapter's Sermons list to the Trust's own sermon search for the chapter, opened live in your browser when tapped. The Trust's terms forbid building a database of its sermons, so Lampas reads, copies and keeps nothing of them. Stated terms: no copying of its sermons into a list. Changes: none.
 - **[Greg Laurie Sermon Archive](https://www.logos.com)** (Harvest Ministries), in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[J. D. Greear Sermon Archive](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
 - **[Skip Heitzig Sermon Archive](https://www.logos.com)**, in Logos: titles, passages and links, listed and opening only for an owner. Nothing copied.
