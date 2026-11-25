@@ -551,6 +551,14 @@ describe('runSermonsBuild: the biblethinker source (mw-qtu3zvz.280.4)', () => {
     expect(filesUnder(w.options.outDir)).toEqual(['1pe.json', 'mrk.json', 'rom.json'].map((f) => `biblethinker/${f}`).concat('index.json').sort());
   });
 
+  it('names the source as the sermon-index repository\'s source.toml at the pinned commit does, where sources.json gives no name (mw-qtu3zvz.280.14)', async () => {
+    const w = biblethinker();
+    writeFileSync(w.options.configFile, JSON.stringify({ repo: 'https://github.com/Jonathan-A-White/sermon-index', commit: SHA, sources: ['biblethinker'] }));
+    await runSermonsBuild(w.options);
+    const [s] = readJson<SermonIndex>(join(w.options.outDir, 'index.json')).sources;
+    expect(s?.name).toBe('Bible Thinker: Mike Winger\'s teachings');
+  });
+
   it('writes the post as the row\'s url and the YouTube video as its alt, for 1 Peter 1:3-7', async () => {
     const w = biblethinker();
     await runSermonsBuild(w.options);
