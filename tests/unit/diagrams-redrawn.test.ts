@@ -39,6 +39,21 @@ describe('REDRAWN and the RP 2026 overlay', () => {
   });
 });
 
+describe('a tree kept before a vocative stood on its own line (mw-5r3p30.1227)', () => {
+  it('is not read for 1 John 2:1, in Greek or English, nor for a passage that holds it', async () => {
+    const refs = ['1 John 2:1', '1 John 2:1-2'];
+    for (const ref of refs) for (const lang of ['greek', 'english'] as const) await keptBefore(ref, lang, tree);
+    for (const ref of refs) for (const lang of ['greek', 'english'] as const) expect(await getDiagram(ref, lang)).toBeUndefined();
+  });
+
+  it('keeps the neighbouring verse, and reads the new tree of 1 John 2:1', async () => {
+    await keptBefore('1 John 2:2', 'greek', tree);
+    expect(await getDiagram('1 John 2:2', 'greek')).toEqual(tree);
+    await keepDiagram('1 John 2:1', 'english', tree, 2);
+    expect(await getDiagram('1 John 2:1', 'english')).toEqual(tree);
+  });
+});
+
 describe('a Greek tree kept before the overlay moved the verse’s words', () => {
   it('is not read for Revelation 13:14, Philemon 1:1 or Matthew 26:29, nor for a passage that holds one', async () => {
     for (const ref of ['Revelation 13:14', 'Philemon 1:1', 'Matthew 26:29', 'Revelation 13:13-14', 'Philemon 1:1-2']) await keptBefore(ref, 'greek', tree);
