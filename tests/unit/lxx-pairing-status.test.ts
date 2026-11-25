@@ -76,6 +76,20 @@ describe('the Septuagint pairing pass of every shipped book (mw-u2w5klk.349.60)'
     expect(statusProblem(['gen', 'exo'], { gen: 'paired', exo: 'pending: mw-u2w5klk.349.8' })).toEqual([]);
   });
 
+  it('reads paired for a book whose every shipped chapter has a model pass and no gap (mw-u2w5klk.349.138)', () => {
+    const stale: string[] = [];
+    for (const book of shippedBooks()) {
+      const report = readFileSync(`${ALIGN_REPORT_DIR}/${book}.txt`, 'utf8');
+      const shipped = [...report.matchAll(/^\| [A-Za-z0-9 ]+? (\d+) \|/gm)].map((m) => m[1]);
+      const sidecarFile = `data/lxx/align/${book}.expect.json`;
+      if (shipped.length === 0 || !existsSync(sidecarFile)) continue;
+      const chapters: Record<string, { gaps?: number }> = JSON.parse(readFileSync(sidecarFile, 'utf8')).chapters;
+      const done = shipped.every((n) => chapters[n] !== undefined && chapters[n].gaps === 0);
+      if (done && status[book] !== 'paired') stale.push(`${book}: every shipped chapter is paired (gaps 0 in ${sidecarFile}) but ${STATUS_DIR}/${book}.txt reads ${JSON.stringify(status[book])}`);
+    }
+    expect(stale).toEqual([]);
+  });
+
   it('holds only books of the Old Testament', () => {
     const codes = new Set(OLD_TESTAMENT.map(([code]) => code.toLowerCase()));
     for (const book of Object.keys(status)) expect(codes.has(book), `${book} is not a book of Swete's Old Testament`).toBe(true);
