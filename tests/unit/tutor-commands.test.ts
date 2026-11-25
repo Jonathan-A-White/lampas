@@ -50,7 +50,8 @@ describe('the registry lists the commands and the work place', () => {
       ['start-review', 'free'],
       ['add-word', 'undoable'],
     ]);
-    expect(registry.commands).toHaveLength(10);
+    // and save-answer-references, play-sermon and open-paradigm (mw-5r3p30.1249)
+    expect(registry.commands).toHaveLength(11);
     expect(registry.place('open-work')).toBeDefined();
     for (const command of registry.commands) expect(command.tell.length).toBeGreaterThan(10);
   });

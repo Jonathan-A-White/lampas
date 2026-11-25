@@ -7,7 +7,8 @@
 //  - 'tutor' (or 'open the tutor', or 'ask' with no question) opens the Talk sheet on what is on screen through the tutor's one door (the floating ?'s own function) and listens.
 //  - What the answer asks the app to do runs as it does for a typed question (useTalk): a free or undoable command, or a place; a command that needs his tap is not run, its offer waits in the Talk, and the words are still spoken.
 //  - When the tutor cannot answer it says 'The tutor could not answer' and the reason the Talk shows, and the exchange closes. With no Reader on screen it says 'Open a chapter first'.
-//  - A sermon the answer plays (the tutor's play-sermon, docs/sermons.md 'Play by asking') starts in the app's player when the speaking ends, with no tap.
+//  - A sermon the answer plays (the tutor's play-sermon, docs/sermons.md 'Play by asking') starts in the app's player when the speaking ends, with no tap; a paradigm table the answer opens
+//    (open-paradigm, src/tutor/paradigmQueue.ts) opens on the Paradigms screen then too.
 //  - A wake while the answer is waited for (the kit's onInterrupt, `interruptAsk`) cuts the question short and opens a new command; the Talk keeps the turn. While the answer is spoken no
 //    microphone is open (session.ts, mw-rl10piw.74), so the wake word is not heard then: a tap on Stop cuts it instead, and the exchange closes (no follow-up, no sermon it named).
 import type { CommandDone } from 'voice-kit/handsfree';
@@ -18,6 +19,7 @@ import { stopIfSpeaking } from '../speech/greek';
 import { getReading, readingEndedWhole, stopReading, subscribeReading } from '../speech/readAloud';
 import { startAnswerWhenSeen } from '../speech/tutorVoice';
 import { dropQueuedSermon, playQueuedSermon } from '../sermons/player';
+import { dropQueuedParadigm, openQueuedParadigm } from '../tutor/paradigmQueue';
 import { parkForAnswer, SAID_KEY } from './playback';
 import { forgetVoiceTurns } from './voiceTurn';
 
@@ -150,14 +152,20 @@ export async function askTutor(question: string, say: (text: string) => Promise<
   const outcome = await turn;
   if (mine.cancelled) {
     dropQueuedSermon();
+    dropQueuedParadigm();
     return;
   }
   if (outcome.kind === 'answered') {
     await speakAnswer(outcome.id, outcome.answer, mine);
     finish();
-    // the sermon the answer named (play-sermon) starts as the answer ends, with no tap; a wake that cut the answer short leaves it
-    if (mine.cancelled) dropQueuedSermon();
-    else playQueuedSermon();
+    // the sermon the answer named (play-sermon) starts, and the table it named (open-paradigm) opens, as the answer ends, with no tap; a Stop that cut the answer short leaves them
+    if (mine.cancelled) {
+      dropQueuedSermon();
+      dropQueuedParadigm();
+    } else {
+      playQueuedSermon();
+      openQueuedParadigm();
+    }
     return mine.cancelled ? undefined : { followUp: true };
   }
   finish();

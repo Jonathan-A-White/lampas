@@ -19,6 +19,9 @@ import { getDeviceKeyBytes } from './services/deviceKey';
 import type { TalkSession } from './services/mill';
 import { dropVoiceTurn, tellVoiceTurn } from './handsFree/voiceTurn';
 import { dropQueuedSermon, playQueuedSermon } from './sermons/player';
+import { dropQueuedParadigm, hasQueuedParadigm, takeQueuedParadigm } from './tutor/paradigmQueue';
+import { openParadigm, paradigmHash } from './nav/route';
+import { holdTalk } from './talkReturn';
 import { TutorError } from './services/tutor';
 import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
@@ -273,8 +276,9 @@ export function useTalk(
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
           // The commands the answer names (`do`), run by the tutor client in order through the registry; a refused name or args is recorded as a miss, as are the misses the answer names. What each did is a line of the turn:
           // the app's own words for it, with its Undo when it can be undone, or for a command that needs his yes the question and a button (src/talk/DoneLine.tsx). It never fails the talk.
-          // a sermon held by an earlier answer is not this one's (play-sermon holds one to start once the answer is said, src/sermons/player.ts)
+          // a sermon or a table held by an earlier answer is not this one's (play-sermon and open-paradigm hold one for when the answer is done, src/sermons/player.ts, src/tutor/paradigmQueue.ts)
           dropQueuedSermon();
+          dropQueuedParadigm();
           const taken = answer.do?.length || answer.misses?.length ? await withTalkSermons(chapterSermons?.rows ?? [], () => withPreviousAnswer(turns.at(-1) && { answer: turns[turns.length - 1].a, question: turns[turns.length - 1].cleanQ ?? turns[turns.length - 1].q }, () => bibleTalkClient().takeAnswer({ do: answer.do, misses: answer.misses }, turns.length))).catch(() => undefined) : undefined;
           const ranDo = taken ? doneLinesOf(answer.do ?? [], taken, bibleTalkRegistry()) : undefined;
           if (ranDo) refused.push(...ranDo.refused);
@@ -287,6 +291,11 @@ export function useTalk(
           const stayed = chapterHere?.title;
           const unopened = go?.ok && door && !door.allowed(ref) && !stayed ? go.target.chapter : undefined;
           if (go && !target && !stayed && !unopened) refused.push(`Could not open ${go.ok ? go.target.title : go.title}`);
+          // The table open-paradigm held (mw-5r3p30.1249) opens as a go does: only while this talk's sheet is open (or Hands-free waits for the answer), and never beside a place; else the turn says it did not.
+          if (hasQueuedParadigm() && (target || !door?.allowed(ref))) {
+            dropQueuedParadigm();
+            refused.push('Could not open the table: the talk was closed');
+          }
           // The tutor folded the turns this request carried in `fold` into the summary: keep it, and how many of the oldest turns it holds now; it never fails the talk.
           if (answer.summary && request.fold?.length) await keepTalkSummary(ref, answer.summary, (kept?.covered ?? 0) + request.fold.length).catch(() => undefined);
           // The mill ended the talk's session at its cap and began a fresh one from its key points: they are the talk's summary now (they hold every turn so far), and the turn says so (mw-pxji7y.3); it never fails the talk.
@@ -311,9 +320,18 @@ export function useTalk(
           const heard = tellVoiceTurn(ref, { kind: 'answered', id, answer: answer.answer });
           if (signal.aborted) {
             dropQueuedSermon();
+            dropQueuedParadigm();
             return;
           }
-          if (target) {
+          // a table he asked for by typing opens now, as the chip under the answer opens it: the talk is held so Back from the table brings the sheet back (src/talkReturn.ts), and the sheet closes;
+          // one he asked for by voice opens when Hands-free has said the answer (src/handsFree/ask.ts)
+          const table = heard ? null : takeQueuedParadigm();
+          if (table) {
+            holdTalk(scope, paradigmHash({ table }));
+            going.current?.leave?.();
+            openParadigm({ table });
+            playQueuedSermon();
+          } else if (target) {
             const reopen = going.current?.leave?.();
             if (reopen) leaveSheetForTutor(reopen);
             await bibleTalkClient().takeAnswer({ go: { name: target.name, args: target.args } }, turns.length).catch(() => undefined);

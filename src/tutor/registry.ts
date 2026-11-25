@@ -32,6 +32,8 @@ import { CATALOGUE } from '../resources/catalogue';
 import { armFallback } from '../resources/openApp';
 import { worksForTutor, workChip } from '../resources/tutorLinks';
 import { queueSermon, videoOfRow } from '../sermons/player';
+import { paradigmById } from '../data/paradigms';
+import { queueParadigm } from './paradigmQueue';
 import type { LinkRow } from '../sermons/merge';
 import { workOf } from '../resources/works';
 import { setPractise } from '../review/practise';
@@ -475,9 +477,25 @@ const playSermonCommand: Command = {
   },
 };
 
-/** The Bible talk's registry: eleven facts (three core), the ten commands, a place for every screen, for a chapter and for a book of his shelf. */
+/** Opens a table of the Paradigms screen when he asks for one ('show me the article table'), with no tap (mw-5r3p30.1249): `table` is an id of the app's list (PARADIGMS, the ids the instructions'
+ *  paradigm links name). The table is held and opens once the answer is done (src/tutor/paradigmQueue.ts: a typed ask as the answer is kept, Hands-free's once it has been said). A table not in the list is refused. */
+const openParadigmCommand: Command = {
+  name: 'open-paradigm',
+  tell: 'Opens a Paradigms table (table: a paradigm link id) after the answer',
+  args: { type: 'object', required: ['table'], additionalProperties: false, properties: { table: { type: 'string' } } },
+  kind: 'free',
+  run: async (args): Promise<CommandResult> => {
+    const { table } = args as { table: string };
+    const found = paradigmById(table);
+    if (!found) throw new Error(`the app has no paradigm table "${table}"`);
+    queueParadigm(found.id);
+    return { said: `Opening ${found.name}` };
+  },
+};
+
+/** The Bible talk's registry: eleven facts (three core), the eleven commands, a place for every screen, for a chapter and for a book of his shelf. */
 export const lampasRegistry = (): Registry =>
-  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, saveAnswerReferencesCommand, playSermonCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : route === 'lists' ? listsPlace : placeForRoute(route))), chapterPlace, workPlace] });
+  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, saveAnswerReferencesCommand, playSermonCommand, openParadigmCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : route === 'lists' ? listsPlace : placeForRoute(route))), chapterPlace, workPlace] });
 
 /** The tutor's record (the ask-backs and misses of each screen) and the up-front list of each screen are kept on the phone, in a database of their own (the kit's Dexie store; its talks table is not used: the Bible talks are Lampas's own,
  * src/data/repositories/talks.ts), so that the counts last from one launch to the next and the nightly run (src/tutor/weightsRun.ts) has a week of them to read. The clients of both grinds and the nightly one write to it. */
