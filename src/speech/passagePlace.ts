@@ -75,12 +75,13 @@ export function subscribePlace(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-/** A place in words: the book of `heading` with the chapter and verse that plan number `verse` is, for a reference whose first chapter is `chapter` (`through`: read as chapters, so stepped). Verse 0 is the heading itself. */
-export function labelOf(heading: string, chapter: number, through: boolean, verse: number): string {
+/** A place in words: the book of `heading` with the chapter and verse that plan number `verse` is, for a reference whose first chapter is `chapter` (`through`: read as chapters, so stepped). Verse 0 is the heading itself.
+ * `lampasChapter` is the Lampas chapter the verse is in when that is known (a Septuagint verse of one Greek chapter can be the next Lampas chapter's: Greek 9:22 is Psalm 10:1); it is used in place of counting chapters from `chapter`. */
+export function labelOf(heading: string, chapter: number, through: boolean, verse: number, lampasChapter?: number): string {
   if (verse <= 0) return heading;
   const book = heading.replace(/\s+\d[\d:–-]*$/, '');
   const step = through ? Math.floor(verse / CHAPTER_STEP) : 0;
-  return `${book} ${chapter + step}:${verse - step * CHAPTER_STEP}`;
+  return `${book} ${lampasChapter ?? chapter + step}:${verse - step * CHAPTER_STEP}`;
 }
 
 /** Where in `headings` (the references of a list, in order) a kept place is, or -1 when there is nothing to resume: no place, a reference the list no longer holds, or the very start of the first (what Play all does anyway). */

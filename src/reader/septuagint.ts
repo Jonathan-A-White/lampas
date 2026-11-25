@@ -130,6 +130,9 @@ export function englishRows(verses: readonly Verse[]): Verse[] {
 /** The verse number Lampas knows a verse of `chapter` by: a Septuagint verse's `ref` (Greek 9:22 is Psalm 10:1), else the verse's own `n` (every other chapter, and a verse with no Lampas verse). */
 export const lampasNumber = (chapter: Pick<Chapter, 'edition'>, verse: Pick<Verse, 'n' | 'ref'>): number => (isSeptuagint(chapter) && verse.ref && verse.ref !== 'none' ? verse.ref.verse : verse.n);
 
+/** The chapter Lampas knows a verse of `chapter` (held as chapter number `own`) by: a Septuagint verse's `ref` chapter (Greek 9:22 is Psalm 10:1, so chapter 10), else `own`. */
+export const lampasChapter = (chapter: Pick<Chapter, 'edition'>, verse: Pick<Verse, 'ref'>, own: number): number => (isSeptuagint(chapter) && verse.ref && verse.ref !== 'none' ? verse.ref.chapter : own);
+
 /**
  * The Lampas verses a view of Greek verses `n` to `to` (`to` absent: the verse alone) is of: the lowest and highest Lampas verse of the Greek verses in the range, as `{ n, to? }` (`to` only when they differ). A New Testament or Hebrew
  * unit is as it is. Greek verses Lampas has none for give their own numbers.
