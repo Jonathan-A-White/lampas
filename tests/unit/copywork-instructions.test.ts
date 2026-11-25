@@ -187,3 +187,28 @@ describe("copywork never calls a Hebrew yod or vav missing whose own point is on
     expect(hebrew).toMatch(/a small letter is missing only when its neighbours stand together with nothing between them and no point is left under the gap/);
   });
 });
+
+// mw-fnvjof.17.297: on both Hebrew Genesis 1:1 pages (`hbo-perfect-genesis-1-1`, `hbo-dictation-sounds-alike-genesis-1-1`) the right fifth word was now and then marked
+// wrong for a mark the page has: 'the dagesh inside the shin is missing; you wrote הַשָׁמַיִם', 'the yod is missing'. A Never line naming the shin's dagesh primed the
+// fault it named (6 false wrongs in 60 runs against 1 in 60 without it, the first word's hiriq 'missing' as well: mw-5r3p30.989 again), so the line names no mark: the
+// paragraph's 'more often overlooked than absent' moved into `## Never`, which the model heeds, as a second look before a point, dot or small letter is called missing.
+// It excuses nothing truly not there (hbo-errors-genesis-1-1 still catches its planted faults). The live proof is those two examples, which hold words.4 right.
+describe('copywork looks a second time before it calls a Hebrew mark or small letter missing', () => {
+  const never = text.slice(text.indexOf('\n## Never'));
+  const line = never.split('\n').find((l) => l.includes('looked at its place a second time')) ?? '';
+
+  it('says it in the Never list, once, and no longer in the paragraph', () => {
+    expect(line).toMatch(/^- Never mark a Hebrew word `wrong` for a point, dot or small letter you did not see at first glance before you have looked at its place a second time/);
+    expect(text.match(/more often overlooked than absent/g) ?? []).toHaveLength(1);
+    expect(hebrew).not.toMatch(/more often overlooked than absent/);
+  });
+
+  it('still makes a mark missing on bare paper', () => {
+    expect(line).toMatch(/only bare paper there makes it missing/);
+  });
+
+  // a worked word or a named mark primes the model to find that fault (mw-5r3p30.989, and this story's first try)
+  it('names no Hebrew word, letter or particular mark', () => {
+    expect(line).not.toMatch(/[֐-׿]|dagesh|shin|yod|vav|hiriq/);
+  });
+});
