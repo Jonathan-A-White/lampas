@@ -1,0 +1,239 @@
+{
+  "reasons": {
+    "supplied-word": "A word Brenton supplies; the Greek of this verse has no word for it.",
+    "greek-in-the-next-verse": "The Greek this English renders stands in the next verse of Swete, so no word of this verse fits it.",
+    "greek-in-the-verse-before": "The Greek this English renders stands in the verse before in Swete, so no word of this verse fits it.",
+    "one-verse-off": "From Amos 6:10 to 6:14 each verse of Brenton renders the Greek of the verse before it in Swete (Brenton's 6:15 has no Greek verse to stand at), so no word of this verse fits it."
+  },
+  "chapters": {
+    "1": {
+      "gaps": 0,
+      "model": 0,
+      "leftovers": [],
+      "placePairs": [
+        ["1:1 Ozias @14", "read"],
+        ["1:3 sins @6", "read"],
+        ["1:4 Ader. @11", "read"],
+        ["1:4 Azael, @6", "read"],
+        ["1:5 will destroy @5", "read"],
+        ["1:6 sins @6", "read"],
+        ["1:8 remnant @20", "read"],
+        ["1:9 brethren. @28", "read"],
+        ["1:9 transgressions @6", "read"],
+        ["1:11 destroyed @26", "read"],
+        ["1:11 end. @42", "read"],
+        ["1:11 sins @6", "read"],
+        ["1:13 children @7", "read"],
+        ["1:13 sins @6", "read"],
+        ["1:14 I will kindle @1", "read"],
+        ["1:14 Rabbath, @6", "read"]
+      ]
+    },
+    "2": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["2:3:princes", "supplied-word"],
+        ["2:12:drink", "'to drink' finishes ἐποτίζετε, which 'you⌃ gave' renders."]
+      ],
+      "placePairs": [
+        ["2:1 sins @6", "read"],
+        ["2:3 I will destroy @1", "read"],
+        ["2:4 children @7", "read"],
+        ["2:4 sins @6", "read"],
+        ["2:6 sins @6", "read"],
+        ["2:7 have gone @21", "read"],
+        ["2:7 lowly: @15", "read"],
+        ["2:7 perverted @13", "read"],
+        ["2:7 they have struck @8", "read"],
+        ["2:7 way @14", "read"],
+        ["2:9 Amorite @4", "read"],
+        ["2:10 Amorites. @20", "read"],
+        ["2:12 you⌃ gave @1", "read"],
+        ["2:15 withstand, @5", "read"],
+        ["2:16 confidence @7", "read"]
+      ]
+    },
+    "3": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["3:12:foreign", "supplied-word"],
+        ["3:13:priests", "greek-in-the-verse-before"]
+      ],
+      "placePairs": [
+        ["3:1 I brought @16", "read"],
+        ["3:1 family @14", "read"],
+        ["3:2 families @5", "read"],
+        ["3:6 alarmed? @9", "read"],
+        ["3:6 wrought? @18", "read"],
+        ["3:8 alarmed? @5", "read"],
+        ["3:8 shall roar, @1", "read"],
+        ["3:9 Proclaim @0", "read"],
+        ["3:10 wrong @11", "read"],
+        ["3:12 children @21", "read"],
+        ["3:12 piece @16", "read"],
+        ["3:13 testify @2", "read"],
+        ["3:14 they shall fall @24", "read"],
+        ["3:15 I will crush @0", "read"]
+      ]
+    },
+    "4": {
+      "gaps": 0,
+      "model": 1,
+      "leftovers": [
+        ["4:8:inhabitants", "supplied-word"]
+      ],
+      "placePairs": [
+        ["4:4 sinned, @4", "read"],
+        ["4:5 children @12", "read"],
+        ["4:6 dullness @4", "read"],
+        ["4:6 teeth @5", "read"],
+        ["4:7 months @9", "read"],
+        ["4:9 blight: @6", "read"],
+        ["4:9 parching, @3", "read"],
+        ["4:11 I overthrew @0", "read"],
+        ["4:13 proclaims @7", "read"]
+      ]
+    },
+    "5": {
+      "gaps": 0,
+      "model": 7,
+      "leftovers": [
+        ["5:1:fallen", "greek-in-the-next-verse"],
+        ["5:1:more", "greek-in-the-next-verse"],
+        ["5:1:rise", "greek-in-the-next-verse"],
+        ["5:3:one", "'one' goes with the numeral ρ᾽, which 'hundred' renders."],
+        ["5:11:fists", "'with their fists' spells out κατεκονδύλιζον, which 'they have struck' renders."],
+        ["5:12:judgment", "supplied-word"],
+        ["5:27:away", "'away' finishes μετοικιῶ, which 'I will carry' renders, with 'you' between."]
+      ],
+      "placePairs": [
+        ["5:9 dispenses @1", "read"],
+        ["5:9 ruin @2", "read"],
+        ["5:12 bribes, @13", "read"],
+        ["5:15 remnant @20", "read"],
+        ["5:17 I will pass @6", "read"],
+        ["5:19 lean @21", "read"],
+        ["5:21 meat-offerings @8", "read"],
+        ["5:27 I will carry @1", "read"]
+      ]
+    },
+    "6": {
+      "gaps": 0,
+      "model": 41,
+      "leftovers": [
+        ["6:2:house", "greek-in-the-verse-before"],
+        ["6:2:israel", "greek-in-the-verse-before"],
+        ["6:2:see", "supplied-word"],
+        ["6:6:occasion", "supplied-word"],
+        ["6:8:saying", "supplied-word"],
+        ["6:10:behind", "one-verse-off"],
+        ["6:10:forth", "one-verse-off"],
+        ["6:10:left", "one-verse-off"],
+        ["6:10:one", "one-verse-off"],
+        ["6:10:remnant", "one-verse-off"],
+        ["6:11:else", "one-verse-off"],
+        ["6:11:name", "one-verse-off"],
+        ["6:11:one", "one-verse-off"],
+        ["6:11:other", "one-verse-off"],
+        ["6:11:say", "one-verse-off"],
+        ["6:11:say", "one-verse-off"],
+        ["6:11:silent", "one-verse-off"],
+        ["6:12:breaches", "one-verse-off"],
+        ["6:12:commands", "one-verse-off"],
+        ["6:12:great", "one-verse-off"],
+        ["6:12:house", "one-verse-off"],
+        ["6:12:lord", "one-verse-off"],
+        ["6:12:strike", "one-verse-off"],
+        ["6:13:bitterness", "one-verse-off"],
+        ["6:13:fruit", "one-verse-off"],
+        ["6:13:horses", "one-verse-off"],
+        ["6:13:judgment", "one-verse-off"],
+        ["6:13:mares", "one-verse-off"],
+        ["6:13:neighing", "one-verse-off"],
+        ["6:13:poison", "one-verse-off"],
+        ["6:13:refrain", "one-verse-off"],
+        ["6:13:righteousness", "one-verse-off"],
+        ["6:13:rocks", "one-verse-off"],
+        ["6:13:run", "one-verse-off"],
+        ["6:13:turned", "one-verse-off"],
+        ["6:14:horns", "one-verse-off"],
+        ["6:14:own", "one-verse-off"],
+        ["6:14:possessed", "one-verse-off"],
+        ["6:14:rejoice", "one-verse-off"],
+        ["6:14:strength", "one-verse-off"],
+        ["6:14:vanity", "one-verse-off"]
+      ],
+      "placePairs": [
+        ["6:1 heads @12", "read"],
+        ["6:1 trust @6", "read"],
+        ["6:2 coasts. @31", "read"],
+        ["6:2 descend @12", "read"],
+        ["6:2 thence @11", "read"],
+        ["6:3 adopting @8", "read"],
+        ["6:4 calves @17", "read"],
+        ["6:4 eat @12", "read"],
+        ["6:4 stalls; @20", "read"],
+        ["6:5 excel @1", "read"],
+        ["6:6 best @7", "read"],
+        ["6:6 calamity @16", "read"],
+        ["6:6 nothing @13", "read"],
+        ["6:7 dominion @6", "read"],
+        ["6:8 pride @10", "read"],
+        ["6:10 heads @19", "read"],
+        ["6:11 name @13", "read"],
+        ["6:12 house @16", "read"],
+        ["6:12 little @15", "read"],
+        ["6:12 rents. @18", "read"]
+      ]
+    },
+    "7": {
+      "gaps": 0,
+      "model": 5,
+      "leftovers": [
+        ["7:5:lord", "greek-in-the-next-verse"],
+        ["7:5:repent", "greek-in-the-next-verse"],
+        ["7:17:god", "greek-in-the-next-verse"],
+        ["7:17:lord", "greek-in-the-next-verse"],
+        ["7:17:showed", "greek-in-the-next-verse"]
+      ],
+      "placePairs": [
+        ["7:1 east; @11", "read"],
+        ["7:1 swarm @8", "read"],
+        ["7:4 judgment @8", "read"],
+        ["7:8 appoint @19", "read"],
+        ["7:9 I will rise @12", "read"],
+        ["7:9 sacrifices @7", "read"],
+        ["7:10 conspiracies @12", "read"],
+        ["7:10 forming @11", "read"],
+        ["7:13 longer @4", "read"]
+      ]
+    },
+    "8": {
+      "gaps": 0,
+      "model": 9,
+      "leftovers": [
+        ["8:2:amos", "greek-in-the-verse-before"],
+        ["8:2:basket", "greek-in-the-verse-before"],
+        ["8:2:fowler", "greek-in-the-verse-before"],
+        ["8:2:said", "greek-in-the-verse-before"],
+        ["8:2:said", "greek-in-the-verse-before"],
+        ["8:2:see", "greek-in-the-verse-before"],
+        ["8:4:tyranny", "'by tyranny' finishes καταδυναστεύοντες, which 'drive' renders, with 'the needy ones' between."],
+        ["8:12:men", "supplied-word"],
+        ["8:12:sea", "The Greek has one θαλάσσης, which the first 'sea' renders."]
+      ],
+      "placePairs": [
+        ["8:3 I will bring @19", "read"],
+        ["8:3 ceilings @3", "read"],
+        ["8:5 unfair? @24", "read"],
+        ["8:5 we shall sell, @6", "read"],
+        ["8:6 needy @7", "read"],
+        ["8:6 shoes; @9", "read"],
+        ["8:10 I will make @26", "read"],
+        ["8:14 they shall fall, @21", "read"]
+      ]
+    }
+  }
+}
