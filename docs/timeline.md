@@ -1,6 +1,6 @@
 # The timeline's data
 
-The data under the timeline (mw-fnvjof.17.317.1; the screens are later stories of the epic mw-fnvjof.17.317): the dated events of the Bible, the people in them and where they happen, one file per book.
+The data under the timeline (mw-fnvjof.17.317.1; the screens are later stories of the epic mw-fnvjof.17.317, built from the design in docs/timeline-design.md): the dated events of the Bible, the people in them and where they happen, one file per book.
 His choice (grilling mw-fnvjof.17.288): Theographic's open data, one corrections file with each fix's reason and source, the raw data never edited, and sure fixes sent upstream.
 
 <!-- toc -->
