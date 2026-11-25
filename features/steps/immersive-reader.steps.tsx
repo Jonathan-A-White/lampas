@@ -23,9 +23,18 @@ import { groupHash, openSettingsGroup } from '../../tests/support/settings-pages
 import { getMenuButton, openSettings, queryMenuButton } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
+// every run of the App's startup writes (src/data/startupWrites.ts, started with nobody waiting) is kept, so the file waits for them: one still running when the database
+// is closed logs a closed-database trace (the same guard as fresh-install.steps.tsx)
+const startupRuns = vi.hoisted((): Promise<void>[] => []);
+vi.mock('../../src/data/startupWrites', async (original) => {
+  const real = await original<typeof import('../../src/data/startupWrites')>();
+  return { ...real, startBackgroundWrites: () => { const run = real.startBackgroundWrites(); startupRuns.push(run); return run; } };
+});
+
 afterAll(async () => {
   clock.restore();
   cleanup();
+  await Promise.allSettled(startupRuns);
   // the Reader's unmount set a leave-full-screen timer: it must not fire after jsdom is torn down
   resetImmersive();
   stopReading();
