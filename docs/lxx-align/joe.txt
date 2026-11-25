@@ -6,10 +6,10 @@ Derived without a Morpheus cache: joe.
 
 | Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Joel 1 | 20 | 356 | 262 | 73.6% | 44.7% | — |
-| Joel 2 | 32 | 768 | 602 | 78.4% | 51.4% | — |
-| Joel 3 | 21 | 449 | 351 | 78.2% | 46.3% | — |
+| Joel 1 | 20 | 356 | 344 | 96.6% | 72.8% | 121 (34.0%) |
+| Joel 2 | 32 | 768 | 716 | 93.2% | 70.7% | 184 (24.0%) |
+| Joel 3 | 21 | 449 | 422 | 94.0% | 66.4% | 110 (24.5%) |
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Joel | 73 | 1,573 | 1,215 | 77.2% | 48.4% | — |
+| Joel | 73 | 1,573 | 1,482 | 94.2% | 69.9% | 415 (26.4%) |
