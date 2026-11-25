@@ -391,7 +391,7 @@
           }
         },
         "drill": {
-          "description": "Only on Drill it, in the talk from the results of a drill (the round Ask the tutor button there): every question of the run in the order it was asked, each with the point of the idea it tests, what was asked, the answer he gave, the right answer and whether he was right. `facts` has the idea, how the run ended and how many were right. `hinted` is true on a right answer a Hint helped with, which Drill it does not count toward Proved.",
+          "description": "Only on Drill it, in the talk from the results of a drill (the round Ask the tutor button there): every question of the run in the order it was asked, each with the point of the idea it tests, what was asked, the answer he gave, the right answer and whether he was right. `facts` has the idea, how the run ended and how many were right. `hinted` is true on a right answer a Hint helped with, which Drill it does not count toward Proved. When his misses are forms one paradigm table holds (the article's τό, a noun's ending), and he asks why, how to fix them or what to drill, name that table and give its ONE paradigm link in `links`, whatever his resources.",
           "type": "array",
           "maxItems": 14,
           "items": {
