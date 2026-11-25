@@ -1,5 +1,47 @@
 [
   {
+    "version": "0.7.383",
+    "date": "2026-11-25",
+    "story": "mw-1l901so.7",
+    "kind": "fixed",
+    "text": "Enduring Word now opens at the part of the chapter that explains your verse in every chapter, not only John 3."
+  },
+  {
+    "version": "0.7.383",
+    "date": "2026-11-25",
+    "story": "mw-5r3p30.1239",
+    "kind": "new",
+    "text": "Opening a chapter you left part-way through now offers \"Resume\" at the verse you stopped at, with \"From the start\" beside it."
+  },
+  {
+    "version": "0.7.383",
+    "date": "2026-11-25",
+    "story": "mw-5r3p30.1241",
+    "kind": "fixed",
+    "text": "in the diagram lesson, the Greek example no longer shows an empty slanted line under the verb."
+  },
+  {
+    "version": "0.7.383",
+    "date": "2026-11-25",
+    "story": "mw-fnvjof.17.185",
+    "kind": "fixed",
+    "text": "the Hebrew word חָכְמָה and a few others like it are now respelled as they are said (\"khokh-MA\") on the teach sheet and in drills."
+  },
+  {
+    "version": "0.7.383",
+    "date": "2026-11-25",
+    "story": "mw-5r3p30.1218",
+    "kind": "fixed",
+    "text": "a verse you step up through the steps on a review day now comes back tomorrow, not months later."
+  },
+  {
+    "version": "0.7.383",
+    "date": "2026-11-25",
+    "story": "mw-5r3p30.1237",
+    "kind": "fixed",
+    "text": "1 John 2:1's sentence diagram, if you had drawn it before the vocative fix, now redraws itself instead of staying in the old, wrong shape."
+  },
+  {
     "version": "0.7.382",
     "date": "2026-11-25",
     "story": "mw-5r3p30.1240",

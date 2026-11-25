@@ -1,5 +1,14 @@
 # What's new
 
+## 0.7.383
+_2026-11-25_
+- Fixed: Enduring Word now opens at the part of the chapter that explains your verse in every chapter, not only John 3.
+- New: Opening a chapter you left part-way through now offers "Resume" at the verse you stopped at, with "From the start" beside it.
+- Fixed: in the diagram lesson, the Greek example no longer shows an empty slanted line under the verb.
+- Fixed: the Hebrew word חָכְמָה and a few others like it are now respelled as they are said ("khokh-MA") on the teach sheet and in drills.
+- Fixed: a verse you step up through the steps on a review day now comes back tomorrow, not months later.
+- Fixed: 1 John 2:1's sentence diagram, if you had drawn it before the vocative fix, now redraws itself instead of staying in the old, wrong shape.
+
 ## 0.7.382
 _2026-11-25_
 - Fixed: Resuming a Septuagint Psalm reading now names the verse by the number Lampas shows, not the Greek one.
