@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '../../src/data/random';
 import { fillOf, fillScore, placeTile, shownCells, showTheRest, startFill, tileFits, type Fill } from '../../src/data/paradigms/fill';
-import { cellName, paradigmById, standingOf, type Levels } from '../../src/data/paradigms';
+import { cellName, cellsOf, paradigmById, PARADIGMS, standingOf, type Levels } from '../../src/data/paradigms';
 
 const CELLS = [
   { place: 'Nominative Singular Masculine', form: 'ὁ' },
@@ -138,6 +138,30 @@ describe('shownCells, the cells the filter empties', () => {
         const standing = standingOf(cell, levels(IDEAS), 'solid+frontier');
         expect(places(frontier).has(cellName(article, row, c))).toBe(standing === 'open' || standing === 'notYet');
       });
+    }
+  });
+});
+
+describe('every paradigm sheet takes Fill the table (the sweep: the Greek tables and the Hebrew ones, one shared run)', () => {
+  it('empties each table\'s shown cells under Any, lays one tile for each, and fills to the end by placing each form where it belongs', () => {
+    expect(PARADIGMS.length).toBeGreaterThanOrEqual(24);
+    for (const table of PARADIGMS) {
+      // every idea any cell names is solid, so every non-absent cell is shown
+      const every: Levels = new Map(cellsOf(table).flatMap((cell) => cell.ideas).map((id) => [id, { level: 'solid' as const }]));
+      const shown = shownCells(table, every, 'any');
+      expect(shown.length, table.id).toBeGreaterThan(0);
+      const forms = shown.map(({ place, cell }) => ({ place, form: cell.form }));
+      let fill = startFill(forms, mulberry32(7));
+      expect(fill.tiles, table.id).toHaveLength(forms.length);
+      for (const { place } of forms) expect(fillOf(fill, place), `${table.id}: ${place}`).toBe('empty');
+      for (const { place } of forms) {
+        const tile = fill.tiles.find((t) => fill.forms.get(place) === t.form)!;
+        const result = placeTile(fill, tile.id, place);
+        expect(result.right, `${table.id}: ${place}`).toBe(true);
+        fill = result.fill;
+      }
+      expect(fillScore(fill).done, table.id).toBe(true);
+      expect(fill.slips, table.id).toBe(0);
     }
   });
 });

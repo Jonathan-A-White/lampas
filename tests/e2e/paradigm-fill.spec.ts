@@ -1,6 +1,7 @@
 // Fill the table (mw-fnvjof.17.316), at 390x844: the Drill the other way round. 'Fill the table' empties the cells the filter shows and lays their forms, shuffled, as tiles under the table;
 // a tap on a tile then on a cell (or a drag) places it: a right one stays, a wrong one goes back with a shake; Show fills the rest; the first slip puts the table in Review, due now.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { cellsOf, PARADIGMS } from '../../src/data/paradigms';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -12,8 +13,8 @@ const IDEAS: Record<string, 'solid' | 'frontier'> = {
   'case-dative': 'frontier', 'gender-masculine': 'solid', 'gender-feminine': 'solid',
 };
 
-async function putLevels(page: Page) {
-  const rows = Object.entries(IDEAS).map(([id, level]) => ({ id, level, since: Date.now(), how: 'marked' }));
+async function putLevels(page: Page, ideas: Record<string, 'solid' | 'frontier'> = IDEAS) {
+  const rows = Object.entries(ideas).map(([id, level]) => ({ id, level, since: Date.now(), how: 'marked' }));
   await page.evaluate(
     (list) =>
       new Promise<void>((resolve, reject) => {
@@ -34,11 +35,11 @@ async function putLevels(page: Page) {
   );
 }
 
-async function openArticle(page: Page) {
+async function openArticle(page: Page, ideas?: Record<string, 'solid' | 'frontier'>) {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await putLevels(page);
+  await putLevels(page, ideas);
   await page.goto('/#/paradigms?t=article');
   // a write behind Dexie's back is not seen by its live queries: the app starts afresh
   await page.reload();
@@ -144,4 +145,24 @@ test('the filter picks which cells are emptied: Solid only 8, Solid and frontier
   await expect(tiles(page)).toHaveCount(24);
   await expect(tiles(page).last()).toBeInViewport();
   await shot(page, 'paradigm-fill-any');
+});
+
+test('every paradigm sheet, the Greek tables and the Hebrew ones, has Fill the table from the one shared component', async ({ page }) => {
+  // every idea a cell names is solid, so the filter shows every cell of every table
+  const all: Record<string, 'solid'> = {};
+  for (const table of PARADIGMS) for (const cell of cellsOf(table)) for (const id of cell.ideas) all[id] = 'solid';
+  await openArticle(page, all);
+  for (const table of PARADIGMS) {
+    await page.goto(`/#/paradigms?t=${table.id}`);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await extent(page, 'Any').click();
+    await page.getByRole('button', { name: 'Fill the table', exact: true }).click();
+    const blanks = await cells(page, 'empty').count();
+    expect(blanks, table.id).toBeGreaterThan(0);
+    await expect(tiles(page), table.id).toHaveCount(blanks);
+    await page.getByRole('button', { name: 'Show', exact: true }).click();
+    await expect(cells(page, 'empty'), table.id).toHaveCount(0);
+    await expect(page.getByTestId('fill-score'), table.id).toHaveText(`0 of ${blanks} placed, ${blanks} shown`);
+    await page.getByRole('button', { name: 'Stop filling', exact: true }).click();
+  }
 });
