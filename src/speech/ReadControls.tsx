@@ -2,6 +2,7 @@
 // button on a verse, and the line shown while a reading is going. The header's button is Play while nothing is read; while
 // the chapter is read it is Pause and Stop, and while paused Play and Stop. The state is src/speech/readAloud.ts's.
 import { oneTap } from '../ui/settle';
+import type { Place } from './passagePlace';
 import { pauseReading, resumeReading, stopReading, type ReadingState } from './readAloud';
 
 const ICON_PATHS = {
@@ -80,6 +81,21 @@ export function ReadingBar({ reading }: { reading: ReadingState }) {
           {reading.notice}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/** Where he left the chapter (src/speech/passagePlace.ts chapterKey, mw-5r3p30.1239): Resume goes on from that verse, 'From the start' forgets it and reads from verse 1. Drawn while nothing is read. */
+export function ResumeOffer({ kept, onResume, onStart }: { kept: Place; onResume: () => void; onStart: () => void }) {
+  return (
+    <div role="group" aria-label="Where you left off" data-resume-offer className="flex shrink-0 items-center gap-2 border-b border-line bg-surface px-3 py-1">
+      <button type="button" onClick={() => oneTap('resume-offer', onResume)} className="inline-flex min-h-11 min-w-0 items-center gap-1 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line">
+        <span aria-hidden="true">▶</span>
+        <span className="truncate">Resume · {kept.label}</span>
+      </button>
+      <button type="button" onClick={() => oneTap('resume-offer', onStart)} className="inline-flex min-h-11 items-center rounded-lg px-2 chrome-text text-muted underline active:bg-line">
+        From the start
+      </button>
     </div>
   );
 }

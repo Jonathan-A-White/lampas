@@ -1,16 +1,24 @@
 // src/reader/useReadFrom.ts — how the Reader starts Read aloud (docs/module-map.md R1): the plan (what is read is what is shown: it follows the view and
 // the weave), readFrom for the header's Play (Play to) and a verse's play button, and listenTo for a passage.
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { sourceLanguage, type Chapter } from '../data/chapter';
 import type { PlayTo, ReaderView } from '../data/repositories';
 import { passageVerse, unitId, type Passage } from '../data/passage';
 import type { Verse } from '../data/chapter';
-import { getReading, listenKeyOf, pauseReading, planOf, startReading, useListenCompleted, type PlanVerse, type StartOptions } from '../speech/readAloud';
+import { getReading, isReadingOf, listenKeyOf, pauseReading, planOf, readingEndedWhole, startReading, subscribeReading, useListenCompleted, type PlanVerse, type StartOptions } from '../speech/readAloud';
+import { chapterKey, clearPlace, getPlace, savePlace, subscribePlace } from '../speech/passagePlace';
+import { titleOf } from '../data/books';
 import { bibleVoiceChosen, setBibleVoice } from '../speech/recordedVoice';
 import { askAboutData } from '../speech/dataQuestion';
 import { markDataQuestionAnswered, decideVoice, TAP_TIMINGS_WAIT_MS, timingsOnTheWay, timingsReady } from '../speech/voiceDecision';
 import { writeSetting } from '../settings/registry';
 import type { WovenVerse } from '../data/weave';
+
+/** The place the header's Play (a chapter read on, from a verse) is keeping, or null when what is being read is not one (a verse's own button, a Listen, a tutor's answer). Module-wide: the reading goes on
+ *  into the next chapter, whose Reader keeps it from there. */
+let keeping: string | null = null;
+/** Whether the next reading started here is one the header's Play started. */
+let continuousStart = false;
 
 /** `sheet` is what the Verse view shows when it is not what the Reader shows (an Old Testament chapter's view stays English for now, mw-5vvlay.1): its Listen reads that. */
 export function useReadFrom(book: string, chapterN: number, chapter: Chapter | null, view: ReaderView | undefined, woven: (WovenVerse | null)[] | null, readSpan: PlayTo | undefined, viewUnit?: Verse, sheet?: { view: ReaderView; woven: (WovenVerse | null)[] | null }) {
@@ -35,9 +43,14 @@ export function useReadFrom(book: string, chapterN: number, chapter: Chapter | n
   );
   const begin = useCallback(
     (options: Omit<StartOptions, 'recorded' | 'notice'>, read: PlanVerse[], mayAsk = true) => {
+      // only the header's Play (a chapter read on, no Listen) keeps a place
+      const start = (started: StartOptions) => {
+        continuousStart = started.listen === undefined && started.continuous;
+        startReading(started);
+      };
       const go = () => {
         const say = decideVoice(book, chapter, read, mayAsk);
-        if (!say.ask) return startReading({ ...options, recorded: say.recorded, notice: say.notice });
+        if (!say.ask) return start({ ...options, recorded: say.recorded, notice: say.notice });
         askAboutData((choice) => {
           markDataQuestionAnswered();
           if (choice === 'david') {
@@ -46,7 +59,7 @@ export function useReadFrom(book: string, chapterN: number, chapter: Chapter | n
             void writeSetting('bibleVoice', 'msb-david');
           }
           const after = decideVoice(book, chapter, read, false);
-          startReading({ ...options, recorded: after.recorded, notice: after.notice });
+          start({ ...options, recorded: after.recorded, notice: after.notice });
         });
       };
       if (!timingsOnTheWay(book, bibleVoiceChosen())) return go();
@@ -109,6 +122,42 @@ export function useReadFrom(book: string, chapterN: number, chapter: Chapter | n
       if (now.listen === viewKey && now.status === 'reading') pauseReading();
     };
   }, [viewKey]);
+  // Where the header's Play is, kept as the voice reads (src/speech/passagePlace.ts, mw-5r3p30.1239): leaving the screen or a Stop keeps it, the chapter's end forgets it. Opening the chapter again offers Resume there.
+  useEffect(() => {
+    const key = chapterKey(book, chapterN);
+    const follow = () => {
+      const now = getReading();
+      if (now.status === 'idle') {
+        if (keeping !== null && readingEndedWhole()) clearPlace(keeping);
+        keeping = null;
+        return;
+      }
+      if (now.answer !== null || now.listen !== null || !continuousStart) return;
+      if (now.crossing) {
+        // going on into the next chapter: this one was read to its end
+        if (keeping !== null) clearPlace(keeping);
+        keeping = null;
+        return;
+      }
+      if (now.verse === null || !isReadingOf(book, chapterN)) return;
+      keeping = key;
+      const title = titleOf(book, chapterN);
+      savePlace(key, { heading: title, verse: now.verse, label: `${title}:${now.verse}` });
+    };
+    follow();
+    return subscribeReading(follow);
+  }, [book, chapterN]);
+  const placeKey = chapterKey(book, chapterN);
+  const place = useSyncExternalStore(subscribePlace, () => getPlace(placeKey), () => null);
+  const kept = place && place.verse > 1 ? place : null;
+  const resumeKept = useCallback(() => {
+    const at = getPlace(chapterKey(book, chapterN));
+    readFrom(at && at.verse > 1 ? at.verse : 1, true);
+  }, [readFrom, book, chapterN]);
+  const fromTheStart = useCallback(() => {
+    clearPlace(chapterKey(book, chapterN));
+    readFrom(1, true);
+  }, [readFrom, book, chapterN]);
   const listenedView = useListenCompleted() === viewKey && viewKey !== null;
-  return { plan, readFrom, listenTo, listenVerse, listenedView };
+  return { plan, readFrom, listenTo, listenVerse, listenedView, kept, resumeKept, fromTheStart };
 }
