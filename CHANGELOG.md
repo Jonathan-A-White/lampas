@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.387
+_2026-11-25_
+- Fixed: A sentence diagram drawn before the address fix, of any verse that speaks to someone ('Lord,' and the like), is now drawn again the next time it is opened, instead of staying in its old wrong shape.
+- New: Sermons now include Mike Winger's other Bible Thinker teachings that name a passage, not only his book-by-book series (switch is Off until you turn it on).
+
 ## 0.7.385
 _2026-11-25_
 - Fixed: when the tutor sends you to a grammar table after a drill, the table's button is now shown under the answer and opens the table over the drill, and the tutor no longer says "tap the link below" when there is no link.

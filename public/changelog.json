@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.387",
+    "date": "2026-11-25",
+    "story": "mw-5r3p30.1251",
+    "kind": "fixed",
+    "text": "A sentence diagram drawn before the address fix, of any verse that speaks to someone ('Lord,' and the like), is now drawn again the next time it is opened, instead of staying in its old wrong shape."
+  },
+  {
+    "version": "0.7.387",
+    "date": "2026-11-25",
+    "story": "mw-qtu3zvz.280.10",
+    "kind": "new",
+    "text": "Sermons now include Mike Winger's other Bible Thinker teachings that name a passage, not only his book-by-book series (switch is Off until you turn it on)."
+  },
+  {
     "version": "0.7.385",
     "date": "2026-11-25",
     "story": "mw-5r3p30.1248",
