@@ -31,7 +31,10 @@ export interface LessonTerm {
 /** The understood 'you' of a command. */
 const YOU: Slot = understood('you');
 
-/** Colossians 3:1 as the Weave can show it: the chunks the Weave shows in Greek (src/diagram/weave.ts) carry their Greek words (`weft`: the verse's Greek word indexes), the English left over is emptied. */
+/**
+ * Colossians 3:1 as the Weave can show it: the chunks the Weave shows in Greek (src/diagram/weave.ts) carry their Greek words (`weft`: the verse's Greek word indexes). The English 'strive for' is one
+ * chunk, shown as the one Greek verb ζητεῖτε, so 'for' is not kept (mw-5r3p30.1241: a word drawn as nothing would leave a preposition's leg with no word): in Greek 'the things above' is the verb's direct object.
+ */
 const COLOSSIANS_WOVEN: DiagramWords = [
   { text: 'Therefore', chunk: 0 },
   { text: 'since', chunk: 1 },
@@ -42,7 +45,6 @@ const COLOSSIANS_WOVEN: DiagramWords = [
   { text: 'with', chunk: 2 },
   { text: 'χριστῷ', chunk: 3, weft: [4] },
   { text: 'ζητεῖτε', chunk: 4, weft: [7] },
-  { text: '', chunk: 4, weft: [] },
   { text: 'the', chunk: 5 },
   { text: 'things', chunk: 5 },
   { text: 'ἄνω', chunk: 6, weft: [6] },
@@ -61,15 +63,23 @@ const COLOSSIANS_WOVEN: DiagramWords = [
 /** 'where Christ is seated at the right hand of God', hanging on 'above'. */
 const WHERE: Modifier = {
   kind: 'clause',
-  connector: w(13),
-  clause: { subject: slot([14]), verb: slot([15]), complement: { kind: 'predicate-adjective', slot: slot([16], [prep(17, slot([20], [hang(18), hang(19), prep(21, slot([22]))]))]) } },
+  connector: w(12),
+  clause: { subject: slot([13]), verb: slot([14]), complement: { kind: 'predicate-adjective', slot: slot([15], [prep(16, slot([19], [hang(17), hang(18), prep(20, slot([21]))]))]) } },
 };
 /** 'since you have been raised with Christ', hanging on 'strive'. */
 const SINCE: Modifier = { kind: 'clause', connector: w(1), clause: { subject: slot([2]), verb: slot([3, 4, 5], [prep(6, slot([7]))]) } };
 
-/** The same tree the tutor drew for Colossians 3:1 (tests/fixtures/diagrams/col-3-1-english.json): the words are the woven ones above. */
+/** The tree the tutor drew for Colossians 3:1 (tests/fixtures/diagrams/col-3-1-english.json), with 'the things above' as the direct object of the one Greek verb in place of the object of 'for': the words are the woven ones above. */
 const COLOSSIANS: Diagram = {
-  clauses: [{ clause: { subject: YOU, verb: slot([8], [hang(0), prep(9, slot([11], [hang(10), hang(12, [WHERE])])), SINCE]) } }],
+  clauses: [
+    {
+      clause: {
+        subject: YOU,
+        verb: slot([8], [hang(0), SINCE]),
+        complement: { kind: 'direct-object', slot: slot([10], [hang(9), hang(11, [WHERE])]) },
+      },
+    },
+  ],
 };
 
 /** The Greek of Colossians 3:1 as the Greek face of the Diagram draws it (tests/fixtures/diagrams/col-3-1-greek.json): the verse's own words, marks stripped. */
