@@ -154,3 +154,35 @@ describe("copywork's answer writes down the word as read before it marks it", ()
     expect(text.match(/Fill `written` first/g) ?? []).toHaveLength(1);
   });
 });
+
+// mw-5r3p30.1244: on the dictated Hebrew page (`hbo-dictation-sounds-alike-genesis-1-1`) the right fifth word, הַשָּׁמַיִם, was marked wrong about one run in five on the API
+// route (91 of 431 kept runs; 7 of 20 on this story's branch before the rule): 'the yod is missing; you wrote הַשָּׁמִם'. The model read the yod's own hiriq under the mem and read
+// past the yod. Rule texts inside the long Hebrew paragraphs, a second Read of the photo and a redrawn page did not move it (4 or 5 of 20 each); one short line in `## Never`
+// did (0 of 40): the model heeds the closing list where it skims the paragraph. The live proof is that example, which holds words.4 right.
+describe("copywork never calls a Hebrew yod or vav missing whose own point is on the page", () => {
+  const never = text.slice(text.indexOf('\n## Never'));
+
+  it('says it in the Never list, which the model heeds, and once', () => {
+    expect(never).toMatch(/- Never mark a Hebrew word `wrong` for a missing yod or vav when the point the model gives that yod or vav is on the page/);
+    expect(text.match(/for a missing yod or vav when the point/g) ?? []).toHaveLength(1);
+  });
+
+  it('covers the misreading the failing answers showed: the point read under the letter before', () => {
+    expect(never).toMatch(/even if you read that point under the letter before it/);
+  });
+
+  it('gives the reason, so the word is marked by the rest of it', () => {
+    expect(never).toMatch(/no one writes a letter's point and leaves the letter out/);
+    expect(never).toMatch(/Mark the word by the rest of it/);
+  });
+
+  // a worked word primes the model to find a fault in it (mw-5r3p30.989)
+  it('names no Hebrew word or letters of the examples', () => {
+    const line = never.split('\n').find((l) => l.includes('missing yod or vav')) ?? '';
+    expect(line).not.toMatch(/[֐-׿]/);
+  });
+
+  it('leaves a small letter that is truly not there wrong: its neighbours together and no point under the gap', () => {
+    expect(hebrew).toMatch(/a small letter is missing only when its neighbours stand together with nothing between them and no point is left under the gap/);
+  });
+});
