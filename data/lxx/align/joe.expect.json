@@ -1,0 +1,96 @@
+{
+  "reasons": {
+
+  },
+  "chapters": {
+    "1": {
+      "gaps": 0,
+      "model": 2,
+      "leftovers": [
+        ["1:3:tell", "Brenton says 'tell' a second time; the Greek of this verse has one verb, διηγήσασθε, which 'Tell' renders."],
+        ["1:9:lord", "'of the Lord' after 'altar' is not in the Greek of this verse, whose one Κυρίου is the Lord of 'the house of the Lord'."]
+      ],
+      "placePairs": [
+        ["1:5 Awake, @0", "read"],
+        ["1:5 mourn, @8", "read"],
+        ["1:7 utterly @12", "read"],
+        ["1:19 burnt @13", "read"],
+        ["1:19 devoured @6", "read"],
+        ["1:19 trees @16", "read"],
+        ["1:19 wilderness, @10", "read"],
+        ["1:20 cattle @2", "read"],
+        ["1:20 fountains @10", "read"],
+        ["1:20 wilderness. @18", "read"]
+      ]
+    },
+    "2": {
+      "gaps": 0,
+      "model": 1,
+      "leftovers": [
+        ["2:2:near", "'is near' is Brenton's own; the Greek of this verse has no word for it."]
+      ],
+      "placePairs": [
+        ["2:2 again @29", "read"],
+        ["2:2 spread @10", "read"],
+        ["2:5 numerous @19", "read"],
+        ["2:6 blackness @8", "read"],
+        ["2:6 caldron. @9", "read"],
+        ["2:7 shall they mount @7", "read"],
+        ["2:11 resist @33", "read"],
+        ["2:11 shall utter @2", "read"],
+        ["2:14 he will return, @3", "read"],
+        ["2:17 heathen, @36", "read"],
+        ["2:17 porch @3", "read"],
+        ["2:20 I will sink @14", "read"],
+        ["2:22 have yielded @18", "read"],
+        ["2:22 trees @10", "read"],
+        ["2:25 I will recompense @1", "read"],
+        ["2:25 cankerworm @18", "read"],
+        ["2:25 caterpillar, @12", "read"],
+        ["2:25 palmerworm, @15", "read"],
+        ["2:26 ever. @28", "read"],
+        ["2:27 ever. @31", "read"],
+        ["2:29 handmaids @8", "read"],
+        ["2:30 I will show @1", "read"]
+      ]
+    },
+    "3": {
+      "gaps": 0,
+      "model": 3,
+      "leftovers": [
+        ["3:2:gentiles", "'these Gentiles' is Brenton's subject for καταδιείλαντο; the Greek names none here (the aligner had put γῆν on it, which is 'land')."],
+        ["3:7:therefore", "'Therefore' is Brenton's own; the Greek has no word for it (the aligner had put ἐκεῖ on it, which goes with 'whither')."],
+        ["3:13:cause", "Brenton says ὑπερεκχεῖτε as 'cause ... to overflow'; the verb is paired to 'overflow'."]
+      ],
+      "placePairs": [
+        ["3:2 will plead @13", "read"],
+        ["3:3 have drunk. @19", "read"],
+        ["3:4 quickly @21", "read"],
+        ["3:4 render @14", "read"],
+        ["3:6 children @10", "read"],
+        ["3:6 children @2", "read"],
+        ["3:6 children @6", "read"],
+        ["3:8 I will sell @1", "read"],
+        ["3:8 children @12", "read"],
+        ["3:8 they shall sell @15", "read"],
+        ["3:9 arouse @7", "read"],
+        ["3:9 declare @5", "read"],
+        ["3:10 Beat @0", "read"],
+        ["3:10 weak @13", "read"],
+        ["3:11 become @12", "read"],
+        ["3:11 timid @11", "read"],
+        ["3:12 aroused, @0", "read"],
+        ["3:12 will I sit @11", "read"],
+        ["3:14 have resounded @1", "read"],
+        ["3:14 judgment. @15", "read"],
+        ["3:16 children @29", "read"],
+        ["3:17 strangers @21", "read"],
+        ["3:18 flags. @33", "read"],
+        ["3:18 fountains @18", "read"],
+        ["3:18 valley @31", "read"],
+        ["3:19 children @13", "read"],
+        ["3:19 wrongs @12", "read"]
+      ]
+    }
+  }
+}

@@ -1,0 +1,217 @@
+ref	run	text	g	mark	confidence
+Joe.1:1	1	The	-		0.80
+Joe.1:1	2	of the	-		0.80
+Joe.1:1	3	son of	7		0.80
+Joe.1:2	1	words,	-		0.80
+Joe.1:2	1	you⌃	2		0.80
+Joe.1:2	2	that	7		0.80
+Joe.1:2	3	land.	10		0.80
+Joe.1:2	3	Have	11		0.80
+Joe.1:2	4	things	-		0.80
+Joe.1:2	4	happen	12		0.80
+Joe.1:2	5	your	17	unsure	0.50
+Joe.1:2	6	of your	22		0.80
+Joe.1:3	1	Tell	-		0.80
+Joe.1:3	2	let	-		0.80
+Joe.1:3	3	tell	-		0.80
+Joe.1:3	4	another	19		0.80
+Joe.1:4	1	of	-		0.80
+Joe.1:4	2	caterpillar	3		0.80
+Joe.1:4	2	has	-		0.80
+Joe.1:4	3	eaten,	4		0.80
+Joe.1:4	4	of	-		0.80
+Joe.1:4	5	has	-		0.80
+Joe.1:4	6	palmerworm	14		0.80
+Joe.1:4	6	eaten,	12		0.80
+Joe.1:4	7	of	-		0.80
+Joe.1:4	8	palmerworm	19		0.80
+Joe.1:4	8	has	-		0.80
+Joe.1:4	9	cankerworm	22		0.80
+Joe.1:4	9	eaten.	20		0.80
+Joe.1:5	1	you⌃	1		0.80
+Joe.1:5	2	your	5	unsure	0.50
+Joe.1:5	3	that	10		0.80
+Joe.1:5	4	and gladness	22		0.80
+Joe.1:5	5	removed are	16		0.80
+Joe.1:5	6	your	-		0.80
+Joe.1:6	1	a	-		0.80
+Joe.1:6	2	innumerable	9		0.80
+Joe.1:6	2	nation	1		0.80
+Joe.1:6	2	is come	-		0.80
+Joe.1:6	3	land,	5		0.80
+Joe.1:6	4	are	-		0.80
+Joe.1:6	5	teeth,	-		0.80
+Joe.1:6	6	back teeth	17		0.80
+Joe.1:6	6	those	16		0.80
+Joe.1:6	6	of a lion's whelp.	19		0.80
+Joe.1:7	1	He has	-		0.80
+Joe.1:7	2	utterly broken	-		0.80
+Joe.1:7	3	he has	-		0.80
+Joe.1:7	4	my vine,	-		0.80
+Joe.1:7	5	cast	-		0.80
+Joe.1:7	6	has	-		0.80
+Joe.1:7	7	its	18		0.80
+Joe.1:8	1	more than a	-		0.80
+Joe.1:8	2	with	-		0.80
+Joe.1:8	3	of	-		0.80
+Joe.1:8	4	youth.	-		0.80
+Joe.1:9	1	The meat-offering	1		0.80
+Joe.1:9	2	drink-offering	3		0.80
+Joe.1:9	2	are removed	0		0.80
+Joe.1:9	3	the	-		0.80
+Joe.1:9	4	of the	-		0.80
+Joe.1:9	5	you⌃	-		0.80
+Joe.1:9	6	that serve	10		0.80
+Joe.1:9	6	at	-		0.80
+Joe.1:9	7	of the Lord.	-		0.80
+Joe.1:10	1	languish:	1		0.80
+Joe.1:10	1	let the	-		0.80
+Joe.1:10	1	land	6		0.80
+Joe.1:10	2	corn	9		0.80
+Joe.1:10	2	languishes;	8		0.80
+Joe.1:10	2	the	-		0.80
+Joe.1:10	3	is	-		0.80
+Joe.1:10	4	up,	-		0.80
+Joe.1:10	4	the	-		0.80
+Joe.1:10	5	becomes scarce;	12		0.80
+Joe.1:11	1	the husbandmen	1		0.80
+Joe.1:11	1	are consumed:	0		0.80
+Joe.1:11	1	mourn	2		0.80
+Joe.1:11	1	your property	3		0.80
+Joe.1:11	1	on account of	4		0.80
+Joe.1:11	1	the	-		0.80
+Joe.1:11	2	the	-		0.80
+Joe.1:11	3	has	-		0.80
+Joe.1:11	4	off the	-		0.80
+Joe.1:12	1	is	-		0.80
+Joe.1:12	2	up,	-		0.80
+Joe.1:12	3	fig-trees	-		0.80
+Joe.1:12	3	are become few;	6		0.80
+Joe.1:12	3	the	-		0.80
+Joe.1:12	4	trees	15		0.80
+Joe.1:12	4	of	-		0.80
+Joe.1:12	5	are	-		0.80
+Joe.1:12	6	up:	-		0.80
+Joe.1:12	7	of	23		0.80
+Joe.1:12	8	have have abolished	19		0.80
+Joe.1:13	1	yourselves with sackcloth,	-		0.80
+Joe.1:13	2	you⌃	3		0.80
+Joe.1:13	3	you⌃ that serve	7		0.80
+Joe.1:13	3	at	-		0.80
+Joe.1:13	4	in,	-		0.80
+Joe.1:13	5	that	-		0.80
+Joe.1:13	6	to	-		0.80
+Joe.1:13	7	the meat-offering	21		0.80
+Joe.1:13	8	drink-offering	23		0.80
+Joe.1:13	8	are withheld	16		0.80
+Joe.1:13	9	the	-		0.80
+Joe.1:13	10	of your	-		0.80
+Joe.1:14	1	a	-		0.80
+Joe.1:14	2	proclaim	2		0.80
+Joe.1:14	2	a solemn	-		0.80
+Joe.1:14	3	the	-		0.80
+Joe.1:14	4	and	-		0.80
+Joe.1:14	5	the	-		0.80
+Joe.1:14	6	of the	-		0.80
+Joe.1:14	7	the	-		0.80
+Joe.1:14	8	of	-		0.80
+Joe.1:14	9	earnestly	17		0.80
+Joe.1:14	10	the	-		0.80
+Joe.1:15	1	the	-		0.80
+Joe.1:15	2	the	-		0.80
+Joe.1:15	3	the	-		0.80
+Joe.1:15	4	is	-		0.80
+Joe.1:15	5	it will	-		0.80
+Joe.1:15	6	trouble	11		0.80
+Joe.1:15	6	upon	-		0.80
+Joe.1:15	6	trouble.	13		0.80
+Joe.1:16	1	Your	-		0.80
+Joe.1:16	1	meat	4		0.80
+Joe.1:16	1	has been destroyed	5		0.80
+Joe.1:16	2	gladness	12		0.80
+Joe.1:16	3	out of	-		0.80
+Joe.1:16	4	of your	-		0.80
+Joe.1:17	1	The	-		0.80
+Joe.1:17	2	have started	0		0.80
+Joe.1:17	2	at	2		0.80
+Joe.1:17	3	the	-		0.80
+Joe.1:17	4	are abolished,	6		0.80
+Joe.1:17	4	the wine presses	9		0.80
+Joe.1:17	4	are broken down;	8		0.80
+Joe.1:17	5	the	-		0.80
+Joe.1:17	6	is	-		0.80
+Joe.1:18	1	What	0		0.80
+Joe.1:18	1	shall we store up	1		0.80
+Joe.1:18	1	for ourselves?	2		0.80
+Joe.1:18	1	the	-		0.80
+Joe.1:18	2	of	-		0.80
+Joe.1:18	2	cattle	5		0.80
+Joe.1:18	2	have mourned,	3		0.80
+Joe.1:18	3	had	8		0.80
+Joe.1:18	4	of	14		0.80
+Joe.1:18	5	have been utterly	-		0.80
+Joe.1:19	1	O	-		0.80
+Joe.1:19	2	will I	-		0.80
+Joe.1:19	3	has	-		0.80
+Joe.1:19	4	fair places	8		0.80
+Joe.1:19	4	of	-		0.80
+Joe.1:19	5	a	-		0.80
+Joe.1:19	6	has	-		0.80
+Joe.1:19	7	up	-		0.80
+Joe.1:19	8	of	-		0.80
+Joe.1:20	1	of	-		0.80
+Joe.1:20	2	field	4		0.80
+Joe.1:20	2	have looked	-		0.80
+Joe.1:20	3	the	-		0.80
+Joe.1:20	4	of	-		0.80
+Joe.1:20	5	have been	-		0.80
+Joe.1:20	6	up,	-		0.80
+Joe.1:20	7	has	-		0.80
+Joe.1:20	8	fair places	16		0.80
+Joe.1:20	8	of	-		0.80
+Joe.1:2	fix	these words,	1		0.80
+Joe.1:2	fix	you⌃ that	7		0.80
+Joe.1:2	fix	such things	13		0.80
+Joe.1:2	fix	of your	22,24		0.80
+Joe.1:3	fix	Tell	5		0.80
+Joe.1:3	fix	concerning	0		0.80
+Joe.1:3	fix	let your children	8,9		0.80
+Joe.1:3	fix	children,	11		0.80
+Joe.1:5	fix	you⌃ that	10		0.80
+Joe.1:5	fix	your mouth.	18,19		0.80
+Joe.1:6	fix	is come up	2		0.80
+Joe.1:6	fix	teeth	11		0.80
+Joe.1:6	fix	teeth,	13		0.80
+Joe.1:7	fix	ruined	0,4,5		0.80
+Joe.1:7	fix	utterly broken	10,11		0.80
+Joe.1:7	fix	fig-trees:	8		0.80
+Joe.1:7	fix	searched my vine,	13,14		0.80
+Joe.1:7	fix	cast it down;	16		0.80
+Joe.1:7	fix	he has peeled	17		0.80
+Joe.1:7	fix	its	18,20		0.80
+Joe.1:8	fix	more than a	3		0.80
+Joe.1:8	fix	virgin	4		0.80
+Joe.1:8	fix	for	7		0.80
+Joe.1:8	fix	youth.	11,12		0.80
+Joe.1:10	fix	for the	7		0.80
+Joe.1:10	fix	let the	5		0.80
+Joe.1:10	fix	is dried up,	10		0.80
+Joe.1:11	fix	harvest	10		0.80
+Joe.1:11	fix	has perished	9		0.80
+Joe.1:12	fix	fig-trees	5		0.80
+Joe.1:12	fix	palm tree,	9		0.80
+Joe.1:13	fix	Gird yourselves with sackcloth,	0		0.80
+Joe.1:13	fix	lament,	2		0.80
+Joe.1:13	fix	mourn,	5		0.80
+Joe.1:13	fix	you⌃ that	-		0.80
+Joe.1:13	fix	go in,	9		0.80
+Joe.1:13	fix	of your	20		0.80
+Joe.1:14	fix	a solemn service,	3		0.80
+Joe.1:15	fix	of	-		0.80
+Joe.1:15	fix	upon	12		0.80
+Joe.1:16	fix	of your	9		0.80
+Joe.1:16	fix	the	-		0.80
+Joe.1:17	fix	corn	12		0.80
+Joe.1:17	fix	is withered.	11		0.80
+Joe.1:18	fix	have been utterly destroyed.	16		0.80
+Joe.1:20	fix	have looked up	5		0.80
