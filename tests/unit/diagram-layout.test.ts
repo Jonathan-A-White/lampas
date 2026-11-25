@@ -375,6 +375,63 @@ describe('a word outside the clause (an address or an interjection)', () => {
     expect(friends.y - LABEL_H).toBeGreaterThan(first);
   });
 
+  // mw-5r3p30.1238: the dotted join to a subordinate clause runs from the word it hangs on to the clause's verb; an address standing above that clause's base line
+  // must not be in its way, whichever side of the verb it is wide enough to reach.
+  describe('in a subordinate clause, the dotted join', () => {
+    const subWords = wordsOf('Dogs', 'bark', 'because', 'Brothers-and-sisters', 'μου', 'run', 'again');
+    const crossing = (clause: Clause): { layout: Layout; join: LayoutSegment; rects: { l: number; r: number; t: number; b: number }[] } => {
+      const tree: Diagram = {
+        clauses: [{ clause: { subject: { words: [{ i: 0 }], modifiers: [{ kind: 'clause', connector: { i: 2 }, clause }] }, verb: slotOf(1) } }],
+      };
+      const layout = layoutDiagram(tree, subWords, measure);
+      const join = ofKind(layout, 'join')[0];
+      const subClause = join.clause!;
+      const rects = [
+        ...ofKind(layout, 'independent').filter((s) => s.clause === subClause).map((s) => ({ l: s.x1, r: s.x2, t: s.y1, b: s.y2 })),
+        ...layout.labels.filter((l) => l.clause === subClause && (l.role === 'address' || l.role === 'interjection' || (l.role === 'modifier' && l.y < baseOf(layout, subClause).y1 - LABEL_H))).map((l) => ({ l: l.x, r: l.x + l.width, t: l.y - LABEL_H, b: l.y })),
+      ];
+      return { layout, join, rects };
+    };
+    // does the segment pass through the rect (sampled finely: the join is a straight line)
+    const passesThrough = (s: LayoutSegment, r: { l: number; r: number; t: number; b: number }): boolean => {
+      for (let k = 0; k <= 400; k++) {
+        const x = s.x1 + ((s.x2 - s.x1) * k) / 400;
+        const y = s.y1 + ((s.y2 - s.y1) * k) / 400;
+        if (x >= r.l && x <= r.r && y >= r.t && y <= r.b) return true;
+      }
+      return false;
+    };
+
+    it('does not run through an address wider than the clause up to its verb', () => {
+      const { join, rects } = crossing({
+        subject: { words: [{ implied: 'they' }], modifiers: [] },
+        verb: slotOf(5),
+        independent: [{ kind: 'address', slot: slotOf(3) }],
+      });
+      expect(rects.length).toBeGreaterThan(1);
+      for (const r of rects) expect(passesThrough(join, r)).toBe(false);
+    });
+
+    it('does not run through what hangs under the address either', () => {
+      const { join, rects } = crossing({
+        subject: { words: [{ implied: 'they' }], modifiers: [] },
+        verb: slotOf(5),
+        independent: [{ kind: 'address', slot: { words: [{ i: 3 }], modifiers: [{ kind: 'word', word: { i: 4 }, modifiers: [] }] } }],
+      });
+      expect(rects.length).toBeGreaterThan(2);
+      for (const r of rects) expect(passesThrough(join, r)).toBe(false);
+    });
+
+    it('stays a straight drop under its word when the verb is right of the address', () => {
+      const { join } = crossing({
+        subject: { words: [{ implied: 'they' }], modifiers: [] },
+        verb: slotOf(5, 6),
+        independent: [{ kind: 'interjection', slot: slotOf(4) }],
+      });
+      expect(join.x2).toBe(join.x1);
+    });
+  });
+
   it('draws a tree without one exactly as before (the line kind is never made)', () => {
     expect(ofKind(layoutDiagram({ clauses: [{ clause: dogsBark }] }, wordsOf('Dogs', 'bark'), measure), 'independent')).toEqual([]);
   });
