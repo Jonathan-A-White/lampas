@@ -132,9 +132,10 @@ describe('the tutor’s sermon list where only the online index has the sermons'
   it('lists the service’s rows, and the bundled ones alone where the service is down', async () => {
     serve();
     const told = await talkSermonsFor({ book: '2pe', chapter: 3 });
-    expect(told?.rows.map((r) => r.title).sort()).toEqual(['God’s Word in a Mocking World', 'The Day of the Lord']);
+    expect(told?.rows.map((r) => r.title).sort()).toEqual(['God’s Word in a Mocking World', 'Martyn Lloyd-Jones (MLJ Trust)', 'The Day of the Lord']);
     forgetServiceSources();
     serve('down');
-    expect(await talkSermonsFor({ book: '2pe', chapter: 3 })).toBeUndefined();
+    // the bundled index has none here: the MLJ Trust row (mw-qtu3zvz.280.17) is the only one listed
+    expect((await talkSermonsFor({ book: '2pe', chapter: 3 }))?.rows.map((r) => r.title)).toEqual(['Martyn Lloyd-Jones (MLJ Trust)']);
   });
 });

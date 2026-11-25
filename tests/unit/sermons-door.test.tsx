@@ -108,7 +108,7 @@ describe('the Sermons sheet', () => {
     try {
       const sheet = await openFor({ book: 'rom', chapter: 5, from: 8, to: 8 });
       const metas = [...sheet.querySelectorAll('[data-sermon-meta]')].map((m) => m.textContent);
-      expect(metas).toHaveLength(5);
+      expect(metas).toHaveLength(6); // the five sermons and the MLJ Trust row (mw-qtu3zvz.280.17)
       expect(metas.every((m) => m?.endsWith('Needs the internet') && !m.includes('Opens on the web'))).toBe(true);
     } finally {
       delete (navigator as unknown as Record<string, unknown>).onLine;

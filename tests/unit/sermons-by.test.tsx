@@ -118,7 +118,8 @@ describe('the tutor’s sermon list', () => {
       { ...sourceOf('brookfield', 'Brookfield First’s sermons', { rom: [row('brookfield', 'nopreacher', 'Love Shown', ['rom', 5, 8, 8], undefined, '2024-07-21')] }), by: BY },
     ]);
     const told = await talkSermonsFor({ book: 'rom', chapter: 5 });
-    expect(told?.rows).toHaveLength(1);
+    // the one sermon and the MLJ Trust row (mw-qtu3zvz.280.17)
+    expect(told?.rows).toHaveLength(2);
     expect(told?.told.rows[0]).not.toHaveProperty('preacher');
     expect(JSON.stringify(told?.told)).not.toContain(BY);
   });
