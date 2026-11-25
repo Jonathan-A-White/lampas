@@ -844,6 +844,27 @@ textarea,
   }
 }
 
+/* Fill the table (src/ParadigmsScreen.tsx, mw-fnvjof.17.316): a blank that was given a wrong tile shakes once and flashes the bad colour; the screen clears it on animationend. Under prefers-reduced-motion the rule below
+   makes it all but instant, and the line under the title says the tile went back. */
+.paradigm-shake {
+  animation: paradigm-shake 400ms ease;
+}
+@keyframes paradigm-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+    background-color: color-mix(in srgb, var(--color-bad) 30%, transparent);
+  }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .away-box,
   .away-box[data-away],

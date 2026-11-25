@@ -158,6 +158,31 @@ const putAtFrontier = async (_: unknown, ids: string): Promise<void> => {
   await db.grammarLevels.bulkPut(ids.split(', ').map((id) => ({ id, level: 'frontier' as const, since: Date.now(), how: 'marked' as const })));
 };
 
+
+// mw-fnvjof.17.316: Fill the table
+const isEmpty = async (place: string): Promise<void> => {
+  await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'empty'));
+  expect(cellAt(place).textContent?.trim() ?? '').toBe('');
+};
+const trayForms = (): string[] => Array.from(document.querySelectorAll('[data-testid="fill-tray"] [data-tile]')).map((el) => el.textContent ?? '');
+const trayHolds = async (_: unknown, count: number, ...forms: string[]): Promise<void> => {
+  await waitFor(() => expect(trayForms()).toHaveLength(count));
+  expect([...trayForms()].sort()).toEqual([...forms].sort());
+};
+/** Picks the tile with the form, then taps the cell. */
+const placesTile = async (_: unknown, form: string, place: string): Promise<void> => {
+  const tile = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="fill-tray"] [data-tile]')).find((el) => el.textContent === form);
+  if (!tile) throw new Error(`no tile "${form}" on the tray`);
+  await user.click(tile);
+  await user.click(cellAt(place));
+};
+const reviewRow = async (id: string) => db.reviews.get({ kind: 'paradigm', id } as never);
+const fillSteps = {
+  taps: async (_: unknown, name: string): Promise<void> => {
+    await user.click(await screen.findByRole('button', { name }));
+  },
+};
+
 const feature = await loadFeature('features/paradigms.feature');
 
 describeFeature(feature, ({ Background, Scenario }) => {
@@ -404,6 +429,71 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
     And('there is no {string} button', (_, name: string) => {
       expect(screen.queryByRole('button', { name })).toBeNull();
+    });
+  });
+
+  // mw-fnvjof.17.316
+  Scenario('Fill the table empties the cells and lays their forms as tiles; a right tile stays and a wrong one goes back', ({ Given, When, Then, And }) => {
+    Given('the table {string} is open to Drill', openDrill);
+    When('he taps {string}', fillSteps.taps);
+    Then('the cells {string}, {string}, {string} and {string} are empty and show no form', async (_, a: string, b: string, c: string, d: string) => {
+      for (const place of [a, b, c, d]) await isEmpty(place);
+    });
+    And('the tray holds {int} tiles, the forms {string}, {string}, {string} and {string}', trayHolds);
+    And('the cell {string} is locked and shows no form', (_, place: string) => showsNothing(place, 'locked'));
+    When('he picks the tile {string} and taps the cell {string}', placesTile);
+    Then('the cell {string} is empty and shows no form', (_, place: string) => isEmpty(place));
+    And('the tray still holds {int} tiles, the forms {string}, {string}, {string} and {string}', trayHolds);
+    When('he puts the tile {string} in the cell {string}', placesTile);
+    Then('the cell {string} stays filled with {string}', (_, place: string, form: string) => shows(place, form));
+    And('the tray holds {int} tiles, the forms {string}, {string} and {string}', trayHolds);
+  });
+
+  Scenario('Show fills the rest of the table and ends on how many he placed', ({ Given, When, Then, And }) => {
+    Given('the table {string} is open to Drill', openDrill);
+    When('he taps {string}', fillSteps.taps);
+    And('he picks the tile {string} and taps the cell {string}', placesTile);
+    And('he taps Show', () => fillSteps.taps(null, 'Show'));
+    Then('the cell {string} shows {string}', (_, place: string, form: string) => shows(place, form));
+    And('the fill score reads {string}', async (_, text: string) => {
+      await waitFor(() => expect(screen.getByTestId('fill-score')).toHaveTextContent(text));
+    });
+    And('the tray is gone', () => {
+      expect(document.querySelector('[data-testid="fill-tray"]')).toBeNull();
+    });
+    When('he taps Fill it again', () => fillSteps.taps(null, 'Fill it again'));
+    Then('the cell {string} is empty and shows no form', (_, place: string) => isEmpty(place));
+    And('the tray holds {int} tiles, the forms {string}, {string}, {string} and {string}', trayHolds);
+  });
+
+  Scenario('How much of a table picks the cells Fill the table empties', ({ Given, When, Then, And }) => {
+    Given('How much of a table is {string}', setExtent);
+    And('the table {string} is open to Drill', openDrill);
+    When('he taps {string}', fillSteps.taps);
+    Then('the cell {string} is empty and shows no form', (_, place: string) => isEmpty(place));
+    And('the tray holds {int} tiles, the forms {string}', trayHolds);
+    And('the cell {string} is hidden by the extent', async (_, place: string) => {
+      await waitFor(() => expect(cellAt(place)).toHaveAttribute('data-state', 'outside'));
+    });
+  });
+
+  Scenario('A wrong tile counts toward Review the way a wrong Drill answer does, once a run', ({ Given, When, Then }) => {
+    Given('the table {string} is open to Drill', openDrill);
+    When('he taps {string}', fillSteps.taps);
+    Then('the review {string} {string} is not on the schedule', async (_, kind: string, id: string) => {
+      expect(kind).toBe('paradigm');
+      expect(await reviewRow(id)).toBeUndefined();
+    });
+    When('he picks the tile {string} and taps the cell {string}', placesTile);
+    Then('the review {string} {string} is due now with {int} lapse', async (_, kind: string, id: string, lapses: number) => {
+      expect(kind).toBe('paradigm');
+      await waitFor(async () => expect((await reviewRow(id))?.lapses).toBe(lapses));
+      expect((await reviewRow(id))?.due).toBeLessThanOrEqual(Date.now());
+    });
+    When('he puts the tile {string} in the cell {string}', placesTile);
+    Then('the review {string} {string} still has {int} lapse', async (_, kind: string, id: string, lapses: number) => {
+      expect(kind).toBe('paradigm');
+      await waitFor(async () => expect((await reviewRow(id))?.lapses).toBe(lapses));
     });
   });
 

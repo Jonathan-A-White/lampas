@@ -11,6 +11,8 @@ Feature: Paradigms
   Greek, and a switch in the table's header) says which cells are shown: Any (locked cells too, marked not yet), Solid and frontier (the
   default: his cells, the rest locked) or Solid only (the frontier cells hidden). Ask the tutor (on the list too) opens the tutor's sheet over the screen and tells it the table, the mode, the forms
   showing, the cell he is on and the word he came from; the talk is kept per table (mw-irpgqi.3).
+  Fill the table (mw-fnvjof.17.316) is the Drill the other way round: it empties the cells the filter shows and lays their forms as shuffled tiles under the table; a tap on a tile then a cell places it,
+  a right one stays, a wrong one goes back and counts toward Review as a wrong Drill answer does, and Show fills the rest.
 
   Background:
     Given his grammar levels are the article, the nominative, the singular and nouns solid, the genitive and the feminine at the frontier, the masculine solid, the dative, the accusative, the plural and the neuter not yet
@@ -126,6 +128,49 @@ Feature: Paradigms
     When he drills "Genitive Singular Masculine" as had
     Then the score now reads "1 of 1"
     And there is no "Drill the missed again" button
+
+  # mw-fnvjof.17.316: Fill the table is the Drill the other way round: the cells empty, the forms are tiles to place
+  Scenario: Fill the table empties the cells and lays their forms as tiles; a right tile stays and a wrong one goes back
+    Given the table "article" is open to Drill
+    When he taps "Fill the table"
+    Then the cells "Nominative Singular Masculine", "Nominative Singular Feminine", "Genitive Singular Masculine" and "Genitive Singular Feminine" are empty and show no form
+    And the tray holds 4 tiles, the forms "ὁ", "ἡ", "τοῦ" and "τῆς"
+    And the cell "Dative Singular Masculine" is locked and shows no form
+    When he picks the tile "ὁ" and taps the cell "Genitive Singular Masculine"
+    Then the cell "Genitive Singular Masculine" is empty and shows no form
+    And the tray still holds 4 tiles, the forms "ὁ", "ἡ", "τοῦ" and "τῆς"
+    When he puts the tile "τοῦ" in the cell "Genitive Singular Masculine"
+    Then the cell "Genitive Singular Masculine" stays filled with "τοῦ"
+    And the tray holds 3 tiles, the forms "ὁ", "ἡ" and "τῆς"
+
+  Scenario: Show fills the rest of the table and ends on how many he placed
+    Given the table "article" is open to Drill
+    When he taps "Fill the table"
+    And he picks the tile "ὁ" and taps the cell "Nominative Singular Masculine"
+    And he taps Show
+    Then the cell "Genitive Singular Feminine" shows "τῆς"
+    And the fill score reads "1 of 4 placed, 3 shown"
+    And the tray is gone
+    When he taps Fill it again
+    Then the cell "Genitive Singular Feminine" is empty and shows no form
+    And the tray holds 4 tiles, the forms "ὁ", "ἡ", "τοῦ" and "τῆς"
+
+  Scenario: How much of a table picks the cells Fill the table empties
+    Given How much of a table is "solid"
+    And the table "article" is open to Drill
+    When he taps "Fill the table"
+    Then the cell "Nominative Singular Masculine" is empty and shows no form
+    And the tray holds 1 tiles, the forms "ὁ"
+    And the cell "Genitive Singular Masculine" is hidden by the extent
+
+  Scenario: A wrong tile counts toward Review the way a wrong Drill answer does, once a run
+    Given the table "article" is open to Drill
+    When he taps "Fill the table"
+    Then the review "paradigm" "article" is not on the schedule
+    When he picks the tile "ὁ" and taps the cell "Genitive Singular Masculine"
+    Then the review "paradigm" "article" is due now with 1 lapse
+    When he puts the tile "ὁ" in the cell "Genitive Singular Feminine"
+    Then the review "paradigm" "article" still has 1 lapse
 
   Scenario: Start again blanks every cell of the drill
     Given the table "article" is open to Drill
