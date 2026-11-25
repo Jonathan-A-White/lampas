@@ -54,4 +54,14 @@ describe('labelOf', () => {
     expect(labelOf('1 Samuel 8', 8, true, 5)).toBe('1 Samuel 8:5');
     expect(labelOf('Psalm 23', 23, true, 0)).toBe('Psalm 23');
   });
+
+  it('names the Lampas chapter of a Septuagint verse when it is not the held chapter counted on (mw-fnvjof.17.293)', () => {
+    // Greek Psalm 9:22 is Psalm 10:1: read through Psalms 9-10, the label says Psalm 10, not 9
+    expect(labelOf('Psalms 9-10', 9, true, 1, 10)).toBe('Psalms 10:1');
+    // a later Greek chapter's verse (plan 1005, Greek 10:5 is Psalm 10:4) keeps its Lampas chapter
+    expect(labelOf('Psalms 9-11', 9, true, 1004, 10)).toBe('Psalms 10:4');
+    // a verse in the held chapter, and one with no Lampas chapter given, are named as before
+    expect(labelOf('Psalms 9-10', 9, true, 5, 9)).toBe('Psalms 9:5');
+    expect(labelOf('Psalms 9-10', 9, true, 1005)).toBe('Psalms 10:5');
+  });
 });

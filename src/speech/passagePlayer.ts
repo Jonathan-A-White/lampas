@@ -8,7 +8,7 @@
 // rather than being stopped: the reading's end by itself goes to the next reference, a Stop or another speech taking the voice ends the player.
 import type { HeldPlace } from '../markdown/verseLinks';
 import { loadChapter, sourceLanguage } from '../data/chapter';
-import { lampasNumber } from '../reader/septuagint';
+import { lampasChapter, lampasNumber } from '../reader/septuagint';
 import { readViewSettings, settingsFor } from '../reader/useViewSettings';
 import { wovenOf } from '../reader/useWoven';
 import { clearPlace, labelOf, savePlace } from './passagePlace';
@@ -56,6 +56,8 @@ let placeKey: string | null = null;
 let startVerse: number | null = null;
 /** the verse numbers Lampas shows the verses of the reference being read by, by plan number (a Septuagint reference's differ from the plan's) */
 let shownNow = new Map<number, number>();
+/** the Lampas chapter of each verse of the reference being read, by plan number: a Septuagint verse of one Greek chapter can be the next Lampas chapter's */
+let shownChapterNow = new Map<number, number>();
 const listeners = new Set<(state: PassageState, current: PassageRef | null) => void>();
 
 export const getPassagePlayer = (): PassagePlayer => player;
@@ -83,6 +85,7 @@ async function planOfReference(ref: PassageRef, held: HeldPlace): Promise<Refere
   return {
     plan: plans.flatMap(({ plan }, k) => plan.map((v) => ({ ...v, n: k * CHAPTER_STEP + v.n }))),
     shown: new Map(plans.flatMap(({ shown }, k) => [...shown].map(([n, shownN]): [number, number] => [k * CHAPTER_STEP + n, k * CHAPTER_STEP + shownN]))),
+    shownChapter: new Map(plans.flatMap(({ shownChapter }, k) => [...shownChapter].map(([n, c]): [number, number] => [k * CHAPTER_STEP + n, c]))),
   };
 }
 
@@ -90,6 +93,8 @@ async function planOfReference(ref: PassageRef, held: HeldPlace): Promise<Refere
 interface ReferencePlan {
   plan: PlanVerse[];
   shown: Map<number, number>;
+  /** for each verse (by plan number) the Lampas chapter it is in (Greek Psalm 9:22 is in Psalm 10) */
+  shownChapter: Map<number, number>;
 }
 
 async function planOfChapter(held: HeldPlace, whole: boolean): Promise<ReferencePlan> {
@@ -104,7 +109,7 @@ async function planOfChapter(held: HeldPlace, whole: boolean): Promise<Reference
     woven ? wanted.map(({ i }) => woven[i] ?? null) : null,
     sourceLanguage(chapter),
   );
-  return { plan, shown: new Map(wanted.map(({ v }) => [v.n, lampasNumber(chapter, v)])) };
+  return { plan, shown: new Map(wanted.map(({ v }) => [v.n, lampasNumber(chapter, v)])), shownChapter: new Map(wanted.map(({ v }) => [v.n, lampasChapter(chapter, v, held.chapter)])) };
 }
 
 /** One line said in English, as a reading of its own. */
@@ -116,9 +121,10 @@ function say(line: string): void {
  * the heading and the verses are one reading and one Listen: the heading's end is not the reference's end, and Pause, Resume and Stop reach it as they reach a verse. */
 const HEADING_N = 0;
 
-function begin(ref: PassageRef, { plan, shown }: ReferencePlan, held: HeldPlace): void {
+function begin(ref: PassageRef, { plan, shown, shownChapter }: ReferencePlan, held: HeldPlace): void {
   if (!plan[0]) return say(OFFLINE(ref.heading));
   shownNow = shown;
+  shownChapterNow = shownChapter;
   const heading: PlanVerse = { n: HEADING_N, runs: [{ text: spokenReference(ref.heading), language: 'english' }] };
   // read on from the verse he left off at when it is still in the plan (the view or weave may have changed it since), without saying the heading again
   const from = startVerse !== null && ref === queue[0] && at === 0 && plan.some((v) => v.n === startVerse) ? startVerse : HEADING_N;
@@ -181,7 +187,7 @@ function onReading(): void {
 function keepPlace(verse: number | null): void {
   const ref = player.current;
   if (!placeKey || !ref?.held || verse === null || verse < 0) return;
-  savePlace(placeKey, { heading: ref.heading, verse, label: labelOf(ref.heading, ref.held.chapter, ref.through !== undefined, shownNow.get(verse) ?? verse) });
+  savePlace(placeKey, { heading: ref.heading, verse, label: labelOf(ref.heading, ref.held.chapter, ref.through !== undefined, shownNow.get(verse) ?? verse, shownChapterNow.get(verse)) });
 }
 
 function end(): void {
@@ -193,6 +199,7 @@ function end(): void {
   startVerse = null;
   placeKey = null;
   shownNow = new Map();
+  shownChapterNow = new Map();
   set(IDLE);
 }
 
