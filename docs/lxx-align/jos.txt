@@ -25,4 +25,4 @@ Derived without a Morpheus cache: none.
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Joshua | 402 | 9,540 | 8,274 | 86.7% | 60.6% | 857 (9.0%) |
+| Joshua | 402 | 9,540 | 8,292 | 86.9% | 60.9% | 865 (9.1%) |
