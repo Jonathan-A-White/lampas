@@ -1,7 +1,7 @@
 // mw-5r3p30.732: two smoke examples missed 1 of 3 on 2026-10-23: work-at-its-place gave a work link with no `place`, and quiz-goal-ask-first asked
 // "I'd like to know what you want ..." with no question mark. The instructions read by the mill must state each rule once, plainly, with one short example,
 // and stay well under the 100,000-byte ceiling so the next rule has room (97,000 until mw-5r3p30.733 added the `verses` rule: 97,500 now). The model's side is proved by `mw grist eval` once this lands.
-// Raised from 97,500 by mw-5r3p30.753 so stories stop trimming rules to fit; the ceiling is now BIBLE_TALK_CEILING (mw-5r3p30.938).
+// Raised from 97,500 by mw-5r3p30.753 so stories stop trimming rules to fit; the ceiling is now BIBLE_TALK_CEILING (mw-5r3p30.938), 100,000 bytes joined as the mill reads them (mw-5r3p30.1096).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { BIBLE_TALK_CEILING, instructionParts, instructionsOf } from '../../scripts/grind-parts';
@@ -13,8 +13,8 @@ const count = (haystack: string, needle: RegExp): number => (haystack.match(need
 
 describe('the bible-talk instructions after mw-5r3p30.732', () => {
   it('are at most BIBLE_TALK_CEILING bytes', () => {
-    const bytes = instructionParts('bible-talk').reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    expect(bytes).toBeLessThanOrEqual(BIBLE_TALK_CEILING);
+    expect(instructionParts('bible-talk').length).toBeGreaterThan(1);
+    expect(Buffer.byteLength(text, 'utf8')).toBeLessThanOrEqual(BIBLE_TALK_CEILING);
   });
 
   it('say once that asking his quiz goal first is a question that ends with a question mark, with one example', () => {
