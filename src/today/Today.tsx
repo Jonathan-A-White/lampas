@@ -1,6 +1,6 @@
 // src/today/Today.tsx — Today (#/today, mw-1fwagb.5, the grilling mw-6ww.126): the day's pieces in one list, each a tap into its drill or Logos: Review (n due, opens Review), Memorize (n verses due, a tap starts the longest overdue verse's session; pick verses in a list while none is memorized), the
 // reading plan's next chapter (Read, Listen in Audible; Logos is reached by selecting a passage, mw-5r3p30.1214), the day's Psalms and Proverbs (src/data/daily/psalmsProverbs.ts, each Read in Lampas where Lampas holds the chapter, which is every one; a chapter it did not hold would keep Open in Logos), and today's
-// devotional (opens Logos at the day, or is the day's Morning RePhil episode with a Watch link, mw-qtu3zvz.15). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Listen in Audible needs an
+// devotional (opens Logos at the day, or is the day's Morning RePhil episode with a Watch link, mw-qtu3zvz.15, that plays it in Lampas's sermon player, mw-r9xo1pj.28). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Listen in Audible needs an
 // Audio Bible). A tap on the plan's place opens src/plan/PlacePicker.tsx, where he says where he is (I'm at the Reader's chapter, or Pick a place), with Undo for a few seconds. With Tick boxes On each piece has a box HE ticks (nothing ticks by itself, not even by opening the link); Off, Today is a plain list of links. A link tap is also kept as
 // 'opened' for the local date (dailyStore.ts). With nothing On, Today explains what it could hold, each with a link to the Settings row that turns it on; once he changes a Daily row
 // that explanation is not shown again (an empty Today then names only where to choose). The day is the LOCAL date, read again when the app comes back to the front; Review's and Memorize's day figures are asked again then too, and at his local midnight (useLatestLiveQuery, mw-indx1x6.58).
@@ -36,6 +36,7 @@ import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPs
 import { audioBibleSetting } from '../settings/definitions/audioBible';
 import { useDrawSources } from '../settings/devotionalSources';
 import { openSetting } from '../settings/link';
+import { episodeRow, openSermon, videoOfRow } from '../sermons/player';
 import { useSetting } from '../settings/store';
 import { useReportScreen } from '../tutor/screenContext';
 import { memorizeLine, memorizeToday } from './memorizeLine';
@@ -358,9 +359,9 @@ interface SeenUndo {
   before: SeenBefore;
 }
 
-/** Morning RePhil's episode for the day (mw-qtu3zvz.15): its title (the number the church prints), its date and a Watch link to the Subsplash share link, which opens on Android, iPhone and a desktop
- *  browser alike; playing it keeps it heard on this device (never offered again), and Seen does the same without playing, so Today moves on to the next episode (mw-r9xo1pj.2). With every episode seen
- *  and no backup to open (Logos Off) it says so and offers to start again. */
+/** Morning RePhil's episode for the day (mw-qtu3zvz.15): its title (the number the church prints), its date and Watch. Watch plays it in Lampas's sermon player, as a sermon's row does (mw-r9xo1pj.28; the
+ *  link stays for a long press); an episode whose link the player cannot read says 'Watch on the web' and opens it in the browser. Playing it keeps it heard on this device (never offered again), and Seen
+ *  does the same without playing, so Today moves on to the next episode (mw-r9xo1pj.2). With every episode seen and no backup to open (Logos Off) it says so and offers to start again. */
 function RephilEpisode({ ticks, episode, heard, choice, order, onSeen }: { ticks: Ticks; episode: Episode | undefined; heard: ReadonlySet<string>; choice: string; order: EpisodeOrder; onSeen: (undo: SeenUndo) => void }) {
   if (!episode) {
     return (
@@ -378,20 +379,25 @@ function RephilEpisode({ ticks, episode, heard, choice, order, onSeen }: { ticks
     );
   }
   const other = choice === MORNING_REPHIL_ID ? anotherEpisode(order, heard, episode.id) : undefined;
+  const row = episodeRow(episode);
+  const plays = videoOfRow(row) !== undefined;
   return (
     <Piece id="devotional" label={episode.title} ticks={ticks}>
       <a
         href={episode.share}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => {
+        onClick={(event) => {
           void markOpened(ticks.date, 'devotional');
           void markHeard(ticks.date, episode.id);
+          if (!plays) return;
+          event.preventDefault();
+          openSermon(row);
         }}
         className={LINK}
       >
         <span className="text-lg font-medium text-accent">{episode.title}</span>
-        <span className="text-sm text-muted">{`Watch · ${episodeDate(episode.date)}`}</span>
+        <span className="text-sm text-muted">{`${plays ? 'Watch' : 'Watch on the web'} · ${episodeDate(episode.date)}`}</span>
       </a>
       <div className="flex gap-2 px-2 pb-1">
         <button type="button" onClick={() => oneTap('rephil-seen', () => void markSeen(ticks.date, episode.id).then((before) => onSeen({ date: ticks.date, id: episode.id, title: episode.title, before })))} className={ACTION}>

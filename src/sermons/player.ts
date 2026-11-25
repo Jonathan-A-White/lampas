@@ -1,6 +1,7 @@
 // src/sermons/player.ts — the one way to play a sermon in the app (mw-qtu3zvz.83, docs/sermons.md 'The player'): openSermon(row) from a row of the sheet, openSermon(row, { auto: true }) from Lampas itself (a voice ask),
 // which starts the video with no tap. The sheet is drawn by <SermonPlayerHost /> (src/sermons/SermonPlayer.tsx, mounted once in App).
 import { useSyncExternalStore } from 'react';
+import type { Episode } from '../data/daily/morningRephil';
 import { openedRow, type LinkRow } from './merge';
 import { pageOfRow } from './playerPage';
 import { videoOf, type Video } from './video';
@@ -27,6 +28,10 @@ export const videoOfRow = (row: LinkRow): Video | undefined => {
   const alt = videoOf(row.alt);
   return alt?.kind === 'youtube' ? alt : undefined;
 };
+
+/** A Morning RePhil episode as a row of the player (Today's Watch, mw-r9xo1pj.28): its address is the episode's share link, which video.ts plays as it is (the church's Subsplash short link in Subsplash's embed, a YouTube watch address
+ *  in the YouTube player). A link it cannot read is no video (videoOfRow), and Today opens that one on the web. */
+export const episodeRow = (e: Episode): LinkRow => ({ id: e.id, source: 'rephil', title: e.title, date: e.date, open: { url: e.share }, opensIn: 'web' });
 
 /** Plays a row's video in the player sheet. False, and nothing opened, for a row that is no video the app plays. */
 export function openSermon(row: LinkRow, options: { auto?: boolean } = {}): boolean {

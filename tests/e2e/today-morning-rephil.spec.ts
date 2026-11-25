@@ -1,5 +1,6 @@
 // tests/e2e/today-morning-rephil.spec.ts — Morning RePhil as a devotional (mw-qtu3zvz.15) at 390x844: chosen in Settings > Daily > Which devotional, Today shows one episode with its title and
-// date and a Watch link to its Subsplash share link (no Logos link), playing it keeps it heard, and Morning RePhil order offers Oldest first and Newest first.
+// date and a Watch link to its Subsplash share link (no Logos link), playing it keeps it heard, and Morning RePhil order offers Oldest first and Newest first. Watch plays the episode in Lampas's own
+// sermon player sheet (Subsplash's embed in a frame), opening no new page (mw-r9xo1pj.28).
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { shot } from './shot';
@@ -39,8 +40,13 @@ async function keptRaw(page: Page, key: string): Promise<string | undefined> {
   );
 }
 
-test('choosing Morning RePhil shows its oldest episode on Today, Watch opens the share link and keeps it heard, and the order can be Newest first', async ({ page, context }) => {
-  await context.route('https://brookfieldfirst.subspla.sh/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<title>Morning RePhil</title>' }));
+test('choosing Morning RePhil shows its oldest episode on Today, Watch plays it in the app and keeps it heard, and the order can be Newest first', async ({ page, context }) => {
+  // Subsplash is faked: the frame's page is this, and nothing leaves the machine
+  const framed: string[] = [];
+  await context.route('https://subsplash.com/**', (route) => {
+    framed.push(route.request().url());
+    return route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><body style="margin:0;background:#222;color:#fff">Morning RePhil</body>' });
+  });
   await openUnlocked(page);
   await turnLogosOn(page);
   await page.goto('/#/settings?group=daily');
@@ -72,9 +78,29 @@ test('choosing Morning RePhil shows its oldest episode on Today, Watch opens the
   expect((await watch.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
   await shot(page, 'today-morning-rephil');
 
-  const [tab] = await Promise.all([context.waitForEvent('page'), watch.click()]);
-  await expect(tab).toHaveURL(oldest.share);
-  await tab.close();
+  const opened: Page[] = [];
+  context.on('page', (p) => opened.push(p));
+  await watch.click();
+  const player = page.getByRole('dialog', { name: oldest.title, exact: true });
+  await expect(player).toBeVisible();
+  const embed = `https://subsplash.com/u/brookfieldfirst/media/embed/d/${oldest.id}`;
+  await expect(player.locator('iframe')).toHaveAttribute('src', embed);
+  await expect.poll(() => framed).toEqual([embed]);
+  // the frame is a 16:9 video across the sheet, and Close is reachable
+  const frame = await player.locator('iframe').boundingBox();
+  expect(frame?.width).toBeGreaterThan(340);
+  expect((frame?.height ?? 0) / (frame?.width ?? 1)).toBeCloseTo(9 / 16, 1);
+  await expect(player.getByRole('link', { name: 'Open on subsplash.com ›', exact: true })).toBeVisible();
+  const close = player.getByRole('button', { name: 'Close', exact: true });
+  expect((await close.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  await shot(page, 'today-morning-rephil-player');
+  await close.click();
+  await expect(player).toHaveCount(0);
+  await expect(page).toHaveURL(/#\/today$/);
+  await expect(watch).toBeVisible();
+  // the one page is the app's: no tab was opened
+  expect(opened).toEqual([]);
+  expect(context.pages()).toHaveLength(1);
   await expect.poll(async () => await keptRaw(page, 'morningRephilHeard')).toBe(JSON.stringify([oldest.id]));
   // still the day's episode after a reload, though heard
   await page.reload();
