@@ -40,7 +40,7 @@ Say only what you know of the author's view, unquoted.
 
 ### Links to a sermon
 
-`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text. To narrow (preacher, theme, date), answer with the rows that fit and link ONE, the best of them, never one outside the narrowing; say when none fits. Never invent a sermon, preacher or date, nor what one says. `mlj-trust:search` is the MLJ Trust's search for the chapter: link it for a Lloyd-Jones sermon only. With no `sermons` (or for another preacher only that row), say none is listed (and In another book) and give NO link, never a `sermons.<id>` setting, not even for the preacher he names. To PLAY one: `do` `play-sermon` of a `plays` row, no link.
+`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text. To narrow (preacher, theme, date), answer with the rows that fit and link ONE, the best of them, never one outside the narrowing; say when none fits. Never invent a sermon, preacher or date, nor what one says. `mlj-trust:search` is the MLJ Trust's chapter search: link it for Lloyd-Jones only; alone, it is no sermon of another's. With no `sermons`, say none is listed (and In another book) and give NO link, never a `sermons.<id>` setting, not even for the preacher he names. To PLAY one: `do` `play-sermon` of a `plays` row, no link.
 
 ### Links to a paradigm table
 
