@@ -7,6 +7,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
+import { getWeave } from '../../src/data/repositories';
 import { clearBus, subscribe, type AppEvent } from '../../src/events/bus';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
@@ -99,7 +100,12 @@ describeFeature(feature, ({ Scenario }) => {
       await openSettings(user);
       await openSettingsGroup(user, 'reading');
       // the Grammar row is drawn only while the Weave is not Off (mw-5r3p30.106)
-      await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
+      const weave = within(await screen.findByRole('group', { name: 'Weave' }));
+      await user.click(weave.getByRole('button', { name: 'Solid' }));
+      // the write lands, then the Weave row follows it by a live query, and the Grammar row is drawn after that:
+      // wait on each before looking for the row, so a loaded host's slow write is not read as a missing row
+      await waitFor(async () => expect(await getWeave()).toBe('solid'));
+      await waitFor(() => expect(weave.getByRole('button', { name: 'Solid' })).toHaveAttribute('aria-pressed', 'true'));
       await user.click(within(await screen.findByRole('group', { name: 'Grammar' })).getByRole('button', { name: 'Solid' }));
     });
     Then('weave-grammar-changed was published with solid', async () => {
