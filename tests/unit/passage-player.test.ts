@@ -10,6 +10,7 @@ import { db } from '../../src/data/db';
 import { setReaderView } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { cardOf } from '../../src/markdown/verseLinks';
+import { getPlace, refKey } from '../../src/speech/passagePlace';
 import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePassage, stopPassage, type PassageRef, type PassageState } from '../../src/speech/passagePlayer';
 import { stopReading } from '../../src/speech/readAloud';
 import { spokenReference } from '../../src/speech/spokenReference';
@@ -405,5 +406,33 @@ describe('a reference to a Septuagint chapter (the Septuagint On, Psalms 10, whi
     expect(all).toContain('τῷ');
     // the speech is respelled, so the other chapter's verses are known by their first letters
     expect(all).not.toContain('Ἐξομολ');
+  });
+  // mw-5r3p30.1240: the place kept is in Lampas's verses too (Greek 9:22 is Psalm 10:1), so its label says the verse he knows, and Resume starts at the same verse
+  it('keeps the place by the Lampas verse in its label, and resumes at the same verse', async () => {
+    await db.settings.put({ key: 'septuagint', value: 'on' });
+    await db.settings.put({ key: 'hebrewInterest', value: '5' });
+    await setReaderView('greek');
+    const ref: PassageRef = { heading: 'Psalms 10:1-2', held: { book: 'psa', chapter: 10, first: 1, last: 2 } };
+    const key = refKey(ref.heading);
+    playPassages([ref], { place: key });
+    // the heading is read first (verse 0), then the verses: each is a line or two, finished one utterance at a time
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    synth.finish();
+    await vi.waitFor(() => expect(getPlace(key)?.verse).toBe(22), { timeout });
+    expect(getPlace(key)?.label).toBe('Psalms 10:1');
+    while (getPlace(key)?.verse === 22) {
+      synth.finish();
+      await afterTurns();
+    }
+    await vi.waitFor(() => expect(getPlace(key)?.verse).toBe(23), { timeout });
+    expect(getPlace(key)?.label).toBe('Psalms 10:2');
+    stopPassage();
+    stopReading();
+    synth.spoken.length = 0;
+    playPassages([ref], { place: key, verse: getPlace(key)?.verse });
+    await vi.waitFor(() => expect(getPlace(key)?.verse).toBe(23), { timeout });
+    expect(getPlace(key)?.label).toBe('Psalms 10:2');
+    await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0), { timeout });
+    expect(synth.spoken.map((s) => flat(s.text)).join(' ')).not.toContain('Ἵνα');
   });
 });
