@@ -320,6 +320,7 @@ export const SUPPLEMENT_ROWS: readonly TvtmsRow[] = [
  * mw-u2w5klk.349.137, each read against Swete's verses (the table's section Amo.6:10-6:14 has no Brenton column):
  * - Amos 6: LXX2012 has 15 verses and Swete 14: its 6:10 and 6:11 are both in the Greek 10, its 12-15 are the Greek 11-14.
  * - Judg 5: LXX2012's 5:32 ('And the land had rest forty years') ends the Greek 5:31, so its 31 and 32 are both the Greek 31.
+ * - Jos 5 (mw-u2w5klk.349.146; the table's section Jos.5:14--6:27 has no Brenton column): LXX2012 has 16 verses and Swete 15: its 5:14 and 5:15 ('Joshua fell on his face') are both in the Greek 14 and its 16 ('Loose your shoe') is the Greek 15.
  */
 export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Psa.10:Title', 'Absent [=Psa.10:1]'],
@@ -336,6 +337,8 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Deu.5:17', 'Deu.5:18'],
   ['Deu.5:18', 'Deu.5:17'],
   ['Deu.14:15-29', 'Deu.14:14-28'],
+  ['Jos.5:14-15', 'Jos.5:14'],
+  ['Jos.5:16', 'Jos.5:15'],
   ['Jos.6:7', 'Jos.6:8'],
   ['Jos.6:8', 'Jos.6:7'],
   ['Exo.25:6', 'Exo.25:5'],

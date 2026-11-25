@@ -1,0 +1,12 @@
+﻿TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY												
+A slice for tests (mw-u2w5klk.349.146): the section of the condensed data for Jos.5:14--6:27, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge).
+#DataStart(Condensed)
+$Jos.5:14--6:27	English KJV	Hebrew	Latin	Greek	Slavonic							
+TEST: If...	Jos.5:15=Last	Jos.5:15=Last	Jos.5:16=Last	Jos.5:15=Last	Jos.5:16=Last							
+TEST: & if... 	Jos.6:27=Last	Jos.6:27=Last	Jos.6:27=Last	Jos.6:27=Last	Jos.6:26=Last							
+SubdividedVerse	Jos.5:14	Jos.5:14	Jos.5:14-15	Jos.5:14	Jos.5:14							
+OneToOne	Jos.5:15	Jos.5:15	Jos.5:16	Jos.5:15	Jos.5:15							
+OneToOne	Jos.6:1	Jos.6:1	Jos.6:1	Jos.6:1	Jos.5:16							
+OneToOne	Jos.6:2-27	Jos.6:2-27	Jos.6:2-27	Jos.6:2-27	Jos.6:1-26							
+												
+#DataEnd(Condensed)
