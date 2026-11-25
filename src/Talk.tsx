@@ -62,6 +62,7 @@ import { holdBackSwipes } from './talk/steadyPress';
 import { QuestionRow } from './talk/QuestionRow';
 import { YouSaid } from './ui/YouSaid';
 import type { SharedContent } from './share/shared';
+import { useBusy } from './ui/useBusy';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { setPending, talkKey, type AskState } from './pending/pendingAsks';
@@ -112,17 +113,13 @@ function AnswerSpeaker({ turn, said }: { turn: TalkTurn; said: string }) {
 }
 
 /** One setting the answer changed: 'Changed: Greek speed 0.8x' with Undo, or, once undone, what it was put back to. */
-function ChangeRow({ turn, change, index }: { turn: TalkTurn; change: AppliedChange; index: number }) {
-  const [busy, setBusy] = useState(false);
-  const undo = async (): Promise<void> => {
-    setBusy(true);
-    try {
+export function ChangeRow({ turn, change, index }: { turn: TalkTurn; change: AppliedChange; index: number }) {
+  const [busy, run] = useBusy();
+  const undo = (): Promise<void> =>
+    run(async () => {
       await undoChange(change);
       if (turn.id !== undefined) await markChangeUndone(turn.id, index);
-    } finally {
-      setBusy(false);
-    }
-  };
+    });
   return (
     <li data-talk-change className="flex min-h-11 items-center gap-2">
       {change.undone ? (
@@ -164,17 +161,10 @@ function WordsLine({ lemmas, before, after }: { lemmas: string[]; before: string
 /** The line the tutor proposes for his study way (mw-5r3p30.76): shown with Keep this, and kept only by his tap; once it is on the list it reads Kept. */
 function StudyWayProposal({ line }: { line: string }) {
   const lines = useLiveQuery(listStudyWay, []);
-  const [busy, setBusy] = useState(false);
+  const [busy, run] = useBusy();
   const isKept = lines?.includes(line) === true;
   const full = lines !== undefined && !isKept && lines.length >= STUDY_WAY_MAX;
-  const keep = async (): Promise<void> => {
-    setBusy(true);
-    try {
-      await keepStudyWayLine(line);
-    } finally {
-      setBusy(false);
-    }
-  };
+  const keep = (): Promise<void> => run(async () => void (await keepStudyWayLine(line)));
   return (
     <div data-study-way className="mt-2 border-t border-line pt-2">
       <p className="text-sm text-muted">For your study way</p>
@@ -212,19 +202,15 @@ function asksGoalQuestion(answer: string): boolean {
 /** The goal the tutor understood from him (mw-5r3p30.185): Yes, from now on keeps it as his Quiz goal (Settings), Just this time keeps nothing; once he has chosen, the turn says which.
  * While he has not chosen, the question they answer stands just above the buttons unless the tutor's answer already asked it. */
 function QuizGoalOffer({ turn }: { turn: TalkTurn }) {
-  const [busy, setBusy] = useState(false);
+  const [busy, run] = useBusy();
   if (!turn.quizGoalOffer || turn.id === undefined) return null;
   const id = turn.id;
   const goal = turn.quizGoalOffer;
-  const choose = async (choice: 'kept' | 'once'): Promise<void> => {
-    setBusy(true);
-    try {
+  const choose = (choice: 'kept' | 'once'): Promise<void> =>
+    run(async () => {
       if (choice === 'kept') await setQuizGoal(goal);
       await markQuizGoalChoice(id, choice);
-    } finally {
-      setBusy(false);
-    }
-  };
+    });
   const button = 'min-h-11 rounded-lg border border-accent px-4 text-base font-medium text-accent active:bg-line disabled:opacity-40';
   return (
     <div data-quiz-goal className="mt-2 border-t border-line pt-2">
@@ -326,23 +312,19 @@ function FeedbackOffer({ turn, scope, onLeave }: { turn: TalkTurn; scope: TalkSc
 
 /** A setting change the tutor offered (mw-5r3p30.186): its text as a button. The tap changes the setting exactly as a spoken yes does, and the turn then shows the change with Undo. */
 function SettingOffer({ turn }: { turn: TalkTurn }) {
-  const [busy, setBusy] = useState(false);
+  const [busy, run, alive] = useBusy();
   const [problem, setProblem] = useState<string | null>(null);
   const offer = turn.settingOffer ? offeredChange(turn.settingOffer) : undefined;
   if (!offer || turn.id === undefined) return null;
   // a tap keeps its change on this turn, and its row below says Changed or Put back; a spoken yes keeps it on the next turn, so only then does this line say Changed
   if (turn.settingChoice === 'taken' && turn.changes?.length) return null;
   const id = turn.id;
-  const take = async (): Promise<void> => {
-    setBusy(true);
-    try {
+  const take = (): Promise<void> =>
+    run(async () => {
       const result = await takeSettingOffer(turn);
       if (result.applied.length > 0) await addTurnChanges(id, result.applied);
-      else setProblem(result.refused[0] ?? 'The setting was not changed.');
-    } finally {
-      setBusy(false);
-    }
-  };
+      else if (alive()) setProblem(result.refused[0] ?? 'The setting was not changed.');
+    });
   return (
     <div data-setting-offer className="mt-2 border-t border-line pt-2">
       {turn.settingChoice === 'taken' ? (
