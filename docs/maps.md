@@ -8,6 +8,7 @@ A map is a `MapCard`; where it comes from is a `MapSource`. Reading the maps nee
 - [The module: `src/maps/`](#the-module-srcmaps)
 - [The screens (mw-zbjgn3r.2)](#the-screens-mw-zbjgn3r2)
 - [Bible Mapper's data](#bible-mappers-data)
+- [The Timeline door (mw-fnvjof.17.287, PROVISIONAL, Governor to confirm)](#the-timeline-door-mw-fnvjof17287-provisional-governor-to-confirm)
 - [Which maps are for this verse (mw-zbjgn3r.3)](#which-maps-are-for-this-verse-mw-zbjgn3r3)
 - [The places: STEPBible's TIPNR](#the-places-stepbibles-tipnr)
 - [The site's terms, and the credit](#the-sites-terms-and-the-credit)
@@ -51,7 +52,7 @@ every map of the source; `imageUrl` answers null where the source has no picture
   to its article (`target="_blank"`); a map row opens the map.
 - **The map**, `src/maps/MapView.tsx`, a second sheet over the first: the title, the period, the low-res picture at the box's width in a box that scrolls both ways; a tap on the picture toggles that width and twice it (`data-map-zoom` `fit` | `in`; the page locks pinch, so the box
   takes `pinch-zoom` only where the phone allows it). Under it the credit from the source (`Map by David P. Barrett, biblemapper.com`, its host a link to `MapSource.homepage`: the link back the site asks, on every map), `About this map` and `Full size` (the article, where the larger pictures are)
-  and `All maps for Genesis 10 at Bible Mapper` (`MapSource.allMapsUrl`: `https://biblemapper.com/blog/mapfinder/?ref=Genesis%2010`, the book name and chapter encoded). Back returns to the sheet, then to the verse. While the picture fails to load (offline) its place says `The map needs the internet` and every link stays.
+  and `All maps for Genesis 10 at Bible Mapper` (`MapSource.allMapsUrl`: `https://biblemapper.com/blog/mapfinder/?ref=Genesis%2010`, the book name and chapter encoded). Under those, where a map of the chapter has a date, `Timeline at Bible Mapper` (see 'The Timeline door' below). Back returns to the sheet, then to the verse. While the picture fails to load (offline) its place says `The map needs the internet` and every link stays.
 - **Split** (mw-5r3p30.1129.2, S2 of the Reader split, docs/design/reader-split.md; his want of 2026-11-06, to look at the map and read the text at once): on a map, while the Reader is under it (`routeOf` says `home`), a `Split` button stands beside `Close` in the handle row (`MapsFrame`'s `action`). It
   closes the map, the Maps sheet and the Verse view, and the Reader shows with the map **docked below the passage** (the dock of `src/reader/split/`, docs/layout/reader.md): `dockMap` in `MapView.tsx` keeps `splitMap`, opens the dock (`readerSplit` On), closes the sheets (`closeMaps`: they take their own Back entries off) and, once those have gone
   (`afterSheetEntryGone`), the Verse view's (`closeVerse`), and asks the Reader to keep the verse the view was on in view (`keepVerseBeside`, `takeVerseBeside`). **The split lives in the Reader, not in the sheets**: `src/Reader.tsx` draws `Dock` with `MapDockBody` in it, the map's title in the handle row and no Link (a map is not kept in step with the text). The body is `MapBody`, the same picture,
@@ -88,6 +89,12 @@ run `npm run maps:build` and commit the result; a second run on an unchanged dow
   warning: on 2026-10-26 these are `JudahAlone` (Jeremiah 1 to 5) and `Mesoptamia` (Nahum 1 to 3, a misspelling of Mesopotamia).
 
 The images are not copied. `imageUrl('low')` is `https://biblemapper.com/blog/images/lo-res/<low>`; the medium and high files are not served under `/blog/images`, so those answer null and the article (`MapCard.article`) has them.
+
+## The Timeline door (mw-fnvjof.17.287, PROVISIONAL, Governor to confirm)
+
+His ask (general 2026-11-25): the timeline of the same Bible Mapper. `MapSource.timelineUrl(ref)` (Bible Mapper's in `sources/biblemapper.ts`) answers `https://biblemapper.com/timeline/?date=<year>`, the TimeGlider ('Bible Mapper TimeGlider') centred on the earliest `start` or `end` of any map of the chapter, a year as a signed integer, negative for BC (`?date=-2110` for Genesis 14); `MapBody` draws it as `Timeline at Bible Mapper` (a new tab) after `All maps for ...`, with
+`MapSource.timelineCredit` ('Timeline by David P. Barrett, biblemapper.com', host linked like the map credit, `data-map-timeline-credit`) under it. A chapter whose maps have no dates (Genesis 4) has neither. The page reads the URL parameters `date` (`Timeline.DateTime.parseGregorianDateTime`, default `30`) and `eventstart`, `eventend`, `eventtitle`, `eventdescription` (draws a purple custom event; Lampas does not use them); `/timeline` redirects to `/timeline/` and keeps the query.
+It reads the source's data loaded by the card, so it answers null before `loadBibleMapper()`. Test: `tests/unit/maps-timeline.test.ts`. A timeline drawn inside Lampas would need David Barrett's leave and his data (not asked).
 
 ## Which maps are for this verse (mw-zbjgn3r.3)
 

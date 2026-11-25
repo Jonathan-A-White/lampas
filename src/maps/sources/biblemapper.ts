@@ -5,6 +5,7 @@ import { bookOf } from '../../data/books';
 import type { BibleMapperData, MapCard, MapImageSize, MapRef, MapSource } from '../types';
 import { period } from '../period';
 
+const TIMELINE = 'https://biblemapper.com/timeline/';
 const IMAGES = 'https://biblemapper.com/blog/images/lo-res/';
 
 let loaded: BibleMapperData | undefined;
@@ -55,6 +56,16 @@ export const bibleMapper: MapSource = {
     if (size !== 'low') return null;
     const image = loaded?.maps[card.id]?.image;
     return image ? `${IMAGES}${image.low}` : null;
+  },
+  timelineCredit: 'Timeline by David P. Barrett, biblemapper.com',
+  /** The TimeGlider (https://biblemapper.com/timeline/) takes `?date=` as a year, negative for BC (found in the page's own script, 2026-11-25): the chapter's earliest map date, none where no map of the chapter has one. */
+  timelineUrl(ref: MapRef): string | null {
+    if (!loaded) return null;
+    const years = mapIdsOf(loaded, ref.book, ref.chapter).flatMap((id) => {
+      const map = loaded?.maps[id];
+      return map?.start === undefined ? [] : [map.start, map.end ?? map.start];
+    });
+    return years.length === 0 ? null : `${TIMELINE}?date=${Math.min(...years)}`;
   },
   allMapsUrl(ref: MapRef): string | null {
     const book = bookOf(ref.book);
