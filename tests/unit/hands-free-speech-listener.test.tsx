@@ -56,6 +56,9 @@ interface Event {
   micOpen?: boolean;
 }
 let events: Event[] = [];
+/** The real time each utterance's end was reported at, and each recogniser started at (mw-rl10piw.76: a microphone opened in the instant the voice ends clips its last word on Android). */
+let endedAt: number[] = [];
+let recogniserStartedAt: number[] = [];
 /** Recognisers started and not yet stopped or aborted. */
 const live = new Set<FakeRecognizer>();
 
@@ -64,6 +67,8 @@ const spoken = (): string[] => synth.spoken.map((s) => s.text.replace(/\s+/g, ' 
 /** Logs each microphone change and each utterance, on the fakes' own seams. */
 function watchMicrophones(): void {
   events = [];
+  endedAt = [];
+  recogniserStartedAt = [];
   live.clear();
   const start = wake.start.bind(wake);
   wake.start = async (options) => {
@@ -84,6 +89,7 @@ function watchMicrophones(): void {
   const make = FakeRecognizer.prototype.start;
   vi.spyOn(FakeRecognizer.prototype, 'start').mockImplementation(function (this: FakeRecognizer, track?: unknown) {
     live.add(this);
+    recogniserStartedAt.push(Date.now());
     events.push({ what: 'recogniser start', speaking: synth.speaking });
     const end = (): void => {
       if (live.delete(this)) events.push({ what: 'recogniser end', speaking: synth.speaking });
@@ -101,6 +107,11 @@ function watchMicrophones(): void {
   const speak = synth.honest.synth.speak.bind(synth.honest.synth);
   synth.honest.synth.speak = (u) => {
     events.push({ what: 'speak', text: u.text, speaking: synth.speaking, micOpen: wake.listening || live.size > 0 });
+    const onend = u.onend;
+    u.onend = (event) => {
+      endedAt.push(Date.now());
+      onend?.call(u, event);
+    };
     speak(u);
   };
 }
@@ -206,6 +217,16 @@ describe('Hands-free: while the tutor speaks no microphone is open (mw-rl10piw.7
     const before = during.filter((e) => e.what === 'recogniser start').length;
     await waitFor(() => expect(spokenOf(LONG).filter((e) => e.what === 'recogniser start').length).toBeGreaterThan(before), { timeout });
     expect(getReading().status).toBe('idle');
+  });
+
+  it("the follow-up's recogniser opens only some time after the answer's last sentence has ended, not in the instant it is reported (mw-rl10piw.76)", async () => {
+    await openJohn3(LONG);
+    await askAloud('ask what is Isaiah 1 about');
+    await waitFor(() => expect(spoken().join(' ')).toContain(LONG.slice(0, 40)), { timeout });
+    const before = recogniserStartedAt.length;
+    await hearWhole(LONG);
+    await waitFor(() => expect(recogniserStartedAt.length).toBeGreaterThan(before), { timeout });
+    expect(recogniserStartedAt[before] - Math.max(...endedAt)).toBeGreaterThanOrEqual(140);
   });
 
   it("his tap on the answer's speaker shuts the microphone before the voice starts (the follow-up's recogniser too), Stop stops it, and the wake listens again after", async () => {

@@ -281,6 +281,8 @@ subscribeBeside(noteQuiet);
 
 /** How long the phone's voice has been quiet, in ms: Infinity when it never spoke, or when it is speaking now (nothing has ended; the caller decides what a voice that goes on means). */
 export function msSinceVoiceQuiet(): number {
+  // the voice may have just ended with this listener ahead of noteQuiet's own: look now
+  noteQuiet();
   return talkingNow() ? Number.POSITIVE_INFINITY : Date.now() - quietSince;
 }
 

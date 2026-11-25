@@ -2,7 +2,7 @@
 // FUNCTION for pauseMs, read at each command, so a change while the session runs is the next command's pause with no restart of the wake. The kit is the real one, spied on;
 // the wake is voice-kit's fake (tests/support/fake-wake.ts), the recogniser tests/support/fake-recognizer.ts, time a clock the test moves.
 import 'fake-indexeddb/auto';
-import { act, cleanup, render, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const kit = vi.hoisted(() => ({ options: [] as { pauseMs?: number | (() => number) }[] }));
@@ -140,6 +140,8 @@ describe("'Pause before it acts'", () => {
     // the command is carried out; the wake is listened for again, and the pause is read afresh for the next command
     await waitFor(() => expect(synth.speaking).toBe(true));
     act(() => synth.finish());
+    // the exchange ends a moment after the last word (session.ts: no microphone opens in the instant a sentence ends): the mark says waiting once it has (the wake listens for an interruption before)
+    await waitFor(() => expect(screen.getByRole('img', { name: 'Hands-free is on' })).toHaveAttribute('data-state', 'waiting'));
     await waitFor(() => expect(wake.listening).toBe(true));
     await act(async () => {
       await setSetting(handsFreePauseSetting, '1');

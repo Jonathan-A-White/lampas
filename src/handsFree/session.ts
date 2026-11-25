@@ -19,6 +19,11 @@
 //    between inputs as it speaks cuts the voice off. The wake lets go of its microphone as the reading begins, the voice starts MIC_SETTLE_MS after (readAloud's answer
 //    gate), and the wake listens again when the reading is over or stopped; a command's recogniser open at that moment (the follow-up window) is put down too. So the
 //    wake word is not heard while the tutor speaks: the speaking bar's Stop (or a tap on the answer) stops it, and a wake while the answer is still awaited cuts it as before.
+//  - No microphone opens over the voice, nor in the instant it ends (mw-rl10piw.76): the phone reports a sentence's end before its sound has left the speaker, and a microphone opened then
+//    clips the tail ('Hands-free on' heard as 'Hands-free'). greek.ts msSinceVoiceQuiet is how long the voice has been quiet; the session's start (after 'Hands-free on'), the wake's open,
+//    its re-open after the tutor spoke, and the end of a command (which opens the follow-up's recogniser) wait until it has been quiet MIC_SETTLE_MS (whenVoiceQuiet). An answer's voice
+//    waits for a wake that is still opening (up to MIC_OPEN_WAIT_MS, not 2 s), for that wake would open its microphone under the voice. The wake word said over the voice is the one way in
+//    that opens a microphone while it speaks, by design (a barge-in that pauses what sounds).
 //  - Any other failed wake (the model cannot be fetched, no microphone, a browser with no wake) is told on screen and aloud (COULD_NOT_START); the mic-less and fetch-less kinds
 //    start again by themselves when the network is back ('online') or on the next touch anywhere, and the setting stays On; a browser that cannot do it at all turns it Off.
 import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
@@ -30,7 +35,7 @@ import { handsFreeSetting } from '../settings/definitions/handsFree';
 import { handsFreePauseMs, type HandsFreePauseValue } from '../settings/definitions/handsFreePause';
 import { getSetting, onSetting, setSetting } from '../settings/store';
 import { openMicInput } from '../audio/recorder';
-import { SETTING_SAID_KEY, speakText, whenSaid } from '../speech/greek';
+import { msSinceVoiceQuiet, SETTING_SAID_KEY, speakText, whenSaid } from '../speech/greek';
 import { getReading, setAnswerGate, subscribeReading } from '../speech/readAloud';
 import { forgetAsk, interruptAsk } from './ask';
 import { runCommand } from './commands';
@@ -95,7 +100,12 @@ const MIC_SETTLE_MS = 150;
 /** The longest a sentence waits for the microphone to be let go, should the wake never say it has stopped. */
 const MIC_WAIT_MS = 2000;
 
+/** The longest it waits for a wake that is still opening (the phone is slow to give a microphone, or to say none is there): the voice does not start over it (mw-rl10piw.76). */
+const MIC_OPEN_WAIT_MS = 10000;
+
 let wakesOpen = 0;
+/** Wakes asked to open that have not yet said whether they did. */
+let wakesOpening = 0;
 let closedAt = Number.NEGATIVE_INFINITY;
 const closeWaiters = new Set<() => void>();
 
@@ -136,9 +146,25 @@ export function whenMicClosed(then: () => void): () => void {
     return give;
   }
   closeWaiters.add(check);
-  // a wake that never says it has stopped must not keep the sentence silent
-  timer = setTimeout(go, MIC_WAIT_MS);
+  // a wake that never says it has stopped must not keep the sentence silent; one that is still opening is waited for longer, for it opens its microphone as it does, and the voice
+  // started over it was cut off by it (mw-rl10piw.76)
+  timer = setTimeout(go, wakesOpening > 0 ? MIC_OPEN_WAIT_MS : MIC_WAIT_MS);
   return give;
+}
+
+/** Calls `then` once the phone's voice has been quiet MIC_SETTLE_MS: at once when it has been (or never spoke). The end a phone reports comes before its sound has left the speaker, and a
+ * microphone opened in that instant clips the tail of the last word ('Hands-free on' heard as 'Hands-free', mw-rl10piw.76). A voice speaking now counts as nothing to wait for: callers
+ * wait for it themselves (whenSaid, the tutor's reading). Returns the way to give up waiting, which never calls `then`. */
+function whenVoiceQuiet(then: () => void): () => void {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  // a timer started late in a long task fires early by what the task has already taken (Node counts from the start of the loop's turn): the time is looked at again when it fires
+  const check = (): void => {
+    const left = MIC_SETTLE_MS - msSinceVoiceQuiet();
+    if (left <= 0) then();
+    else timer = setTimeout(check, left);
+  };
+  check();
+  return () => clearTimeout(timer);
 }
 
 /** A microphone other than the wake's (the command's recogniser) was let go just now: a sentence waits MIC_SETTLE_MS from here too. */
@@ -164,14 +190,15 @@ function onMicShut(listener: () => void): () => void {
   return () => shutListeners.delete(listener);
 }
 
-/** Resolves once the tutor's voice no longer holds the speech (at once when it does not). */
+/** Resolves once the tutor's voice no longer holds the speech and the voice has been quiet a moment (at once when neither holds). The setting's sentence ('Hands-free on') is waited for
+ * before the session starts (sync), not here. */
 function untilMicMayOpen(): Promise<void> {
-  if (!micShut) return Promise.resolve();
   return new Promise((resolve) => {
+    if (!micShut) return void whenVoiceQuiet(resolve);
     const stop = onMicShut(() => {
       if (micShut) return;
       stop();
-      resolve();
+      whenVoiceQuiet(resolve);
     });
   });
 }
@@ -309,6 +336,7 @@ async function openWake(loaded: WakeModel, onWake: Parameters<WakePort['start']>
   const choosing = canChooseInput();
   if (!choosing) logWake('this browser cannot list its inputs: the wake opens the default microphone');
   wakesOpen++;
+  wakesOpening++;
   let result: Awaited<ReturnType<WakePort['start']>>;
   try {
     result = await browserWake({
@@ -317,9 +345,11 @@ async function openWake(loaded: WakeModel, onWake: Parameters<WakePort['start']>
       ...(choosing ? { startWake: (options) => startOnLiveInput(options, quietMs === undefined ? {} : { quietMs }) } : {}),
     }).start(onWake);
   } catch (err) {
+    wakesOpening--;
     wakeClosed();
     throw err;
   }
+  wakesOpening--;
   if (!result.ok) {
     wakeClosed();
     return result;
@@ -369,6 +399,12 @@ const wake: WakePort = {
       }
       if (inner) return;
       opening = true;
+      // the tutor's voice has ended: its tail is sounding yet, so the microphone opens when the voice has been quiet a moment (mw-rl10piw.76)
+      await new Promise<void>((resolve) => void whenVoiceQuiet(resolve));
+      if (stopped || micShut) {
+        opening = false;
+        return;
+      }
       let again: Awaited<ReturnType<WakePort['start']>>;
       try {
         again = await openWake(loaded, onWake);
@@ -505,7 +541,12 @@ function sessionNow(): HandsFree {
       ...(typeof document === 'undefined' ? {} : { visibility: documentVisibility(document) }),
       clock: clockNow(),
       onOpen: silenceAtWake,
-      onCommand: (words, info) => runCommand(words, sayAloud, info),
+      // the exchange ends (and a follow-up's recogniser opens) once the last sentence has been quiet a moment (mw-rl10piw.76)
+      onCommand: async (words, info) => {
+        const done = await runCommand(words, sayAloud, info);
+        await new Promise<void>((resolve) => void whenVoiceQuiet(resolve));
+        return done;
+      },
       // a wake while the tutor's answer is waited for or spoken stops it and opens a new command; during any other command the wake is ignored, as before
       onInterrupt: interruptAsk,
       onClose: goOnAtClose,
@@ -525,10 +566,17 @@ function sync(): void {
   cancelStart?.();
   cancelStart = null;
   if (wanted && !isMicBusy()) {
-    cancelStart = whenSaid(SETTING_SAID_KEY, () => {
-      cancelStart = null;
-      if (wanted && !isMicBusy()) void sessionNow().start();
+    let quiet: () => void = () => undefined;
+    const said = whenSaid(SETTING_SAID_KEY, () => {
+      quiet = whenVoiceQuiet(() => {
+        cancelStart = null;
+        if (wanted && !isMicBusy()) void sessionNow().start();
+      });
     });
+    cancelStart = () => {
+      said();
+      quiet();
+    };
   } else session?.stop();
 }
 
