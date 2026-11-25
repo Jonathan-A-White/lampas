@@ -276,7 +276,8 @@ describeFeature(feature, ({ Scenario }) => {
       window.history.replaceState(null, '', '/#/?b=rom&c=5');
       render(<App />);
       await screen.findByRole('heading', { name: 'Romans 5', level: 1 });
-      // the bundled 4, Reigning Grace, and the row of the source he turned On
+      // the bundled 4, Reigning Grace, and the row of the source he turned On. The merged count, never the bundled one: the door loses the bundled count once the service has answered, and on a loaded host that is
+      // before this step looks (the first form of this step tapped 'Sermons · 4' and failed this step and the two after it in the gate, mw-u2w5klk.349.125, mw-fnvjof.17.299)
       await tapVerseAndDoor('Sermons · 6');
     });
     Then('the line under the title reads {string}', says);
