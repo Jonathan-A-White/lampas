@@ -389,3 +389,136 @@ describe("LXX2012's Deuteronomy 5:17 and 5:18 stand at the Greek verses their te
     expect(unplacedVerses(placedAt, swete)).toEqual([]);
   });
 });
+
+// mw-u2w5klk.349.130: LXX2012's verse numbers differ from Swete's in a handful of places (one shared map, LXX2012_ROWS in scripts/data/tvtms.ts), so its English sat a verse off the Greek: each case reads the
+// Brenton verse's own words at the Greek verse their text is (the fixtures are slices of the real LXX2012 and of the TVTMS sections of these chapters).
+describe("LXX2012's Deuteronomy 14, Joshua 6, Exodus 25, 35 and 40, Leviticus 6 and 8 and Numbers 9, 21 and 27 stand at the Greek verses their text is", () => {
+  const versification = buildMaps(parseTvtms(fixture('tvtms-versification-slice.txt')));
+  const bookOf = (code: string) => parseUsfm(fixture(`lxx2012-v130-${code}.usfm`));
+  const one = (ref: string): string[] => versification.lxx2012ToGreek(ref).refs;
+  const textAt = (code: string, ref: string): string => (englishByGreekVerse(bookOf(code), versification).byGreek.get(ref) ?? []).map((s) => s.text).join(' | ');
+  const range = (from: number, to: number): number[] => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
+  it('Deuteronomy 14: LXX2012 has no 14:14, so its 15 is the Greek 14 and its 29 the Greek 28', () => {
+    expect(versification.lxx2012ToGreek('deu 14:13')).toEqual({ state: 'same', refs: ['deu 14:13'] });
+    expect(versification.lxx2012ToGreek('deu 14:15')).toEqual({ state: 'one', refs: ['deu 14:14'] });
+    for (const v of range(15, 29)) expect(one(`deu 14:${v}`)).toEqual([`deu 14:${v - 1}`]);
+    const { byGreek, placedAt } = englishByGreekVerse(bookOf('deu'), versification);
+    expect(byGreek.get('deu 14:14')?.[0].text).toMatch(/^and the sparrow, and the owl/);
+    expect(byGreek.get('deu 14:28')?.[0].text).toMatch(/^And the Levite shall come/);
+    expect(placedAt.get('deu 14:29')).toBe('deu 14:28');
+    expect(unplacedVerses(placedAt, range(13, 28).map((v) => `deu 14:${v}`))).toEqual([]);
+    expect(versesWithoutEnglish(byGreek, ['deu 14:13', 'deu 14:14', 'deu 14:15', 'deu 14:27', 'deu 14:28'])).toEqual([]);
+  });
+
+  it("Joshua 6: LXX2012's 6:7 and 6:8 are the Greek 6:8 and 6:7", () => {
+    expect(one('jos 6:6')).toEqual(['jos 6:6']);
+    expect(one('jos 6:7')).toEqual(['jos 6:8']);
+    expect(one('jos 6:8')).toEqual(['jos 6:7']);
+    expect(one('jos 6:9')).toEqual(['jos 6:9']);
+    expect(textAt('jos', 'jos 6:7')).toMatch(/^Charge the people to go round/);
+    expect(textAt('jos', 'jos 6:8')).toMatch(/^And let seven priests having seven sacred trumpets/);
+  });
+
+  it('Exodus 25: the sanctuary ("make me a sanctuary", Greek ποιήσεις μοι ἁγίασμα) is at the Greek 25:7, the oil and incense Swete lacks stand with 25:5, and 25:36 is the Greek 25:36', () => {
+    expect(one('exo 25:5')).toEqual(['exo 25:5']);
+    expect(one('exo 25:6')).toEqual(['exo 25:5']);
+    expect(one('exo 25:7')).toEqual(['exo 25:6']);
+    expect(one('exo 25:8')).toEqual(['exo 25:7']);
+    expect(one('exo 25:34')).toEqual(['exo 25:33']);
+    expect(versification.lxx2012ToGreek('exo 25:35')).toEqual({ state: 'range', refs: ['exo 25:34', 'exo 25:35'] });
+    expect(one('exo 25:36')).toEqual(['exo 25:36']);
+    expect(textAt('exo', 'exo 25:7')).toBe('And you shall make me a sanctuary, and I will appear among you.');
+    expect(textAt('exo', 'exo 25:6')).toMatch(/^and sardius stones/);
+    expect(textAt('exo', 'exo 25:5')).toMatch(/^and rams' skins dyed red.* \| and oil for the light, incense/);
+    expect(textAt('exo', 'exo 25:34')).toMatch(/^A knop under two branches/);
+  });
+
+  it("Exodus 35: LXX2012's 35:8-19 are the Greek 35:8-19 (the table's Brenton column puts them elsewhere), so no verse is left without English", () => {
+    for (const v of range(7, 20)) expect(versification.lxx2012ToGreek(`exo 35:${v}`)).toEqual({ state: 'same', refs: [`exo 35:${v}`] });
+    expect(textAt('exo', 'exo 35:8')).toMatch(/^and sardine stones/);
+    expect(textAt('exo', 'exo 35:9')).toMatch(/^And every man that is wise in heart/);
+    expect(textAt('exo', 'exo 35:19')).toMatch(/^and the garments of priesthood/);
+    const { byGreek } = englishByGreekVerse(bookOf('exo'), versification);
+    expect(versesWithoutEnglish(byGreek, [7, 8, 9, 10, 18, 19, 20].map((v) => `exo 35:${v}`))).toEqual([]);
+  });
+
+  it("Exodus 40: LXX2012 joins 6-8, 10-11, 27-28, 29-30 and 31-33, so its 9 is the Greek 7, its 12 the Greek 10 and its 34-38 the Greek 28-32", () => {
+    for (const v of [6, 7, 8]) expect(one(`exo 40:${v}`)).toEqual(['exo 40:6']);
+    expect(one('exo 40:9')).toEqual(['exo 40:7']);
+    expect(one('exo 40:10')).toEqual(['exo 40:8']);
+    expect(one('exo 40:11')).toEqual(['exo 40:9']);
+    for (const v of range(12, 26)) expect(one(`exo 40:${v}`)).toEqual([`exo 40:${v - 2}`]);
+    for (const v of [27, 28]) expect(one(`exo 40:${v}`)).toEqual(['exo 40:25']);
+    for (const v of [29, 30]) expect(one(`exo 40:${v}`)).toEqual(['exo 40:26']);
+    for (const v of [31, 32, 33]) expect(one(`exo 40:${v}`)).toEqual(['exo 40:27']);
+    for (const v of range(34, 38)) expect(one(`exo 40:${v}`)).toEqual([`exo 40:${v - 6}`]);
+    expect(textAt('exo', 'exo 40:7')).toMatch(/^And you shall take the anointing oil/);
+    expect(textAt('exo', 'exo 40:8')).toMatch(/^And you shall anoint the altar of burnt offerings/);
+    expect(textAt('exo', 'exo 40:10')).toMatch(/^And you shall bring Aaron and his sons/);
+    expect(textAt('exo', 'exo 40:20')).toMatch(/^And he put the table in the tabernacle/);
+    expect(textAt('exo', 'exo 40:28')).toMatch(/^And the cloud covered the tabernacle/);
+    const { byGreek, placedAt } = englishByGreekVerse(bookOf('exo'), versification);
+    expect(unplacedVerses(new Map([...placedAt].filter(([ref]) => ref.startsWith('exo 40:'))), range(5, 32).map((v) => `exo 40:${v}`))).toEqual([]);
+    expect(versesWithoutEnglish(byGreek, range(5, 32).map((v) => `exo 40:${v}`).filter((ref) => ref !== 'exo 40:9'))).toEqual([]);
+  });
+
+  it("Leviticus 6: 'the Lord spoke to Moses, saying,' is at the Greek 6:8, 'Charge Aaron' and 'This is the law' at the Greek 6:9", () => {
+    expect(versification.lxx2012ToGreek('lev 6:3')).toEqual({ state: 'same', refs: ['lev 6:3'] });
+    expect(versification.lxx2012ToGreek('lev 6:4')).toEqual({ state: 'range', refs: ['lev 6:4', 'lev 6:5'] });
+    expect(one('lev 6:5')).toEqual(['lev 6:6']);
+    expect(one('lev 6:6')).toEqual(['lev 6:7']);
+    expect(one('lev 6:7')).toEqual(['lev 6:8']);
+    expect(one('lev 6:8')).toEqual(['lev 6:9']);
+    expect(one('lev 6:9')).toEqual(['lev 6:9']);
+    expect(one('lev 6:10')).toEqual(['lev 6:10']);
+    expect(textAt('lev', 'lev 6:8')).toBe('And the Lord spoke to Moses, saying,');
+    expect(textAt('lev', 'lev 6:9')).toMatch(/^Charge Aaron and his sons, saying, \| This is the law of whole burnt offering/);
+    expect(textAt('lev', 'lev 6:7')).toMatch(/^And the priest shall make atonement for him before the Lord/);
+  });
+
+  it("Leviticus 8: LXX2012's 8:18 holds the Greek 18 and 19, its 19-28 are the Greek 20-29 and its 29 and 30 are both in the Greek 30", () => {
+    expect(one('lev 8:17')).toEqual(['lev 8:17']);
+    expect(versification.lxx2012ToGreek('lev 8:18')).toEqual({ state: 'range', refs: ['lev 8:18', 'lev 8:19'] });
+    for (const v of range(19, 28)) expect(one(`lev 8:${v}`)).toEqual([`lev 8:${v + 1}`]);
+    expect(one('lev 8:29')).toEqual(['lev 8:30']);
+    expect(one('lev 8:30')).toEqual(['lev 8:30']);
+    expect(one('lev 8:31')).toEqual(['lev 8:31']);
+    expect(textAt('lev', 'lev 8:20')).toMatch(/^And he divided the ram by its limbs/);
+    expect(textAt('lev', 'lev 8:29')).toMatch(/^And Moses took the breast/);
+    expect(textAt('lev', 'lev 8:30')).toMatch(/^And Moses took of the anointing oil.* \| And he sanctified Aaron/);
+  });
+
+  it("Numbers 9: LXX2012's 9:18 holds the Greek 18 and 19 and its 19-22 are the Greek 20-23, so no Greek verse is left without English", () => {
+    expect(one('num 9:17')).toEqual(['num 9:17']);
+    expect(versification.lxx2012ToGreek('num 9:18')).toEqual({ state: 'range', refs: ['num 9:18', 'num 9:19'] });
+    for (const v of range(19, 22)) expect(one(`num 9:${v}`)).toEqual([`num 9:${v + 1}`]);
+    expect(textAt('num', 'num 9:23')).toMatch(/^For they shall depart by the command of the Lord/);
+    const { byGreek } = englishByGreekVerse(bookOf('num'), versification);
+    expect(versesWithoutEnglish(byGreek, ['num 9:17', 'num 9:18', 'num 9:20', 'num 9:21', 'num 9:22', 'num 9:23'])).toEqual([]);
+  });
+
+  it("Numbers 21: LXX2012's 21:19 holds the Greek 19 and 20, its 20 is the Greek 21 and its 21 and 22 are both in the Greek 22", () => {
+    expect(one('num 21:18')).toEqual(['num 21:18']);
+    expect(versification.lxx2012ToGreek('num 21:19')).toEqual({ state: 'range', refs: ['num 21:19', 'num 21:20'] });
+    expect(one('num 21:20')).toEqual(['num 21:21']);
+    expect(one('num 21:21')).toEqual(['num 21:22']);
+    expect(one('num 21:22')).toEqual(['num 21:22']);
+    expect(one('num 21:23')).toEqual(['num 21:23']);
+    expect(textAt('num', 'num 21:21')).toMatch(/^And Moses sent ambassadors to Seon/);
+    expect(textAt('num', 'num 21:22')).toMatch(/^We will pass through your land.* \| We will not drink water/);
+  });
+
+  it("Numbers 27: 'The daughters of Salpaad have spoken rightly' is at the Greek 27:7 (Ὀρθῶς θυγατέρες Σαλπαὰδ λελαλήκασιν)", () => {
+    expect(one('num 27:2')).toEqual(['num 27:2']);
+    expect(versification.lxx2012ToGreek('num 27:3')).toEqual({ state: 'range', refs: ['num 27:3', 'num 27:4'] });
+    expect(one('num 27:4')).toEqual(['num 27:5']);
+    expect(one('num 27:5')).toEqual(['num 27:6']);
+    expect(one('num 27:6')).toEqual(['num 27:7']);
+    expect(one('num 27:7')).toEqual(['num 27:8']);
+    expect(one('num 27:8')).toEqual(['num 27:8']);
+    expect(one('num 27:9')).toEqual(['num 27:9']);
+    expect(textAt('num', 'num 27:7')).toMatch(/^The daughters of Salpaad have spoken rightly/);
+    expect(textAt('num', 'num 27:6')).toBe('And the Lord spoke to Moses, saying,');
+  });
+});

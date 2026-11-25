@@ -306,6 +306,17 @@ export const SUPPLEMENT_ROWS: readonly TvtmsRow[] = [
  *   already carries Brenton's 36:44 = Greek 37:1 and 37:1 = Greek 37:2).
  * - Ps 149: LXX2012 has 8 verses; its 8 holds the Greek 8-9 ("... to execute on them the judgment written: this honor have all his saints").
  * - Deu 5:17-18 (mw-u2w5klk.349.110): LXX2012 has 'murder' then 'adultery', the English Bible's order, and Swete μοιχεύσεις then φονεύσεις; the table's section Deu.5:17-5:18 says so but has no Brenton column.
+ * mw-u2w5klk.349.130, each read against Swete's verses (a Brenton verse that answers two Greek verses stands at the first; one that spans several of its own numbers, a USFM `6-8`, has them all answer the one):
+ * - Deu 14: LXX2012 has no 14:14 (the table's English-to-Greek rows say so, with no Brenton column), so its 15-29 are the Greek 14-28.
+ * - Jos 6: LXX2012's 6:7 ('let seven priests ... proceed') is the Greek 6:8 and its 6:8 ('Charge the people to go round') the Greek 6:7.
+ * - Exo 25: LXX2012 25:6 (oil and incense, which Swete has not) stands with the Greek 25:5, its 7-34 are the Greek 6-33 and its 35 holds the Greek 34 and 35; the table's section for it has no Brenton column.
+ * - Exo 35: the table's Brenton column of Exo.35:8-35:27 (LXX2012_REPLACED) is not LXX2012's: its 35:8-19 are the Greek 35:8-19, the order the Greek has them in.
+ * - Exo 40: LXX2012 joins 40:6-8, 10-11, 27-28, 29-30 and 31-33, so its 9 is the Greek 7, its 10-11 the Greek 8-9, its 12-26 the Greek 10-24, its 27-28 the Greek 25, 29-30 the Greek 26, 31-33 the Greek 27 and its 34-38 the Greek 28-32.
+ * - Lev 6: LXX2012's 6:4 holds the Greek 4 and 5, its 5-7 are the Greek 6-8 and its 8 and 9 are both in the Greek 9 ('Charge Aaron and his sons, saying, This is the law ...').
+ * - Lev 8: LXX2012's 8:18 holds the Greek 18 and 19, its 19-28 are the Greek 20-29 and its 29 and 30 are both in the Greek 30.
+ * - Num 9: LXX2012's 9:18 holds the Greek 18 and 19, its 19-22 are the Greek 20-23.
+ * - Num 21: LXX2012's 21:19 holds the Greek 19 and 20, its 20 is the Greek 21 and its 21 and 22 are both in the Greek 22.
+ * - Num 27: LXX2012's 27:3 holds the Greek 3 and 4, its 4-6 are the Greek 5-7 and its 7 and 8 are both in the Greek 8.
  */
 export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Psa.10:Title', 'Absent [=Psa.10:1]'],
@@ -321,10 +332,38 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Psa.149:8', 'Psa.149:8-9'],
   ['Deu.5:17', 'Deu.5:18'],
   ['Deu.5:18', 'Deu.5:17'],
+  ['Deu.14:15-29', 'Deu.14:14-28'],
+  ['Jos.6:7', 'Jos.6:8'],
+  ['Jos.6:8', 'Jos.6:7'],
+  ['Exo.25:6', 'Exo.25:5'],
+  ['Exo.25:7-34', 'Exo.25:6-33'],
+  ['Exo.25:35', 'Exo.25:34-35'],
+  ['Exo.40:6-8', 'Exo.40:6'],
+  ['Exo.40:9', 'Exo.40:7'],
+  ['Exo.40:10-11', 'Exo.40:8-9'],
+  ['Exo.40:12-26', 'Exo.40:10-24'],
+  ['Exo.40:27-28', 'Exo.40:25'],
+  ['Exo.40:29-30', 'Exo.40:26'],
+  ['Exo.40:31-33', 'Exo.40:27'],
+  ['Exo.40:34-38', 'Exo.40:28-32'],
+  ['Lev.6:4', 'Lev.6:4-5'],
+  ['Lev.6:5-7', 'Lev.6:6-8'],
+  ['Lev.6:8-9', 'Lev.6:9'],
+  ['Lev.8:18', 'Lev.8:18-19'],
+  ['Lev.8:19-28', 'Lev.8:20-29'],
+  ['Lev.8:29-30', 'Lev.8:30'],
+  ['Num.9:18', 'Num.9:18-19'],
+  ['Num.9:19-22', 'Num.9:20-23'],
+  ['Num.21:19', 'Num.21:19-20'],
+  ['Num.21:20', 'Num.21:21'],
+  ['Num.21:21-22', 'Num.21:22'],
+  ['Num.27:3', 'Num.27:3-4'],
+  ['Num.27:4-6', 'Num.27:5-7'],
+  ['Num.27:7-8', 'Num.27:8'],
 ].map(([lxx2012, greek]) => ({ section: 'LXX2012', type: 'OneToOne', cells: { 'Brenton (LXX2012)': lxx2012, Greek: greek } }));
 
-/** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows). */
-const LXX2012_REPLACED: ReadonlySet<string> = new Set(['Psa.11:1-11:7']);
+/** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows; Exo.35:8-35:27's rows leave LXX2012's 35:8-19 where the Greek has them). */
+const LXX2012_REPLACED: ReadonlySet<string> = new Set(['Psa.11:1-11:7', 'Exo.35:8-35:27']);
 
 /** The three maps of the rows, each total: a reference the table lacks maps to itself with the state `same`. */
 export function buildMaps(tableRows: readonly TvtmsRow[]): TvtmsMaps {
