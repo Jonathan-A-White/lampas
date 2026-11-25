@@ -55,7 +55,7 @@ describe('a paradigm link in the talk over a Drill it run', () => {
     await userEvent.click(chip);
     const layer = await screen.findByRole('dialog', { name: 'The article' });
     // the table itself, not a page: the address (and so the run) is where it was and no talk is held for a Back from the Paradigms screen
-    expect(within(layer).getByTestId('paradigm-table')).toHaveTextContent('The article');
+    expect(await within(layer).findByTestId('paradigm-table')).toHaveTextContent('The article');
     expect(window.location.hash).toBe('#/drill-it?i=neuter');
     expect(heldTalk()).toBeUndefined();
     await userEvent.click(within(layer).getByRole('button', { name: 'Back to the talk' }));

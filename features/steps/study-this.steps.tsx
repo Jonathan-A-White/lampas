@@ -1152,7 +1152,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     Then('the table {string} is open over the talk', async (_, name: string) => {
       const layer = await screen.findByRole('dialog', { name });
-      expect(within(layer).getByTestId('paradigm-table')).toBeInTheDocument();
+      expect(await within(layer).findByTestId('paradigm-table')).toBeInTheDocument();
     });
     And("the page's address is as it was", () => {
       expect(window.location.hash).toBe('');
