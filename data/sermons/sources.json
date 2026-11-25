@@ -1,6 +1,6 @@
 {
   "repo": "https://github.com/Jonathan-A-White/sermon-index",
-  "commit": "c2fdd3a10f118fa9f22a4cb1fdcb3ac1932b6d5a",
+  "commit": "85ddaa72cdb1bbd9748eea55b46aa547e25d760a",
   "sources": [
     "spurgeon-ccel",
     "henry-sermons",
@@ -109,6 +109,6 @@
     "sermon-starters-volume-4-logos": "Sermon Starters, vol 4 (Logos library)",
     "sermon-starters-volume-5-logos": "Sermon Starters, vol 5 (Logos library)",
     "lifebible-ttb": "Life Bible Ministry's Through the Bible",
-    "biblethinker": "Mike Winger's Bible Thinker series"
+    "biblethinker": "Mike Winger's Bible Thinker teachings"
   }
 }
