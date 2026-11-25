@@ -1,0 +1,251 @@
+<!doctype html>
+<!-- prototypes/timeline/index.html (mw-fnvjof.17.317.4): the prototype of the timeline strip in the Reader's split, for docs/timeline-design.md. Not app code and not in any build.
+     It stands a strip (timeline.js beside it) in a stand-in of the Reader: the header, the chips row and the dock's handle row are drawn by hand from src/index.css's tokens and the
+     dock's own sizes (src/reader/split/); the passage is the chapter's own English from public/data/, and the strip reads the rig's Theographic files (src/timeline/data/) as they
+     are, the credit line with them. Open it through serve.mjs (a page opened from the disk cannot read the files).
+     ?book=isa&chapter=1   the chapter (any book and chapter of the app)        ?theme=dark | light   else the machine's own
+     ?view=bible           open on the whole Bible                               ?card=e217 | phezekiah_1512   open a card (e + the event's id, p + the person's key)
+     ?dock=0.5             the dock's share of the box                           ?still=1   no motion (the pictures are taken so)
+     ?year=-1050           open at a year (negative BC), at the chapter's zoom  ?tap=ribbon   press the ruler where it is busiest
+     ?hud=1                each frame's work in ms                               ?stress=10 draw every event ten times (the budget's headroom) -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>Lampas timeline: prototype</title>
+<style>
+/* src/index.css's tokens, by hand: dark is the app's default, light by the machine's scheme or ?theme=light. tests/unit/timeline-design.test.ts holds both to the app's. */
+:root {
+  color-scheme: dark;
+  --lp-canvas: #0a0e17;
+  --lp-surface: #111725;
+  --lp-line: #232c40;
+  --lp-fg: #e7ebf3;
+  --lp-muted: #9aa5ba;
+  --lp-accent: #f2b544;
+  --lp-accent-fg: #1a1204;
+  --lp-tap: 44px;
+  --lp-bar-inset: env(safe-area-inset-bottom, 0px);
+  --dock: 50%;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { color-scheme: light; --lp-canvas: #f3f5f9; --lp-surface: #ffffff; --lp-line: #dde2ec; --lp-fg: #111827; --lp-muted: #525c70; --lp-accent: #8a5706; --lp-accent-fg: #ffffff; }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --lp-canvas: #f3f5f9;
+  --lp-surface: #ffffff;
+  --lp-line: #dde2ec;
+  --lp-fg: #111827;
+  --lp-muted: #525c70;
+  --lp-accent: #8a5706;
+  --lp-accent-fg: #ffffff;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100dvh; overflow: clip; overscroll-behavior: none; touch-action: manipulation; background: var(--lp-canvas); color: var(--lp-fg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--lp-canvas); }
+
+/* the Reader's own top, a stand-in: header and chips row */
+header { display: flex; align-items: center; gap: 4px; min-height: 56px; padding: 0 4px; border-bottom: 1px solid var(--lp-line); background: var(--lp-surface); }
+.title { display: inline-flex; align-items: center; gap: 4px; min-height: var(--lp-tap); padding: 0 8px; font-size: 1.125rem; font-weight: 600; flex: 1 1 0; min-width: 0; white-space: nowrap; }
+.switch { display: flex; flex-shrink: 0; border: 1px solid var(--lp-line); border-radius: 12px; padding: 2px; }
+.switch span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 10px; border-radius: 8px; font-weight: 500; }
+.switch span[data-on] { background: var(--lp-accent); color: var(--lp-accent-fg); }
+.chips { display: flex; align-items: stretch; gap: 6px; height: 40px; padding: 0 8px; border-bottom: 1px solid var(--lp-line); background: var(--lp-surface); }
+.chips span { display: flex; align-items: center; padding: 0 12px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: var(--lp-accent); white-space: nowrap; }
+.chips span[data-on] { background: color-mix(in srgb, var(--lp-accent) 10%, transparent); }
+
+/* the box under the chips: the passage above, the dock below; side by side sideways and wide (the dock's own rule, src/reader/split/useSplit.ts) */
+#area { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+#passage { flex: 1 1 auto; min-height: 0; min-width: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 4px 0; scrollbar-width: none; }
+.verse { margin: 0; padding: 0 8px; font-size: 1.25rem; line-height: 44px; }
+.verse .n { font-size: 0.75rem; color: var(--lp-muted); font-weight: 600; margin-right: 6px; vertical-align: 0.35em; }
+.verse[data-flash] { background: color-mix(in srgb, var(--lp-accent) 14%, transparent); border-radius: 8px; transition: background 200ms ease; }
+.heading { margin: 0; padding: 12px 8px 0; font-size: 1rem; font-weight: 600; color: var(--lp-muted); }
+#dock { flex: 0 0 var(--dock); min-height: 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; border-top: 1px solid var(--lp-line); background: var(--lp-surface); }
+#handle { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; align-items: center; gap: 8px; height: 44px; flex-shrink: 0; padding: 0 12px; touch-action: none; user-select: none; cursor: grab; }
+#handle .name { display: flex; align-items: center; gap: 4px; min-height: 44px; min-width: 0; font-weight: 500; text-align: start; }
+#handle .name i { font-style: normal; color: var(--lp-muted); }
+#handle .pill { display: flex; align-items: center; justify-content: center; width: 64px; height: 44px; }
+#handle .pill::before { content: ""; width: 40px; height: 6px; border-radius: 999px; background: var(--lp-line); }
+#handle .act { min-height: 44px; padding: 0 8px; border-radius: 12px; font-weight: 500; color: var(--lp-accent); white-space: nowrap; }
+#whole[aria-pressed="false"] { color: var(--lp-muted); }
+#whole[aria-pressed="true"] { background: color-mix(in srgb, var(--lp-accent) 15%, transparent); }
+#body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; padding-bottom: var(--lp-bar-inset); }
+#credit { margin: 0; padding: 4px 12px 4px; font-size: 0.875rem; line-height: 1.25rem; color: var(--lp-muted); }
+#mapper { display: inline-flex; align-items: center; min-height: 44px; margin: 0 12px; font-weight: 500; color: var(--lp-accent); text-decoration: underline; text-underline-offset: 4px; }
+@media (max-height: 500px), (min-width: 768px) {
+  #area { flex-direction: row; }
+  #dock { border-top: 0; border-left: 1px solid var(--lp-line); }
+  #handle { cursor: default; }
+}
+
+/* the strip: the picture, the real buttons over it, the way back to the chapter, the zoom, the card */
+.tl { position: relative; overflow: hidden; touch-action: pan-y; user-select: none; -webkit-user-select: none; outline: none; }
+.tl:focus-visible { outline: 2px solid var(--lp-accent); outline-offset: -2px; }
+.tl canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tl-hits { position: absolute; inset: 0; }
+.tl-hits button { position: absolute; border-radius: 10px; }
+.tl-hits button:active { background: color-mix(in srgb, var(--lp-fg) 8%, transparent); }
+.tl-hits button:focus-visible, .tl-zoom button:focus-visible, .tl-home:focus-visible, .tl-card button:focus-visible { outline: 2px solid var(--lp-accent); outline-offset: -2px; }
+.tl-home { position: absolute; top: 4px; min-height: 36px; padding: 0 14px; border-radius: 999px; background: var(--lp-surface); border: 1px solid var(--lp-line); color: var(--lp-accent); font-size: 0.875rem; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 10px rgb(0 0 0 / 0.14); animation: tl-in 200ms ease-out; }
+.tl-home::before { content: ""; position: absolute; inset: -4px; }
+.tl-home[data-side="left"] { left: 8px; }
+.tl-home[data-side="right"] { right: 8px; }
+.tl-zoom { position: absolute; right: 0; display: flex; padding-left: 16px; background: linear-gradient(to right, transparent, var(--lp-surface) 16px); transition: top 200ms ease; }
+.tl-zoom button { width: 44px; height: 44px; font-size: 1.5rem; font-weight: 500; line-height: 1; color: var(--lp-accent); border-radius: 12px; }
+.tl-zoom button:active { background: var(--lp-line); }
+.tl-zoom button[aria-disabled="true"] { color: var(--lp-muted); opacity: 0.5; }
+.tl-card { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 12px 8px; overflow-y: auto; overscroll-behavior: contain; background: var(--lp-surface); border-top: 1px solid var(--lp-line); border-radius: 16px 16px 0 0; box-shadow: 0 -8px 20px rgb(0 0 0 / 0.12); animation: tl-card-in 200ms ease-out; }
+.tl-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; position: sticky; top: 0; background: var(--lp-surface); }
+.tl-card h2 { margin: 0; font-size: 1.125rem; font-weight: 600; line-height: 1.3; padding: 8px 0 2px; }
+.tl-card-close { min-height: 44px; padding: 0 4px 0 12px; font-weight: 500; color: var(--lp-accent); }
+.tl-card-when { margin: 0 0 8px; color: var(--lp-muted); }
+.tl-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.tl-who { margin-top: 8px; align-items: center; }
+.tl-chip { min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--lp-line); color: var(--lp-accent); font-weight: 500; white-space: nowrap; }
+.tl-chip[aria-current] { background: color-mix(in srgb, var(--lp-accent) 12%, transparent); border-color: transparent; }
+.tl-chip-quiet { color: var(--lp-fg); }
+.tl-chip:active, .tl-row:active { background: var(--lp-line); }
+.tl-name { display: inline-flex; align-items: center; min-height: 44px; padding: 0 2px; }
+.tl-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; text-align: start; border-top: 1px solid var(--lp-line); }
+.tl-row-when { flex-shrink: 0; color: var(--lp-muted); font-size: 0.875rem; }
+.tl-live { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); }
+#hud { position: fixed; left: 8px; top: 60px; margin: 0; padding: 4px 8px; border-radius: 8px; background: var(--lp-fg); color: var(--lp-surface); font: 12px/1.4 ui-monospace, monospace; opacity: 0.85; pointer-events: none; z-index: 9; white-space: pre-wrap; max-width: 374px; }
+@keyframes tl-card-in { from { transform: translateY(24px); opacity: 0; } }
+@keyframes tl-in { from { opacity: 0; } }
+[data-still], [data-still] * { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="title"><span id="title"></span> <span aria-hidden="true">▾</span></span>
+    <span class="switch" aria-hidden="true"><span data-on>English</span><span id="other"></span></span>
+  </header>
+  <div class="chips" aria-hidden="true"><span data-on>Today · 3 of 7</span><span>New 3</span></div>
+  <div id="area">
+    <main id="passage" aria-label="The passage"></main>
+    <aside id="dock" aria-label="Split">
+      <div id="handle">
+        <button type="button" class="name"><span>Timeline</span> <i aria-hidden="true">▾</i></button>
+        <span class="pill" role="separator" aria-label="Split size"></span>
+        <button type="button" id="whole" class="act" aria-pressed="false">Whole Bible</button>
+        <button type="button" class="act">Close</button>
+      </div>
+      <div id="body">
+        <div id="strip"></div>
+        <p id="credit"></p>
+        <a id="mapper" target="_blank" rel="noopener noreferrer">Timeline at Bible Mapper</a>
+      </div>
+    </aside>
+  </div>
+</div>
+<pre id="hud" hidden></pre>
+<script type="module">
+import { LAYOUT, door, mount, tOf, yearLabel } from './timeline.js';
+
+// the app's books (src/data/canon.ts), in canon order: a card names a verse by its book
+const BOOKS = Object.fromEntries('gen:Genesis|exo:Exodus|lev:Leviticus|num:Numbers|deu:Deuteronomy|jos:Joshua|jdg:Judges|rut:Ruth|1sa:1 Samuel|2sa:2 Samuel|1ki:1 Kings|2ki:2 Kings|1ch:1 Chronicles|2ch:2 Chronicles|ezr:Ezra|neh:Nehemiah|est:Esther|job:Job|psa:Psalms|pro:Proverbs|ecc:Ecclesiastes|sng:Song of Solomon|isa:Isaiah|jer:Jeremiah|lam:Lamentations|ezk:Ezekiel|dan:Daniel|hos:Hosea|jol:Joel|amo:Amos|oba:Obadiah|jon:Jonah|mic:Micah|nam:Nahum|hab:Habakkuk|zep:Zephaniah|hag:Haggai|zec:Zechariah|mal:Malachi|mat:Matthew|mrk:Mark|luk:Luke|jhn:John|act:Acts|rom:Romans|1co:1 Corinthians|2co:2 Corinthians|gal:Galatians|eph:Ephesians|php:Philippians|col:Colossians|1th:1 Thessalonians|2th:2 Thessalonians|1ti:1 Timothy|2ti:2 Timothy|tit:Titus|phm:Philemon|heb:Hebrews|jas:James|1pe:1 Peter|2pe:2 Peter|1jn:1 John|2jn:2 John|3jn:3 John|jud:Jude|rev:Revelation'.split('|').map((pair) => pair.split(':')));
+
+const asked = new URLSearchParams(location.search);
+const book = BOOKS[asked.get('book')] ? asked.get('book') : 'isa';
+const chapter = Math.max(1, Number(asked.get('chapter')) || 1);
+const repo = new URL('../../', import.meta.url);
+if (asked.get('theme')) document.documentElement.dataset.theme = asked.get('theme');
+if (asked.get('dock')) document.documentElement.style.setProperty('--dock', `${Number(asked.get('dock')) * 100}%`);
+const chapterName = `${BOOKS[book]} ${chapter}`;
+const $ = (id) => document.getElementById(id);
+$('title').textContent = chapterName;
+$('other').textContent = Object.keys(BOOKS).indexOf(book) < 39 ? 'Hebrew' : 'Greek';
+
+// the passage: the chapter's own English, as the Reader would show it
+const passage = $('passage');
+fetch(new URL(`public/data/${book}/${chapter}.json`, repo))
+  .then((answer) => answer.json())
+  .then((file) => {
+    for (const verse of file.verses) {
+      if (verse.h) passage.appendChild(Object.assign(document.createElement('p'), { className: 'heading', textContent: verse.h }));
+      const line = passage.appendChild(Object.assign(document.createElement('p'), { className: 'verse' }));
+      line.dataset.verse = verse.n;
+      line.appendChild(Object.assign(document.createElement('span'), { className: 'n', textContent: verse.n }));
+      line.append(Array.isArray(verse.e) ? verse.e.map((chunk) => chunk.t).join(' ') : String(verse.e ?? ''));
+    }
+    if (asked.get('verse')) toVerse(Number(asked.get('verse')));
+  })
+  .catch(() => passage.append('This chapter has no text here.'));
+
+function toVerse(n) {
+  const line = passage.querySelector(`[data-verse="${n}"]`);
+  if (!line) return;
+  passage.scrollTo({ top: line.offsetTop - 8 });
+  line.dataset.flash = '';
+  setTimeout(() => delete line.dataset.flash, 1200);
+}
+
+// the strip takes the body's height less the credit's lines, but keeps its five lanes while the body has them (the credit then comes into view from under it as the dock grows),
+// and never less than its own least; the credit is the first thing under it, the link the next
+const body = $('body');
+const strip = $('strip');
+const fit = () => (strip.style.height = `${Math.max(LAYOUT.STRIP_MIN, Math.min(body.clientHeight, Math.max(LAYOUT.STRIP_FULL, body.clientHeight - $('credit').offsetHeight)))}px`);
+const sized = new ResizeObserver(fit);
+sized.observe(body);
+sized.observe($('credit'));
+fit();
+
+const hud = $('hud');
+const timeline = await mount(strip, {
+  data: door(repo),
+  book,
+  chapter,
+  chapterName,
+  books: BOOKS,
+  whole: $('whole'),
+  still: asked.has('still'),
+  stress: Number(asked.get('stress')) || 1,
+  // a verse of the open chapter moves the text; any other opens its chapter, with the strip
+  onVerse(code, toChapter, verse) {
+    if (code === book && toChapter === chapter) return toVerse(verse);
+    const next = new URLSearchParams(asked);
+    next.set('book', code);
+    next.set('chapter', toChapter);
+    next.set('verse', verse);
+    next.delete('card');
+    next.delete('view');
+    location.search = next;
+  },
+  onRest({ view }) {
+    // Bible Mapper's own timeline takes a year (negative BC), so the link opens it where the strip stands
+    const year = Math.floor(view.c);
+    $('mapper').href = `https://biblemapper.com/timeline/?date=${year <= 0 ? year - 1 : year}`;
+    $('mapper').title = yearLabel(view.c);
+  },
+  onFrame: asked.has('hud') ? (stats) => ((hud.hidden = false), (hud.textContent = `${stats.last.toFixed(2)} ms  ${stats.marks} marks  frame ${stats.frames}`)) : undefined,
+});
+$('credit').textContent = timeline.credit;
+window.__timeline = timeline;
+
+// the handle row drags the dock to any size, as the app's does (src/reader/split/useSplit.ts); stacked only
+const handle = $('handle');
+handle.addEventListener('pointerdown', (down) => {
+  if (down.target.closest('button') || getComputedStyle($('area')).flexDirection === 'row') return;
+  handle.setPointerCapture(down.pointerId);
+  const from = $('dock').offsetHeight;
+  const box = $('area').offsetHeight;
+  const move = (event) => document.documentElement.style.setProperty('--dock', `${Math.min(box - 88, Math.max(44 + LAYOUT.STRIP_MIN, from + down.clientY - event.clientY))}px`);
+  handle.addEventListener('pointermove', move);
+  handle.addEventListener('pointerup', () => handle.removeEventListener('pointermove', move), { once: true });
+});
+
+await timeline.ready;
+$('credit').textContent = timeline.credit; // a book with no file of its own (3 John) shows the other books' data, and so their line
+if (asked.get('view') === 'bible') timeline.whole();
+if (asked.get('year')) timeline.show({ c: tOf(Number(asked.get('year'))), k: timeline.view.k });
+if (asked.get('card')) timeline.open(asked.get('card'));
+if (asked.get('tap') === 'ribbon') [...strip.querySelectorAll('[data-mark="ribbon"]')].sort((a, b) => parseInt(b.getAttribute('aria-label'), 10) - parseInt(a.getAttribute('aria-label'), 10))[0]?.click();
+document.documentElement.dataset.ready = '';
+</script>
+</body>
+</html>
