@@ -9,23 +9,11 @@ import type { Lookup } from '../WordSheet';
 import type { LemmaEntry, LemmaLexicon } from '../data/lexicon';
 import type { OpenChapter } from '../data/readerChapter';
 import { lemmaKeyOf } from '../data/lemma';
+import { OSIS, OT_OSIS } from '../data/osis';
 import { LINK_ORIGIN } from '../config';
 import { pathOf } from './path';
 
-/** Each book's OSIS code, which the links Lampas writes use: 'Rom', '1John'. */
-export const OSIS: Readonly<Record<string, string>> = {
-  mat: 'Matt', mrk: 'Mark', luk: 'Luke', jhn: 'John', act: 'Acts', rom: 'Rom', '1co': '1Cor', '2co': '2Cor', gal: 'Gal', eph: 'Eph',
-  php: 'Phil', col: 'Col', '1th': '1Thess', '2th': '2Thess', '1ti': '1Tim', '2ti': '2Tim', tit: 'Titus', phm: 'Phlm', heb: 'Heb', jas: 'Jas',
-  '1pe': '1Pet', '2pe': '2Pet', '1jn': '1John', '2jn': '2John', '3jn': '3John', jud: 'Jude', rev: 'Rev',
-};
-
-/** The Old Testament books' OSIS codes, for the links to a reference outside the New Testament ('Gen.1.28'; data/otBooks.ts has the names). */
-export const OT_OSIS: Readonly<Record<string, string>> = {
-  gen: 'Gen', exo: 'Exod', lev: 'Lev', num: 'Num', deu: 'Deut', jos: 'Josh', jdg: 'Judg', rut: 'Ruth', '1sa': '1Sam', '2sa': '2Sam', '1ki': '1Kgs',
-  '2ki': '2Kgs', '1ch': '1Chr', '2ch': '2Chr', ezr: 'Ezra', neh: 'Neh', est: 'Esth', job: 'Job', psa: 'Ps', pro: 'Prov', ecc: 'Eccl', sng: 'Song',
-  isa: 'Isa', jer: 'Jer', lam: 'Lam', ezk: 'Ezek', dan: 'Dan', hos: 'Hos', jol: 'Joel', amo: 'Amos', oba: 'Obad', jon: 'Jonah', mic: 'Mic',
-  nam: 'Nah', hab: 'Hab', zep: 'Zeph', hag: 'Hag', zec: 'Zech', mal: 'Mal',
-};
+export { OSIS, OT_OSIS };
 
 /** Other common short forms, beside the code, the OSIS code and the full name (all of those are added below). */
 const EXTRA_NAMES: Readonly<Record<string, readonly string[]>> = {
