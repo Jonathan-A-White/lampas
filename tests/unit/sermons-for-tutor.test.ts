@@ -66,7 +66,7 @@ describe('the request', () => {
 
   it('carries the sermons of the verse he holds, the verse\'s own first', async () => {
     const held = await talkSermonsFor({ book: 'rom', chapter: 5, from: 8 });
-    expect(held?.told.rows.map((r) => r.id)).toEqual(['love', 'peace', 'reign', 'adam']);
+    expect(held?.told.rows.map((r) => r.id)).toEqual(['love', 'peace', 'reign', 'adam', 'search']); // the last is the MLJ Trust row (mw-qtu3zvz.280.17)
     const request = build({ title: 'Romans 5:8', chapter: rom5, verse: rom5.verses.find((v) => v.n === 8)! }, 'Is there a sermon on this?', held?.told);
     expect(request.sermons?.rows.map((r) => r.id)).toContain('love');
     expect(dropSermons(request)).not.toHaveProperty('sermons');
@@ -74,7 +74,8 @@ describe('the request', () => {
   });
 
   it('sends nothing from a screen talk, in About, or when the chapter has none', async () => {
-    expect(await talkSermonsFor({ book: 'gen', chapter: 1 })).toBeUndefined();
+    // a chapter with no sermon is told the MLJ Trust row alone (mw-qtu3zvz.280.17)
+    expect((await talkSermonsFor({ book: 'gen', chapter: 1 }))?.told.rows.map((r) => r.id)).toEqual(['search']);
     const told = sermonsForTutor([row('s', 'x', 'X', ['rom', 5, 1, 2])], []);
     const screen = build({ title: 'Settings', chapter: rom5, verse: null, screen: { name: 'Settings', facts: [] } }, 'hi', told);
     expect(screen).not.toHaveProperty('sermons');

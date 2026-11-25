@@ -1,6 +1,7 @@
 // src/sermons/SermonsSheet.tsx — the Sermons sheet (mw-qtu3zvz.2, docs/sermons.md): 'Sermons for Romans 5:8' (a verse), 'Sermons for Romans 5:1-11' (a passage) or 'Sermons for Romans 5', the place's sermons grouped
 // as 'On this verse' ('On these verses') and 'In this chapter' (a group is absent when empty), each row 44 px with the title and, under it, the preacher (the source's `by` where there is none), the date and where it opens. A row is a plain link
 // to the sermon where it lives; nothing is fetched until one is tapped, and offline the rows stay and the second line says 'Needs the internet'. openSermons(place) opens it; <SermonsHost /> (mounted once in App) draws it.
+// After 'In this chapter' comes one row, 'Martyn Lloyd-Jones (MLJ Trust)', a live link to the Trust's own sermon search for the chapter (mw-qtu3zvz.280.17, docs/sermons.md 'The MLJ Trust row').
 // After them, 'In Logos' lists his sermon books that are On at the place, by name, one link each, while Logos is On (mw-qtu3zvz.3, docs/sermons.md 'In Logos'; switched in Settings > Study resources > Sermons > Sermon sources, mw-qtu3zvz.92).
 // Online (mw-qtu3zvz.5, docs/sermons.md 'When online'): the sheet opens on the bundled rows, asks the sermon index service and says 'Latest from the index · N new' (or 'Offline: the bundled index') under the title;
 // a search field answers from the service alone ('Found'). Under the title of a verse or a passage a 'Themes' line names the topics that carry it, and after 'In this chapter' come the sermons 'On <topic>' that share a topic with it (mw-qtu3zvz.4, docs/sermons.md 'The themes').
@@ -26,6 +27,7 @@ import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
 import { openSermon, videoOfRow } from './player';
 import { creditAddress, opensNewTab, OpenWebContext, useOpenWebIn, useReadsAloud, useRowHref, useWebHref } from './openWeb';
+import { MLJ_TITLE, mljSearchUrl } from './mljLink';
 import { openSermonText } from './sermonText';
 import { topicHeading } from './topicHeading';
 import type { SameTheme, SermonPlace, SermonRow, ThemeRow } from './types';
@@ -127,6 +129,29 @@ function Group({ title, rows, online, part }: { title: string; rows: SermonRow[]
           <Row key={`${row.source}:${row.id}`} row={row} online={online} />
         ))}
       </div>
+    </div>
+  );
+}
+
+/** The MLJ Trust row (mw-qtu3zvz.280.17, docs/sermons.md 'The MLJ Trust row'): one 44 px link in every chapter's list to the Trust's own sermon search for the chapter, built from the book and chapter alone; nothing of the Trust's is fetched. */
+function MljRow({ place, online }: { place: SermonPlace; online: boolean }) {
+  const href = useWebHref()(mljSearchUrl(place));
+  return (
+    <div role="group" aria-label="Martyn Lloyd-Jones" data-sermons-part="mlj" className="pb-3">
+      <a data-mlj-row href={href} {...(opensNewTab(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className={ROW}>
+        <span className="min-w-0 flex-1">
+          <span data-sermon-title className="block break-words">
+            {MLJ_TITLE}
+          </span>
+          <span data-sermon-meta className="block break-words text-sm font-normal text-muted">
+            {`The Trust's sermons on ${placeName({ book: place.book, chapter: place.chapter })} · `}
+            <span data-sermon-opens className="whitespace-nowrap">
+              {online ? 'Opens on the web' : 'Needs the internet'}
+            </span>
+          </span>
+        </span>
+        <span aria-hidden="true">↗</span>
+      </a>
     </div>
   );
 }
@@ -506,6 +531,7 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
         {found && rows.length === 0 && same && sameRows === 0 ? <p role="status" className="py-2 text-base text-muted">No sermons here.</p> : null}
         {found ? <Group title={passage ? 'On these verses' : 'On this verse'} rows={found.here} online={online} part="here" /> : null}
         {found ? <Group title="In this chapter" rows={found.chapter} online={online} part="chapter" /> : null}
+        <MljRow place={place} online={online} />
         {same ? <SameThemeGroups same={same} online={online} /> : null}
         {archives ? <InLogos rows={archives} /> : null}
         {[...sources, ...named].map((source) => (

@@ -2,10 +2,11 @@
 // answer them for the verse (or the chapter), each {id, source, title, preacher, ref, theme?, plays?}, at most MAX_TUTOR_SERMONS (the passage's own rows first, then the rows on the same theme, which name the topic they came in by), and the verse's
 // themes {topic, label}, at most MAX_TUTOR_THEMES. The tutor may link a row (`sermon`: '<source>:<id>') or narrow ('only Spurgeon', 'on grace') by answering with the rows that fit. The rows the chip opens are these same
 // rows (tutorSermonRows), so a link names only what the request listed.
-import { bookOf } from '../data/books';
+import { bookOf, titleOf } from '../data/books';
 import { latestFor, sameThemeFor, sermonsFor, sermonsOnTheme } from './index';
 import { themesFor, type Theme } from '../themes';
 import { themeKey } from '../themes/themesFor';
+import { MLJ_ID, MLJ_PREACHER, MLJ_SOURCE, MLJ_TITLE, mljRow } from './mljLink';
 import { videoOfRow } from './player';
 import type { SermonPlace, SermonRef, SermonRow } from './types';
 
@@ -98,7 +99,7 @@ export interface TalkSermons {
 
 /**
  * The sermons of the place a talk holds (a verse, else the chapter): the sheet's own rows (the bundled ones with the service's newest, as the door counts them), then those on the same theme, and the verse's themes. A whole chapter has no themes and no rows on a theme. A source or a theme file that fails
- * is logged by the module and answers nothing; this never throws. Undefined where there is nothing to tell.
+ * is logged by the module and answers nothing; this never throws. Undefined only where the module throws; the Martyn Lloyd-Jones row (mljLink.ts) is always listed last.
  */
 export async function talkSermonsFor(place: SermonPlace): Promise<TalkSermons | undefined> {
   try {
@@ -111,9 +112,11 @@ export async function talkSermonsFor(place: SermonPlace): Promise<TalkSermons | 
     const themes = (await Promise.all(named.map(async (theme) => ((await sermonsOnTheme(theme, latest !== undefined).catch(() => [])).length > 0 ? [theme] : [])))).flat();
     const same = await sameThemeFor(place, found).catch(() => ({ groups: [], more: 0 }));
     const rows: ListedSermon[] = [...found.here, ...found.chapter, ...same.groups.flatMap((group) => group.rows.map((row): ListedSermon => ({ ...row, theme: group.topic.label })))];
-    const listed = listedSermons(rows);
-    if (listed.length === 0) return undefined;
-    return { rows: listed, told: sermonsForTutor(listed, themes) };
+    // the Martyn Lloyd-Jones row (mw-qtu3zvz.280.17) is always the last, within the same cap: the tutor links the Trust's own search for the chapter when he is asked for one of his sermons
+    const listed = listedSermons(rows).slice(0, MAX_TUTOR_SERMONS - 1);
+    const told = sermonsForTutor(listed, themes);
+    const mlj: TutorSermon = { id: MLJ_ID, source: MLJ_SOURCE, title: MLJ_TITLE, preacher: MLJ_PREACHER, ref: titleOf(place.book, place.chapter) };
+    return { rows: [...listed, mljRow(place)], told: { ...told, rows: [...told.rows, mlj] } };
   } catch (error) {
     console.warn(`could not read the sermons of the place for the tutor: ${error instanceof Error ? error.message : String(error)}`);
     return undefined;
