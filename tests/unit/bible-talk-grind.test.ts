@@ -903,6 +903,22 @@ describe('a setting is offered only when the turn asks for one', () => {
   });
 });
 
+// mw-5r3p30.1250: the `links` description ended 'Leave it out when no lexicon, verse or setting would help him', which invites a setting link
+// beside an answer, against part 200's 'Use it ONLY when he asks where a setting is'. The schema now leaves the when to part 200.
+describe("the answer schema's links description names no setting as a reason to link", () => {
+  const { description } = (schema as { properties: { links: { description: string } } }).properties.links;
+
+  it('argues for no link because it would help him', () => {
+    expect(description).not.toMatch(/would help/);
+  });
+
+  it("says after the limits only to leave it out unless part 200 calls for a link, naming no setting there", () => {
+    const when = description.slice(description.indexOf('At most three'));
+    expect(when).toBe("At most three, and at most one of them a work (two in a quiz). Leave it out unless 'Links to his study resources' calls for one.");
+    expect(instructionsOf('bible-talk')).toContain('## Links to his study resources\n');
+  });
+});
+
 // mw-5r3p30.727: the smoke missed now and then because an English word's question (`what does 'love' really mean?`) read as a Greek word's question, so the offer's word
 // went into `words` too, and because a talk's `summary` was left out of an answer to a Greek-word question. The rules say it in one place each.
 describe('two rules the smoke found not to hold (mw-5r3p30.727)', () => {
