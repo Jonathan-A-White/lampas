@@ -4,6 +4,8 @@
 // (tests/e2e/sermon-sources.spec.ts holds the list itself at 120 sources).
 // The last are mw-qtu3zvz.5's: the sheet online. The sermon index service is stubbed with page.route (the live one answers only once its VPS door is up); every other test has it refuse, so a live service never changes a count.
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { LOGOS_RESOURCES } from '../../src/data/logosSermonResources';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { keepSettings } from './keep-settings';
@@ -17,10 +19,8 @@ test.use({ viewport: { width: 390, height: 844 } });
 /** Frames the page draws before a spec that expects a sermon, theme or door NOT to appear looks: the lookups have no end signal on the screen. */
 const LOOKUP_FRAMES = 30;
 
-/** The sermon index service the build asks (src/config.ts SERMONS_URL, default). */
-const SERVICE = 'https://sermons.allmymind.org';
-/** The service allows the app's origin; the stub allows any, as a preview server's origin is not the real one's. */
-const CORS = { 'access-control-allow-origin': '*', 'content-type': 'application/json' };
+const SERVICE = 'https://sermons.allmymind.org'; // the sermon index service the build asks (src/config.ts SERMONS_URL, default)
+const CORS = { 'access-control-allow-origin': '*', 'content-type': 'application/json' }; // the service allows the app's origin; the stub allows any, as a preview server's origin is not the real one's
 
 // the service is refused unless a test serves it: the counts above are the bundled index's
 test.beforeEach(async ({ page }) => {
@@ -400,7 +400,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   const section = page.locator('[data-section="sermons"]');
   await expect(section).toBeVisible();
   // the section is the door to the list, with its count, and Open web sermons in: no source has a row here
-  await expect(section.getByTestId('sources-count')).toHaveText('2 of 50 on');
+  await expect(section.getByTestId('sources-count')).toHaveText(`2 of ${bundledSources().length} on`);
   await expect(section.getByRole('group', { name: 'Open web sermons in', exact: true })).toBeVisible();
   await expect(section.getByRole('group', { name: /Spurgeon/ })).toHaveCount(0);
   await section.getByRole('button', { name: /^Sermon sources/ }).click();
@@ -408,7 +408,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   const on = async (name: string, value: 'On' | 'Off') => expect(page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: value, exact: true })).toHaveAttribute('aria-checked', 'true');
   await on('Spurgeon\'s sermons', 'On');
   await on('Matthew Henry\'s sermons', 'On');
-  await on('Greg Laurie\'s sermons', 'Off');
+  for (const name of ['Greg Laurie\'s sermons', 'Life Bible Ministry\'s Through the Bible', 'Mike Winger\'s Bible Thinker series']) await on(name, 'Off'); // the last two are web lists, Off to start (mw-qtu3zvz.280.3, mw-qtu3zvz.280.4)
   // his batch 2 books (mw-qtu3zvz.18)
   for (const name of ['Spurgeon\'s My Sermon Notes', 'John Wesley\'s sermons', 'George Whitefield\'s sermons', 'D. L. Moody\'s sermons']) await on(name, 'Off');
   // his batch 3 books (mw-qtu3zvz.20), Jimmy Evans's archive among them, which names no passage
@@ -419,9 +419,9 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   for (const name of ['Sedgwick\'s sermons', 'Moberly\'s Sermons on the Beatitudes', 'Eyton\'s The Beatitudes', 'Chapin\'s Discourses on the Beatitudes', 'Watson\'s sermons on the Beatitudes', 'Pope\'s The Inward Witness', 'Smale\'s The Pentecostal Blessing', 'W. I. Evans\'s This River Must Flow!', 'Calvin\'s sermons in Portuguese']) await on(name, 'Off');
   // his batch 6 books (mw-qtu3zvz.31): the eleven Sermon Outlines and the five Sermon Starters, each a list of its own (the Settings list has no group for a series), all Off
   for (const name of ['Sermon Outlines: Evangelistic', 'Sermon Outlines: for Growing Christians', 'Sermon Outlines: for Seekers', 'Sermon Outlines: for Special Days', 'Sermon Outlines: on 1 Corinthians', 'Sermon Outlines: on Acts', 'Sermon Outlines: on Christian Living', 'Sermon Outlines: on Ephesians', 'Sermon Outlines: on Galatians-Ephesians-Philippians-Colossians', 'Sermon Outlines: on Romans', 'Sermon Outlines: on the Gospels', 'Sermon Starters, vol 1', 'Sermon Starters, vol 2', 'Sermon Starters, vol 3', 'Sermon Starters, vol 4', 'Sermon Starters, vol 5']) await on(name, 'Off');
-  // fifty lists and no book: one group, so no heading; from eight sources up there is a search field
-  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(0);
-  await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', 'Search 50 sermon sources');
+  await expect(page.getByRole('radio', { name: 'Off', exact: true, checked: true })).toHaveCount(bundledSources().length - 2); // every list but Spurgeon's and Henry's is Off, a list bundled later too
+  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(0); // the bundled lists and no book: one group, so no heading; from eight sources up there is a search field
+  await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', `Search ${bundledSources().length} sermon sources`);
   await shot(page, 'sermons-settings');
 
   // Spurgeon and Henry Off: Romans 5:8 has no listed sermon, and so no door
@@ -429,7 +429,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
     await page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: 'Off', exact: true }).click();
     await on(name, 'Off');
   }
-  await expect(page.getByTestId('sources-line')).toHaveText('none of 50 on');
+  await expect(page.getByTestId('sources-line')).toHaveText(`none of ${bundledSources().length} on`);
   await page.goto('/#/?b=rom&c=5');
   await expect(page.locator('[data-verse="8"]')).toBeVisible();
   const view = await openVerseView(page, 8);
@@ -577,7 +577,9 @@ test('online: a source the bundle lacks gets an Off row in the list of sermon so
   await expect(group.getByRole('radio', { name: 'Off', exact: true })).toHaveAttribute('aria-checked', 'true');
   expect((await group.getByRole('radio', { name: 'On', exact: true }).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
   await expect(page.locator('[data-source="sermons.newbie-sermons"]')).toContainText('on the web');
-  await expect(page.getByTestId('sources-line')).toHaveText('2 of 3 on');
+  // Logos is off, so the lists are the bundled ones that name no Logos book and the new one; two of them start On
+  const onTheWeb = bundledSources().filter(({ id }) => !(id in LOGOS_RESOURCES)).length;
+  await expect(page.getByTestId('sources-line')).toHaveText(`2 of ${onTheWeb + 1} on`);
   await group.scrollIntoViewIfNeeded();
   await shot(page, 'sermons-online-source');
 });
@@ -808,3 +810,8 @@ test('a Subsplash row plays in Subsplash\'s own embed player in the same sheet (
   await player.getByRole('button', { name: 'Close' }).click();
   await expect(player).toBeHidden();
 });
+
+/** The bundled passage lists (public/sermons/index.json): the totals the list of sermon sources says are counted from them, so a source bundled later needs no new number in this spec. */
+function bundledSources(): { id: string }[] {
+  return (JSON.parse(readFileSync('public/sermons/index.json', 'utf8')) as { sources: { id: string }[] }).sources;
+}
