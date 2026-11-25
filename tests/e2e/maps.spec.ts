@@ -57,7 +57,8 @@ test('Genesis 10:19 has Maps · 6; the sheet groups the maps; a map opens with i
   await expect.poll(async () => picture.evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
   expect(asked.length).toBe(1);
   await expect(map.locator('[data-map-credit]')).toHaveText('Map by David P. Barrett, biblemapper.com');
-  await expect(map.getByRole('link', { name: 'biblemapper.com' })).toHaveAttribute('href', 'https://biblemapper.com');
+  // the map's own credit line; the Timeline door's credit (data-map-timeline-credit) is a second biblemapper.com link beside it
+  await expect(map.locator('[data-map-credit]').getByRole('link', { name: 'biblemapper.com' })).toHaveAttribute('href', 'https://biblemapper.com');
   await expect(map.getByRole('link', { name: 'About this map' })).toHaveAttribute('href', /^https:\/\/biblemapper\.com\/blog\//);
   await expect(map.getByRole('link', { name: 'Full size' })).toHaveAttribute('href', /^https:\/\/biblemapper\.com\/blog\//);
   await expect(map.getByRole('link', { name: 'All maps for Genesis 10 at Bible Mapper' })).toHaveAttribute('href', 'https://biblemapper.com/blog/mapfinder/?ref=Genesis%2010');
@@ -91,7 +92,7 @@ test('a failed picture says the map needs the internet and keeps its links', asy
   const map = page.getByRole('dialog', { name: 'Ararat' });
   await expect(map.getByText('The map needs the internet')).toBeVisible();
   await expect(map.getByRole('link', { name: 'About this map' })).toBeVisible();
-  await expect(map.getByRole('link', { name: 'biblemapper.com' })).toBeVisible();
+  await expect(map.locator('[data-map-credit]').getByRole('link', { name: 'biblemapper.com' })).toBeVisible();
 });
 
 test('the foot of a chapter has no door, Old Testament or New, and the place line opens the chapter with one (mw-5r3p30.1028)', async ({ page }) => {
