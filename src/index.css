@@ -553,7 +553,7 @@ textarea,
   bottom: 0.5rem;
 }
 
-/* The Immersive reader's place line under a scrolling chapter (src/Reader.tsx data-place-below) is the lowest row and carries the phone's bar floor itself (`.place-line[data-floor]`), so the
+/* The Immersive reader's place line under a scrolling chapter with the bars away (src/Reader.tsx data-place-below) is the lowest row when nothing is read aloud and carries the phone's bar floor itself (`.place-line[data-floor]`), so the
  * box above it keeps a little air and not its own floor on top of it: the blank band under the last line was 64 px of box and 52 px of line (mw-5r3p30.1005, 'even at the bottom'). With Turn pages the
  * box already keeps none (below). With the bars up the box keeps its floor, as nothing under it carries one. */
 [data-reader][data-place-below] {

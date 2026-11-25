@@ -840,11 +840,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       ) : null}
       </div>
       {paging && placeShown ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
-      {/* Scroll with the Immersive reader Off: the line is there all the time, how far through the chapter he is (mw-5r3p30.1028); with it On it comes with the bars away, below */}
-      {readingMode !== undefined && !paging && !immersive && placeShown && !split.open ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
-      <BarSlot level={1} inset={!(percentLine && away)} />
+      {/* Scroll: the one line is at the foot in every mode (mw-5r3p30.1247, his words: "I should see the chapter at the bottom regardless of whether it's immersive or not"): the Immersive reader
+          Off or On, the bars up or away, the split open or not (mw-5r3p30.1028 had it Off always, and On only with the bars away). It is one row that stays where it is as the bars come and go,
+          so the text's box is never a row taller or shorter for a moment (mw-5r3p30.472), and a spec finds one line, not two sliding past each other. */}
+      {readingMode !== undefined && !paging && placeShown ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
+      <BarSlot level={1} inset />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
-      {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} visible={away} floor /> : null}
       {ai && talkScope && talkAbout !== undefined ? (
         <TalkSheet
           scope={talkScope}
