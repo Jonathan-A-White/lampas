@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.379",
+    "date": "2026-11-25",
+    "story": "mw-rl10piw.74",
+    "kind": "fixed",
+    "text": "In Hands-free, the tutor's spoken answers (and the speaker on an answer) now play whole at normal volume: the microphone stays off while the tutor speaks, so tap Stop to cut an answer short."
+  },
+  {
+    "version": "0.7.379",
+    "date": "2026-11-25",
+    "story": "mw-u2w5klk.349.124",
+    "kind": "fixed",
+    "text": "In the Septuagint Weave, Greek words you know that the English has no word for now show in Greek."
+  },
+  {
+    "version": "0.7.379",
+    "date": "2026-11-25",
+    "story": "mw-u2w5klk.349.62",
+    "kind": "fixed",
+    "text": "Tapping an English word in the Septuagint's Joel now opens the Greek word it renders instead of the whole verse."
+  },
+  {
     "version": "0.7.378",
     "date": "2026-11-24",
     "story": "mw-u2w5klk.349.110",

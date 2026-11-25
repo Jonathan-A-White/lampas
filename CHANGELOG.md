@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.379
+_2026-11-25_
+- Fixed: In Hands-free, the tutor's spoken answers (and the speaker on an answer) now play whole at normal volume: the microphone stays off while the tutor speaks, so tap Stop to cut an answer short.
+- Fixed: In the Septuagint Weave, Greek words you know that the English has no word for now show in Greek.
+- Fixed: Tapping an English word in the Septuagint's Joel now opens the Greek word it renders instead of the whole verse.
+
 ## 0.7.378
 _2026-11-24_
 - Fixed: In the Greek Old Testament, the commandments against adultery and murder in Deuteronomy 5 now have English that matches the Greek beside it.
