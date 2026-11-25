@@ -1,7 +1,7 @@
 // tests/unit/lxx-align-expect.test.ts — `npm run lxx:align-expect` (scripts/lxx/align-expect.ts, story mw-u2w5klk.349.73; docs/lxx-align.md, 'A pairing pass'): the per-chapter counts, the leftover words with their
 // reasons and the pairs by place a pairing pass used to add by hand to three test files are a sidecar per book, data/lxx/align/<book>.expect.json, written by one command; the real-data tests read it. Here: the file's
 // shape, what the command keeps and what it drops, the checks that fail in one line naming the command, and two books writing no file in common. The real data is read by the three tests that use the sidecar.
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -15,6 +15,7 @@ import {
   checkPlacePairs,
   expectBooks,
   expectCommand,
+  expectFile,
   leftoversOf,
   mergeWhy,
   parseExpect,
@@ -84,6 +85,16 @@ describe('the sidecar file', () => {
     expect(expectBooks(dir)).toEqual(['gen']);
     expect(readExpect('gen', dir)).toEqual(expectOf());
     expect(readExpect('exo', dir)).toBeUndefined();
+  });
+
+  // A sidecar the repository holds that is not the command's own rendering is rewritten whole by the next run on its book (Genesis and Leviticus had no space after the comma; mw-u2w5klk.349.142).
+  it.each(expectBooks())('is held by the repository for %s as the command renders it, so a run on the book rewrites no line it did not change', (code) => {
+    const text = readFileSync(expectFile(code), 'utf8');
+    const rendered = renderExpect(parseExpect(text)).split('\n');
+    const held = text.split('\n');
+    const differ = held.flatMap((line, i) => (line === rendered[i] ? [] : [`line ${i + 1}: ${line}`]));
+    expect(differ.slice(0, 3), `${expectFile(code)}: ${differ.length} line(s) are not as renderExpect writes them: run \`${expectCommand(code)}\``).toEqual([]);
+    expect(held.length).toBe(rendered.length);
   });
 
   it('is the one the repository holds for Genesis, with a reason for every leftover word it names', () => {
