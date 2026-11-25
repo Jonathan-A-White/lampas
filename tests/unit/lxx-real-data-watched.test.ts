@@ -33,8 +33,6 @@ const CODE_NOT_WATCHED: Readonly<Record<string, string>> = {
   'scripts/build-lemma-forms.mjs': 'the ship calls it only to write a lemma-forms folder (--lemma-forms, or one beside an output named data-lxx), after the chapters are written; the tests ship with neither, and it changes no pairing',
   'src/data/books.ts': "OT_BOOKS for the Old Testament build in scripts/data-build.ts; the Septuagint takes parseLexicon from that file, and its own books are scripts/data/tvtms.ts's and scripts/lxx/report.ts's",
   'src/data/canon.ts': "the canon's order in the New and Old Testament's index (mergeIndex); the Septuagint build writes its own index",
-  'src/data/chapter.ts': "values are taken only by the New Testament's drill answers (scripts/data/drillAnswers.ts); the Septuagint's scripts take its types",
-  'src/data/lemma.ts': "normaliseLemma, for the New Testament build in scripts/data-build.ts; parseLexicon does not call it",
   'src/data/meanings.ts': "the New Testament's drill answers (scripts/data/drillAnswers.ts)",
   'src/data/seed-words.ts': "the seed words the New Testament build checks (scripts/data-build.ts)",
   'src/data/variantVerse.ts': "the New Testament's variant English (scripts/data/variantEnglish.ts)",
@@ -59,7 +57,25 @@ const DATA_NOT_WATCHED: Readonly<Record<string, string>> = {
   'public/data': "other than index.json, the New Testament's and Hebrew's chapters: read only for the lemma files (see scripts/build-lemma-forms.mjs above)",
 };
 
+/** The files of the app the real-data test files import that need no real-data run, each with why: what they draw or say is checked on fixtures alone, which every gate runs. */
+const APP_NOT_WATCHED: Readonly<Record<string, string>> = {
+  'src/copy/format.ts': "copyUnitOf, checked on the Deuteronomy 1:22 fixture of weave-lxx-every-word; the sweep of the shipped verses does not call it",
+  'src/data/db.ts': 'weave-lxx-every-word only closes the database when it ends',
+  'src/diagram/request.ts': "the Diagram's words of the Deuteronomy 1:22 fixture; the sweep does not call it",
+  'src/diagram/weave.ts': "the Diagram's Weave on the Deuteronomy 1:22 fixture; the sweep does not call it",
+  'src/reader/VerseText.tsx': 'draws the verses of the two fixtures; the sweep reads the weave itself, not the screen',
+  'src/services/reading.ts': "the reading check's words of the Deuteronomy 1:22 fixture; the sweep does not call it",
+  'src/speech/readAloud.ts': "read aloud's runs of the Deuteronomy 1:22 fixture; the sweep does not call it",
+};
+
 const isFile = (path: string): boolean => existsSync(path) && statSync(path).isFile();
+
+/** The test files that read the real data: those that ask lxxRealData whether to run. */
+function realDataTests(): string[] {
+  return readdirSync('tests/unit')
+    .map((name) => `tests/unit/${name}`)
+    .filter((path) => isFile(path) && /^import \{[^}]*\blxxRealData\b[^}]*\} from '\.\.\/support\/lxx-real-data';/m.test(readFileSync(path, 'utf8')));
+}
 
 /** The repo's files a script imports for their values (types are erased first: a type changes nothing the ship does), as paths from the repo's root. */
 function importsOf(file: string): string[] {
@@ -89,6 +105,12 @@ function inputsOfTheShip(): string[] {
   return [...seen].sort();
 }
 
+/** The files under src/ the real-data tests run: what their test files import, and what the Weave (src/data/weave.ts, which they check) imports itself. */
+function appImportsOfTheTests(): string[] {
+  const found = [...realDataTests(), 'src/data/weave.ts'].flatMap(importsOf).filter((f) => f.startsWith('src/'));
+  return [...new Set(found)].sort();
+}
+
 describe('what makes the gate run the real-data Septuagint tests', () => {
   it('reads a diff of the verse map alone as a change to run them for (mw-u2w5klk.349.130 landed main red)', () => {
     const r = decideLxxRealData(borrowed(['scripts/data/tvtms.ts']));
@@ -114,10 +136,25 @@ describe('what makes the gate run the real-data Septuagint tests', () => {
   });
 
   it('watches every test file that reads the real data', () => {
-    const readers = readdirSync('tests/unit')
-      .map((name) => `tests/unit/${name}`)
-      .filter((path) => isFile(path) && /^import \{[^}]*\blxxRealData\b[^}]*\} from '\.\.\/support\/lxx-real-data';/m.test(readFileSync(path, 'utf8')));
+    const readers = realDataTests();
     expect(readers).toContain('tests/unit/lxx-unpaired.test.ts');
     expect(readers.filter((path) => !watched(path))).toEqual([]);
+  });
+
+  it("reads a diff of the app's Weave alone as a change to run them for (mw-u2w5klk.349.145)", () => {
+    const r = decideLxxRealData(borrowed(['src/data/weave.ts']));
+    expect(r.line).toContain('the work touches src/data/weave.ts');
+    expect(r.run).toBe(true);
+  });
+
+  it('watches every file of the app those test files import, or names it with why not', () => {
+    const imports = appImportsOfTheTests();
+    expect(imports).toEqual(expect.arrayContaining(['src/data/weave.ts', 'src/reader/useWoven.ts', 'src/reader/septuagint.ts']));
+    expect(imports.filter((f) => !watched(f) && !(f in APP_NOT_WATCHED))).toEqual([]);
+  });
+
+  it('keeps no reason for a file of the app that is watched or that no test file imports', () => {
+    const imports = new Set(appImportsOfTheTests());
+    expect(Object.keys(APP_NOT_WATCHED).filter((f) => watched(f) || !imports.has(f))).toEqual([]);
   });
 });
