@@ -504,12 +504,6 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
             {wordGloss(chapter, word)}
           </Fact>
         )}
-        {formOnly || !wordDefinition(chapter, word) ? null : (
-          // the lexicon's own definition, laid out with its Bible references as links (mw-5r3p30.1170: the Greek lex has `d` for every entry)
-          <Fact label="Definition" testId="sheet-definition">
-            <Definition text={wordDefinition(chapter, word)} />
-          </Fact>
-        )}
         {word.src === 'guess' ? (
           // a variant word whose number the data guessed (the nearest lemma): the number with its mark, even while the Strong's resource shows it as a link
           <Fact label="Strong's" testId="sheet-strongs">
@@ -564,6 +558,16 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
       ) : null}
+      {formOnly || !wordDefinition(chapter, word) ? null : (
+        // The lexicon's own definition, laid out with its Bible references as links (mw-5r3p30.1170: the Greek lex has `d` for every entry). It is the card's last thing,
+        // under Study and Help with this word: it is the one fact of any length (a dozen senses), so drawn after Meaning it pushed both rows below the sheet's fold
+        // (tests/e2e/word-help.spec.ts, study-resources.spec.ts hold them in view at 390x844) and now it is the part that scrolls.
+        <dl className="mt-3 border-t border-line pt-2">
+          <Fact label="Definition" testId="sheet-definition">
+            <Definition text={wordDefinition(chapter, word)} />
+          </Fact>
+        </dl>
+      )}
     </section>
   );
 }
