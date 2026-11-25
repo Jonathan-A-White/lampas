@@ -18,6 +18,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { getReading } from '../../src/speech/readAloud';
 import { dropWaiting, waitingAnswer } from '../../src/speech/tutorWaiting';
 import * as tutorVoice from '../../src/speech/tutorVoice';
+import { afterTurns } from '../../tests/support/turns';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { typeQuestion } from '../../tests/support/composer';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
@@ -46,7 +47,6 @@ const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const AT = { clientX: 100, clientY: 700 };
 const SWITCH = "Read the tutor's responses aloud";
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 let fake: FakePostern;
 let synth: FakeSynth;
 /** everything the phone was asked to say, in order, once a response was heard to the end */
@@ -59,7 +59,7 @@ async function open({ aloud, hash = '', reply }: { aloud: boolean; hash?: string
   window.localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
   window.location.hash = hash;
   visibility = 'visible';
-  settingDelayMs = 0;
+  settingDelayTurns = 0;
   dropWaiting();
   stubRecorder();
   stubRecognizer();
@@ -126,10 +126,10 @@ async function askUnanswered(question: string): Promise<void> {
 async function hearAll(): Promise<void> {
   await waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0));
   for (let i = 0; i < 60; i++) {
-    if (!synth.speaking) await sleep(30);
+    // the next utterance is queued once the one before has ended: the reading is over when the engine is silent and the reading idle, so wait for one or the other
+    await waitFor(() => expect(synth.speaking || getReading().status === 'idle').toBe(true));
     if (!synth.speaking) break;
-    synth.finish();
-    await sleep(5);
+    await act(async () => synth.finish());
   }
   said = synth.spoken.map((u) => ({ text: u.text, lang: u.lang }));
 }
@@ -152,11 +152,11 @@ let visibility: DocumentVisibilityState = 'visible';
 Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => visibility });
 Object.defineProperty(document, 'hidden', { configurable: true, get: () => visibility === 'hidden' });
 /** How long a loaded phone takes to read the 'Read the tutor's responses aloud' setting, which the app does after an answer is stored and before it decides to
- * speak it or hold it for his return (speakTutor): longer than the 150 ms the steps used to wait for silence, so a step that goes by that timer fails. */
-const SLOW_SETTING_MS = 400;
-let settingDelayMs = 0;
+ * speak it or hold it for his return (speakTutor): counted in turns of the task queue (tests/support/turns.ts), not milliseconds, and many more than a step that waits on a pause would give it, so a step that goes by a timer fails. */
+const SLOW_SETTING_TURNS = 200;
+let settingDelayTurns = 0;
 const slowSettingRead = () => {
-  settingDelayMs = SLOW_SETTING_MS;
+  settingDelayTurns = SLOW_SETTING_TURNS;
 };
 /** What the app decides about speaking a response is seen here: speakTutor is asked once per response, and reads the saved setting (a promise noted here)
  * before it speaks or does not. A step that says nothing is spoken waits for that decision to be taken (decided), not for a pause (mw-qtu3zvz.273). */
@@ -176,7 +176,7 @@ function watchDecisions(): void {
   const real = repositories.getReadTutor;
   readSpy = vi.spyOn(repositories, 'getReadTutor').mockImplementation(() => {
     const read = (async () => {
-      if (settingDelayMs > 0) await sleep(settingDelayMs);
+      if (settingDelayTurns > 0) await afterTurns(settingDelayTurns);
       return real();
     })();
     settingReads.push(read);
@@ -274,8 +274,11 @@ describeFeature(feature, ({ Scenario }) => {
     And(holdRead, holdAndLetGo);
     And('the phone is speaking the verdict', speaking);
     When("he presses the phone's Back", async () => {
+      // Back is done when the browser's popstate has come and the app has taken it in
+      const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
       act(() => window.history.back());
-      await sleep(30);
+      await popped;
+      await act(async () => {});
     });
     Then('the speech has stopped', stopped);
   });
