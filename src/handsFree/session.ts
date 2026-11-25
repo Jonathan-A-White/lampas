@@ -19,6 +19,10 @@
 //    between inputs as it speaks cuts the voice off. The wake lets go of its microphone as the reading begins, the voice starts MIC_SETTLE_MS after (readAloud's answer
 //    gate), and the wake listens again when the reading is over or stopped; a command's recogniser open at that moment (the follow-up window) is put down too. So the
 //    wake word is not heard while the tutor speaks: the speaking bar's Stop (or a tap on the answer) stops it, and a wake while the answer is still awaited cuts it as before.
+//  - No microphone opens at a voice's end event either (mw-rl10piw.76): the end event comes while the last of the sound is still in the phone's audio buffer, and a microphone opening there moves
+//    the route and cuts it ('Hands-free on' heard as 'Hands-free'; an answer's last words). The session's start after a sentence of the setting (sync), the wake's opening again after the tutor spoke (followReading) and the
+//    kit's next microphone after a command (commandDone: the follow-up's recogniser, the wake) wait SPEECH_TAIL_MS after the voice's last end (speech/greek.ts whenVoiceSettled). A voice that starts
+//    over a wake still opening waits for it, up to MIC_WAIT_MS (8 s: a slow input), not 2 s.
 //  - Any other failed wake (the model cannot be fetched, no microphone, a browser with no wake) is told on screen and aloud (COULD_NOT_START); the mic-less and fetch-less kinds
 //    start again by themselves when the network is back ('online') or on the next touch anywhere, and the setting stays On; a browser that cannot do it at all turns it Off.
 import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
@@ -30,7 +34,7 @@ import { handsFreeSetting } from '../settings/definitions/handsFree';
 import { handsFreePauseMs, type HandsFreePauseValue } from '../settings/definitions/handsFreePause';
 import { getSetting, onSetting, setSetting } from '../settings/store';
 import { openMicInput } from '../audio/recorder';
-import { SETTING_SAID_KEY, speakText, whenSaid } from '../speech/greek';
+import { SETTING_SAID_KEY, speakText, whenSaid, whenVoiceSettled } from '../speech/greek';
 import { getReading, setAnswerGate, subscribeReading } from '../speech/readAloud';
 import { forgetAsk, interruptAsk } from './ask';
 import { runCommand } from './commands';
@@ -92,8 +96,9 @@ const clockNow = (): HandsFreeClock => handsFreeSeam.clock ?? realClock;
 /** How long after the wake lets go of the microphone a sentence waits, for the phone's audio to settle back from the call route (a sentence started in the same instant is clipped at both ends, mw-rl10piw.50). */
 const MIC_SETTLE_MS = 150;
 
-/** The longest a sentence waits for the microphone to be let go, should the wake never say it has stopped. */
-const MIC_WAIT_MS = 2000;
+/** The longest a sentence waits for the microphone to be let go, should the wake never say it has stopped. A wake still being opened (a slow input, a permission) cannot be put down
+ * until it is open, and a voice started over it is cut as it comes up (mw-rl10piw.76), so this is long: an open that finishes in 2 s must not be talked over. */
+const MIC_WAIT_MS = 8000;
 
 let wakesOpen = 0;
 let closedAt = Number.NEGATIVE_INFINITY;
@@ -176,8 +181,13 @@ function untilMicMayOpen(): Promise<void> {
   });
 }
 
+/** How long after the voice's tail has gone the wake waits before it opens again: a follow-up the answer's end opens (commandDone waits the same tail) takes the microphone first, with no
+ * open-and-close of the wake between. */
+const FOLLOW_UP_FIRST_MS = 50;
+
 /** The reading changed: when the tutor's voice takes the speech the microphone is shut at once (the wake lets go, a recogniser listening for a command is put down);
- * when it ends the wake opens again a moment later (a macrotask: a follow-up the answer's end opens takes the microphone first, with no open-and-close of the wake between). */
+ * when it ends the wake opens again once the voice's last sound has left the phone (SPEECH_TAIL_MS, mw-rl10piw.76: a microphone opening at the end event cuts the answer's last words),
+ * a moment after a follow-up that opens then. */
 function followReading(): void {
   const shut = tutorSpeaks();
   if (shut === micShut) return;
@@ -187,9 +197,11 @@ function followReading(): void {
     putDownRecogniser();
     shutListeners.forEach((listener) => listener());
   } else {
-    globalThis.setTimeout(() => {
-      if (!micShut) shutListeners.forEach((listener) => listener());
-    }, 0);
+    whenVoiceSettled(() => {
+      globalThis.setTimeout(() => {
+        if (!micShut) shutListeners.forEach((listener) => listener());
+      }, FOLLOW_UP_FIRST_MS);
+    });
   }
 }
 
@@ -492,6 +504,14 @@ function onState(next: HandsFreeState): void {
   }
 }
 
+/** Carries a command out (commands.ts), and gives the kit its answer a moment after the last of what it said has left the phone: the kit opens a microphone as this resolves (the follow-up's
+ * recogniser, the wake again), and one that opens at the sentence's end event cuts its last words off (mw-rl10piw.76). What the command does is done before the wait. */
+async function commandDone(words: string, info: { followUp: boolean }): ReturnType<typeof runCommand> {
+  const done = await runCommand(words, sayAloud, info);
+  await new Promise<void>((resolve) => void whenVoiceSettled(resolve));
+  return done;
+}
+
 function sessionNow(): HandsFree {
   if (!session) followPause();
   session ??= createHandsFree(
@@ -505,7 +525,7 @@ function sessionNow(): HandsFree {
       ...(typeof document === 'undefined' ? {} : { visibility: documentVisibility(document) }),
       clock: clockNow(),
       onOpen: silenceAtWake,
-      onCommand: (words, info) => runCommand(words, sayAloud, info),
+      onCommand: commandDone,
       // a wake while the tutor's answer is waited for or spoken stops it and opens a new command; during any other command the wake is ignored, as before
       onInterrupt: interruptAsk,
       onClose: goOnAtClose,
@@ -516,7 +536,7 @@ function sessionNow(): HandsFree {
   return session;
 }
 
-/** Gives up a start that waits for the sentence 'Hands-free on' to end. */
+/** Gives up a start that waits for the sentence 'Hands-free on' to end, and then for its sound to leave the phone. */
 let cancelStart: (() => void) | null = null;
 
 /** Starts the session when Hands-free is wanted and no other feature has the microphone; stops it otherwise. A start waits for the sentence the switch is saying ('Hands-free on'):
@@ -525,10 +545,18 @@ function sync(): void {
   cancelStart?.();
   cancelStart = null;
   if (wanted && !isMicBusy()) {
-    cancelStart = whenSaid(SETTING_SAID_KEY, () => {
-      cancelStart = null;
-      if (wanted && !isMicBusy()) void sessionNow().start();
+    // the sentence's end event, then the time its last sound needs to leave the phone: the microphone opening at the end event cut 'on' off (mw-rl10piw.76)
+    let giveTail: (() => void) | null = null;
+    const giveSaid = whenSaid(SETTING_SAID_KEY, () => {
+      giveTail = whenVoiceSettled(() => {
+        cancelStart = null;
+        if (wanted && !isMicBusy()) void sessionNow().start();
+      });
     });
+    cancelStart = () => {
+      giveSaid();
+      giveTail?.();
+    };
   } else session?.stop();
 }
 

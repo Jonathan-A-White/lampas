@@ -265,6 +265,61 @@ export function whenSaid(key: string, then: () => void): () => void {
   return give;
 }
 
+// --- the voice's tail (mw-rl10piw.76) ---------------------------------------------------------------------------------------------------------
+// The end event of an utterance comes while the last of its sound is still in the phone's audio buffer. A microphone that opens in that instant moves the audio route and cuts the
+// sound off ('Hands-free on' heard as 'Hands-free'; the last words of a tutor's answer). So every microphone Lampas opens after speech waits for the tail (whenVoiceSettled).
+
+/** How long after a voice's end event the sound is still leaving the phone: a microphone waits this long (the same settle a sentence waits after a microphone closes, session.ts MIC_SETTLE_MS). */
+export const SPEECH_TAIL_MS = 150;
+
+/** When the phone's voice last went quiet (the engine stopped playing and no word is said beside a reading); the start of time before it has. */
+let quietAt = Number.NEGATIVE_INFINITY;
+let voiceHeard = false;
+
+function noteVoice(): void {
+  const heard = getSpeech().status === 'playing' || beside !== null;
+  if (voiceHeard && !heard) quietAt = Date.now();
+  voiceHeard = heard;
+}
+
+// before any listener of the app is added, so a listener told of the end finds quietAt already set
+subscribeEngine(noteVoice);
+subscribeBeside(noteVoice);
+
+/** Calls `then` once the voice's last end event is SPEECH_TAIL_MS behind: at once when it ended long ago or never spoke. It does not wait for a voice still speaking (a Listen plays on,
+ * the wake is heard over it): callers wait for the sentence they care about first (whenSaid). A word said beside a reading whose own end is being handled (its onEnd runs before the word is
+ * let go) is waited out. Returns the way to give up waiting, which never calls `then`. */
+export function whenVoiceSettled(then: () => void): () => void {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let over = false;
+  const offs: Array<() => void> = [];
+  const give = (): void => {
+    over = true;
+    clearTimeout(timer);
+    offs.forEach((off) => off());
+    offs.length = 0;
+  };
+  const check = (): void => {
+    if (over || beside !== null) return;
+    offs.forEach((off) => off());
+    offs.length = 0;
+    const left = SPEECH_TAIL_MS - (Date.now() - quietAt);
+    if (left <= 0) {
+      over = true;
+      then();
+      return;
+    }
+    timer = setTimeout(() => {
+      if (over) return;
+      over = true;
+      then();
+    }, left);
+  };
+  offs.push(subscribeBeside(check));
+  check();
+  return give;
+}
+
 /** Asks the speech package to say `text` under `key`, in his speed and voice: it cancels what is speaking, cuts the text into sentences
  * (one per line break too) and reads each in the language of its letters. `slowly` is the speed of a word being sounded out. Returns false
  * when the phone cannot speak at all. */

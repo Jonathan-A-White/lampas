@@ -19,7 +19,7 @@ vi.mock('voice-kit/handsfree', async (importOriginal) => {
 
 import { db } from '../../src/data/db';
 import { HandsFreeGate } from '../../src/handsFree/HandsFreeGate';
-import { handsFreeSeam, resetHandsFree } from '../../src/handsFree/session';
+import { handsFreeSeam, handsFreeSource, resetHandsFree } from '../../src/handsFree/session';
 import { setHandsFree } from '../../src/handsFree/switch';
 import { handsFreePauseSetting } from '../../src/settings/definitions/handsFreePause';
 import { setSetting } from '../../src/settings/store';
@@ -67,6 +67,8 @@ async function turnOn(): Promise<void> {
 }
 
 async function wakeUp(): Promise<FakeRecognizer> {
+  // the session answers the wake word once it waits again: a command it has just carried out holds it 'working' until its last sound has left the phone (mw-rl10piw.76)
+  await waitFor(() => expect(handsFreeSource.state().name).toBe('waiting'));
   const before = FakeRecognizer.instances.length;
   act(() => {
     expect(wake.say()).toBe(true);
