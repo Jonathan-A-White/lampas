@@ -1,0 +1,83 @@
+{
+  "description": "His report (mw-5r3p30.1248): he finished a short Drill it on The neuter gender (Finding it in a verse, 0 of 4 right), every miss the neuter article τό, and asks what to drill: the answer sends him to the article table and carries ONE paradigm link to it, so the words that point him at the link are kept.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Drill it",
+    "question": "What should I drill to get these right?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {},
+    "resources": [],
+    "screen": {
+      "name": "Drill it",
+      "facts": [
+        {
+          "label": "Idea",
+          "value": "The neuter gender"
+        },
+        {
+          "label": "Kind",
+          "value": "A short drill on Finding it in a verse"
+        },
+        {
+          "label": "Result",
+          "value": "0 of 4 right"
+        }
+      ],
+      "drill": [
+        {
+          "idea": "The neuter gender",
+          "asked": "Which word in John 1:5 is neuter? τὸ φῶς",
+          "answer": "σκοτίᾳ",
+          "right_answer": "τό",
+          "right": false
+        },
+        {
+          "idea": "The neuter gender",
+          "asked": "Which word in John 1:4 is neuter? τό",
+          "answer": "ζωή",
+          "right_answer": "τό",
+          "right": false
+        },
+        {
+          "idea": "The neuter gender",
+          "asked": "Which word in John 3:6 is neuter? τὸ γεγεννημένον",
+          "answer": "σαρκός",
+          "right_answer": "τό",
+          "right": false
+        },
+        {
+          "idea": "The neuter gender",
+          "asked": "Which word in Mark 4:11 is neuter? τὸ μυστήριον",
+          "answer": "βασιλείας",
+          "right_answer": "τό",
+          "right": false
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "links.0.kind": {
+      "equals": "paradigm"
+    },
+    "links.0.table": {
+      "equals": "article"
+    },
+    "links.1": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

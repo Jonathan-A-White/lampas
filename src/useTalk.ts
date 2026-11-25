@@ -37,6 +37,7 @@ import { hebrewLevelOf } from './settings/definitions/hebrewInterest';
 import { higherInterest } from './services/interestField';
 import { rustyOfferOf } from './talk/rustyOffer';
 import { quizGoalOfferOf } from './talk/quizGoalOffer';
+import { withoutUnkeptLinkPromise } from './talk/linkPromise';
 import { rustyNow } from './data/learnerRusty';
 import { todayNow } from './data/learnerToday';
 import { todayOfferOf } from './talk/todayOffer';
@@ -248,6 +249,8 @@ export function useTalk(
             const again = askedNames(answer.asks);
             if (again.length > 0) await noteLateAsks(again, turns.length);
           }
+          // Words that point him at a link the answer does not carry ('Tap the link below', and nothing below) are taken out of what is kept, shown and spoken (mw-5r3p30.1248)
+          answer = { ...answer, answer: withoutUnkeptLinkPromise(answer.answer, answer.links) };
           // The settings he asked for are applied at once (the registry checks each), then kept with the turn for its Undo.
           const { applied, refused } = await changeSettings(answer.settings_changes);
           // What his words did to the offer that waited (mw-5r3p30.186): a yes does what its tap does, a no withdraws it, a request to hear it changes nothing.
