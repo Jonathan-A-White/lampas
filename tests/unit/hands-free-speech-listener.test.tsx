@@ -56,7 +56,7 @@ interface Event {
   micOpen?: boolean;
 }
 let events: Event[] = [];
-/** The real time each utterance's end was reported at, and each recogniser started at (mw-rl10piw.76: a microphone opened in the instant the voice ends clips its last word on Android). */
+/** The page's own clock (performance.now: Date.now is not steady under the honest fakes) at which each utterance's end was reported at, and each recogniser started at (mw-rl10piw.76: a microphone opened in the instant the voice ends clips its last word on Android). */
 let endedAt: number[] = [];
 let recogniserStartedAt: number[] = [];
 /** Recognisers started and not yet stopped or aborted. */
@@ -89,7 +89,7 @@ function watchMicrophones(): void {
   const make = FakeRecognizer.prototype.start;
   vi.spyOn(FakeRecognizer.prototype, 'start').mockImplementation(function (this: FakeRecognizer, track?: unknown) {
     live.add(this);
-    recogniserStartedAt.push(Date.now());
+    recogniserStartedAt.push(performance.now());
     events.push({ what: 'recogniser start', speaking: synth.speaking });
     const end = (): void => {
       if (live.delete(this)) events.push({ what: 'recogniser end', speaking: synth.speaking });
@@ -109,7 +109,7 @@ function watchMicrophones(): void {
     events.push({ what: 'speak', text: u.text, speaking: synth.speaking, micOpen: wake.listening || live.size > 0 });
     const onend = u.onend;
     u.onend = (event) => {
-      endedAt.push(Date.now());
+      endedAt.push(performance.now());
       onend?.call(u, event);
     };
     speak(u);

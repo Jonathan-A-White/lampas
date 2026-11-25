@@ -51,10 +51,10 @@ beforeEach(async () => {
   asked = 0;
   const speak = synth.honest.synth.speak.bind(synth.honest.synth);
   synth.honest.synth.speak = (u) => {
-    mine.push({ what: 'speak', text: u.text, micOpen: wake.listening, at: Date.now() });
+    mine.push({ what: 'speak', text: u.text, micOpen: wake.listening, at: performance.now() });
     const onend = u.onend;
     u.onend = (event) => {
-      mine.push({ what: 'ended', text: u.text, at: Date.now() });
+      mine.push({ what: 'ended', text: u.text, at: performance.now() });
       onend?.call(u, event);
     };
     speak(u);
@@ -65,13 +65,13 @@ beforeEach(async () => {
     if (hold) await hold;
     const opened = (await start(options)) as { ok: boolean; stop?: () => void };
     if (!opened.ok || !opened.stop) return opened;
-    mine.push({ what: 'wake open', at: Date.now() });
+    mine.push({ what: 'wake open', at: performance.now() });
     const stop = opened.stop;
     let closed = false;
     return {
       ...opened,
       stop() {
-        if (!closed) mine.push({ what: 'wake close', at: Date.now() });
+        if (!closed) mine.push({ what: 'wake close', at: performance.now() });
         closed = true;
         stop();
       },

@@ -157,10 +157,11 @@ export function whenMicClosed(then: () => void): () => void {
  * wait for it themselves (whenSaid, the tutor's reading). Returns the way to give up waiting, which never calls `then`. */
 function whenVoiceQuiet(then: () => void): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  // a timer started late in a long task fires early by what the task has already taken (Node counts from the start of the loop's turn): the time is looked at again when it fires
+  let looks = 0;
+  // a timer started late in a long task fires early by what the task has already taken (Node counts from the start of the loop's turn): the time is looked at again when it fires, at most 20 times, should the clock never move
   const check = (): void => {
     const left = MIC_SETTLE_MS - msSinceVoiceQuiet();
-    if (left <= 0) then();
+    if (left <= 0 || ++looks > 20) then();
     else timer = setTimeout(check, left);
   };
   check();
