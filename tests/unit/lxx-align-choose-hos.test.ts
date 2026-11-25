@@ -134,4 +134,34 @@ describe.skipIf(!real.run)('Hosea with the model pass', () => {
     expect(greek(13, /^went$/)).toEqual(['ἐπορεύθη']);
     expect(greek(8, /sound aloud/)).toEqual(['ἠχήσατε']);
   });
+
+  it('gives the aligner\'s small-word pairs back to the Greek word that renders them (story mw-u2w5klk.349.121): 5:10 they and I, 5:11 he, 5:14 to, 6:2 we, 6:5 I', () => {
+    // each row: chapter, verse, the English chunk, the Greek words it renders; and the small word that held a neighbour's Greek, now with none
+    const greekOf = (n: number, v: number, re: RegExp): { chunk: string; greek: string[] } => {
+      const verse = withModel.get(n)!.verses.find((x) => x.n === v)!;
+      const chunk = verse.e.find((c) => re.test(c.t));
+      expect(chunk, `${n}:${v} ${re}`).toBeDefined();
+      return { chunk: chunk!.t, greek: chunk!.g.map((g) => verse.g[g].t) };
+    };
+    // 5:10 "as they that removed the bounds: I will pour out upon them my fury": 'they' on αὐτοὺς and 'I' on μου are not theirs
+    expect(greekOf(5, 10, /\bupon\b/).greek).toEqual(['ἐπ᾽', 'αὐτοὺς']);
+    expect(greekOf(5, 10, /\bpour\b/).greek).toEqual(['ἐκχεῶ']);
+    expect(greekOf(5, 10, /\bfury\b/).greek).toEqual(['τὸ', 'ὅρμημά', 'μου.']);
+    // 5:11 "Ephraim ... against his adversary, he trod": 'he' is not αὐτοῦ, which is 'his'
+    expect(greekOf(5, 11, /adversary/).greek).toEqual(['τὸν', 'ἀντίδικον', 'αὐτοῦ,']);
+    expect(greekOf(5, 11, /\btrod\b/).greek).toEqual(['κατεπάτησεν', 'τὸ', 'κρίμα,']);
+    // 5:14 "I am as a panther to Ephraim": 'to' is not εἰμι, which is 'am'
+    expect(greekOf(5, 14, /\bam\b/).greek).toEqual(['ἐγώ', 'εἰμι']);
+    // 6:2 "he will heal us: ... we shall arise": 'we' is not ἡμᾶς, which is 'us'
+    expect(greekOf(6, 2, /\bheal\b/).greek).toEqual(['ὑγιάσει', 'ἡμᾶς']);
+    // 6:5 "have I mown down ... I have slain them with the word of my mouth: and my judgment": 'I' is not μου
+    expect(greekOf(6, 5, /\bmouth\b/).greek).toEqual(['στόματός', 'μου,']);
+    expect(greekOf(6, 5, /\bjudgment\b/).greek).toEqual(['κρίμα', 'μου']);
+    for (const [n, v, re] of [[5, 10, /^they\b/], [5, 11, /^he$/], [5, 14, /^to$/], [6, 2, /^we\b/], [6, 5, /^I\b/]] as const) {
+      const verse = withModel.get(n)!.verses.find((x) => x.n === v)!;
+      for (const chunk of verse.e.filter((c) => re.test(c.t))) {
+        expect(chunk.g.map((g) => verse.g[g].t), `${n}:${v} ${chunk.t}`).not.toEqual(expect.arrayContaining(['αὐτοὺς', 'αὐτοῦ,', 'εἰμι', 'ἡμᾶς', 'μου']));
+      }
+    }
+  });
 });
