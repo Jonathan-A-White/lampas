@@ -1,0 +1,101 @@
+ref	run	text	g	mark	confidence
+Amo.6:1	1	them that set at nothing	2		0.80
+Amo.6:1	2	that	5		0.80
+Amo.6:1	3	in	-		0.80
+Amo.6:1	4	of	-		0.80
+Amo.6:1	5	they have gathered the	-		0.80
+Amo.6:1	6	of the	-		0.80
+Amo.6:1	7	of the	-		0.80
+Amo.6:1	8	they have	-		0.80
+Amo.6:1	9	in	-		0.80
+Amo.6:2	1	O house of Israel,	-		0.80
+Amo.6:2	1	pass by	0		0.80
+Amo.6:2	2	of you,	-		0.80
+Amo.6:2	3	by	-		0.80
+Amo.6:2	4	Ematrabba;	8,9		0.80
+Amo.6:2	5	of	-		0.80
+Amo.6:2	6	Philistines,	-		0.80
+Amo.6:2	6	the chief	17		0.80
+Amo.6:2	7	see	-		0.80
+Amo.6:2	8	coasts	25,26		0.80
+Amo.6:2	9	than	-		0.80
+Amo.6:3	1	You⌃ who are approaching	-		0.80
+Amo.6:3	2	who are drawing	5		0.80
+Amo.6:4	1	who	0		0.80
+Amo.6:4	2	of	-		0.80
+Amo.6:4	3	delicately	-		0.80
+Amo.6:4	4	couches,	8,9		0.80
+Amo.6:4	5	of the	-		0.80
+Amo.6:4	6	of the	-		0.80
+Amo.6:4	7	of the	-		0.80
+Amo.6:5	1	who	0		0.80
+Amo.6:5	2	in	2		0.80
+Amo.6:5	3	of musical	-		0.80
+Amo.6:5	4	they have regarded them	9		0.80
+Amo.6:5	5	dwelling,	8		0.80
+Amo.6:5	6	fleeting	13		0.80
+Amo.6:5	6	pleasures;	-		0.80
+Amo.6:6	1	who	0		0.80
+Amo.6:6	2	themselves with	-		0.80
+Amo.6:6	3	have	-		0.80
+Amo.6:6	4	occasion of	-		0.80
+Amo.6:6	5	of	-		0.80
+Amo.6:7	1	Therefore	0,1		0.80
+Amo.6:7	2	shall they depart into	-		0.80
+Amo.6:7	3	the	-		0.80
+Amo.6:7	4	of	-		0.80
+Amo.6:7	5	the neighing	10		0.80
+Amo.6:7	5	of	-		0.80
+Amo.6:7	6	shall	-		0.80
+Amo.6:7	7	cut off	-		0.80
+Amo.6:8	1	the	-		0.80
+Amo.6:8	2	has	-		0.80
+Amo.6:8	3	saying,	-		0.80
+Amo.6:8	4	of	-		0.80
+Amo.6:8	5	I do also	12		0.80
+Amo.6:8	6	I will cut off	18		0.80
+Amo.6:8	6	his	-		0.80
+Amo.6:8	7	who	22		0.80
+Amo.6:9	1	it shall come	-		0.80
+Amo.6:9	2	pass,	-		0.80
+Amo.6:9	3	there be	-		0.80
+Amo.6:9	4	men	-		0.80
+Amo.6:9	5	house,	6		0.80
+Amo.6:9	5	that they shall	8		0.80
+Amo.6:10	1	But a remnant shall be left behind,	-		0.80
+Amo.6:10	2	relations shall	-		0.80
+Amo.6:10	3	shall strenuously endeavor to	7		0.80
+Amo.6:10	4	forth	-		0.80
+Amo.6:10	4	their	-		0.80
+Amo.6:10	5	one shall	-		0.80
+Amo.6:10	6	to	-		0.80
+Amo.6:10	7	of	-		0.80
+Amo.6:10	8	Is there	22		0.80
+Amo.6:10	8	yet	23		0.80
+Amo.6:10	8	any one else	24		0.80
+Amo.6:11	1	he shall say, No one else.	-		0.80
+Amo.6:11	2	the other shall say, Be silent, that you name not	-		0.80
+Amo.6:11	3	of	-		0.80
+Amo.6:12	1	behold, the Lord commands, and he will strike the great house	-		0.80
+Amo.6:12	2	breaches,	-		0.80
+Amo.6:12	3	the	-		0.80
+Amo.6:13	1	Will horses run	-		0.80
+Amo.6:13	2	rocks? will they refrain from neighing at mares? for you⌃	-		0.80
+Amo.6:13	3	turned judgment into poison, and the fruit of righteousness into bitterness:	-		0.80
+Amo.6:14	1	who rejoice at vanity, who	-		0.80
+Amo.6:14	2	Have	-		0.80
+Amo.6:14	3	possessed horns by our own strength?	-		0.80
+Amo.6:1	fix	to	1		0.80
+Amo.6:1	fix	in the	7,8		0.80
+Amo.6:1	fix	they have gathered the harvest	11		0.80
+Amo.6:2	fix	of the Philistines,	15		0.80
+Amo.6:2	fix	the chief	16,17		0.80
+Amo.6:3	fix	You⌃ who are approaching	0,1,2		0.80
+Amo.6:3	fix	the	-		0.80
+Amo.6:7	fix	shall they depart into captivity	3,4		0.80
+Amo.6:7	fix	shall be cut off	9		0.80
+Amo.6:9	fix	it shall come to pass,	1		0.80
+Amo.6:9	fix	left	3,11		0.80
+Amo.6:10	fix	their relations shall	2,3,4		0.80
+Amo.6:10	fix	their bones	10,11,12		0.80
+Amo.6:10	fix	house,	21		0.80
