@@ -8,7 +8,7 @@
 import { Definition } from './Definition';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { bareEnglish, type Chapter, type GreekWord, isGuess, sourceLanguage, type SourceLanguage, wordGloss, wordLemma, wordParse } from './data/chapter';
+import { bareEnglish, type Chapter, type GreekWord, isGuess, sourceLanguage, type SourceLanguage, wordDefinition, wordGloss, wordLemma, wordParse } from './data/chapter';
 import { cardForm, isSeptuagint, readingOf, septuagintEnglish, type WordEnglish } from './reader/septuagint';
 import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
@@ -502,6 +502,12 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
         {formOnly ? null : (
           <Fact label="Meaning" testId="sheet-gloss">
             {wordGloss(chapter, word)}
+          </Fact>
+        )}
+        {formOnly || !wordDefinition(chapter, word) ? null : (
+          // the lexicon's own definition, laid out with its Bible references as links (mw-5r3p30.1170: the Greek lex has `d` for every entry)
+          <Fact label="Definition" testId="sheet-definition">
+            <Definition text={wordDefinition(chapter, word)} />
           </Fact>
         )}
         {word.src === 'guess' ? (
