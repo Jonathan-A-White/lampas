@@ -300,7 +300,19 @@ describeFeature(feature, ({ Scenario }) => {
       await openSettings(user);
       await openSettingsGroup(user, 'developer');
     });
-    And('he taps {string} in Settings', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    And('he taps {string} in Settings', async (_, name: string) => {
+      // The Developer reset: a loaded host can draw the row's button again between finding it and the click landing, and a click on the replaced node reaches nothing.
+      // So the button is found afresh on every try, and tapped again only when it is a new node; the wait is for the setting the reset writes.
+      let tapped: HTMLElement | null = null;
+      await waitFor(async () => {
+        const button = screen.getByRole('button', { name });
+        if (button !== tapped) {
+          tapped = button;
+          await user.click(button);
+        }
+        expect((await db.settings.get('readingPlan'))?.value).toBe('off');
+      });
+    });
     Then('the Reading plan setting is Off and no plan is kept', async () => {
       await waitFor(async () => expect((await db.settings.get('readingPlan'))?.value).toBe('off'));
       expect(await getReadingPlan()).toBeUndefined();
