@@ -1,7 +1,7 @@
 {
   "reasons": {
     "added-jos": "No free Greek word of its verse renders it: it is English Brenton adds to make the Greek English (a particle, an auxiliary, a noun the Greek leaves understood), or the second word of an English phrase for one Greek word that the aligner already put on the first word or on a neighbour ('young men', 'took' and 'pass', 'by siege'), a pair the model pass does not touch; each was read against its verse (mw-u2w5klk.349.12).",
-    "other-verse-jos": "Its Greek words are in the verse before or after, which has no chunk to point at: Brenton's English of Joshua 5:15, 6:7, 6:8, 6:14, 7:2, 8:19 and 13:8 holds the words of the Greek verse beside it (5:15 the Greek of 5:14's end, 6:7 and 6:8 each the other's, 6:14 the end of 6:13, 7:2's 'men went up and spied' the Greek of 7:3, 8:19's 'Joshua stretched out his hand and his spear' the Greek of 8:18, 13:8 the end of 13:7) (mw-u2w5klk.349.12)."
+    "other-verse-jos": "Its Greek words are in the verse before or after, which has no chunk to point at: Brenton's English of Joshua 5:15, 6:14, 7:2, 8:19 and 13:8 holds the words of the Greek verse beside it (5:15 the Greek of 5:14's end, 6:14 the end of 6:13, 7:2's 'men went up and spied' the Greek of 7:3, 8:19's 'Joshua stretched out his hand and his spear' the Greek of 8:18, 13:8 the end of 13:7; 6:7 and 6:8, each the other's, are mapped to their Greek verses since mw-u2w5klk.349.130) (mw-u2w5klk.349.12)."
   },
   "chapters": {
     "1": {
@@ -96,26 +96,11 @@
     },
     "6": {
       "gaps": 0,
-      "model": 47,
+      "model": 32,
       "leftovers": [
         ["6:5:one", "added-jos"],
         ["6:6:saying", "added-jos"],
         ["6:6:spoke", "added-jos"],
-        ["6:7:ark", "other-verse-jos"],
-        ["6:7:covenant", "other-verse-jos"],
-        ["6:7:follow", "other-verse-jos"],
-        ["6:7:lord", "other-verse-jos"],
-        ["6:7:priests", "other-verse-jos"],
-        ["6:7:proceed", "other-verse-jos"],
-        ["6:7:sacred", "other-verse-jos"],
-        ["6:7:seven", "other-verse-jos"],
-        ["6:7:seven", "other-verse-jos"],
-        ["6:7:trumpets", "other-verse-jos"],
-        ["6:8:charge", "other-verse-jos"],
-        ["6:8:encompass", "other-verse-jos"],
-        ["6:8:go", "other-verse-jos"],
-        ["6:8:people", "other-verse-jos"],
-        ["6:8:round", "other-verse-jos"],
         ["6:9:proceed", "added-jos"],
         ["6:9:rear", "added-jos"],
         ["6:10:cry", "added-jos"],
