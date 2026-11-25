@@ -7,14 +7,12 @@ import { answerFragment, instructionsPart } from 'voice-kit/talks/grind';
 import { joinGrindParts } from '../src/settings/grindText.ts';
 
 /**
- * The most bytes the bible-talk instructions may total (mw-5r3p30.938; it was 99,500 and every story trimmed an old rule to fit). The mill never refuses a
- * prompt for its size: it warns past 100,000 (millwright's GristInstructionsWarnBytes, `mw grist smoke`), and claude cannot be started with more than
- * 131,072 bytes as one argument (mw-gq6.690), so 110,000 keeps a margin under the one hard limit. A warning past 100,000 is the price of the room.
+ * The most bytes the bible-talk instructions may total, joined as the mill reads them (instructionsOf): the line past which `mw grist smoke` warns
+ * (millwright's GristInstructionsWarnBytes), because every ask pays for every byte (mw-5r3p30.1096). mw-5r3p30.938 had raised it to 110,000 with
+ * 10,000 bytes of room kept free under it, which is the same 100,000 line, but counted as the parts' sum, a few dozen bytes short of what the smoke
+ * counts, so the smoke warned while the test passed. claude cannot be started with more than 131,072 bytes as one argument (mw-gq6.690).
  */
-export const BIBLE_TALK_CEILING = 110_000;
-
-/** The bytes the bible-talk instructions keep free under BIBLE_TALK_CEILING, so the next story adds a rule without trimming another. */
-export const BIBLE_TALK_ROOM = 10_000;
+export const BIBLE_TALK_CEILING = 100_000;
 
 /** What grinds/<kind>.json names as its instructions: a file or a directory, relative to the repository. */
 export function instructionsPath(kind: string): string {

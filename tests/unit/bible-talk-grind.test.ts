@@ -5,14 +5,14 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
 import { pronunciationOf } from '../../src/speech/pronunciation';
 import { FEEDBACK_SUMMARY_MAX, NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
-import { HELP_KEPT, HELP_MAX_BYTES, formatJson, keySaid, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
+import { HELP_KEPT, HELP_MAX_BYTES, formatJson, joinGrindParts, keySaid, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
 import { helpPlain } from '../../src/settings/helpText';
 import { SETTINGS } from '../support/settings';
 import { lampasRegistry } from '../../src/tutor/registry';
 import { TALK_PICTURE_MAX_BYTES } from '../../src/talk/pictures';
 import { validate, type Schema } from '../support/schema-validate';
 import { answerFragment, instructionsPart } from 'voice-kit/talks/grind';
-import { BIBLE_TALK_CEILING, BIBLE_TALK_ROOM, KIT_END, instructionParts, instructionsOf, withKitFragment, withKitPart } from '../../scripts/grind-parts';
+import { BIBLE_TALK_CEILING, KIT_END, instructionParts, instructionsOf, withKitFragment, withKitPart } from '../../scripts/grind-parts';
 
 // vitest related follows the import graph, and the fs reads below are not in it: these imports put the grind's file, its schemas,
 // its instruction parts and its scenarios in this file's graph, so the gate's `vitest related` runs this test for a change to any of them (mw-5r3p30.860).
@@ -1077,38 +1077,37 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(none.expect.links).toEqual({ present: false });
   });
 
-  it('keeps the whole of the instructions under the 110,000 bytes of BIBLE_TALK_CEILING (mw-5r3p30.938; it was 99,500 and every story trimmed old rules to fit)', () => {
-    const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    expect(BIBLE_TALK_CEILING).toBe(110_000);
-    expect(bytes).toBeLessThanOrEqual(BIBLE_TALK_CEILING);
-  });
-
-  it('leaves at least 10,000 bytes of room under that ceiling, so a story adds a rule without trimming another (mw-5r3p30.938)', () => {
-    const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    expect(BIBLE_TALK_ROOM).toBe(10_000);
-    expect(BIBLE_TALK_CEILING - bytes, `${bytes} bytes used of ${BIBLE_TALK_CEILING}`).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
-  });
-
-  it('still leaves the 10,000 bytes of room after one more setting with the longest help the instructions carry, so the next new setting needs no trim first (mw-82lb97i.16)', () => {
-    const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
+  // The bytes `mw grist smoke` counts: the parts joined as the mill reads them (instructionsOf, one blank line between parts), a little more than
+  // `cat grinds/bible-talk.instructions/*.md | wc -c`; the smoke warns past 100,000 (mw-5r3p30.1096: it was 110,000 with 10,000 of room, the same line).
+  const joinedBytes = (parts = instructionParts(grind.kind as string)): number => Buffer.byteLength(joinGrindParts(parts.map(({ text: t }) => t)), 'utf8');
+  const nextSetting = (): string => {
     // the longest help a line carries is HELP_MAX_BYTES (a longer one gives way to its hint) or a help HELP_KEPT keeps whole (Weave's)
     const kept = SETTINGS.filter((s) => HELP_KEPT.includes(s.key)).map((s) => Buffer.byteLength(helpPlain(s.help ?? s.hint)));
     const longestHelp = Math.max(HELP_MAX_BYTES, ...kept);
     // an on/off setting's line: key, label and help, and no Value (the commonest kind); one with a Value costs more, but only by its values
-    const next = `- \`nextSetting\` — Next setting. ${'x'.repeat(longestHelp)}\n`;
-    expect(BIBLE_TALK_CEILING - bytes - Buffer.byteLength(next), `${bytes} bytes used of ${BIBLE_TALK_CEILING}, and a ${Buffer.byteLength(next)}-byte line more`).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
+    return `- \`nextSetting\` — Next setting. ${'x'.repeat(longestHelp)}\n`;
+  };
+
+  it("keeps the instructions, joined as the mill reads them, within the 100,000 bytes of BIBLE_TALK_CEILING, the line past which `mw grist smoke` warns (mw-5r3p30.1096; mw-5r3p30.938's 110,000 let the smoke warn)", () => {
+    const bytes = joinedBytes();
+    expect(BIBLE_TALK_CEILING).toBe(100_000);
+    expect(bytes).toBe(Buffer.byteLength(instructionsOf(grind.kind as string), 'utf8'));
+    expect(bytes, `${bytes} bytes used of ${BIBLE_TALK_CEILING}; say a rule once or shorter to make room`).toBeLessThanOrEqual(BIBLE_TALK_CEILING);
   });
 
-  it('still leaves the 10,000 bytes of room with a 500-byte line added to the settings part AND one more setting after it, so the next story adds a sentence without trimming first (mw-qtu3zvz.147; the room was 5 bytes)', () => {
+  it('still fits under that ceiling after one more setting with the longest help the instructions carry, so the next new setting needs no trim first (mw-82lb97i.16)', () => {
+    const bytes = joinedBytes();
+    const next = nextSetting();
+    expect(BIBLE_TALK_CEILING - bytes - Buffer.byteLength(next), `${bytes} bytes used of ${BIBLE_TALK_CEILING}, and a ${Buffer.byteLength(next)}-byte line more`).toBeGreaterThanOrEqual(0);
+  });
+
+  it('still fits under that ceiling with a 500-byte line added to the settings part AND one more setting after it, so the next story adds a sentence without trimming first (mw-qtu3zvz.147; the room was 5 bytes)', () => {
     const settingsPart = '330-changing-the-apps-settings.md';
     const parts = instructionParts(grind.kind as string).map((p) => (p.file.endsWith(settingsPart) ? { ...p, text: `${p.text}${'x'.repeat(499)}\n` } : p));
     expect(parts.some((p) => p.file.endsWith(settingsPart) && p.text.endsWith(`${'x'.repeat(499)}\n`))).toBe(true);
-    const bytes = parts.reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    const kept = SETTINGS.filter((s) => HELP_KEPT.includes(s.key)).map((s) => Buffer.byteLength(helpPlain(s.help ?? s.hint)));
-    const longestHelp = Math.max(HELP_MAX_BYTES, ...kept);
-    const next = `- \`nextSetting\` — Next setting. ${'x'.repeat(longestHelp)}\n`;
-    expect(BIBLE_TALK_CEILING - bytes - Buffer.byteLength(next), `${bytes} bytes used of ${BIBLE_TALK_CEILING} with a 500-byte line, and a ${Buffer.byteLength(next)}-byte setting more`).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
-    expect(BIBLE_TALK_CEILING - bytes).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
+    const bytes = joinedBytes(parts);
+    const next = nextSetting();
+    expect(BIBLE_TALK_CEILING - bytes - Buffer.byteLength(next), `${bytes} bytes used of ${BIBLE_TALK_CEILING} with a 500-byte line, and a ${Buffer.byteLength(next)}-byte setting more`).toBeGreaterThanOrEqual(0);
   });
 
   it('keeps every setting key and what Weave and Bible voice say in the instructions after the settings were said more tersely (mw-82lb97i.16)', () => {
