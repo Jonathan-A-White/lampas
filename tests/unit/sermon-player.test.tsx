@@ -156,6 +156,39 @@ describe('openSermon', () => {
     expect(made).toHaveLength(0);
   });
 
+  describe.each([
+    ['a tap (the embed)', false],
+    ['Lampas itself (auto, the media page)', true],
+  ])('a Subsplash row opened by %s with the phone offline (mw-r9xo1pj.30)', (_how, auto) => {
+    const setOnLine = (value: boolean): void => {
+      vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(value);
+    };
+    afterEach(() => vi.restoreAllMocks());
+
+    it('says "Needs the internet to play." as the YouTube player does, and draws no frame that would show a browser error', async () => {
+      setOnLine(false);
+      render(<SermonPlayerHost />);
+      openSermon(yt('https://www.youtube.com/watch?v=vid1_abcdEF', 'https://brookfieldfirst.subspla.sh/q59d572'), { auto });
+      const sheet = await screen.findByRole('dialog', { name: 'The Day of the Lord' });
+      expect(within(sheet).getByRole('status')).toHaveTextContent('Needs the internet to play.');
+      expect(sheet.querySelector('iframe')).toBeNull();
+    });
+
+    it('draws the frame when the phone comes back online, and takes the message away', async () => {
+      setOnLine(false);
+      render(<SermonPlayerHost />);
+      openSermon(yt('https://www.youtube.com/watch?v=vid1_abcdEF', 'https://brookfieldfirst.subspla.sh/q59d572'), { auto });
+      const sheet = await screen.findByRole('dialog', { name: 'The Day of the Lord' });
+      expect(within(sheet).getByRole('status')).toBeInTheDocument();
+      setOnLine(true);
+      act(() => {
+        window.dispatchEvent(new Event('online'));
+      });
+      expect(within(sheet).queryByRole('status')).toBeNull();
+      expect(sheet.querySelector('iframe')).not.toBeNull();
+    });
+  });
+
   it('does nothing, and says so, for a row that is no video; the sheet is not drawn', () => {
     render(<SermonPlayerHost />);
     expect(openSermon(yt('https://ccel.org/ccel/spurgeon/sermons1.i.html'), { auto: true })).toBe(false);

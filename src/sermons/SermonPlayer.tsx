@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 import { useNoDoor } from '../tutor/door';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
+import { useOnline } from '../ui/online';
 import { closeSermon, useOpenedSermon } from './player';
 import { PlayerPageLink } from './PlayerPageLink';
 import { registerSermonControls, SKIP_SECONDS } from './voiceControls';
@@ -23,6 +24,15 @@ function BigPlay({ onPlay }: { onPlay: () => void }) {
       <span aria-hidden="true">▶</span>
       Play
     </button>
+  );
+}
+
+/** What a stage says where its video cannot be had: the same words for YouTube's failed load and Subsplash's offline frame. */
+function NeedsInternet() {
+  return (
+    <p role="status" className="absolute inset-0 flex items-center justify-center p-4 text-center text-base text-white">
+      Needs the internet to play.
+    </p>
   );
 }
 
@@ -135,11 +145,7 @@ function YouTubeStage({ id, auto }: { id: string; auto: boolean }) {
     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
       <div ref={holder} data-sermon-video className="absolute inset-0 [&_iframe]:h-full [&_iframe]:w-full" />
       {blocked ? <BigPlay onPlay={start} /> : null}
-      {failed ? (
-        <p role="status" className="absolute inset-0 flex items-center justify-center p-4 text-center text-base text-white">
-          Needs the internet to play.
-        </p>
-      ) : null}
+      {failed ? <NeedsInternet /> : null}
     </div>
   );
 }
@@ -153,9 +159,11 @@ function SubsplashStage({ video, auto, title }: { video: { embed: string; page: 
   }, []);
   // started by Lampas itself: the media page with ?autoplay plays at once (checked 2026-11-23, mw-qtu3zvz.282); its own Play button is the one tap where the browser refuses. Opened by a tap: the embed, as ever.
   const src = auto ? `${video.page}?autoplay` : video.embed;
+  // offline (the browser's word, as the Sermons sheet takes it): no frame, which would show the browser's own error page; it is drawn when the phone is back
+  const online = useOnline();
   return (
     <div className={`relative w-full overflow-hidden rounded-xl bg-black ${auto ? 'aspect-[6/5]' : 'aspect-video'}`}>
-      <iframe data-sermon-video src={src} title={title} allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen className="absolute inset-0 h-full w-full border-0" />
+      {online ? <iframe data-sermon-video src={src} title={title} allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen className="absolute inset-0 h-full w-full border-0" /> : <NeedsInternet />}
     </div>
   );
 }
