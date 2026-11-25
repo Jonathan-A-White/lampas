@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.393
+_2026-11-25_
+- New: About and the Preface now name Theographic, the source of the Bible dates for the coming timeline.
+
 ## 0.7.391
 _2026-11-25_
 - Fixed: The timeline link beside a chapter's maps now opens at the time of the passage (Isaiah 1 at about 735 BC), and a map's own timeline link opens at that map's date.
