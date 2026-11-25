@@ -13,6 +13,7 @@ PROVISIONAL, the Governor to confirm. The parts this screen shares with the rest
 - [This word (mw-irpgqi.4)](#this-word-mw-irpgqi4)
 - [What unlocks a form](#what-unlocks-a-form)
 - [Learn and Drill (mw-irpgqi.2)](#learn-and-drill-mw-irpgqi2)
+- [Fill the table (mw-fnvjof.17.316)](#fill-the-table-mw-fnvjof17316)
 - [How much of a table (mw-irpgqi.2)](#how-much-of-a-table-mw-irpgqi2)
 - [Drill this table (mw-svw421.6)](#drill-this-table-mw-svw4216)
 - [Ask the tutor](#ask-the-tutor)
@@ -159,6 +160,22 @@ Review before mw-irpgqi.2: `mode=study` still opens Drill and `mode=review` Lear
   frontier 'No form is solid yet. Solid only hides the forms at the frontier.'
 
 The Learn | Drill switch is the app's segmented chips (`src/ui/Chips.tsx`, group 'Mode'); choosing the mode he is in does nothing, so a double tap ends where one does.
+
+## Fill the table (mw-fnvjof.17.316)
+
+The Drill the other way round: the forms are given and he places them. A **Fill the table** button beside the Learn | Drill switch (on every table with a shown cell: Greek and Hebrew, one
+component, `ParadigmTable`) empties the cells the table shows under How much of a table (`shownCells` in `src/data/paradigms/fill.ts`: open and not-yet cells; a locked or hidden one stays as it
+was) and lays their forms, shuffled, as tiles in a bar pinned to the foot of the screen (`FillTray` in the `NextBar`, so the cells stay in view above it). A form that stands in two cells (τῶν, τοῦ
+in the article) is two tiles and either fits either cell.
+
+- A tap on a tile picks it (`aria-pressed`; a second tap puts it down); a tap on a blank cell places the picked tile. A tile can also be dragged to a blank (HTML drag and drop: a mouse, and a long
+  press on a phone's Chrome); the tap is the way that is sure on a phone.
+- A right tile stays in its cell (tinted good) and leaves the tray. A wrong one stays on the tray and the cell shakes (`.paradigm-shake` in `src/index.css`, cleared on `animationend`; under
+  prefers-reduced-motion the global rule makes it instant, and the line under the title says 'Not there: the form is back with the others.'). **Show** fills every cell left and counts as a slip.
+- The end reads `N of M placed` (`N of M placed, K shown` after Show) and **Fill it again**; **Stop filling** goes back to the Learn | Drill switch.
+- A slip (a wrong tile, or Show with cells left) counts toward Review as a wrong Drill answer does: the run's first one calls `recordDrillMiss('paradigm', id)` (a Greek table only; Hebrew
+  stays in its Fill), one write a run (`Fill.slipWritten`). The run is the screen's own state (not kept across a leave); a change of How much of a table ends it.
+- The tutor is told Mode 'Fill the table' and the forms of the cells he has filled, as a Drill's revealed ones.
 
 ## How much of a table (mw-irpgqi.2)
 
