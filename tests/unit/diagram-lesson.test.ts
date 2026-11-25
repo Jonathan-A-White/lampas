@@ -5,7 +5,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { layoutDiagram } from '../../src/diagram/layout';
 import { checkPrompt, keepLessonDone, keepLessonStep, LESSON_STEPS, lessonDone, lessonStep } from '../../src/diagram/lesson';
 import { ideaOf } from '../../src/data/grammar/ladder';
-import { validateDiagram } from '../../src/diagram/validate';
+import { GREEK_TEACH } from '../../src/data/grammar/teach';
+import { drawnFaults, validateDiagram } from '../../src/diagram/validate';
 import { EXPECTED_STEPS, EXPECTED_TERMS } from '../fixtures/diagrams/lesson-steps';
 import { loadFixture } from '../support/diagram-fixtures';
 
@@ -35,6 +36,16 @@ describe('the lesson steps', () => {
     expect(validateDiagram(step.diagram, step.words.length)).toEqual({ ok: true });
   });
 
+  it.each(LESSON_STEPS.map((s, at) => [at + 1, s] as const))('step %i: draws no place with no word on it (mw-5r3p30.1241)', (_, step) => {
+    expect(drawnFaults(step.diagram, step.words)).toEqual([]);
+  });
+
+  it('no grammar card\'s diagram draws a place with no word on it either (the sweep of mw-5r3p30.1241)', () => {
+    const cards = Object.entries(GREEK_TEACH).flatMap(([id, teach]) => (teach.diagram ? [[id, teach.diagram] as const] : []));
+    expect(cards.length).toBeGreaterThan(0);
+    for (const [id, card] of cards) expect(drawnFaults(card.diagram, card.words), id).toEqual([]);
+  });
+
   it.each(LESSON_STEPS.map((s, at) => [at + 1, s] as const))('step %i: the check\'s answer is a word of its fixture, the one the story expects', (at, step) => {
     const word = step.words[step.check.answer];
     expect(word).toBeDefined();
@@ -54,18 +65,26 @@ describe('the lesson steps', () => {
     expect(contains(verseWords(step.verse.book, step.verse.chapter, step.verse.verse), mine), `${step.reference}: ${mine.join(' ')}`).toBe(true);
   });
 
-  it('step 9 is Colossians 3:1 of the existing fixture, with the Weave\'s Greek in the words it shows in Greek', () => {
+  it('step 9 is Colossians 3:1 of the existing fixture, with the Weave\'s Greek in the words it shows in Greek and no word drawn as nothing', () => {
     const step = LESSON_STEPS[8];
     const english = loadFixture('english');
-    expect(step.words).toHaveLength(english.words.length);
-    expect(step.diagram).toEqual(english.diagram);
+    // 'strive for' is one chunk the Weave shows as the one verb ζητεῖτε: 'for' (word 8 of the fixture, drawn as nothing) is left out, so no preposition's leg is bare (mw-5r3p30.1241)
+    const kept = english.words.filter((_, k) => k !== 9);
+    expect(english.words[9].text).toBe('for');
+    expect(step.words).toHaveLength(kept.length);
+    expect(step.words.some((word) => word.text === '')).toBe(false);
     const woven = step.words.filter((word) => word.weft !== undefined);
     expect(woven.length).toBeGreaterThan(3);
     for (const [k, word] of step.words.entries()) {
-      if (word.weft === undefined) expect(word).toEqual(english.words[k]);
-      else expect('chunk' in word && word.chunk).toBe('chunk' in english.words[k] && english.words[k].chunk);
+      if (word.weft === undefined) expect(word).toEqual(kept[k]);
+      else expect('chunk' in word && word.chunk).toBe('chunk' in kept[k] && kept[k].chunk);
     }
     expect(step.words.some((word) => /[Ͱ-Ͽἀ-῿]/.test(word.text))).toBe(true);
+    // the verb of the top line takes 'the things above' as its direct object
+    const top = step.diagram.clauses[0].clause;
+    expect(top.verb.words).toEqual([{ i: 8 }]);
+    expect(top.complement?.kind).toBe('direct-object');
+    expect(top.complement?.slot.words).toEqual([{ i: 10 }]);
   });
 
   it('step 10 is Colossians 3:1 of the existing Greek fixture, word for word', () => {
