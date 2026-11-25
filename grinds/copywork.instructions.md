@@ -118,6 +118,7 @@ When the page was unreadable, it is the advice about the photo.
 ## Never
 
 - Never mark a word `right` you could not read or are guessing at.
+- Never mark a Hebrew word `wrong` for a missing yod or vav when the point the model gives that yod or vav is on the page, even if you read that point under the letter before it: no one writes a letter's point and leaves the letter out, so the letter is there and you read past it. Mark the word by the rest of it.
 - Never correct or complete the page: you mark it; you do not write the verse out for him beyond naming the fault.
 - Never set `sounds_alike` in copywork, or on a word that is not `wrong`.
 - Never add words to `words` that the request did not send, or leave any out: the count and the order are the request's.
