@@ -1073,8 +1073,12 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(narrowed.expect['links.0.sermon']).toEqual({ one_of: grace });
     expect(narrowed.expect['links.1.sermon']).toEqual({ present: false });
     const none = read('no-sermon-listed');
-    expect(none.request).not.toHaveProperty('sermons');
+    // the MLJ Trust's search for the chapter (mw-qtu3zvz.280.17) is the only row where the index lists none
+    expect(none.request.sermons?.rows.map((r) => r.source)).toEqual(['mlj-trust']);
     expect(none.expect.links).toEqual({ present: false });
+    const mlj = read('sermon-mlj-trust');
+    expect(mlj.request.sermons?.rows.at(-1)).toMatchObject({ source: 'mlj-trust', id: 'search' });
+    expect(mlj.expect['links.0.sermon']).toEqual({ equals: 'mlj-trust:search' });
   });
 
   it('keeps the whole of the instructions under the 110,000 bytes of BIBLE_TALK_CEILING (mw-5r3p30.938; it was 99,500 and every story trimmed old rules to fit)', () => {
