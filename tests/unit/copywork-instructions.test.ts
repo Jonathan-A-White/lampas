@@ -158,7 +158,8 @@ describe("copywork's answer writes down the word as read before it marks it", ()
 // mw-5r3p30.1244: on the dictated Hebrew page (`hbo-dictation-sounds-alike-genesis-1-1`) the right fifth word, הַשָּׁמַיִם, was marked wrong about one run in five on the API
 // route (91 of 431 kept runs; 7 of 20 on this story's branch before the rule): 'the yod is missing; you wrote הַשָּׁמִם'. The model read the yod's own hiriq under the mem and read
 // past the yod. Rule texts inside the long Hebrew paragraphs, a second Read of the photo and a redrawn page did not move it (4 or 5 of 20 each); one short line in `## Never`
-// did (0 of 40): the model heeds the closing list where it skims the paragraph. The live proof is that example, which holds words.4 right.
+// did: 3 of 80 runs with it (0, 0, 1 and 2 of 20; one of the three the shin's dagesh, not the yod) against 7 of 20 before. The model heeds the closing list where it skims the
+// paragraph. The live proof is that example, which holds words.4 right; it is not yet at 0 of 20.
 describe("copywork never calls a Hebrew yod or vav missing whose own point is on the page", () => {
   const never = text.slice(text.indexOf('\n## Never'));
 
