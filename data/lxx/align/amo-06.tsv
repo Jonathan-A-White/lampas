@@ -30,11 +30,11 @@ Amo.6:4	6	of the	-		0.80
 Amo.6:4	7	of the	-		0.80
 Amo.6:5	1	who	0		0.80
 Amo.6:5	2	in	2		0.80
-Amo.6:5	3	of musical	-		0.80
+Amo.6:5	3	of	-		0.80
+Amo.6:5	3	musical	-		0.80
 Amo.6:5	4	they have regarded them	9		0.80
 Amo.6:5	5	dwelling,	8		0.80
-Amo.6:5	6	fleeting	13		0.80
-Amo.6:5	6	pleasures;	-		0.80
+Amo.6:5	6	fleeting pleasures;	-		0.80
 Amo.6:6	1	who	0		0.80
 Amo.6:6	2	themselves with	-		0.80
 Amo.6:6	3	have	-		0.80
@@ -92,10 +92,14 @@ Amo.6:2	fix	of the Philistines,	15		0.80
 Amo.6:2	fix	the chief	16,17		0.80
 Amo.6:3	fix	You⌃ who are approaching	0,1,2		0.80
 Amo.6:3	fix	the	-		0.80
+Amo.6:4	fix	live delicately	6		0.80
+Amo.6:5	fix	musical instruments;	6		0.80
+Amo.6:5	fix	fleeting pleasures;	13		0.80
 Amo.6:7	fix	shall they depart into captivity	3,4		0.80
 Amo.6:7	fix	shall be cut off	9		0.80
 Amo.6:9	fix	it shall come to pass,	1		0.80
 Amo.6:9	fix	left	3,11		0.80
+Amo.6:9	fix	ten men	4		0.80
 Amo.6:10	fix	their relations shall	2,3,4		0.80
 Amo.6:10	fix	their bones	10,11,12		0.80
 Amo.6:10	fix	house,	21		0.80

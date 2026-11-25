@@ -88,7 +88,8 @@ Amo.5:12	2	many transgressions,	2,3		0.80
 Amo.5:12	3	your	-		0.80
 Amo.5:12	4	are great,	6		0.80
 Amo.5:12	5	on	-		0.80
-Amo.5:12	6	aside the judgment of the	-		0.80
+Amo.5:12	6	aside	-		0.80
+Amo.5:12	6	the judgment of the	-		0.80
 Amo.5:12	7	the	-		0.80
 Amo.5:13	1	Therefore	-		0.80
 Amo.5:13	2	prudent	3		0.80
@@ -194,6 +195,7 @@ Amo.5:5	fix	go not	7,8		0.80
 Amo.5:5	fix	cross not	15,16		0.80
 Amo.5:7	fix	It is he that	0		0.80
 Amo.5:7	fix	the	-		0.80
+Amo.5:8	fix	all things,	2		0.80
 Amo.5:9	fix	brings	9		0.80
 Amo.5:9	fix	distress	6		0.80
 Amo.5:9	fix	upon	7		0.80
@@ -206,6 +208,7 @@ Amo.5:11	fix	choice	8		0.80
 Amo.5:11	fix	polished	13		0.80
 Amo.5:12	fix	your sins	7,8,9		0.80
 Amo.5:12	fix	on the	-		0.80
+Amo.5:12	fix	turning aside	18		0.80
 Amo.5:13	fix	Therefore	0,1		0.80
 Amo.5:13	fix	it is	12		0.80
 Amo.5:14	fix	you,	12		0.80
@@ -220,6 +223,8 @@ Amo.5:19	fix	into	16		0.80
 Amo.5:19	fix	his house,	18,19		0.80
 Amo.5:20	fix	is	-		0.80
 Amo.5:20	fix	without	12		0.80
+Amo.5:20	fix	this day	14		0.80
+Amo.5:21	fix	general assemblies.	11		0.80
 Amo.5:22	fix	you⌃ should bring	2		0.80
 Amo.5:22	fix	whole burnt sacrifices	4		0.80
 Amo.5:22	fix	and meat-offerings,	5,6,7		0.80

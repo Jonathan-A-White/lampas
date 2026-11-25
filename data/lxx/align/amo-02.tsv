@@ -11,7 +11,8 @@ Amo.2:1	9	of the	21		0.80
 Amo.2:1	10	of	-		0.80
 Amo.2:2	1	But	0		0.80
 Amo.2:2	1	I will	-		0.80
-Amo.2:2	2	forth a	-		0.80
+Amo.2:2	2	forth	-		0.80
+Amo.2:2	2	a	-		0.80
 Amo.2:2	3	shall	-		0.80
 Amo.2:2	4	of its	-		0.80
 Amo.2:2	5	shall perish	13		0.80
@@ -118,8 +119,7 @@ Amo.2:15	1	shall	-		0.80
 Amo.2:15	2	that is	7		0.80
 Amo.2:15	3	of	9		0.80
 Amo.2:15	4	shall in	-		0.80
-Amo.2:15	5	wise	-		0.80
-Amo.2:15	5	escape;	14		0.80
+Amo.2:15	5	wise escape;	14		0.80
 Amo.2:15	5	and	15		0.80
 Amo.2:15	6	shall	-		0.80
 Amo.2:15	7	life.	22		0.80
@@ -131,6 +131,7 @@ Amo.2:1	fix	for	9,10		0.80
 Amo.2:1	fix	because they	15,16		0.80
 Amo.2:2	fix	it shall devour	6		0.80
 Amo.2:2	fix	of its	11		0.80
+Amo.2:2	fix	I will send forth	1		0.80
 Amo.2:4	fix	for	10,11		0.80
 Amo.2:4	fix	turn away from	14		0.80
 Amo.2:4	fix	because	16,17		0.80
@@ -161,4 +162,5 @@ Amo.2:10	fix	led	8		0.80
 Amo.2:11	fix	your young men	11,12		0.80
 Amo.2:11	fix	you⌃	-		0.80
 Amo.2:11	fix	not	15,16		0.80
+Amo.2:11	fix	these things so,	18		0.80
 Amo.2:12	fix	not.	10,11		0.80

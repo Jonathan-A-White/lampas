@@ -74,7 +74,8 @@ Amo.1:6	9	the	-		0.80
 Amo.1:6	10	of	20		0.80
 Amo.1:6	11	them up	-		0.80
 Amo.1:7	1	I will	-		0.80
-Amo.1:7	2	forth a	-		0.80
+Amo.1:7	2	forth	-		0.80
+Amo.1:7	2	a	-		0.80
 Amo.1:7	3	of	-		0.80
 Amo.1:7	4	shall	-		0.80
 Amo.1:7	5	its	-		0.80
@@ -105,7 +106,8 @@ Amo.1:9	10	of	-		0.80
 Amo.1:9	11	the	-		0.80
 Amo.1:9	12	of	-		0.80
 Amo.1:10	1	I will	-		0.80
-Amo.1:10	2	forth a	-		0.80
+Amo.1:10	2	forth	-		0.80
+Amo.1:10	2	a	-		0.80
 Amo.1:10	3	of	-		0.80
 Amo.1:10	4	it shall	-		0.80
 Amo.1:10	5	of	-		0.80
@@ -127,7 +129,8 @@ Amo.1:11	15	up	-		0.80
 Amo.1:11	16	fury	38		0.80
 Amo.1:11	17	the	-		0.80
 Amo.1:12	1	I will	-		0.80
-Amo.1:12	2	forth a	-		0.80
+Amo.1:12	2	forth	-		0.80
+Amo.1:12	2	a	-		0.80
 Amo.1:12	3	upon	3		0.80
 Amo.1:12	4	shall	-		0.80
 Amo.1:12	5	the	-		0.80
@@ -185,6 +188,7 @@ Amo.1:6	fix	took prisoners	17		0.80
 Amo.1:6	fix	shut them up	23		0.80
 Amo.1:7	fix	it shall devour	8		0.80
 Amo.1:7	fix	its	10		0.80
+Amo.1:7	fix	I will send forth	1		0.80
 Amo.1:8	fix	I will destroy	1		0.80
 Amo.1:8	fix	shall perish,	18		0.80
 Amo.1:8	fix	I will stretch out	11		0.80
@@ -194,6 +198,7 @@ Amo.1:9	fix	for	9,10		0.80
 Amo.1:9	fix	because	15,16		0.80
 Amo.1:9	fix	they shut up	17		0.80
 Amo.1:9	fix	prisoners	18		0.80
+Amo.1:10	fix	I will send forth	1		0.80
 Amo.1:11	fix	turn away	14		0.80
 Amo.1:11	fix	because	16,17		0.80
 Amo.1:11	fix	they	19		0.80
@@ -201,6 +206,7 @@ Amo.1:11	fix	their	24		0.80
 Amo.1:11	fix	kept up	40		0.80
 Amo.1:12	fix	it shall devour	6		0.80
 Amo.1:12	fix	of her	9		0.80
+Amo.1:12	fix	I will send forth	1		0.80
 Amo.1:13	fix	for	10,11		0.80
 Amo.1:13	fix	because	16,17		0.80
 Amo.1:13	fix	turn away from	14		0.80
