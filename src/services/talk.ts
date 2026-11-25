@@ -4,6 +4,7 @@
 import { sourceLanguage, type Chapter, type SourceLanguage, type Verse } from '../data/chapter';
 import { unitId } from '../data/passage';
 import { wordHeart } from '../data/wordHeart';
+import { answerAsShown } from '../data/linkPromise';
 import { QUIZ_GOAL_MAX, type ReaderView } from '../data/repositories/settings';
 import { STUDY_WAY_LINE_MAX } from '../data/repositories/studyWay';
 import { MEMORY_NAME_MAX, MEMORY_NOTE_MAX } from '../data/repositories/memory';
@@ -580,6 +581,9 @@ export const scopeRef = (book: string, chapter: number, scope: Pick<TalkScope, '
 /** The key points the mill wrote when it ended a talk's session (at most 1500 characters) as the running summary the device keeps: a summary is at most TALK_SUMMARY_MAX, so longer key points are cut at that, ending in the clip mark. */
 export const summaryOfKeyPoints = (keyPoints: string): string => clipTo(keyPoints.trim(), TALK_SUMMARY_MAX);
 
+/** A kept turn as the tutor is told it: what he said, and the answer as he saw it (a sentence that pointed at a link that was not drawn is not in it, mw-fnvjof.17.318). */
+const historyEntryOf = (turn: { q: string; a: string; linksUndrawn?: boolean }): TalkHistoryEntry => ({ q: turn.q, a: answerAsShown(turn) });
+
 /** A turn as the fold carries it: what he said and what the tutor answered, each cut short. */
 export const foldedTurn = (turn: TalkHistoryEntry): TalkHistoryEntry => ({ q: clipTo(turn.q, FOLD_Q_CHARS), a: clipTo(turn.a, FOLD_A_CHARS) });
 
@@ -633,7 +637,7 @@ function withoutSourceSwitches(settings: Record<string, SettingValue>): Record<s
 export function buildTalkRequest(
   scope: TalkScope,
   question: string,
-  turns: { q: string; a: string; links?: AnswerLink[]; fetched?: HeldPassage[] }[],
+  turns: { q: string; a: string; links?: AnswerLink[]; linksUndrawn?: boolean; fetched?: HeldPassage[] }[],
   solidWords: string[],
   settings: Record<string, SettingValue> = {},
   focus?: TalkFocus,
@@ -662,7 +666,7 @@ export function buildTalkRequest(
   // the turns older than the window that the summary does not hold yet: the next few, oldest first, for the tutor to fold in (mw-5r3p30.700)
   const past = Math.max(0, turns.length - MAX_HISTORY_TURNS);
   const from = Math.min(summary?.covered ?? 0, past);
-  const folding = turns.slice(from, Math.min(past, from + FOLD_MAX_TURNS)).map(foldedTurn);
+  const folding = turns.slice(from, Math.min(past, from + FOLD_MAX_TURNS)).map((t) => foldedTurn(historyEntryOf(t)));
   const waiting = past - from - folding.length;
   // the verses the talk holds follow the talk (mw-5r3p30.733): those he names, those the last answer linked, the selected verse, else the chapter's first; a quiz holds its passage
   // an Old Testament chapter's Hebrew goes under `hebrew` pointed, cantillation off, with its words (hebrew_words), from the Hebrew dial's Curious up: at Just English the talk holds the English alone;
@@ -686,7 +690,7 @@ export function buildTalkRequest(
     ...(held.length > 0 ? { held_passages: held } : {}),
     question: question.trim(),
     ...(spoken ? { spoken: true as const } : {}),
-    history: turns.slice(-MAX_HISTORY_TURNS).map(({ q, a }) => ({ q, a })),
+    history: turns.slice(-MAX_HISTORY_TURNS).map(historyEntryOf),
     ...(summary?.text ? { summary: summary.text } : {}),
     ...(folding.length > 0 ? { fold: folding } : {}),
     ...(folding.length > 0 && waiting > 0 ? { unfolded: waiting } : {}),

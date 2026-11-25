@@ -1,8 +1,9 @@
 // src/talk/talkText.ts — the whole talk as plain text, for the Talk sheet's 'Copy the whole talk' (mw-5r3p30.930): the place written out, then each of his
-// questions (as the screen shows it) and each answer, in order. Pure. The answer's Markdown loses its marks and its link addresses (a link is its words, so a reference
+// questions and each answer (both as the screen shows them), in order. Pure. The answer's Markdown loses its marks and its link addresses (a link is its words, so a reference
 // the tutor linked reads 'Philippians 4:13'); its paragraphs and list lines stay.
 import type { TalkTurn } from '../data/repositories/talks';
 import { exchangeReference } from '../share/exchange';
+import { answerAsShown } from '../data/linkPromise';
 
 const IMAGE = /!\[([^\]]*)\]\((?:[^()\s]|\([^()\s]*\))*(?:\s+"[^"]*")?\)/g;
 const LINK = /\[([^\]]+)\]\((?:[^()\s]|\([^()\s]*\))*(?:\s+"[^"]*")?\)/g;
@@ -25,7 +26,7 @@ export function talkPlainText(ref: string, turns: readonly TalkTurn[]): string {
   if (turns.length === 0) return '';
   const lines = [`Talk about ${exchangeReference(ref).label}`];
   for (const turn of turns) {
-    lines.push('', `Me: ${(turn.cleanQ ?? turn.q).trim().replace(/\s*\n\s*/g, ' ')}`, '', `Tutor: ${answerPlain(turn.a)}`);
+    lines.push('', `Me: ${(turn.cleanQ ?? turn.q).trim().replace(/\s*\n\s*/g, ' ')}`, '', `Tutor: ${answerPlain(answerAsShown(turn))}`);
   }
   return lines.join('\n');
 }

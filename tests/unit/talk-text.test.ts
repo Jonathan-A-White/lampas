@@ -30,6 +30,16 @@ describe('talkPlainText (Copy the whole talk, mw-5r3p30.930)', () => {
     expect(talkPlainText('screen.my-study-way', [turn('q', 'a')]).split('\n')[0]).toBe('Talk about Lampas: my study way');
   });
 
+  it('leaves out the sentence that points at a link when the turn carried links and drew none (mw-fnvjof.17.318)', () => {
+    const says = 'Open the setting to change it. Tap the link below to go there.';
+    const links = [{ kind: 'setting' as const, key: 'textSize' }];
+    const text = talkPlainText('screen.drill-it', [turn('Bigger text?', says, { links, linksUndrawn: true })]);
+    expect(text).not.toMatch(/link below/i);
+    expect(text).toContain('Tutor: Open the setting to change it.');
+    // drawn, or not yet shown: the words as written
+    expect(talkPlainText('screen.drill-it', [turn('Bigger text?', says, { links })])).toContain('Tap the link below to go there.');
+  });
+
   it('is empty for a talk with no turns', () => {
     expect(talkPlainText('rom.8.28', [])).toBe('');
   });
