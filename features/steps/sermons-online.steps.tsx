@@ -166,11 +166,11 @@ const rowNamed = async (title: string): Promise<HTMLAnchorElement> => {
 };
 const searchField = async () => within(await sheetEl()).findByRole('searchbox', { name: 'Search sermons and themes' });
 
-async function tapVerseAndDoor(): Promise<void> {
+async function tapVerseAndDoor(label: string): Promise<void> {
   await user.click(await findButton('Verse 8'));
   await screen.findByRole('region', { name: 'Verse view' });
   // findButton, not a role query: the Verse view holds the chapter's chunk buttons, and findByRole works out each one's name at every poll (mw-indx1x6.118)
-  await user.click(await findButton('Sermons · 4'));
+  await user.click(await findButton(label));
 }
 
 const feature = await loadFeature('features/sermons-online.feature');
@@ -181,6 +181,8 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(await findButton(`Verse ${n}`));
     await screen.findByRole('region', { name: 'Verse view' });
   };
+  // The door counts the bundled rows until the service has answered, then the merged ones (mw-qtu3zvz.63). Where the service answers, a scenario names the merged count, which stays: the bundled one is gone
+  // once the answer is in, and on a loaded host that is before the step looks (mw-u2w5klk.349.125)
   const tapDoor = async (_: unknown, label: string) => {
     await user.click(await findButton(label));
   };
@@ -274,7 +276,8 @@ describeFeature(feature, ({ Scenario }) => {
       window.history.replaceState(null, '', '/#/?b=rom&c=5');
       render(<App />);
       await screen.findByRole('heading', { name: 'Romans 5', level: 1 });
-      await tapVerseAndDoor();
+      // the bundled 4, Reigning Grace, and the row of the source he turned On
+      await tapVerseAndDoor('Sermons · 6');
     });
     Then('the line under the title reads {string}', says);
     And('the part {string} holds {string}, {string} and {string}', holdsThree);
