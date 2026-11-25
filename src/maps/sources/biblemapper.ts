@@ -25,6 +25,35 @@ export function mapIdsOf(data: BibleMapperData, book: string, chapter: number): 
   return (data.chapters[book]?.[String(chapter)] ?? []).map((n) => data.ids[n]);
 }
 
+/** A map's own year: its start, else its end. */
+const yearOf = (map: BibleMapperData['maps'][string] | undefined): number | undefined => map?.start ?? map?.end;
+
+/** How far, in years, a map's date may lie from its book's era and still be the chapter's own time. */
+export const ERA_SPAN = 300;
+
+/** The middle of the dates of the book's maps, each map counted once for every chapter that shows it: where the book's maps are mostly set (Isaiah's: 735 BC), or null where none has a date. */
+export function bookEra(data: BibleMapperData, book: string): number | null {
+  const years = Object.keys(data.chapters[book] ?? {})
+    .flatMap((chapter) => mapIdsOf(data, book, Number(chapter)).map((id) => yearOf(data.maps[id])))
+    .filter((year): year is number => year !== undefined)
+    .sort((a, b) => a - b);
+  return years.length === 0 ? null : years[Math.floor((years.length - 1) / 2)];
+}
+
+/**
+ * The year a chapter is set in (mw-fnvjof.17.313): the date of its maps nearest the book's era. A chapter may name a past event that has a map (Isaiah 1 names Sodom, 2100 BC), and the earliest date
+ * would put it there, so where no map of the chapter lies within ERA_SPAN years of the book's era the chapter is set at the era itself. Null for a chapter whose maps have no dates.
+ */
+export function chapterYear(data: BibleMapperData, book: string, chapter: number): number | null {
+  const years = mapIdsOf(data, book, chapter)
+    .map((id) => yearOf(data.maps[id]))
+    .filter((year): year is number => year !== undefined);
+  const era = bookEra(data, book);
+  if (years.length === 0 || era === null) return null;
+  const near = years.reduce((best, year) => (Math.abs(year - era) < Math.abs(best - era) ? year : best));
+  return Math.abs(near - era) <= ERA_SPAN ? near : era;
+}
+
 function cardOf(data: BibleMapperData, id: string): MapCard {
   const map = data.maps[id];
   return {
@@ -58,14 +87,11 @@ export const bibleMapper: MapSource = {
     return image ? `${IMAGES}${image.low}` : null;
   },
   timelineCredit: 'Timeline by David P. Barrett, biblemapper.com',
-  /** The TimeGlider (https://biblemapper.com/timeline/) takes `?date=` as a year, negative for BC (found in the page's own script, 2026-11-25): the chapter's earliest map date, none where no map of the chapter has one. */
-  timelineUrl(ref: MapRef): string | null {
+  /** The TimeGlider (https://biblemapper.com/timeline/) takes `?date=` as a year, negative for BC (found in the page's own script, 2026-11-25): a dated map's own start (`card`), else the chapter's own time (chapterYear). */
+  timelineUrl(ref: MapRef, card?: MapCard): string | null {
     if (!loaded) return null;
-    const years = mapIdsOf(loaded, ref.book, ref.chapter).flatMap((id) => {
-      const map = loaded?.maps[id];
-      return map?.start === undefined ? [] : [map.start, map.end ?? map.start];
-    });
-    return years.length === 0 ? null : `${TIMELINE}?date=${Math.min(...years)}`;
+    const year = card?.start ?? chapterYear(loaded, ref.book, ref.chapter);
+    return year === null ? null : `${TIMELINE}?date=${year}`;
   },
   allMapsUrl(ref: MapRef): string | null {
     const book = bookOf(ref.book);

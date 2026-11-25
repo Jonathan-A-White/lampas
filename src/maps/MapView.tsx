@@ -1,6 +1,6 @@
 // src/maps/MapView.tsx — a map opened in the app (mw-zbjgn3r.2, docs/maps.md): its title and period, the low-res picture at full width in a box that zooms (a tap on it toggles the width of the box
 // and twice the width, panned by scrolling the box; pinch where the phone allows it, the page itself locks zoom), under it the credit Bible Mapper asks with biblemapper.com a link back to the
-// site (on every map), 'About this map', 'Full size' (the article, where the large picture is) the source's page of every map of the chapter and, where a map of the chapter has a date, its timeline opened there with its own credit (Timeline at Bible Mapper). The picture is shown from the source, never
+// site (on every map), 'About this map', 'Full size' (the article, where the large picture is) the source's page of every map of the chapter and, where the chapter has a date, its timeline opened at the map's own date (the chapter's own time for a map with none) with its own credit (Timeline at Bible Mapper). The picture is shown from the source, never
 // copied; while it fails to load (offline) its place says 'The map needs the internet' and every link stays. Back (useSheetBack, in MapsFrame) returns to the sheet.
 // On the Reader a Split button stands beside Close: the map goes to the Reader's dock below the passage (docs/maps.md 'Split', mw-5r3p30.1129.2); the same body (MapBody) is what the dock draws.
 import { useRef, useState } from 'react';
@@ -54,7 +54,7 @@ export function MapBody({ card, mapRef, docked = false }: { card: MapCard; mapRe
   const [fitHeight, setFitHeight] = useState<number | null>(null);
   const chapter = placeName({ book: mapRef.book, chapter: mapRef.chapter });
   const all = source?.allMapsUrl?.(mapRef) ?? null;
-  const timeline = source?.timelineUrl?.(mapRef) ?? null;
+  const timeline = source?.timelineUrl?.(mapRef, card) ?? null;
   const zoom = () => {
     if (docked && !zoomed) setFitHeight(box.current?.offsetHeight ?? null);
     setZoomed((z) => !z);

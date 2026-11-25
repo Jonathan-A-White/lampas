@@ -55,8 +55,8 @@ export interface MapSource {
   imageUrl(card: MapCard, size: MapImageSize): string | null;
   /** the source's own page of every map of the chapter (the link 'All maps for Genesis 10 at Bible Mapper'), or null where it has none */
   allMapsUrl?(ref: MapRef): string | null;
-  /** the source's timeline opened at the chapter's period (the link 'Timeline at Bible Mapper'), or null where the chapter's maps have no dates or the source has no timeline; the source's data is loaded by the time a card is shown */
-  timelineUrl?(ref: MapRef): string | null;
+  /** the source's timeline (the link 'Timeline at Bible Mapper') opened at the card's own date, or without a card at the chapter's own time; null where there is no date to open at or the source has no timeline; the source's data is loaded by the time a card is shown */
+  timelineUrl?(ref: MapRef, card?: MapCard): string | null;
   /** the credit line shown with the timeline link, naming the source's host as `credit` does */
   timelineCredit?: string;
 }
