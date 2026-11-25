@@ -45,6 +45,20 @@ describe('the model pass files of Judges', () => {
       }
     }
   });
+
+  // mw-u2w5klk.349.122: 2:21 'the Lord' was keyed other-verse-jdg, but the Greek is not in a neighbouring verse: Brenton adds the word, so it is added-jdg, and the counts of the notes file are the sidecar's.
+  it("keys 2:21 'the Lord' as English Brenton adds, and the notes file states the sidecar's counts of each reason", () => {
+    const expectJdg = readExpect('jdg')!;
+    const all = Object.values(expectJdg.chapters).flatMap((chapter) => chapter.leftovers ?? []);
+    expect(all.find(([key]) => key === '2:21:lord')?.[1]).toBe('added-jdg');
+    const beside = all.filter(([, why]) => why === 'other-verse-jdg' || why === 'neighbour-jdg').length;
+    const added = all.filter(([, why]) => why === 'added-jdg').length;
+    expect(beside + added, 'every leftover has one of the two kinds of reason').toBe(all.length);
+    const notes = readFileSync(join('docs', 'lxx-align', 'jdg-notes.txt'), 'utf8');
+    expect(notes).toContain(`${beside} are Brenton's English of the Greek verse beside it`);
+    expect(notes).toContain(`${added} are English Brenton adds`);
+    expect(notes).toContain(`The ${all.length} English content words settled as rendering no Greek word`);
+  });
 });
 
 describe.skipIf(!real.run)('Judges with the model pass', () => {
