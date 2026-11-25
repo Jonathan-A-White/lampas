@@ -57,6 +57,19 @@ describe('Help is a short list of pages', () => {
     expect(body('memorize')).toContain('Due today');
   });
 
+  it('says where a video sermon plays: in Lampas\'s own player, not in the browser as it is (mw-r9xo1pj.29)', async () => {
+    const { openWebSetting } = await import('../../src/settings/definitions/sermons');
+    const open = openWebSetting;
+    const sermonsHelp = open?.help ?? '';
+    expect(sermonsHelp).toContain('video sermon');
+    expect(sermonsHelp).not.toContain('always opens as it is');
+    expect(sermonsHelp).not.toMatch(/video sermon[^.]*in this browser/);
+    expect(sermonsHelp).toMatch(/video sermon[^.]*Lampas's own player/);
+    const library = helpPageById('library')?.body.join(' ') ?? '';
+    expect(library).not.toContain('opens where it lives');
+    expect(library).toMatch(/videos? plays? here/);
+  });
+
   it('is a route of its own', () => {
     expect(routeOf('#/help')).toBe('help');
     expect(routeOf('#/help?page=licence')).toBe('help');
