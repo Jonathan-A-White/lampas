@@ -109,8 +109,8 @@ export const PREFACE_LINKS: PrefaceLink[] = [
     url: 'https://www.lifebibleministry.com/through-the-bible',
   },
   {
-    name: 'Bible Thinker, Mike Winger’s book-by-book series (biblethinker.org)',
-    about: 'The episodes of his series on 1 Peter, Hebrews, Mark and Romans that the sermon list links to, each with the video its post shows; the site states no terms of use.',
+    name: 'Bible Thinker, Mike Winger’s teachings (biblethinker.org)',
+    about: 'His series on 1 Peter, Hebrews, Mark and Romans and his other teachings that name a passage, which the sermon list links to, each with the video its post shows; the site states no terms of use.',
     url: 'https://biblethinker.org/mark/',
   },
   {

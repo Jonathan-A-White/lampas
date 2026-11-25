@@ -7,6 +7,7 @@ import { enabledSources } from '../../src/sermons/enabled';
 import { videoOfRow } from '../../src/sermons/player';
 import { bundledSources, forgetSermonFiles } from '../../src/sermons/sources/bundled';
 import { videoOf } from '../../src/sermons/video';
+import { pageLabel, pageOfRow } from '../../src/sermons/playerPage';
 import { sermonSourceSetting } from '../../src/settings/definitions/sermons';
 
 const ID = 'biblethinker';
@@ -39,6 +40,44 @@ describe('the biblethinker source', () => {
     expect(entry?.credit).toMatch(/Mike Winger/);
     expect(entry?.books).toEqual(expect.arrayContaining(['1pe', 'mrk', 'rom']));
     expect(entry?.rows).toBeGreaterThan(100);
+  });
+
+  it('counts the teachings outside the four book series too, on books beyond 1 Peter, Hebrews, Mark and Romans (mw-qtu3zvz.280.10)', () => {
+    const entry = SERMON_INDEX.sources.find((s) => s.id === ID);
+    expect(entry?.rows).toBe(177);
+    expect(entry?.books).toEqual(expect.arrayContaining(['mat', 'gen', 'isa', 'jhn', 'php']));
+    let rows = 0;
+    for (const book of entry?.books ?? []) rows += (JSON.parse(readFileSync(`public/sermons/${ID}/${book}.json`, 'utf8')) as SermonBookFile).rows.length;
+    expect(rows).toBeGreaterThanOrEqual(entry?.rows ?? Infinity); // a row over two books is in both files
+  });
+
+  describe('Matthew 6:33, a teaching of no book series (mw-qtu3zvz.280.10)', () => {
+    const POST_33 = 'https://biblethinker.org/what-christians-need-to-prioritize-matthew-633/';
+    const VIDEO_33 = 'EZ4_ZrlYs5Y';
+
+    it('shows a Bible Thinker row in the Sermons sheet for Matthew 6, with its link back and the video it plays', async () => {
+      const rows = await source().sermonsFor({ book: 'mat', chapter: 6 });
+      const row = rows.find((r) => r.open.url === POST_33);
+      expect(row).toMatchObject({ source: ID, title: 'What Christians Need to Prioritize: Matthew 6:33', opensIn: 'web', ref: { book: 'mat', chapter: 6, from: 33, to: 33 } });
+      const video = videoOfRow(row!);
+      expect(video).toEqual({ kind: 'youtube', id: VIDEO_33 });
+      expect(pageOfRow(row!, video)).toBe(POST_33);
+      expect(pageLabel(POST_33)).toBe('Open on biblethinker.org ›');
+    });
+
+    it('is in no book series: Matthew has no series, and no other source row of this one names Matthew but the teachings', async () => {
+      const file = JSON.parse(readFileSync(`public/sermons/${ID}/mat.json`, 'utf8')) as SermonBookFile;
+      expect(file.rows.map((r) => r.url)).toContain(POST_33);
+      expect(file.rows.every((r) => r.preacher === 'Mike Winger')).toBe(true);
+    });
+
+    it('goes with the switch: Off drops it from the sheet, On gives it', async () => {
+      const bt = source();
+      const read = (value?: string) => (key: string) => (key === `sermons.${ID}` ? value : undefined);
+      expect(enabledSources([bt], read('off'))).toEqual([]);
+      const on = enabledSources([bt], read('on'));
+      expect((await on[0].sermonsFor({ book: 'mat', chapter: 6 })).map((r) => r.open.url)).toContain(POST_33);
+    });
   });
 
   it('has the 1 Peter 1:3-7 row in 1pe.json, linking back to its post and holding the video the post embeds', () => {
