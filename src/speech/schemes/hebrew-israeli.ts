@@ -133,6 +133,11 @@ function foldMatres(clusters: Cluster[]): void {
   });
 }
 
+/** The words that begin with these letters (חָכְמָה 'wisdom', קָדְשִׁי 'my holiness', קָדְשֶׁךָ 'your holiness') have the qamats qatan, the o of 'khokh-MA', and the shewa after it is silent: the rule cannot see it
+ * (it looks the same as the qamats gadol of יָצְאוּ 'ya-tse-OO'), and the data's guide, when the Word sheet has one, says the same. The list is only the forms the data writes with a silent shewa
+ * (mw-fnvjof.17.185): it writes חָכְמַת and קָדְשׁוֹ with a said one, and אָכְלָה, which is 'food' with the qatan and 'she ate' with the gadol, either way. */
+const QAMATS_QATAN: readonly string[] = ['חכמה', 'קדשי', 'קדשך'];
+
 const LONG: ReadonlySet<Vowel | undefined> = new Set<Vowel | undefined>(['qamats', 'tsere', 'holam', 'shuruq']);
 
 /** Which shewas are said: the first letter of a word, a letter after a long vowel, the second of two, a letter the dagesh doubles, and one before the same letter; not the last letter. `guide`
@@ -166,6 +171,11 @@ function vocalShewas(clusters: Cluster[], guide?: string): ReadonlySet<number> {
       heardVowel = true;
       longBefore = LONG.has(c.vowel) || c.glide === 'ay' || (c.vowel === 'hiriq' && clusters[i + 1]?.letter === 'י' && clusters[i + 1].silent);
       if (c.glide === 'ai') longBefore = false;
+      // a holam written with its vav (כּוֹכְבֵי 'kokh-VAY') closes its syllable: the shewa after it is silent, as the data's guide writes it
+      // (not before a shin: the data says יוֹשְׁבֵי 'yo-sheh-VAY', and so does the voice)
+      if (c.vowel === 'holam' && clusters[i + 1]?.silent && clusters[i + 1].letter === 'ו' && clusters[i + 2]?.letter !== 'ש') longBefore = false;
+      // a qamats of the nouns whose qamats is always the short o (חָכְמָה 'khokh-MA'): it closes its syllable too, whatever the guide; only at the start of the word (the data writes בְּחָכְמָה 'bə·ḥā·ḵə·māh' with the shewa said, and the guide still settles that)
+      if (c.vowel === 'qamats' && i === 0 && QAMATS_QATAN.some((stem) => clusters.map((x) => x.letter).join('').startsWith(stem))) longBefore = false;
     } else if (c.shewa && vocal.has(i)) {
       heardVowel = true;
       longBefore = false;

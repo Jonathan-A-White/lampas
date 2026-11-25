@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { pronunciationsOf } from '../../src/speech/pronunciation';
-import { hebrewStress } from '../../src/speech/schemes/hebrew-israeli';
+import { hebrewStress, respellHebrew } from '../../src/speech/schemes/hebrew-israeli';
 
 const israeli = pronunciationsOf('he')[0];
 
@@ -130,5 +130,36 @@ describe('a conjunctive accent that is not the stress (mw-fnvjof.17.200)', () =>
     for (const w of family.filter((f) => f.t.replace(/[\u0591-\u05AF\u05BD]/g, '') === 'הַלְלוּ')) {
       for (const said of [israeli.respell(w.t, w.tr), israeli.respell(w.t)]) expect(said).toBe('ha-leh-LOO');
     }
+  });
+});
+
+// mw-fnvjof.17.185: the rule alone (no guide: the teach sheet, the drills) says the shewa the data marks silent, for the words below, as the Word sheet does with the guide
+describe('the say-it with no guide where the data marks the shewa silent', () => {
+  it('חָכְמָה is khokh-MA, with and without the guide', () => {
+    expect(respellHebrew('חָכְמָה')).toBe('khokh-MA');
+    expect(respellHebrew('חָכְמָה', 'ḥāḵ·māh')).toBe('khokh-MA');
+  });
+
+  const NOUNS: readonly (readonly [string, string, string])[] = [
+    ['קָדְשִׁי', 'qāḏ·šî', 'kod-SHEE'],
+    ['קָדְשֶׁ֔ךָ', 'qāḏ·še·ḵā', 'kod-SHEH-kha'],
+    ['כּוֹכְבֵי', 'kō·wḵ·ḇê', 'kokh-VAY'],
+    ['אוֹצְרוֹת', 'ō·wṣ·rō·wṯ', 'ots-ROT'],
+    ['תּוֹלְדֹת', 'tō·wl·ḏōṯ', 'tol-DOT'],
+  ];
+  it.each(NOUNS)('%s is %s with no guide and with it', (text, guide, expected) => {
+    expect(respellHebrew(text)).toBe(expected);
+    expect(respellHebrew(text, guide)).toBe(expected);
+  });
+
+  it('a shewa the data says (a qamats gadol, a holam of a shin, a holam with no vav) is still said', () => {
+    expect(respellHebrew('יָצְאוּ')).toBe('ya-tseh-OO');
+    expect(respellHebrew('יוֹשְׁבֵי')).toBe('yo-sheh-VAY');
+    expect(respellHebrew('נֹפְלִים')).toBe('no-feh-LEEM');
+  });
+
+  it('the words of the data the rule alone and the rule with the guide say differently are at most 169 (they were 471)', () => {
+    const differ = oldTestamentWords().filter((w) => w.tr && respellHebrew(w.t) !== respellHebrew(w.t, w.tr));
+    expect(differ.length).toBeLessThanOrEqual(169);
   });
 });
