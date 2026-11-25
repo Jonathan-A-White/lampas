@@ -7,6 +7,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { answerAsShown } from './data/linkPromise';
+import { reportDrawn } from './talk/drawnLinks';
 import { markLinksUndrawn } from './data/repositories/talks';
 import { Waiting } from './ui/Waiting';
 import { AddWord } from './AddWordButton';
@@ -368,6 +369,10 @@ export function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn
   const said = answerAsShown({ a: turn.a, linksUndrawn: undrawn });
   // kept with the turn, so Copy the whole talk and the history the tutor is sent say what he saw (mw-fnvjof.17.318)
   const { id, linksUndrawn } = turn;
+  // and told to what speaks the answer by itself as it arrives, which waits for it (src/talk/drawnLinks.ts, mw-fnvjof.17.319)
+  useEffect(() => {
+    if (id !== undefined && drawn !== undefined && turn.links?.length) reportDrawn(id, drawn);
+  }, [id, drawn, turn.links?.length]);
   useEffect(() => {
     if (id === undefined || undrawn === undefined || undrawn === (linksUndrawn === true)) return;
     void markLinksUndrawn(id, undrawn).catch(() => undefined);

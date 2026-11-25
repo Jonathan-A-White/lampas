@@ -10,6 +10,7 @@ import { TalkSheet } from './Talk';
 import { stopReading } from './speech/readAloud';
 import { speakTutor } from './speech/tutorVoice';
 import { answerRuns } from './speech/answerRuns';
+import { spokenAnswer } from './talk/drawnLinks';
 import { scopeRef, type TalkScope } from './services/talk';
 import { fitScreen, SCREEN_NAMES, suggestionsFor, type ScreenContext } from './tutor/screen';
 import { askRequestNow, useAskRequest } from './tutor/askNow';
@@ -43,9 +44,9 @@ function contextOf(name: string, reported: ScreenContext | null): ScreenContext 
  * (an answer is spoken only then); `onClosed` is what closing the sheet does besides stopping the voice. */
 function useScreenTalk(scope: TalkScope | null, open: boolean, onClosed: () => void) {
   const openRef = useRef<string | null>(null);
-  const { states, say, resume } = useTalk(scope?.chapter.code ?? '', scope?.chapter.chapter ?? 0, (ref, id, answer) => {
+  const { states, say, resume } = useTalk(scope?.chapter.code ?? '', scope?.chapter.chapter ?? 0, (ref, id, answer, info) => {
     if (openRef.current !== ref || isHolding()) return;
-    speakTutor(id, answerRuns(answer), () => openRef.current === ref);
+    spokenAnswer(id, answer, info.links, (words) => speakTutor(id, answerRuns(words), () => openRef.current === ref));
   }, {
     // the tutor takes him to a chapter or another place (the answer's `go`) while this screen's sheet is open: the place opens as a new Back step, and Back returns to this screen
     allowed: (ref) => openRef.current === ref,

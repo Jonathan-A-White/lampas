@@ -10,6 +10,7 @@ import { listTurns } from './data/repositories';
 import { skipWelcome, startWelcomeIfFirst, subscribeWelcome, WELCOME_OPENING, WELCOME_REF, welcomeSnapshot } from './data/repositories/welcome';
 import { useLicence, useLicenceDetail } from './gate/licenceContext';
 import { answerRuns } from './speech/answerRuns';
+import { spokenAnswer } from './talk/drawnLinks';
 import { speakTutor } from './speech/tutorVoice';
 import type { TalkScope } from './services/talk';
 import { TalkSheet } from './Talk';
@@ -40,9 +41,9 @@ export function Welcome() {
 
   const turns = useLiveQuery(() => listTurns(WELCOME_REF), []);
   const open = useRef(false);
-  const { states, say, resume } = useTalk('', 0, (_ref, id, answer) => {
+  const { states, say, resume } = useTalk('', 0, (_ref, id, answer, info) => {
     if (!open.current || isHolding()) return;
-    speakTutor(id, answerRuns(answer), () => open.current);
+    spokenAnswer(id, answer, info.links, (words) => speakTutor(id, answerRuns(words), () => open.current));
   });
   useEffect(() => {
     open.current = shown;
