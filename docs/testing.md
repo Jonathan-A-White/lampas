@@ -173,8 +173,9 @@ in every gate but the Laptop's main checkout and a story that broke their invari
 
 - the sources are looked for in the cwd, then in the Laptop's checkout `/home/jwhite/lampas`; the test gives `runShip` their directories (`rawDir`, `morpheusDir`), so no `npm run lxx:link` is needed;
 - the cwd's own real directories (the Laptop's main checkout): the tests always run;
-- borrowed sources (a leftover link, or the Laptop's checkout): they run only when the work (the branch against `main`, plus uncommitted files) touches `scripts/lxx/`, `data/lxx/choices/`, `data/lxx/align/`, `data/lxx/known/`
-  or those two test files, so a leftover link cannot fail a gate on data the story did not change; if git cannot say what changed they run;
+- borrowed sources (a leftover link, or the Laptop's checkout): they run only when the work (the branch against `main`, plus uncommitted files) touches a path of `WATCHED` in that file (the scripts the ship runs, the verse
+  map `scripts/data/tvtms.ts` among them, the files it reads, the tests), so a leftover link cannot fail a gate on data the story did not change; if git cannot say what changed they run. An import or a file the ship gains
+  goes into `WATCHED`, or into `tests/unit/lxx-real-data-watched.test.ts` with why not, which fails until it is in one (mw-u2w5klk.349.139);
 - no sources anywhere (cloud hosts): skipped with that one line, never a failure; `LAMPAS_LXX_REAL=run|skip` forces it.
 
 Other `skipIf` tests in `tests/` on a git-ignored path: `tests/unit/supplied-words.test.ts` (`data/raw/msb_nt_tables.tsv`); the catalogue, sermon-archives and match-export tests wait on the vault's Logos export (outside the repo).
