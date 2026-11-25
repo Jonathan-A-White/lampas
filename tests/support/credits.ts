@@ -2,7 +2,7 @@
 //  - A credit has a kind, its ATTRIBUTION.md section. The sections in PACKAGE_SECTIONS list npm packages, each in `backticks`; every
 //    such package must still be in package.json (dependencies or devDependencies). The other sections (texts, type, services,
 //    ideas, tools) are not packages: their backticks (a licence file, a subpath) are left alone.
-//  - Every font file and every shipped data file (public/, and the maps' index and places in src/maps/data) is named by a credit (bundledFiles: which credit each one needs).
+//  - Every font file and every shipped data file (public/, the maps' index and places in src/maps/data and the timeline's files in src/timeline/data) is named by a credit (bundledFiles: which credit each one needs).
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { OT_BOOKS } from '../../src/data/books';
@@ -67,6 +67,7 @@ function creditFor(path: string): string | null | undefined {
     return (FAMILY.exec(file)?.[1] ?? file.replace(FONT, '')).replace(/-/g, ' ');
   }
   if (path.startsWith('src/maps/data/places/')) return 'TIPNR'; // STEPBible's TIPNR, a file of the places of each book (scripts/places-build.ts), credited in the TBESG bullet
+  if (path.startsWith('src/timeline/data/')) return 'Theographic'; // Theographic's events and people, compacted with our corrections (scripts/timeline-import.ts, docs/timeline.md)
   if (path === 'src/maps/data/logosatlas.json') return 'Logos Atlas'; // the ids, titles and passages of the Logos Atlas's maps, so a link can name one (docs/maps.md), credited in the Logos bullet
   if (path.startsWith('src/maps/data/')) return 'Bible Mapper'; // the compacted index of Bible Mapper's maps and the chapters they belong to (scripts/maps-build.ts)
   if (path === 'public/data/lexicon.json') return 'TBESG';
@@ -155,7 +156,7 @@ function creditFor(path: string): string | null | undefined {
  * or a new kind of file has no rule: uncreditedFiles lists it until a rule here and an entry in ATTRIBUTION.md exist.
  */
 export function bundledFiles(root: string, opts: { extra?: string[] } = {}): BundledFile[] {
-  const paths = [...walk(root, 'src/fonts'), ...walk(root, 'public'), ...walk(root, 'src/maps/data'), ...(opts.extra ?? [])];
+  const paths = [...walk(root, 'src/fonts'), ...walk(root, 'public'), ...walk(root, 'src/maps/data'), ...walk(root, 'src/timeline/data'), ...(opts.extra ?? [])];
   return paths.map((path) => ({ path, credit: creditFor(path) })).filter((f) => f.credit !== null);
 }
 

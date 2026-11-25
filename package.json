@@ -60,6 +60,7 @@
     "ew:sections": "tsx scripts/enduring-word-sections.ts",
     "maps:build": "tsx scripts/maps-build.ts",
     "places:build": "tsx scripts/places-build.ts",
+    "timeline:build": "tsx scripts/timeline-import.ts",
     "sermons:build": "tsx scripts/sermons-build.ts",
     "fixture:chapter": "node scripts/fixture-chapter.mjs",
     "ladder": "tsx scripts/ladder-el.ts && tsx scripts/ladder-en.ts && tsx scripts/ladder-he.ts",
