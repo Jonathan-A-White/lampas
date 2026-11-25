@@ -3,7 +3,8 @@
 // word once). A tree that breaks the rule is asked for once more, with what was wrong; a second that breaks it is given back as its faults, never kept and never thrown. A good tree is kept (repositories/diagrams.ts)
 // before it is returned, so the next opening draws it with no ask. A failure to ask at all (no licence, no answer) is the tutor's, askGrind's TutorError, and passes through.
 import type { Chapter, Verse } from '../data/chapter';
-import { DIAGRAM_VERSION, getDiagram, holdsVocative, keepDiagram, keptVersion } from '../data/repositories';
+import { DIAGRAM_VERSION, getDiagram, keepDiagram } from '../data/repositories';
+import { holdsVocative, keptVersion } from '../data/repositories/diagrams';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askGrind, type AskOptions } from '../services/tutor';
 import { expandApart, type WireDiagram } from './apart';
