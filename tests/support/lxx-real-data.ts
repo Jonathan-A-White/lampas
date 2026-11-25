@@ -4,8 +4,8 @@
 // its invariant (mw-u2w5klk.274.9, batches 470 and 471). The rule now:
 //   - the sources are looked for in the cwd, then in the Laptop's checkout (SOURCE_CHECKOUT, scripts/lxx/link.ts): the test is given those directories, no symlink is needed;
 //   - they are the cwd's own real directories (the Laptop's main checkout): the tests run, whatever the diff;
-//   - they are borrowed (a symlink a Builder left with `npm run lxx:link`, or the Laptop's checkout): the tests run only when the work touches what they check (scripts/lxx/, data/lxx/choices, data/lxx/align,
-//     data/lxx/known, docs/lxx-align, this support file or the tests), so a leftover link cannot fail a gate on data the story did not change;
+//   - they are borrowed (a symlink a Builder left with `npm run lxx:link`, or the Laptop's checkout): the tests run only when the work touches what they check (WATCHED, below: the scripts the ship runs, the
+//     files it reads, the tests), so a leftover link cannot fail a gate on data the story did not change;
 //   - no sources anywhere: skipped, with one line saying so; never a failure.
 // tests/global-setup.ts prints the decision as one line (the gate's log) and hands it to the workers in LAMPAS_LXX_REAL_DATA; LAMPAS_LXX_REAL=run|skip forces it (run still skips when there are no sources).
 import { execFileSync } from 'node:child_process';
@@ -15,8 +15,18 @@ import { join, resolve } from 'node:path';
 /** The Laptop's checkout, where the git-ignored data lives (the same as scripts/lxx/link.ts SOURCE_CHECKOUT; not imported, so global-setup stays free of the scripts). */
 export const SOURCE_CHECKOUT = '/home/jwhite/lampas';
 
-/** The paths whose change makes a borrowed-data run worth it. */
-export const WATCHED = ['scripts/lxx/', 'data/lxx/choices/', 'data/lxx/align/', 'data/lxx/known/', 'docs/lxx-align/', 'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose', 'tests/support/lxx-align-choose.ts', 'tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-align-low-confidence.test.ts'] as const;
+/**
+ * The paths whose change makes a borrowed-data run worth it: a file, or the start of one. Every input of the ship and of its model-pass staleness check is here, or tests/unit/lxx-real-data-watched.test.ts names it
+ * with why not; that test fails on an import the ship gains that is neither (mw-u2w5klk.349.139: a change to the verse map, scripts/data/tvtms.ts, ran none of these tests and landed main red).
+ */
+export const WATCHED = [
+  // the derivation, the aligner, the ship and the Morpheus cache's key; the books' choices, model rows and sidecars, the known answers and the books' reports
+  'scripts/lxx/', 'data/lxx/choices/', 'data/lxx/align/', 'data/lxx/known/', 'docs/lxx-align/',
+  // what the ship runs outside scripts/lxx/: the Septuagint's build, the verse map, Brenton's English, the lexicon's reader and its glosses, the parsing codes, the rule of a linked chunk, Lampas's verse counts
+  'scripts/data/', 'scripts/data-build-lxx.ts', 'scripts/data-build.ts', 'src/data/gloss.ts', 'src/data/irregular-aorists.ts', 'src/data/parseCode.ts', 'src/reader/septuagint.ts', 'public/data/index.json',
+  // the tests that read the real data, and what they share
+  'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose', 'tests/support/lxx-align-choose.ts', 'tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-align-low-confidence.test.ts', 'tests/unit/weave-lxx-every-word.test.ts',
+] as const;
 
 export interface LxxRealData {
   /** run the real-data tests */
@@ -62,7 +72,7 @@ export function decideLxxRealData(probe: LxxProbe): LxxRealData {
   if (files === null) return { run: true, ...dirs, line: `lxx real-data tests (lxx-align-choose.test.ts, Genesis 1 to 11 with the model pass): RUN on the sources of ${where} (git could not say what changed)` };
   const hit = touches(files);
   if (hit.length > 0) return { run: true, ...dirs, line: `lxx real-data tests (lxx-align-choose.test.ts, Genesis 1 to 11 with the model pass): RUN on the sources of ${where}, the work touches ${hit[0]}${hit.length > 1 ? ` and ${hit.length - 1} more` : ''}` };
-  return { run: false, ...dirs, line: `lxx real-data tests (lxx-align-choose.test.ts, Genesis 1 to 11 with the model pass): SKIPPED, the sources are borrowed from ${where} and the work touches none of ${WATCHED.slice(0, 4).join(', ')}` };
+  return { run: false, ...dirs, line: `lxx real-data tests (lxx-align-choose.test.ts, Genesis 1 to 11 with the model pass): SKIPPED, the sources are borrowed from ${where} and the work touches none of ${WATCHED.slice(0, 4).join(', ')} or the rest of WATCHED` };
 }
 
 const git = (cwd: string, args: string[]): string => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
