@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.385",
+    "date": "2026-11-25",
+    "story": "mw-5r3p30.1248",
+    "kind": "fixed",
+    "text": "when the tutor sends you to a grammar table after a drill, the table's button is now shown under the answer and opens the table over the drill, and the tutor no longer says \"tap the link below\" when there is no link."
+  },
+  {
     "version": "0.7.384",
     "date": "2026-11-25",
     "story": "mw-u2w5klk.349.63",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.385
+_2026-11-25_
+- Fixed: when the tutor sends you to a grammar table after a drill, the table's button is now shown under the answer and opens the table over the drill, and the tutor no longer says "tap the link below" when there is no link.
+
 ## 0.7.384
 _2026-11-25_
 - Fixed: Tapping an English word in the Septuagint's Amos now opens a Greek word instead of the whole verse, though a few verses in chapter 6 are still off.
