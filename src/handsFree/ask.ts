@@ -55,6 +55,27 @@ interface Asking {
 }
 let asking: Asking | null = null;
 
+// --- the thinking sign (mw-rl10piw.77) ---------------------------------------------------------------------------------------------------------------
+// While a question he asked by voice waits for its answer the mic mark shows a quiet 'thinking' sign (HandsFreeGate.tsx): from the moment the question goes to the tutor until the answer
+// is kept (and so starts being read), the tutor fails, or a wake cuts the question short. A second ask refused as busy does not touch the sign of the first.
+let thinkingBy: Asking | null = null;
+const thinkingListeners = new Set<() => void>();
+
+function setThinkingBy(next: Asking | null): void {
+  if (thinkingBy === next) return;
+  thinkingBy = next;
+  thinkingListeners.forEach((listener) => listener());
+}
+
+/** Whether a question asked by voice waits for the tutor's answer (for useSyncExternalStore). */
+export const isThinking = (): boolean => thinkingBy !== null;
+
+/** Tells `listener` when isThinking changes (for useSyncExternalStore). */
+export function onThinking(listener: () => void): () => void {
+  thinkingListeners.add(listener);
+  return () => void thinkingListeners.delete(listener);
+}
+
 /** The Talk sheet is open because Hands-free opened it ('tutor'): a command of the first set said in it puts it away; a sheet he opened himself is left. */
 let openedByVoice = false;
 
@@ -93,6 +114,7 @@ export function interruptAsk(): boolean {
   if (!mine) return false;
   mine.cancelled = true;
   asking = null;
+  setThinkingBy(null);
   mine.stop?.();
   stopIfSpeaking(SAID_KEY);
   if (getReading().answer !== null) stopReading();
@@ -141,6 +163,14 @@ export async function askTutor(question: string, say: (text: string) => Promise<
   // a follow-up turn of the conversation is not announced again: the tutor is already the one he is talking to
   const said = announce ? say(ASKING) : Promise.resolve();
   const turn = seat.ask(question);
+  // the sign lasts as long as this question waits; a question refused as busy (another one still waits) leaves the first one's sign alone
+  if (turn && thinkingBy === null) {
+    setThinkingBy(mine);
+    const done = (): void => {
+      if (thinkingBy === mine) setThinkingBy(null);
+    };
+    turn.then(done, done);
+  }
   // 'Asking the tutor' is said to its end before the answer takes the voice
   await said;
   if (!turn) {
@@ -168,6 +198,7 @@ export async function askTutor(question: string, say: (text: string) => Promise<
 /** Forgets the question and the sheet it opened (a session ended; tests). */
 export function forgetAsk(): void {
   asking = null;
+  setThinkingBy(null);
   openedByVoice = false;
   forgetVoiceTurns();
 }

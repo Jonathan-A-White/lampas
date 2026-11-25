@@ -424,6 +424,28 @@ html {
   width: 0.625rem;
   height: 0.625rem;
 }
+/* The tutor is working on an answer to a question he asked by voice (data-thinking, src/handsFree/HandsFreeGate.tsx, mw-rl10piw.77): the mark fades slowly in and out. It stays an outline with a dashed
+ * edge, never the listening look (filled, pulsing with a ring). Under prefers-reduced-motion it does not move: a steady, dimmer mark with the dashed edge. */
+[data-hands-free-mark][data-thinking] .bk-handsfree {
+  border-style: dashed;
+  background: transparent;
+  animation: hands-free-thinking 2.4s ease-in-out infinite;
+}
+@keyframes hands-free-thinking {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-hands-free-mark][data-thinking] .bk-handsfree {
+    animation: none;
+    opacity: 0.55;
+  }
+}
 /* A toast at the top of the screen (the one line of help of a speaker button, Tap to hear, Read aloud and a word's tip) stands under the bars, or under the phone's
  * own top inset when none shows, whole and in view (mw-5r3p30.644). */
 .toast-top {

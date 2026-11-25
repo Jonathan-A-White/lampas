@@ -315,6 +315,48 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     });
   });
 
+  const thinkingSign = (): boolean => document.querySelector('[data-hands-free-mark]')?.hasAttribute('data-thinking') === true;
+
+  Scenario('While the tutor works on the answer the mic mark shows a quiet thinking sign, and it stops when the answer starts being read (mw-rl10piw.77)', ({ Given, And, When, Then }) => {
+    Given(given, (_, place: string, answer: string) => open(place, answer));
+    And('the tutor holds its answer', () => {
+      fake.autoReply = undefined;
+    });
+    When('he says the wake word', sayWake);
+    And(says, (_, words: string) => command(words));
+    Then('the mic mark shows the thinking sign', () => waitFor(() => expect(thinkingSign()).toBe(true)));
+    And('the mic mark is not the listening look', () => expect(mark()?.getAttribute('data-state')).not.toBe('listening'));
+    When('the phone has said "Asking the tutor"', async () => {
+      await saysInEnglish('Asking the tutor');
+      hasSaid();
+    });
+    Then('the mic mark still shows the thinking sign', async () => {
+      await waitFor(() => expect(asked()).toHaveLength(1));
+      expect(thinkingSign()).toBe(true);
+    });
+    When("the tutor's answer arrives", () => fake.answer({ status: 'answered', answer: { answer: answerText, words: [] } }));
+    Then('the phone then says {string} in English', (_, text: string) => saysInEnglish(text));
+    And('the mic mark shows no thinking sign', () => waitFor(() => expect(thinkingSign()).toBe(false)));
+  });
+
+  Scenario('The thinking sign stops when the question fails (mw-rl10piw.77)', ({ Given, And, When, Then }) => {
+    Given(given, (_, place: string, answer: string) => open(place, answer));
+    And('the tutor holds its answer', () => {
+      fake.autoReply = undefined;
+    });
+    When('he says the wake word', sayWake);
+    And(says, (_, words: string) => command(words));
+    Then('the mic mark shows the thinking sign', () => waitFor(() => expect(thinkingSign()).toBe(true)));
+    When("the tutor's question fails", async () => {
+      await saysInEnglish('Asking the tutor');
+      hasSaid();
+      await waitFor(() => expect(asked()).toHaveLength(1));
+      await fake.answer({ status: 'failed', reason: 'no model' });
+    });
+    Then('the phone says that the tutor could not answer', () => waitFor(() => expect(spokenTexts().some((t) => t.startsWith('The tutor could not answer'))).toBe(true)));
+    And('the mic mark shows no thinking sign', () => waitFor(() => expect(thinkingSign()).toBe(false)));
+  });
+
   Scenario("'tutor' opens the tutor on the passage and listens, and the talk goes on turn after turn", ({ Given, When, And, Then }) => {
     Given(passageGiven, (_, place: string, answer: string) => open(place, answer));
     When('he says the wake word', sayWake);
