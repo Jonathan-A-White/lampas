@@ -4,7 +4,7 @@
 import type { Chapter, SourceLanguage, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { lampasChapterOf } from '../data/lxxChapter';
-import { besideOf, chunkText, drawnOrder, type WovenVerse } from '../data/weave';
+import { besideOf, chunkText, drawnPieces, type WovenVerse } from '../data/weave';
 import { passageUrl, referenceUrl } from '../nav/links';
 import { isSeptuagint, lampasNumber } from '../reader/septuagint';
 import { textWithVariants } from '../reader/variantText';
@@ -70,8 +70,10 @@ function shownOf(verse: Verse, view: ReaderView, woven: WovenVerse | null, varia
   if (drawn !== null) return drawn;
   if (view === 'greek') return originalOf(verse) || englishOf(verse);
   if (!woven) return englishOf(verse);
-  return drawnOrder(verse, woven)
-    .map((i) => {
+  return drawnPieces(verse, woven)
+    .map((piece) => {
+      if ('word' in piece) return verse.g[piece.word].t;
+      const i = piece.chunk;
       const weft = woven[i];
       return weft ? weft.words.map((w) => w.t).join(' ') : [...besideOf(woven, i).map((w) => w.t), chunkText(verse, woven, i).trim()].join(' ');
     })

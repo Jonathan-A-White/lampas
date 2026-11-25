@@ -10,7 +10,7 @@ import { teachWord, type WordOutcome } from './data/repositories';
 import { lemmaKeyOf } from './data/lemma';
 import { skipForToday } from './data/skipped';
 import { teachForms, weaveForTeaching } from './data/weave';
-import { cardForm } from './reader/septuagint';
+import { cardForm, isSeptuagint } from './reader/septuagint';
 import { publish, useLatest } from './events/bus';
 import { chosenHebrewPronunciation, pronunciationOf } from './speech/pronunciation';
 import { proseOf } from './speech/proseOf';
@@ -67,7 +67,7 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
     const n = easiestVerse(current, chapter, solid) ?? current.verses[0];
     const verse = chapter.verses.find((v) => v.n === n);
     if (!verse) return null;
-    const woven = weaveForTeaching(verse, solid, current.lemma);
+    const woven = weaveForTeaching(verse, solid, current.lemma, isSeptuagint(chapter));
     const forms = teachForms(verse, current.lemma, chapter);
     const first = chapter.verses.flatMap((v) => v.g).find((w) => lemmaKeyOf(w.l) === current.lemma);
     return { verse, woven, forms, first };

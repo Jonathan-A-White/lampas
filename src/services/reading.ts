@@ -3,7 +3,7 @@
 // src/services/tutor.ts's askGrind; this file is the request, the answer's shape and the check the phone runs on it.
 import { fold } from 'learn-kit/recall';
 import { NO_CHAPTER, type Chapter, type GreekWord, type SourceLanguage, type Verse } from '../data/chapter';
-import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
+import { chunkText, drawnPieces, type WovenVerse } from '../data/weave';
 import { WOVEN_LANG } from '../data/wovenLang';
 import type { LearnerGrammar } from '../data/grammar/learnerGrammar';
 import type { LearnerProfile } from '../data/learnerProfile';
@@ -216,12 +216,18 @@ export function wovenReading(verses: readonly Verse[], woven: readonly (WovenVer
   };
   verses.forEach((verse, v) => {
     const weave = woven[v] ?? null;
-    for (const i of drawnOrder(verse, weave)) {
-      const weft = weave?.[i];
-      if (weft) {
-        words.push(...weft.words);
-        add(weft.words.map((w) => (hebrew ? hebrewPointedForm(w.t) : w.t)).join(' '), greek);
-      } else add(chunkText(verse, weave, i).trim(), 'en');
+    const addOwn = (own: readonly GreekWord[]): void => {
+      words.push(...own);
+      add(own.map((w) => (hebrew ? hebrewPointedForm(w.t) : w.t)).join(' '), greek);
+    };
+    for (const piece of drawnPieces(verse, weave)) {
+      // a Greek word no chunk holds is read in Greek where it stands (the Septuagint Weave, mw-u2w5klk.349.124)
+      if ('word' in piece) addOwn([verse.g[piece.word]]);
+      else {
+        const weft = weave?.[piece.chunk];
+        if (weft) addOwn(weft.words);
+        else add(chunkText(verse, weave, piece.chunk).trim(), 'en');
+      }
     }
   });
   return words.length === 0 ? null : { segments, words };

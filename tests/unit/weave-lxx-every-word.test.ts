@@ -10,7 +10,13 @@ import { createElement } from 'react';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { type Chapter, type Verse, wordLemma } from '../../src/data/chapter';
-import { goneOf, weaveVerse, withBeside, withGone, wovenInOrder, type WeaveLemmas, type WovenVerse } from '../../src/data/weave';
+import { copyUnitOf } from '../../src/copy/format';
+import { weaveDiagramWords } from '../../src/diagram/weave';
+import { buildDiagramRequest } from '../../src/diagram/request';
+import { tokensOf } from '../../src/memorize/target';
+import { wovenReading } from '../../src/services/reading';
+import { runsOf } from '../../src/speech/readAloud';
+import { goneOf, weaveVerse, weaveWord, withBeside, withGone, wovenInOrder, type WeaveLemmas, type WovenVerse } from '../../src/data/weave';
 import { VerseText } from '../../src/reader/VerseText';
 import { wovenOf } from '../../src/reader/useWoven';
 import { alignChapter } from '../../scripts/lxx/align';
@@ -110,6 +116,74 @@ describe('a chunk the pairing has not reached', () => {
   });
 });
 
+// The Governor's rule is every Greek word in every weave and order (mw-u2w5klk.349.124): a known Greek word that no English chunk holds (Brenton gives it no English of its own, or the pairing gave it none: ἐν of
+// Deuteronomy 1:22) was drawn in neither language, in either order. It is drawn in Greek beside its neighbours (src/data/weave.ts strayMarks), by every reader of the drawn order.
+describe('a known Greek word that no English chunk holds (Deuteronomy 1:22 ἐν)', () => {
+  const { chapter } = read<{ chapter: Chapter }>('tests/fixtures/lxx/deu-1-22.json');
+  const verse = chapter.verses[0];
+  const EN = 24; // ἐν, of 'δι᾽ ἧς ἀναβησόμεθα ἐν αὐτῇ': no chunk holds it
+  const all = verse.g.map((w) => wordLemma(w).normalize('NFC'));
+  const settings = (solid: string[], weaveOrder: 'english' | 'greek') => ({ view: 'english' as const, weave: 'solid' as const, weaveShown: true, weaveGrammar: 'any' as const, weaveOrder, learning: new Set<string>(), levels: new Map(), solid: new Set(solid) });
+  const weaveOf = (solid: string[], order: 'english' | 'greek'): WovenVerse => (wovenOf(chapter, settings(solid, order)) as WovenVerse[])[0];
+
+  it('is held by no chunk', () => {
+    expect(verse.g[EN].t).toBe('ἐν');
+    expect(verse.e.some((c) => c.g.includes(EN))).toBe(false);
+    expect(verse.g.filter((w) => w.t === 'ἐν')).toHaveLength(1);
+  });
+
+  for (const order of ORDERS) {
+    describe(`in ${order} order`, () => {
+      for (const [name, solid] of [['every lemma solid', all], ['ἐν alone solid', ['ἐν']]] as const) {
+        const known = [...solid];
+
+        it(`draws it in Greek, once, as a word that opens, with ${name}`, () => {
+          const { container } = render(createElement(VerseText, { verse, view: 'english', woven: weaveOf(known, order), onLook: () => undefined, onUnlinked: () => undefined }));
+          const drawn = container.querySelectorAll(`[data-word="${EN}"]`);
+          expect(drawn, container.textContent ?? '').toHaveLength(1);
+          expect(drawn[0].textContent?.trim()).toBe('ἐν');
+          // before the chunk that holds the next Greek word, αὐτῇ
+          expect(container.textContent).toMatch(known.length > 1 ? /ἐν\s+αὐτῇ,/ : /ἐν\s+them/);
+        });
+
+        it(`copies, reads aloud, checks his reading and learns it by heart, with ${name}`, () => {
+          const woven = weaveOf(known, order);
+          const copied = copyUnitOf(chapter, { n: verse.n }, { view: 'english', woven: [woven] }).verses[0].shown ?? '';
+          expect(copied.split(' ').filter((w) => w === 'ἐν')).toHaveLength(1);
+          const spoken = runsOf(verse, 'english', woven).filter((r) => r.language === 'greek').flatMap((r) => r.text.split(' '));
+          expect(spoken.filter((w) => w === 'ἐν')).toHaveLength(1);
+          const reading = wovenReading([verse], [woven], 'el');
+          expect(reading?.words.filter((w) => w === verse.g[EN])).toHaveLength(1);
+          expect(reading?.segments.filter((s) => s.lang === 'el').flatMap((s) => s.text.split(' ')).filter((w) => w === 'ἐν')).toHaveLength(1);
+          expect(tokensOf(verse, 'weave', woven).filter((t) => t.word === EN)).toEqual([{ text: 'ἐν', lang: 'el', chunk: -1, word: EN }]);
+        });
+
+        it(`stands in the Diagram's words, with ${name}`, () => {
+          const woven = weaveOf(known, order);
+          const { words } = buildDiagramRequest(chapter, [verse], 'english');
+          const shown = weaveDiagramWords(words, [verse], () => woven);
+          expect(shown.flatMap((w) => w.text.split(' ')).filter((w) => w === 'ἐν')).toHaveLength(1);
+          expect(shown.flatMap((w) => [...(('weft' in w && w.weft) || []), ...(('beside' in w && w.beside) || [])]).filter((g) => g === EN)).toHaveLength(1);
+        });
+      }
+
+      it('draws it once when a card marks it too', () => {
+        const { container } = render(createElement(VerseText, { verse, view: 'english', woven: weaveOf(all, order), marked: new Set([EN]), onLook: () => undefined, onUnlinked: () => undefined }));
+        const drawn = container.querySelectorAll(`[data-word="${EN}"]`);
+        expect(drawn).toHaveLength(1);
+        expect(drawn[0].hasAttribute('data-marked')).toBe(true);
+      });
+
+      it('is not drawn while he does not know it', () => {
+        const woven = weaveOf(all.filter((l) => l !== 'ἐν'), order);
+        const { container } = render(createElement(VerseText, { verse, view: 'english', woven, onLook: () => undefined, onUnlinked: () => undefined }));
+        expect(container.querySelectorAll(`[data-word="${EN}"]`)).toHaveLength(0);
+        expect(tokensOf(verse, 'weave', woven).some((t) => t.word === EN)).toBe(false);
+      });
+    });
+  }
+});
+
 // The sweep: every verse of every shipped chapter. It needs the git-ignored sources, as lxx-align-choose.test.ts does (LAMPAS_LXX_REAL=run where they are borrowed and the diff touches none of the watched paths).
 const real = lxxRealData();
 
@@ -137,20 +211,39 @@ function lost(verse: Verse, woven: WovenVerse): number[] {
   return out;
 }
 
+/** The Greek words of the verses of `chapter` that no chunk holds, that he knows, and that the Weave of `solid` in `order` draws nowhere (mw-u2w5klk.349.124): `verse word`. wovenOf is the Reader's own weave; Memorize's tokens are a reader of what it draws, word by word. */
+function undrawnUnheld(chapter: Chapter, solid: ReadonlySet<string>, weaveOrder: 'english' | 'greek'): string[] {
+  const woven = wovenOf(chapter, { view: 'english', weave: 'solid', weaveShown: true, weaveGrammar: 'any', weaveOrder, learning: new Set<string>(), levels: new Map(), solid }) as WovenVerse[];
+  return chapter.verses.flatMap((verse, v) => {
+    const held = new Set(verse.e.flatMap((c) => c.g));
+    const known = verse.g.flatMap((w, k) => (!held.has(k) && weaveWord(w, { solid }) !== null ? [k] : []));
+    if (known.length === 0) return [];
+    const drawn = new Set(tokensOf(verse, 'weave', woven[v]).flatMap((t) => (t.word === undefined ? [] : [t.word])));
+    return known.filter((k) => !drawn.has(k)).map((k) => `${verse.n} ${k}`);
+  });
+}
+
 describe.skipIf(!real.run)('every shipped Septuagint verse in the Weave', () => {
   it(
-    'loses no Greek word to a dropped English chunk, in either order',
+    'loses no Greek word, to a dropped English chunk or to having none, in either order',
     async () => {
       const out = mkdtempSync(join(tmpdir(), 'lampas-weave-sweep-'));
       try {
         await runShip(['--out', out], { rawDir: real.rawDir, morpheusDir: real.morpheusDir, log: () => undefined });
         let verses = 0;
         const losing: string[] = [];
-        // another cause, counted and not failed on: a Greek word no chunk holds has no place in the Weave, known or not
+        // a Greek word no chunk holds: every one he knows is drawn all the same (mw-u2w5klk.349.124)
         let unplaced = 0;
+        const undrawn: string[] = [];
         for (const book of readdirSync(out, { withFileTypes: true }).filter((d) => d.isDirectory())) {
           for (const file of readdirSync(join(out, book.name)).filter((f) => /^\d+\.json$/.test(f))) {
             const chapter = read<Chapter>(join(out, book.name, file));
+            const lemmas = (unheldOnly: boolean): Set<string> =>
+              new Set(chapter.verses.flatMap((verse) => verse.g.filter((_, k) => !unheldOnly || !verse.e.some((c) => c.g.includes(k))).map((w) => wordLemma(w).normalize('NFC'))));
+            // every word known, and the words no chunk holds alone known (every chunk beside them stays English)
+            for (const solidWords of [lemmas(false), lemmas(true)]) {
+              for (const order of ORDERS) undrawn.push(...undrawnUnheld(chapter, solidWords, order).map((at) => `${book.name} ${chapter.chapter}:${at} (${order})`));
+            }
             for (const verse of chapter.verses) {
               verses++;
               const held = new Set(verse.e.flatMap((c) => c.g));
@@ -165,9 +258,10 @@ describe.skipIf(!real.run)('every shipped Septuagint verse in the Weave', () => 
             }
           }
         }
-        console.log(`weave sweep: ${verses} shipped verses; ${losing.length} lose a Greek word to a dropped chunk; ${unplaced} have a Greek word that no chunk holds`);
+        console.log(`weave sweep: ${verses} shipped verses; ${losing.length} lose a Greek word to a dropped chunk; ${unplaced} have a Greek word that no chunk holds; ${undrawn.length} times a known such word is drawn nowhere`);
         expect(verses).toBeGreaterThan(10000);
         expect({ count: losing.length, first: losing.slice(0, 10) }).toEqual({ count: 0, first: [] });
+        expect({ count: undrawn.length, first: undrawn.slice(0, 10) }).toEqual({ count: 0, first: [] });
       } finally {
         rmSync(out, { recursive: true, force: true });
       }
