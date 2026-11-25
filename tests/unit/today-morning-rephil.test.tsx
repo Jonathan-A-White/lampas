@@ -1,15 +1,22 @@
 // Today's Morning RePhil piece (mw-qtu3zvz.15): one episode with its title and date and a Watch link to its Subsplash share link, playing it keeps it heard, the order
-// setting, Another, and the plain words with a Start again once every episode is heard.
+// setting, Another, and the plain words with a Start again once every episode is heard. Watch plays the episode in Lampas's sermon player, not on the web outside (mw-r9xo1pj.28); a link the player cannot
+// read still opens on the web, labelled so.
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { readFileSync, readdirSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 import { DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL_ID, RANDOM, anotherDevotional, canDrawAnother, type Devotional } from '../../src/data/daily/devotionals';
-import { EPISODES, episodeDate } from '../../src/data/daily/morningRephil';
+import { EPISODES, episodeDate, setServiceEpisodes } from '../../src/data/daily/morningRephil';
 import { getDay, getHeard, localDate, pickAnotherDevotional, setDevotionalPick } from '../../src/data/daily/dailyStore';
 import { Today } from '../../src/today/Today';
+import { forgetEpisodes } from '../../src/services/rephilFeed';
+import { linkRowOf } from '../../src/sermons/merge';
+import { closeSermon, episodeRow, videoOfRow } from '../../src/sermons/player';
+import { SermonPlayerHost } from '../../src/sermons/SermonPlayer';
+import { videoOf } from '../../src/sermons/video';
 import { applyChanges, currentSettings } from '../support/settings';
 
 afterAll(() => {
@@ -19,6 +26,8 @@ afterAll(() => {
 
 beforeEach(async () => {
   cleanup();
+  act(() => closeSermon());
+  forgetEpisodes();
   await db.open();
   await db.settings.clear();
   await db.settings.bulkPut([
@@ -360,5 +369,141 @@ describe('the Morning RePhil order setting', () => {
     expect(applied).toHaveLength(1);
     expect((await currentSettings()).morningRephilOrder).toBe('newest');
     expect((await applyChanges([{ key: 'morningRephilOrder', value: 'random' }])).refused).toHaveLength(1);
+  });
+});
+
+const EMBED = (id: string) => `https://subsplash.com/u/brookfieldfirst/media/embed/d/${id}`;
+
+/** Today with the app's one player host (App mounts it beside every screen). */
+async function openWithPlayer() {
+  window.location.hash = '#/today';
+  render(
+    <>
+      <Today />
+      <SermonPlayerHost />
+    </>,
+  );
+  return within(await screen.findByRole('region', { name: 'Devotional' }, { timeout }));
+}
+
+/** Taps the link and says whether the app took the tap (so the browser opens nothing). */
+function tap(link: HTMLElement): boolean {
+  let notPrevented = true;
+  act(() => {
+    notPrevented = fireEvent.click(link);
+  });
+  return !notPrevented;
+}
+
+describe('Watch plays the episode inside Lampas (mw-r9xo1pj.28)', () => {
+  it('opens the sermon player sheet with the Subsplash stage and opens nothing outside; Close goes back to Today', async () => {
+    const piece = await openWithPlayer();
+    const link = await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout });
+    expect(tap(link)).toBe(true);
+    const sheet = await screen.findByRole('dialog', { name: first.title }, { timeout });
+    expect(sheet.querySelector('iframe')).toHaveAttribute('src', EMBED(first.id));
+    expect(within(sheet).getByRole('link', { name: 'Open on subsplash.com ›' })).toHaveAttribute('href', `https://subsplash.com/u/brookfieldfirst/media/d/${first.id}`);
+    await vi.waitFor(async () => expect([...(await getHeard())]).toEqual([first.id]), { timeout });
+    expect((await getDay(localDate(new Date()))).opened).toContain('devotional');
+    await act(async () => {
+      await userEvent.click(within(sheet).getByRole('button', { name: 'Close' }));
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout })).toBeInTheDocument();
+  });
+
+  it('plays the episode the service lists with no Subsplash link yet in the YouTube player', async () => {
+    (window as unknown as { YT: unknown }).YT = {
+      Player: class {
+        destroy() {}
+      },
+      PlayerState: { PLAYING: 1, BUFFERING: 3 },
+    };
+    try {
+      setServiceEpisodes([{ id: 'yt:vid1_abcdEF', number: 999, title: 'Morning RePhil #999', date: '2099-01-01', share: 'https://www.youtube.com/watch?v=vid1_abcdEF', youtube: 'vid1_abcdEF' }]);
+      await db.settings.put({ key: 'morningRephilOrder', value: 'newest' });
+      const piece = await openWithPlayer();
+      const link = await piece.findByRole('link', { name: /Morning RePhil #999/ }, { timeout });
+      expect(link).toHaveTextContent(`Watch · ${episodeDate('2099-01-01')}`);
+      expect(tap(link)).toBe(true);
+      const sheet = await screen.findByRole('dialog', { name: 'Morning RePhil #999' }, { timeout });
+      expect(sheet.querySelector('[data-sermon-video]')).not.toBeNull();
+    } finally {
+      act(() => closeSermon());
+      delete (window as unknown as { YT?: unknown }).YT;
+    }
+  });
+
+  it('opens a link the player cannot read on the web, labelled so, and still keeps it heard', async () => {
+    const share = 'https://www.youtube.com/watch?v=tooshort';
+    setServiceEpisodes([{ id: 'yt:tooshort', number: 999, title: 'Morning RePhil #999', date: '2099-01-01', share, youtube: 'tooshort' }]);
+    await db.settings.put({ key: 'morningRephilOrder', value: 'newest' });
+    const piece = await openWithPlayer();
+    const link = await piece.findByRole('link', { name: /Morning RePhil #999/ }, { timeout });
+    expect(link).toHaveTextContent(`Watch on the web · ${episodeDate('2099-01-01')}`);
+    expect(link).toHaveAttribute('href', share);
+    expect(link).toHaveAttribute('target', '_blank');
+    link.addEventListener('click', (e) => {
+      // jsdom has no new tab: the app must not have taken the tap, so the test stops the navigation itself
+      expect(e.defaultPrevented).toBe(false);
+      e.preventDefault();
+    });
+    tap(link);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await vi.waitFor(async () => expect([...(await getHeard())]).toEqual(['yt:tooshort']), { timeout });
+  });
+
+  it('plays an episode from a list the phone kept on an earlier day (the data keeps its shape)', async () => {
+    const row = { number: 999, title: 'Morning RePhil #999', date: '2099-01-01', share: 'https://brookfieldfirst.subspla.sh/new481x', video: null };
+    await db.settings.bulkPut([
+      { key: 'morningRephilFeed', value: JSON.stringify({ day: '2026-01-01', rows: [row] }) },
+      { key: 'morningRephilOrder', value: 'newest' },
+    ]);
+    const piece = await openWithPlayer();
+    const link = await piece.findByRole('link', { name: /Morning RePhil #999/ }, { timeout });
+    expect(tap(link)).toBe(true);
+    const sheet = await screen.findByRole('dialog', { name: 'Morning RePhil #999' }, { timeout });
+    expect(sheet.querySelector('iframe')).toHaveAttribute('src', EMBED('new481x'));
+  });
+});
+
+describe('the sweep: every Brookfield First link plays in the app (mw-r9xo1pj.28)', () => {
+  it('every bundled Morning RePhil episode, by its share link, is a Subsplash embed', () => {
+    expect(EPISODES.length).toBeGreaterThan(200);
+    expect(EPISODES.filter((e) => videoOfRow(episodeRow(e)) === undefined).map((e) => e.share)).toEqual([]);
+    for (const e of EPISODES) {
+      expect(videoOf(e.share), e.share).toMatchObject({ kind: 'subsplash', embed: EMBED(e.id) });
+      expect(videoOfRow(episodeRow(e)), e.share).toEqual(videoOf(e.share));
+    }
+  });
+
+  // Brookfield First's sermons are not bundled (data/sermons/sources.json lists no such source): the service gives them, so these are the shapes its rows have
+  it.each([
+    ['a YouTube video with the church app\'s media page', 'https://www.youtube.com/watch?v=vid1_abcdEF', 'https://subsplash.com/u/brookfieldfirst/media/d/3cmtfqd-still-the-creator', 'subsplash'],
+    ['a YouTube video with the church app\'s short link', 'https://www.youtube.com/watch?v=vid1_abcdEF', 'https://brookfieldfirst.subspla.sh/q59d572', 'subsplash'],
+    ['a media page as its own address', 'https://subsplash.com/u/brookfieldfirst/media/d/3cmtfqd-still-the-creator', undefined, 'subsplash'],
+    ['a short link as its own address', 'https://brookfieldfirst.subspla.sh/q59d572', undefined, 'subsplash'],
+    ['a YouTube video alone', 'https://www.youtube.com/watch?v=vid1_abcdEF', undefined, 'youtube'],
+  ])('a Brookfield First sermon from the service with %s plays', (_how, url, alt, kind) => {
+    const row = linkRowOf({ source: 'brookfield-first', id: 'vid1_abcdEF', title: 'Still the Creator', url, ...(alt ? { alt_url: alt } : {}) });
+    expect(row && videoOfRow(row)?.kind).toBe(kind);
+  });
+
+  it('no bundled sermon row with a Subsplash link is left to the web', () => {
+    const left: string[] = [];
+    let scanned = 0;
+    for (const dir of readdirSync('public/sermons', { withFileTypes: true }).filter((d) => d.isDirectory())) {
+      for (const file of readdirSync(`public/sermons/${dir.name}`).filter((f) => f.endsWith('.json'))) {
+        const { rows } = JSON.parse(readFileSync(`public/sermons/${dir.name}/${file}`, 'utf8')) as { rows: Array<{ id: string; url: string; alt?: string }> };
+        scanned += rows.length;
+        for (const r of rows) {
+          if (![r.url, r.alt ?? ''].some((a) => /^https:\/\/([^/]+\.)?(subsplash\.com|subspla\.sh)\//.test(a))) continue;
+          const row = linkRowOf({ source: dir.name, id: r.id, title: r.id, url: r.url, ...(r.alt ? { alt_url: r.alt } : {}) });
+          if (!row || videoOfRow(row) === undefined) left.push(`${dir.name}/${r.id}`);
+        }
+      }
+    }
+    expect(scanned).toBeGreaterThan(1000);
+    expect(left).toEqual([]);
   });
 });

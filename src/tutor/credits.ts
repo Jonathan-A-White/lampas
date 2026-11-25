@@ -88,7 +88,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Postern', use: 'Carries your questions and pictures to the tutor', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/postern' },
   { name: 'Twilio Verify', use: 'Sends the codes for a licence', licence: 'none needed; its terms', link: 'https://www.twilio.com/en-us/user-authentication-identity/verify' },
   { name: 'Claude', use: 'The tutor\'s model; pictures, drills, diagrams', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude' },
-  { name: 'YouTube and Subsplash', use: 'Their own players play a video sermon in the Sermons sheet', licence: 'none needed; their terms apply', link: 'https://www.youtube.com' },
+  { name: 'YouTube and Subsplash', use: 'Their own players play a video sermon or Morning RePhil in Lampas', licence: 'none needed; their terms apply', link: 'https://www.youtube.com' },
   { name: 'Logos Bible Software', use: 'If on: links into your Logos, its Atlas, Commentary and sermon archives', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
   { name: 'Audible', use: 'Opens The Word of Promise in your Audible', licence: 'yours; nothing copied', link: 'https://www.audible.com' },
   { name: 'Blue Letter Bible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.blueletterbible.org' },
