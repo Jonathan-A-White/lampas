@@ -11,6 +11,8 @@
 //    strip the inset opens above the header once the phone reported one, in full screen (mw-5r3p30.1212).
 //    Sideways (a window under 500 px tall) the Reader's chips row shares the header's line and would reach that corner, so src/index.css gives the row a right padding that stops it short of the dot,
 //    On or Off (the "‡13" variants chip's corner lay under it before, mw-rl10piw.49); tests/e2e/hands-free.spec.ts checks the dot lies on no chip's box.
+//    While a question he asked by voice waits for the tutor's answer the button carries data-thinking (ask.ts isThinking, mw-rl10piw.77) and src/index.css draws a quiet sign on the mark: a slow
+//    fade in and out, or, under prefers-reduced-motion, a steady dimmer mark with a dashed edge; never the listening look (a filled, pulsing mark). It ends when the answer starts being read, or the question fails.
 //  - while it is On, the screen is kept awake (src/speech/wakeLock.ts, holder 'hands-free'); Off lets it go.
 //  - while it is On, three fingers held on the screen for a second send what Hands-free heard to the makers and say "Sent" (sendLog.ts, mw-5r3p30.1231): longer than the
 //    three-finger tap, so lifting them is no tap. A touch on something with finger gestures of its own is left alone, as for the tap.
@@ -21,6 +23,7 @@ import type { HandsFreeState } from 'voice-kit/handsfree';
 import { HandsFreeMark, useHandsFree as useSessionState, useThreeFingerTap } from 'voice-kit/handsfree/react';
 import { useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { holdAwake, releaseAwake } from '../speech/wakeLock';
+import { isThinking, onThinking } from './ask';
 import { HELP_TITLE } from './commands';
 import { sendAndSay, watchThreeFingerHold } from './sendLog';
 import { HelpSheet } from './HelpSheet';
@@ -42,11 +45,13 @@ const MARK_SIZE = { '--bk-handsfree-size': '1rem' } as CSSProperties;
 /** The mark inside a button: a tap opens the sheet 'What you can say'. It lives only while Hands-free is On, so Off puts the sheet away. */
 function MarkButton({ state }: { state: HandsFreeState }) {
   const [helping, setHelping] = useState(false);
+  const thinking = useSyncExternalStore(onThinking, isThinking, isThinking);
   return (
     <>
       <button
         type="button"
         data-hands-free-mark
+        data-thinking={thinking ? '' : undefined}
         aria-haspopup="dialog"
         aria-label={HELP_TITLE}
         onClick={() => setHelping(true)}

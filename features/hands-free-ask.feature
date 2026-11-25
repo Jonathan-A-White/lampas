@@ -95,3 +95,26 @@ Feature: Hands-free asks the tutor by voice: 'ask who was Nicodemus', a follow-u
     When the phone has said it
     Then the Reader is at John 18 and John 18 is read from verse 1
     And the tutor was sent nothing
+
+  Scenario: While the tutor works on the answer the mic mark shows a quiet thinking sign, and it stops when the answer starts being read (mw-rl10piw.77)
+    Given Hands-free is On and "John 3" is open in English on a phone that speaks English and the tutor answers "Nicodemus was a Pharisee and a ruler of the Jews."
+    And the tutor holds its answer
+    When he says the wake word
+    And he says "ask who was Nicodemus" and is quiet for 1.5 seconds
+    Then the mic mark shows the thinking sign
+    And the mic mark is not the listening look
+    When the phone has said "Asking the tutor"
+    Then the mic mark still shows the thinking sign
+    When the tutor's answer arrives
+    Then the phone then says "Nicodemus was a Pharisee and a ruler of the Jews." in English
+    And the mic mark shows no thinking sign
+
+  Scenario: The thinking sign stops when the question fails (mw-rl10piw.77)
+    Given Hands-free is On and "John 3" is open in English on a phone that speaks English and the tutor answers "Nicodemus was a Pharisee and a ruler of the Jews."
+    And the tutor holds its answer
+    When he says the wake word
+    And he says "ask who was Nicodemus" and is quiet for 1.5 seconds
+    Then the mic mark shows the thinking sign
+    When the tutor's question fails
+    Then the phone says that the tutor could not answer
+    And the mic mark shows no thinking sign
