@@ -6,6 +6,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { withoutUnkeptLinkPromise } from './talk/linkPromise';
 import { Waiting } from './ui/Waiting';
 import { AddWord } from './AddWordButton';
 import { findGreekWord, glossOf, lookupFor as lookupOf } from './data/answerWord';
@@ -106,8 +107,8 @@ function SendArrow({ slot, why }: { slot: SendSlot; why: string | undefined }) {
 }
 
 /** The speaker under an answer: reads it, or stops it while it is being read (a tutor's answer read by itself is read under the turn's id, so the button knows). */
-function AnswerSpeaker({ turn }: { turn: TalkTurn }) {
-  return <ReadAloud id={turn.id as number} runs={answerRuns(turn.a)} />;
+function AnswerSpeaker({ turn, said }: { turn: TalkTurn; said: string }) {
+  return <ReadAloud id={turn.id as number} runs={answerRuns(said)} />;
 }
 
 /** One setting the answer changed: 'Changed: Greek speed 0.8x' with Undo, or, once undone, what it was put back to. */
@@ -374,8 +375,12 @@ function lookupFor(scope: TalkScope, found: GreekWord): Lookup {
   return lookupOf(scope.chapter, found);
 }
 
-function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLemma: (lemma: string) => void; onLeave: () => void }) {
+export function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope: TalkScope; onLook: (lookup: Lookup) => void; onLemma: (lemma: string) => void; onLeave: () => void }) {
   const { unopened } = turn;
+  // How many groups its links drew, once they have answered. An answer whose words point at a link below says so only while a link is drawn: when the answer carried links and none was drawn (a setting
+  // or a verse's Reader chip over a run, a work with Logos Off, a map or word of a resource he switched off), the sentences that promise one are not shown, copied or spoken (mw-fnvjof.17.298).
+  const [drawn, setDrawn] = useState<number>();
+  const said = turn.links?.length && drawn === 0 ? withoutUnkeptLinkPromise(turn.a, undefined) : turn.a;
   return (
     <article data-turn data-turn-id={turn.id} className="space-y-2">
       <TurnPictures turnId={turn.id} />
@@ -384,9 +389,9 @@ function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope
       <YouSaid spoken={turn.spoken} said={turn.q} shown={turn.cleanQ} />
       <div data-talk-a onClick={stopOnTap} className="rounded-2xl border border-line px-3 py-2 [--scroll-more-from:var(--color-surface)]">
         <div data-answer-text className="break-words text-lg leading-snug">
-          <Markdown text={turn.a} onOpen={onLeave} />
+          <Markdown text={said} onOpen={onLeave} />
         </div>
-        <SaveReferences answer={turn.a} question={turn.cleanQ ?? turn.q} onLeave={onLeave} />
+        <SaveReferences answer={said} question={turn.cleanQ ?? turn.q} onLeave={onLeave} />
         {turn.changes?.length || turn.done?.length || turn.refused?.length || turn.opened || turn.stayed || turn.unopened || turn.added?.length || turn.already?.length || turn.unknown?.length ? (
           <ul data-talk-changes className="mt-2 border-t border-line pt-1">
             {turn.changes?.map((c, i) => (
@@ -467,7 +472,7 @@ function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope
           </dl>
         ) : null}
         {turn.guide ? <HebrewSoundGuide guide={turn.guide} /> : null}
-        {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} onWord={onLemma} scope={scope} place={scope.screen ? undefined : { book: scope.chapter.code, chapter: scope.chapter.chapter }} verse={scope.verse?.n} /> : null}
+        {turn.links?.length ? <TutorLinks links={turn.links} onLeave={onLeave} onWord={onLemma} scope={scope} place={scope.screen ? undefined : { book: scope.chapter.code, chapter: scope.chapter.chapter }} verse={scope.verse?.n} onDrawn={setDrawn} /> : null}
         {turn.studyWayLine ? <StudyWayProposal line={turn.studyWayLine} /> : null}
         <QuizGoalOffer turn={turn} />
         <SettingOffer turn={turn} />
@@ -477,8 +482,8 @@ function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope
         <RustyOffer turn={turn} />
         <TodayOffer turn={turn} />
         <div className="-mb-1 mt-1 flex flex-wrap items-start justify-end gap-1">
-          <CopyExchange place={turn.ref} question={turn.cleanQ ?? turn.q} answer={turn.a} />
-          <AnswerSpeaker turn={turn} />
+          <CopyExchange place={turn.ref} question={turn.cleanQ ?? turn.q} answer={said} />
+          <AnswerSpeaker turn={turn} said={said} />
         </div>
       </div>
       {/* the passages the tutor asked for, read in the background (mw-5r3p30.734): one quiet line, nothing to tap */}

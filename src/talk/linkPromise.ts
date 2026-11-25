@@ -21,7 +21,8 @@ function sentencesOf(line: string): { space: string; text: string }[] {
 
 /**
  * The answer as shown: with no link (`links` missing or empty) the sentences that promise one are dropped, a line left empty goes with them, and the paragraphs and lines
- * of the rest stay. With a link it is the words as written (whether the chip is drawn is the chip's own business, src/TutorLinks.tsx). An answer that is nothing but
+ * of the rest stay. With a link it is the words as written: a link that arrives but is not drawn (a setting over a run, a work with Logos Off) is judged where it is drawn, by
+ * the count of groups src/TutorLinks.tsx reports to src/Talk.tsx's Turn, which calls this with no links when none was drawn (mw-fnvjof.17.298). An answer that is nothing but
  * the promise is left as it is: an empty answer would say less than a wrong pointer.
  */
 export function withoutUnkeptLinkPromise(answer: string, links: AnswerLink[] | undefined): string {

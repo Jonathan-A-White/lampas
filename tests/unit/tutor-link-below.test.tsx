@@ -5,7 +5,7 @@
 // - the answer carries no link at all: the sentence that promises one is dropped from what is shown and spoken (src/talk/linkPromise.ts).
 import '@testing-library/jest-dom/vitest';
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NO_CHAPTER } from '../../src/data/chapter';
@@ -14,6 +14,9 @@ import { OverRun } from '../../src/overRun';
 import type { TalkScope } from '../../src/services/talk';
 import { promisesLink, withoutUnkeptLinkPromise } from '../../src/talk/linkPromise';
 import { TutorLinks } from '../../src/TutorLinks';
+import { Turn } from '../../src/Talk';
+import type { TalkTurn } from '../../src/data/db';
+import { afterTurns } from '../support/turns';
 import { dropHeldTalk, heldTalk } from '../../src/talkReturn';
 
 const scope: TalkScope = {
@@ -103,5 +106,50 @@ describe('an answer that promises a link it does not carry', () => {
 
   it('an answer that is nothing but the promise is left as it is, not emptied', () => {
     expect(withoutUnkeptLinkPromise('Tap the link below.', undefined)).toBe('Tap the link below.');
+  });
+});
+
+// A link that arrives but is not drawn (mw-fnvjof.17.298): the answer carries a link, and the screen under the talk takes its chip away (a setting, a verse's Reader chip over a run),
+// or what the chip needs is Off (a work with Logos Off), so 'Tap the link below' points at nothing. What is shown is decided by what is drawn.
+const SAYS = 'Open the setting to change it. Tap the link below to go there.';
+const turnWith = (links: TalkTurn['links']): TalkTurn => ({ id: 1, ref: 'drill-it', q: 'How do I make the text bigger?', a: SAYS, words: [], when: 1, links });
+const shownTurn = async (turn: TalkTurn, overRun: boolean): Promise<HTMLElement> => {
+  render(
+    <OverRun.Provider value={overRun}>
+      <Turn turn={turn} scope={scope} onLook={() => undefined} onLemma={() => undefined} onLeave={() => undefined} />
+    </OverRun.Provider>,
+  );
+  // the lookups have answered: the list is drawn, or its hidden mark that it has nothing to draw
+  await waitFor(() => expect(document.querySelector('[data-tutor-links], [data-tutor-links-done]')).not.toBeNull());
+  await act(async () => {
+    await afterTurns();
+  });
+  return document.querySelector('[data-answer-text]') as HTMLElement;
+};
+
+describe('a link that arrives but is not drawn', () => {
+  it('a setting link over a run: the sentence that points at it is not shown', async () => {
+    const shown = await shownTurn(turnWith([{ kind: 'setting', key: 'textSize' }]), true);
+    expect(shown).toHaveTextContent('Open the setting to change it.');
+    expect(shown).not.toHaveTextContent(/link below/i);
+    expect(document.querySelector('[data-tutor-links]')).toBeNull();
+  });
+
+  it('a verse link over a run with no study resource on and no Reader chip: nothing drawn, no pointer', async () => {
+    const shown = await shownTurn(turnWith([{ kind: 'verse', reference: 'Romans 8:28' }]), true);
+    expect(document.querySelector('[data-tutor-links]')).toBeNull();
+    expect(shown).not.toHaveTextContent(/link below/i);
+  });
+
+  it('a work link with Logos Off: nothing drawn, no pointer', async () => {
+    const shown = await shownTurn(turnWith([{ kind: 'work', work: 'LLS:NO.SUCH.WORK', reference: 'Romans 8:28' }]), false);
+    expect(document.querySelector('[data-tutor-links]')).toBeNull();
+    expect(shown).not.toHaveTextContent(/link below/i);
+  });
+
+  it('a setting link on a plain screen is drawn and the words stay as written', async () => {
+    const shown = await shownTurn(turnWith([{ kind: 'setting', key: 'textSize' }]), false);
+    expect(document.querySelector('[data-tutor-links]')).not.toBeNull();
+    expect(shown).toHaveTextContent('Tap the link below to go there.');
   });
 });

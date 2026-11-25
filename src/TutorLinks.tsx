@@ -152,8 +152,16 @@ interface Group {
   chips: LinkChip[];
 }
 
-/** The chips under an answer. `onLeave` closes the Talk sheet before the Reader opens a verse. `onWord` opens the word sheet of a Hebrew lemma over the Talk sheet (the Word chip is drawn only with it). `place` is the chapter the talk is about (none in a talk from a screen): a `map` link is drawn only for a map of it. `scope` is the talk the links are under: a `paradigm` link holds it, so the sheet comes back when Back returns from the table (src/talkReturn.ts); without it the table opens and Back finds the screen. */
-export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { links: AnswerLink[]; onLeave: () => void; onWord?: (lemma: string) => void; place?: MapRef; verse?: number; scope?: TalkScope }) {
+/** Tells `onDrawn` how many groups the list drew, once every lookup has answered (the answer's words are judged by it, src/talk/linkPromise.ts); draws nothing. */
+function Drawn({ count, onDrawn }: { count: number; onDrawn?: (count: number) => void }) {
+  useEffect(() => {
+    onDrawn?.(count);
+  }, [count, onDrawn]);
+  return null;
+}
+
+/** The chips under an answer. `onDrawn` hears how many groups were drawn, once the lookups have answered (an answer whose words point at a link below is judged by what is drawn, not by what the answer carried, mw-fnvjof.17.298). `onLeave` closes the Talk sheet before the Reader opens a verse. `onWord` opens the word sheet of a Hebrew lemma over the Talk sheet (the Word chip is drawn only with it). `place` is the chapter the talk is about (none in a talk from a screen): a `map` link is drawn only for a map of it. `scope` is the talk the links are under: a `paradigm` link holds it, so the sheet comes back when Back returns from the table (src/talkReturn.ts); without it the table opens and Back finds the screen. */
+export function TutorLinks({ links, onLeave, onWord, place, verse, scope, onDrawn }: { links: AnswerLink[]; onLeave: () => void; onWord?: (lemma: string) => void; place?: MapRef; verse?: number; scope?: TalkScope; onDrawn?: (count: number) => void }) {
   const chosen = useLiveQuery(getStudyResources, []);
   const bibles = useLiveQuery(getLogosBibles, []);
   const owned = useLiveQuery(ownedResources, []);
@@ -215,10 +223,16 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
   }
   const drawn = groups.filter((g) => g.reader || g.setting || g.paradigm || g.map || g.sermon || g.copy || (g.hebrew && onWord) || g.chips.length > 0);
   // every lookup has answered and no chip is left: draw nothing a reader sees, only a hidden mark that the lookups are done, so a test waits on it rather than on a clock
-  if (drawn.length === 0) return <span hidden data-tutor-links-done />;
+  if (drawn.length === 0) return (
+    <>
+      <span hidden data-tutor-links-done />
+      <Drawn count={0} onDrawn={onDrawn} />
+    </>
+  );
 
   return (
     <>
+      <Drawn count={drawn.length} onDrawn={onDrawn} />
       <ul data-tutor-links aria-label="Study links" className="mt-2 space-y-2 border-t border-line pt-2">
         {drawn.map((group) => (
           <li key={group.key} data-tutor-link role="group" aria-label={group.name} className="flex flex-wrap items-center gap-2">
