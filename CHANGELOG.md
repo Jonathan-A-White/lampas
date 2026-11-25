@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.389
+_2026-11-25_
+- Fixed: the tutor no longer says 'tap the link below' when the link it means is not shown.
+
 ## 0.7.388
 _2026-11-25_
 - Fixed: In the Septuagint, tapping an English word in parts of Leviticus 6 and 8 now opens the Greek word it translates.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.389",
+    "date": "2026-11-25",
+    "story": "mw-fnvjof.17.298",
+    "kind": "fixed",
+    "text": "the tutor no longer says 'tap the link below' when the link it means is not shown."
+  },
+  {
     "version": "0.7.388",
     "date": "2026-11-25",
     "story": "mw-u2w5klk.349.134",
