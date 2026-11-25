@@ -5,7 +5,7 @@ Feature: Hands-free asks the tutor by voice: 'ask who was Nicodemus', a follow-u
   words, a lower chime closes it and the Bible goes on if it was playing at the wake. 'Tutor' (or 'open the tutor') with no question opens the tutor on what is on screen and listens;
   the conversation goes on turn after turn; 'close the tutor' or 'done' leaves it, and any other command said in it leaves it and does that. The question carries the passage on screen
   (John 17:6-19, not only the chapter) and the open word. The wake, the recogniser, the speech and the chime are the fakes of tests/support (the chime port is a spy), the tutor is the
-  fake Postern of tests/support/fake-postern.ts; the unit cases (a wake while the answer is spoken, a confirm command, a failure) are tests/unit/hands-free-ask.test.tsx.
+  fake Postern of tests/support/fake-postern.ts; the unit cases (no microphone while the answer is spoken and Stop cutting it, a confirm command, a failure) are tests/unit/hands-free-ask.test.tsx.
 
   Scenario: 'ask who was Nicodemus' on John 3 with the Talk sheet closed: 'Asking the tutor', then the answer spoken, and the Talk holds both
     Given Hands-free is On and "John 3" is open in English on a phone that speaks English and the tutor answers "Nicodemus was a Pharisee and a ruler of the Jews."

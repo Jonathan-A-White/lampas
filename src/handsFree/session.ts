@@ -14,6 +14,11 @@
 //    which carries no sound; the shared chooser's Bluetooth pick is tried first, an input that gives only silence is left for the next, and a log line names it.
 //  - What the wake does is kept in the wake log (wakeLog.ts, mw-5r3p30.1231): its inputs, what each heard, where it settled, the session's states and the command's
 //    input; Settings, Hands-free 'Send what Hands-free heard' and a three-finger long press send it to the makers (sendLog.ts).
+//  - While the tutor speaks (an answer read aloud, by itself or from its speaker; any text a 'Read aloud' speaker reads) no microphone is open (mw-rl10piw.74): on Android an
+//    open microphone puts the phone's sound on the call route (the voice goes soft, and on the car's Bluetooth narrow), and a microphone opening, closing or moving
+//    between inputs as it speaks cuts the voice off. The wake lets go of its microphone as the reading begins, the voice starts MIC_SETTLE_MS after (readAloud's answer
+//    gate), and the wake listens again when the reading is over or stopped; a command's recogniser open at that moment (the follow-up window) is put down too. So the
+//    wake word is not heard while the tutor speaks: the speaking bar's Stop (or a tap on the answer) stops it, and a wake while the answer is still awaited cuts it as before.
 //  - Any other failed wake (the model cannot be fetched, no microphone, a browser with no wake) is told on screen and aloud (COULD_NOT_START); the mic-less and fetch-less kinds
 //    start again by themselves when the network is back ('online') or on the next touch anywhere, and the setting stays On; a browser that cannot do it at all turns it Off.
 import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
@@ -26,10 +31,11 @@ import { handsFreePauseMs, type HandsFreePauseValue } from '../settings/definiti
 import { getSetting, onSetting, setSetting } from '../settings/store';
 import { openMicInput } from '../audio/recorder';
 import { SETTING_SAID_KEY, speakText, whenSaid } from '../speech/greek';
+import { getReading, setAnswerGate, subscribeReading } from '../speech/readAloud';
 import { forgetAsk, interruptAsk } from './ask';
 import { runCommand } from './commands';
 import { isMicBusy, onMicBusy } from './micBusy';
-import { forgetPlayback, goOnAtClose, SAID_KEY, silenceAtWake } from './playback';
+import { forgetPlayback, goOnAtClose, SAID_KEY, silenceAtWake, takeSound } from './playback';
 import { forgetWakeInputs, startOnLiveInput, wakeFoundSilent, wakeLiveInput } from './wakeInput';
 import { logWake } from './wakeLog';
 
@@ -135,6 +141,78 @@ export function whenMicClosed(then: () => void): () => void {
   return give;
 }
 
+/** A microphone other than the wake's (the command's recogniser) was let go just now: a sentence waits MIC_SETTLE_MS from here too. */
+function micLetGo(): void {
+  if (wakesOpen === 0) closedAt = Date.now();
+}
+
+// --- while the tutor speaks, no microphone ---------------------------------------------------------------------------------------------------
+
+/** Whether the tutor's voice holds the speech: an answer, or a text a speaker reads (readAloud's `answer`), read or paused. The microphone stays shut meanwhile (mw-rl10piw.74).
+ * A Listen (the passage player, the Verse view's Listen: the Bible's text, as a chapter read is) is not: the wake is heard over it, to pause or stop it. */
+const tutorSpeaks = (): boolean => {
+  const reading = getReading();
+  return reading.status !== 'idle' && reading.answer !== null && reading.listen === null;
+};
+
+let micShut = false;
+const shutListeners = new Set<() => void>();
+
+/** Calls `listener` each time the microphone is shut for the tutor's voice or may open again; returns how to stop. */
+function onMicShut(listener: () => void): () => void {
+  shutListeners.add(listener);
+  return () => shutListeners.delete(listener);
+}
+
+/** Resolves once the tutor's voice no longer holds the speech (at once when it does not). */
+function untilMicMayOpen(): Promise<void> {
+  if (!micShut) return Promise.resolve();
+  return new Promise((resolve) => {
+    const stop = onMicShut(() => {
+      if (micShut) return;
+      stop();
+      resolve();
+    });
+  });
+}
+
+/** The reading changed: when the tutor's voice takes the speech the microphone is shut at once (the wake lets go, a recogniser listening for a command is put down);
+ * when it ends the wake opens again a moment later (a macrotask: a follow-up the answer's end opens takes the microphone first, with no open-and-close of the wake between). */
+function followReading(): void {
+  const shut = tutorSpeaks();
+  if (shut === micShut) return;
+  micShut = shut;
+  if (shut) {
+    logWake('the tutor speaks: no microphone until it has done');
+    putDownRecogniser();
+    shutListeners.forEach((listener) => listener());
+  } else {
+    globalThis.setTimeout(() => {
+      if (!micShut) shutListeners.forEach((listener) => listener());
+    }, 0);
+  }
+}
+
+if (typeof window !== 'undefined') subscribeReading(followReading);
+
+// an answer's voice starts once the wake has let go of the microphone and the phone's audio has settled (at once when none is open)
+setAnswerGate((go) => {
+  followReading();
+  if (micShut) whenMicClosed(go);
+  else go();
+});
+
+/** A command's recogniser listening now (after a wake, or in the follow-up window) is put down as the tutor's voice starts from his tap: the session starts afresh, and its wake
+ * opens when the voice has done. What the wake paused is not gone on with at the close (his tap took the sound over). */
+function putDownRecogniser(): void {
+  const name = session?.state().name;
+  if (name !== 'listening' && name !== 'follow-up') return;
+  takeSound();
+  session?.stop();
+  micLetGo();
+  if (wanted && !isMicBusy()) void session?.start();
+}
+
 // --- the model, fetched once -------------------------------------------------------------------------------------------------------------------
 
 let model: Promise<WakeModel> | null = null;
@@ -225,8 +303,47 @@ const chimePort: ChimePort = {
   close: () => (handsFreeSeam.chime ?? chimes).close(),
 };
 
+/** Opens the wake on the microphone, `loaded` the model: counted open (whenMicClosed) until its stop. */
+async function openWake(loaded: WakeModel, onWake: Parameters<WakePort['start']>[0]): ReturnType<WakePort['start']> {
+  const quietMs = handsFreeSeam.quietMs;
+  const choosing = canChooseInput();
+  if (!choosing) logWake('this browser cannot list its inputs: the wake opens the default microphone');
+  wakesOpen++;
+  let result: Awaited<ReturnType<WakePort['start']>>;
+  try {
+    result = await browserWake({
+      model: loaded,
+      ready: () => chimes.ready(),
+      ...(choosing ? { startWake: (options) => startOnLiveInput(options, quietMs === undefined ? {} : { quietMs }) } : {}),
+    }).start(onWake);
+  } catch (err) {
+    wakeClosed();
+    throw err;
+  }
+  if (!result.ok) {
+    wakeClosed();
+    return result;
+  }
+  // the sentence 'Hands-free off' waits for this stop (whenMicClosed)
+  let stopped = false;
+  return {
+    ...result,
+    stop() {
+      try {
+        result.stop();
+      } finally {
+        if (!stopped) {
+          stopped = true;
+          wakeClosed();
+        }
+      }
+    },
+  };
+}
+
 /** The wake: the model is loaded on the first start (not before), then the kit's browserWake over startWake, which the testing fake takes over in tests; where the
- * browser can list its inputs, startWake is given a live one (wakeInput.ts) rather than opening the default. */
+ * browser can list its inputs, startWake is given a live one (wakeInput.ts) rather than opening the default. While the tutor speaks (micShut) it holds no microphone:
+ * a start waits for the voice to end, and a running wake lets go of its microphone and opens it again after; the session sees one wake throughout. */
 const wake: WakePort = {
   async start(onWake) {
     let loaded: WakeModel;
@@ -235,38 +352,54 @@ const wake: WakePort = {
     } catch (err) {
       return { ok: false, kind: 'other', message: err instanceof Error ? err.message : String(err) };
     }
-    const quietMs = handsFreeSeam.quietMs;
-    const choosing = canChooseInput();
-    if (!choosing) logWake('this browser cannot list its inputs: the wake opens the default microphone');
-    wakesOpen++;
-    let result: Awaited<ReturnType<WakePort['start']>>;
-    try {
-      result = await browserWake({
-        model: loaded,
-        ready: () => chimes.ready(),
-        ...(choosing ? { startWake: (options) => startOnLiveInput(options, quietMs === undefined ? {} : { quietMs }) } : {}),
-      }).start(onWake);
-    } catch (err) {
-      wakeClosed();
-      throw err;
-    }
-    if (!result.ok) {
-      wakeClosed();
-      return result;
-    }
-    // the sentence 'Hands-free off' waits for this stop (whenMicClosed)
+    await untilMicMayOpen();
+    const first = await openWake(loaded, onWake);
+    if (!first.ok) return first;
+    let inner: typeof first | null = first;
     let stopped = false;
-    return {
-      ...result,
-      stop() {
-        try {
-          result.stop();
-        } finally {
-          if (!stopped) {
-            stopped = true;
-            wakeClosed();
-          }
+    let opening = false;
+    /** Holds the microphone when it may (not stopped, the tutor not speaking), else lets it go. */
+    const settle = async (): Promise<void> => {
+      if (opening) return;
+      if (stopped || micShut) {
+        const was = inner;
+        inner = null;
+        was?.stop();
+        return;
+      }
+      if (inner) return;
+      opening = true;
+      let again: Awaited<ReturnType<WakePort['start']>>;
+      try {
+        again = await openWake(loaded, onWake);
+      } catch (err) {
+        again = { ok: false, kind: 'other', message: err instanceof Error ? err.message : String(err) };
+      }
+      opening = false;
+      if (!again.ok) {
+        // the session starts afresh, so its failure is told as any failed start is
+        logWake(`the wake would not open again after the tutor spoke: ${again.kind}, ${again.message}`);
+        if (!stopped && session) {
+          stopped = true;
+          unfollow();
+          session.stop();
+          if (wanted && !isMicBusy()) void session.start();
         }
+        return;
+      }
+      inner = again;
+      void settle();
+    };
+    const unfollow = onMicShut(() => void settle());
+    // the tutor began to speak while it opened
+    if (micShut) void settle();
+    return {
+      ...first,
+      stop() {
+        if (stopped) return;
+        stopped = true;
+        unfollow();
+        void settle();
       },
     };
   },
@@ -430,6 +563,7 @@ export function resetHandsFree(): void {
   forgetWakeInputs();
   wakesOpen = 0;
   closedAt = Number.NEGATIVE_INFINITY;
+  micShut = tutorSpeaks();
   closeWaiters.clear();
   setNotice(null);
   setState(OFF);

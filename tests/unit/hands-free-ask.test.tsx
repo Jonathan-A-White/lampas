@@ -1,9 +1,9 @@
-// tests/unit/hands-free-ask.test.tsx — Hands-free 'ask' (src/handsFree/ask.ts, mw-rl10piw.8) in the cases the feature (features/hands-free-ask.feature) leaves to a unit test: a wake while the answer
-// is spoken stops it and opens a new command; an answer carrying a command that needs his tap speaks its words, runs nothing and leaves the offer in the talk; a tutor that cannot answer
+// tests/unit/hands-free-ask.test.tsx — Hands-free 'ask' (src/handsFree/ask.ts, mw-rl10piw.8) in the cases the feature (features/hands-free-ask.feature) leaves to a unit test: while the answer
+// is spoken the wake word is not heard (no microphone is open, mw-rl10piw.74) and Stop cuts it; an answer carrying a command that needs his tap speaks its words, runs nothing and leaves the offer in the talk; a tutor that cannot answer
 // is said so and the Bible goes on; the sentences and the words after 'ask' as the router makes them; no Reader, no tutor. The whole app is drawn (a Reader answers for its chapter), on the kit's
 // fake wake, the recogniser driven by hand, the honest speech fake, a spy for the chime port and the fake Postern for the tutor.
 import 'fake-indexeddb/auto';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/App';
@@ -139,21 +139,24 @@ describe("the words after 'ask'", () => {
 });
 
 describe('Hands-free ask', () => {
-  it('a wake while the answer is spoken stops the speech and opens a new command', async () => {
+  it('while the answer is spoken no microphone is open, so the wake word is not heard; Stop on the speaking bar cuts it and the wake listens again (mw-rl10piw.74)', async () => {
     await openJohn3();
     const first = await wakeUp();
     await says(first, 'ask who was Nicodemus');
     await untilAnswerIsSpoken();
     await waitFor(() => expect(spoken().join(' ')).toContain(ANSWER), { timeout });
     expect(synth.speaking).toBe(true);
+    // the wake has let go of the microphone: the word said now is heard by nothing, and the answer goes on
+    expect(wake.listening).toBe(false);
     const before = FakeRecognizer.instances.length;
-    act(() => void wake.say());
-    // the speech is cut (the fake's log shows the cancel) and the session is listening for a command
+    expect(wake.say()).toBe(false);
+    expect(synth.speaking).toBe(true);
+    // his tap on Stop cuts it: the exchange closes with no follow-up, and the wake listens again
+    act(() => void within(screen.getByRole('region', { name: 'Speaking' })).getByRole('button', { name: 'Stop' }).click());
     await waitFor(() => expect(synth.speaking).toBe(false), { timeout });
-    expect(synth.calls[synth.calls.length - 1]).toBe('cancel');
-    await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(before), { timeout });
-    act(() => FakeRecognizer.last().open());
-    await waitFor(() => expect(mark()).toBe('listening'));
+    await waitFor(() => expect(wake.listening).toBe(true), { timeout });
+    await waitFor(() => expect(mark()).toBe('waiting'), { timeout });
+    expect(FakeRecognizer.instances.length).toBe(before);
   });
 
   it('an answer carrying a command that needs his tap speaks its words, runs nothing and leaves the offer in the talk', async () => {
@@ -201,18 +204,20 @@ describe('Hands-free ask', () => {
       expect(player()).toHaveAttribute('aria-label', 'Lightning in Clay Pots');
     });
 
-    it('does not start when a wake cut the answer short', async () => {
+    it('does not start when his Stop cut the answer short (the wake word is not heard while the answer is spoken, mw-rl10piw.74)', async () => {
       setSermonSources([sourceOf('tv', 'Test Video', { jhn: [clay] })]);
       await openJohn3(playing);
       const first = await wakeUp();
       await says(first, 'ask play a sermon on this chapter');
       await untilAnswerIsSpoken();
       await waitFor(() => expect(spoken().join(' ')).toContain(SAYS), { timeout });
-      act(() => void wake.say());
+      act(() => void within(screen.getByRole('region', { name: 'Speaking' })).getByRole('button', { name: 'Stop' }).click());
       await waitFor(() => expect(synth.speaking).toBe(false), { timeout });
+      await waitFor(() => expect(wake.listening).toBe(true), { timeout });
       // a real-time wait: a window in which nothing must happen (the sermon must stay unopened)
       await new Promise((resolve) => setTimeout(resolve, 100));
       expect(player()).toBeNull();
+      expect(hasQueuedSermon()).toBe(false);
     });
 
     it('does not start when a wake came before the answer did (the late answer is not a typed one)', async () => {
