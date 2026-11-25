@@ -7,9 +7,9 @@ Derived without a Morpheus cache: hos.
 | Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
 | Hosea 1 | 11 | 263 | 257 | 97.7% | 71.9% | 43 (16.3%) |
-| Hosea 5 | 15 | 286 | 277 | 96.9% | 73.1% | 81 (28.3%) |
-| Hosea 6 | 11 | 168 | 154 | 91.7% | 70.8% | 40 (23.8%) |
+| Hosea 5 | 15 | 286 | 277 | 96.9% | 74.1% | 89 (31.1%) |
+| Hosea 6 | 11 | 168 | 154 | 91.7% | 73.2% | 48 (28.6%) |
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Hosea | 37 | 717 | 688 | 96.0% | 72.1% | 164 (22.9%) |
+| Hosea | 37 | 717 | 688 | 96.0% | 73.1% | 180 (25.1%) |
