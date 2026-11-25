@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.382
+_2026-11-25_
+- Fixed: Resuming a Septuagint Psalm reading now names the verse by the number Lampas shows, not the Greek one.
+- Fixed: The Hebrew word Yah at the end of Hallelujah is now sounded "yah" rather than "yoh" when it is read after the first part.
+- Fixed: In Hosea, tapping a small English word such as "I", "he" or "we" no longer opens a neighbouring Greek word.
+- New: A map now has a Timeline link that opens Bible Mapper's timeline at the time of the chapter, with its credit.
+
 ## 0.7.381
 _2026-11-25_
 - Fixed: In the Septuagint, the English of Deuteronomy 14, Joshua 6, Exodus 25, 35 and 40, Leviticus 6 and 8, and Numbers 9, 21 and 27 now stands beside the Greek verse it translates instead of one verse off.

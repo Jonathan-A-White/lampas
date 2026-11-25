@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.382",
+    "date": "2026-11-25",
+    "story": "mw-5r3p30.1240",
+    "kind": "fixed",
+    "text": "Resuming a Septuagint Psalm reading now names the verse by the number Lampas shows, not the Greek one."
+  },
+  {
+    "version": "0.7.382",
+    "date": "2026-11-25",
+    "story": "mw-fnvjof.17.184",
+    "kind": "fixed",
+    "text": "The Hebrew word Yah at the end of Hallelujah is now sounded \"yah\" rather than \"yoh\" when it is read after the first part."
+  },
+  {
+    "version": "0.7.382",
+    "date": "2026-11-25",
+    "story": "mw-u2w5klk.349.121",
+    "kind": "fixed",
+    "text": "In Hosea, tapping a small English word such as \"I\", \"he\" or \"we\" no longer opens a neighbouring Greek word."
+  },
+  {
+    "version": "0.7.382",
+    "date": "2026-11-25",
+    "story": "mw-fnvjof.17.287",
+    "kind": "new",
+    "text": "A map now has a Timeline link that opens Bible Mapper's timeline at the time of the chapter, with its credit."
+  },
+  {
     "version": "0.7.381",
     "date": "2026-11-25",
     "story": "mw-u2w5klk.349.130",
