@@ -1138,14 +1138,21 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
-  Scenario('A table the tutor links in a talk over a drill is no chip, which would leave the drill', ({ Given, When, And, Then }) => {
+  Scenario('A table the tutor links in a talk over a drill opens over the drill, which stays', ({ Given, When, And, Then }) => {
     Given('a phone with a licence and a fake Postern whose answer links the table {string}, the verse {string} and a copy of {string}', licensedPhoneLinking);
     And('Drill it is open there on the idea {string}', (_, ideaId: string) => drawDrillIt(ideaId));
     When('he asks the tutor about the drill', askTheTutor);
     Then("the tutor's answer has the Copy chip of {string}", answerHasCopyChip);
-    And('the answer has no {string} chip and no chip that opens the Reader', (_, table: string) => {
-      expect(chipNames()).not.toContain(table);
+    And('the answer has no chip that opens the Reader', () => {
       expect(chipNames().filter((name) => /in Lampas$/.test(name))).toEqual([]);
+    });
+    When("he taps the answer's {string} chip", async (_, name: string) => {
+      expect(chipNames()).toContain(name);
+      await user.click(screen.getByRole('button', { name }));
+    });
+    Then('the table {string} is open over the talk', async (_, name: string) => {
+      const layer = await screen.findByRole('dialog', { name });
+      expect(within(layer).getByTestId('paradigm-table')).toBeInTheDocument();
     });
     And("the page's address is as it was", () => {
       expect(window.location.hash).toBe('');

@@ -232,14 +232,17 @@ Feature: A wrong answer links to what teaches it
     And the lesson has no "Mark known without a drill", though its level reads "Frontier" and the idea "declension-1" is not solid
     And the end card still shows its "Study list"
 
-  # the tutor may answer with a link to a table, a verse or a setting, each a page of its own: in a talk over a drill those chips are not drawn, and the links that open
-  # another app or copy a text still are
-  Scenario: A table the tutor links in a talk over a drill is no chip, which would leave the drill
+  # the tutor may answer with a link to a table, a verse or a setting, each a page of its own: in a talk over a drill the verse's and the setting's chips are not drawn, and the
+  # links that open another app or copy a text still are. A table's chip is drawn and opens the table as a layer over the talk, so the drill stays (mw-5r3p30.1248: his
+  # answer said 'Tap the link below' and no table chip was drawn under it)
+  Scenario: A table the tutor links in a talk over a drill opens over the drill, which stays
     Given a phone with a licence and a fake Postern whose answer links the table "article", the verse "1 John 2:1" and a copy of "1 John 2:2"
     And Drill it is open there on the idea "article"
     When he asks the tutor about the drill
     Then the tutor's answer has the Copy chip of "1 John 2:2"
-    And the answer has no "Table: The article" chip and no chip that opens the Reader
+    And the answer has no chip that opens the Reader
+    When he taps the answer's "Table: The article" chip
+    Then the table "The article" is open over the talk
     And the page's address is as it was
     And the drill is still on its first question
 

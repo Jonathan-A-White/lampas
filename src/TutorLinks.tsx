@@ -173,7 +173,7 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
   const [layer, setLayer] = useState<Paradigm | null>(null);
   // a chip that opens a page of this app (the Reader, Settings, a table, the Maps screen) leaves the screen the talk is over: in a talk over a run (a drill's floating ?, the
   // lesson's, a miss's Ask the tutor) the one guard gives nothing for it and the chip is not drawn (src/overRun.ts, mw-indx1x6.57). The chips that open another app or a new tab,
-  // Copy and Share leave nothing, and stay.
+  // Copy and Share leave nothing, and stay; a table's chip stays too, and opens the table as a layer over the talk (mw-5r3p30.1248).
   const offRun = useOffRun();
   if (!chosen || bibles === undefined || owned === undefined || works === undefined || shelf === undefined || !strongs || level === undefined) return null;
   if (place && shown.some((l) => l.kind === 'map') && mapCards === undefined) return null;
