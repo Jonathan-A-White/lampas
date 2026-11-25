@@ -1,0 +1,8 @@
+﻿TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY												
+A slice for tests (mw-u2w5klk.349.137): the section of the condensed data for Amo.6:10-6:14, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge).
+#DataStart(Condensed)
+$Amo.6:10-6:14	English KJV	Hebrew	Latin	Greek								
+TEST: If...	Amo.6:14=Last	Amo.6:14=Last	Amo.6:15=Last	Amo.6:14=Last								
+SubdividedVerse	Amo.6:10	Amo.6:10	Amo.6:10-11	Amo.6:10								
+OneToOne	Amo.6:11-14	Amo.6:11-14	Amo.6:12-15	Amo.6:11-14								
+#DataEnd(Condensed)

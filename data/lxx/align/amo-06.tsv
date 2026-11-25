@@ -63,28 +63,59 @@ Amo.6:9	4	men	-		0.80
 Amo.6:9	5	house,	6		0.80
 Amo.6:9	5	that they shall	8		0.80
 Amo.6:10	1	But a remnant shall be left behind,	-		0.80
-Amo.6:10	2	relations shall	-		0.80
-Amo.6:10	3	shall strenuously endeavor to	7		0.80
+Amo.6:10	2	their relations shall	-		0.80
+Amo.6:10	3	shall strenuously endeavor to	7,8		0.80
 Amo.6:10	4	forth	-		0.80
 Amo.6:10	4	their	-		0.80
 Amo.6:10	5	one shall	-		0.80
 Amo.6:10	6	to	-		0.80
 Amo.6:10	7	of	-		0.80
-Amo.6:10	8	Is there	22		0.80
+Amo.6:10	8	Is there	22,24		0.80
 Amo.6:10	8	yet	23		0.80
-Amo.6:10	8	any one else	24		0.80
-Amo.6:11	1	he shall say, No one else.	-		0.80
-Amo.6:11	2	the other shall say, Be silent, that you name not	-		0.80
-Amo.6:11	3	of	-		0.80
-Amo.6:12	1	behold, the Lord commands, and he will strike the great house	-		0.80
-Amo.6:12	2	breaches,	-		0.80
-Amo.6:12	3	the	-		0.80
-Amo.6:13	1	Will horses run	-		0.80
-Amo.6:13	2	rocks? will they refrain from neighing at mares? for you⌃	-		0.80
-Amo.6:13	3	turned judgment into poison, and the fruit of righteousness into bitterness:	-		0.80
-Amo.6:14	1	who rejoice at vanity, who	-		0.80
-Amo.6:14	2	Have	-		0.80
-Amo.6:14	3	possessed horns by our own strength?	-		0.80
+Amo.6:10	8	any one else	-		0.80
+Amo.6:10	9	shall	-		0.80
+Amo.6:10	10	one else.	30		0.80
+Amo.6:10	11	the other shall	-		0.80
+Amo.6:10	12	Be	-		0.80
+Amo.6:10	13	that	34,35		0.80
+Amo.6:10	13	you	-		0.80
+Amo.6:10	14	of the	-		0.80
+Amo.6:11	1	For,	0		0.80
+Amo.6:11	2	the	-		0.80
+Amo.6:11	3	he will	-		0.80
+Amo.6:11	4	with	-		0.80
+Amo.6:11	5	little	15		0.80
+Amo.6:11	6	with rents.	16		0.80
+Amo.6:12	1	Will	0		0.80
+Amo.6:12	2	upon	2		0.80
+Amo.6:12	3	will	5		0.80
+Amo.6:12	3	they refrain from neighing	6		0.80
+Amo.6:12	3	at	7		0.80
+Amo.6:12	3	mares?	8		0.80
+Amo.6:12	4	you⌃ have turned	10		0.80
+Amo.6:12	5	poison,	12		0.80
+Amo.6:12	6	the	-		0.80
+Amo.6:12	7	of	-		0.80
+Amo.6:13	1	you⌃ who	0		0.80
+Amo.6:13	1	rejoice	1		0.80
+Amo.6:13	1	at	2		0.80
+Amo.6:13	1	vanity,	3,4		0.80
+Amo.6:13	1	who	5		0.80
+Amo.6:13	2	possessed	-		0.80
+Amo.6:13	3	our own	-		0.80
+Amo.6:14	1	For	0		0.80
+Amo.6:14	2	O	-		0.80
+Amo.6:14	3	of	-		0.80
+Amo.6:14	4	will	-		0.80
+Amo.6:14	5	up	-		0.80
+Amo.6:14	6	a	-		0.80
+Amo.6:14	7	the	-		0.80
+Amo.6:14	8	of	-		0.80
+Amo.6:14	9	they shall	-		0.80
+Amo.6:14	10	so that	16		0.80
+Amo.6:14	10	you⌃ shall	-		0.80
+Amo.6:14	11	it were from	-		0.80
+Amo.6:14	12	of	-		0.80
 Amo.6:1	fix	to	1		0.80
 Amo.6:1	fix	in the	7,8		0.80
 Amo.6:1	fix	they have gathered the harvest	11		0.80
@@ -100,6 +131,14 @@ Amo.6:7	fix	shall be cut off	9		0.80
 Amo.6:9	fix	it shall come to pass,	1		0.80
 Amo.6:9	fix	left	3,11		0.80
 Amo.6:9	fix	ten men	4		0.80
-Amo.6:10	fix	their relations shall	2,3,4		0.80
+Amo.6:10	fix	their relations shall	2,3,4,5		0.80
+Amo.6:10	fix	them,	-		0.80
+Amo.6:10	fix	carry forth	9		0.80
+Amo.6:10	fix	one shall say	17		0.80
 Amo.6:10	fix	their bones	10,11,12		0.80
 Amo.6:10	fix	house,	21		0.80
+Amo.6:10	fix	he shall say,	28		0.80
+Amo.6:10	fix	Be silent,	33		0.80
+Amo.6:13	fix	Have we not possessed	7,12		0.80
+Amo.6:13	fix	our own	11		0.80
+Amo.6:14	fix	will raise up	3		0.80

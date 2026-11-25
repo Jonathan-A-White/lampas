@@ -317,6 +317,9 @@ export const SUPPLEMENT_ROWS: readonly TvtmsRow[] = [
  * - Num 9: LXX2012's 9:18 holds the Greek 18 and 19, its 19-22 are the Greek 20-23.
  * - Num 21: LXX2012's 21:19 holds the Greek 19 and 20, its 20 is the Greek 21 and its 21 and 22 are both in the Greek 22.
  * - Num 27: LXX2012's 27:3 holds the Greek 3 and 4, its 4-6 are the Greek 5-7 and its 7 and 8 are both in the Greek 8.
+ * mw-u2w5klk.349.137, each read against Swete's verses (the table's section Amo.6:10-6:14 has no Brenton column):
+ * - Amos 6: LXX2012 has 15 verses and Swete 14: its 6:10 and 6:11 are both in the Greek 10, its 12-15 are the Greek 11-14.
+ * - Judg 5: LXX2012's 5:32 ('And the land had rest forty years') ends the Greek 5:31, so its 31 and 32 are both the Greek 31.
  */
 export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Psa.10:Title', 'Absent [=Psa.10:1]'],
@@ -360,6 +363,9 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Num.27:3', 'Num.27:3-4'],
   ['Num.27:4-6', 'Num.27:5-7'],
   ['Num.27:7-8', 'Num.27:8'],
+  ['Amo.6:10-11', 'Amo.6:10'],
+  ['Amo.6:12-15', 'Amo.6:11-14'],
+  ['Jdg.5:31-32', 'Jdg.5:31'],
 ].map(([lxx2012, greek]) => ({ section: 'LXX2012', type: 'OneToOne', cells: { 'Brenton (LXX2012)': lxx2012, Greek: greek } }));
 
 /** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows; Exo.35:8-35:27's rows leave LXX2012's 35:8-19 where the Greek has them). */
