@@ -6,7 +6,7 @@ export type { Word, WordOutcome, WordState } from './words';
 export { GREEK_START_KEY, HEBREW_START_KEY, getGreekInterest, getHebrewInterest, getInterestLevels, getLanguages, holdsAReader, placeGreekInterest, placeInterest, raiseGreekInterest, raiseHebrewInterest, setGreekInterest, setHebrewInterest, setLanguages } from './greekInterest';
 export { getIpaProgress, learnIpaSound, noteIpaAnswer, passIpaCheck, startIpaCourse } from './ipaCourse';
 export { getHardSoundsDone, markHardSoundDone } from './hardSounds';
-export { DIAGRAM_VERSION, getDiagram, keepDiagram } from './diagrams';
+export { DIAGRAM_VERSION, getDiagram, holdsVocative, keepDiagram, keptVersion } from './diagrams';
 export { chooseReading, deleteSet, getActiveSet, listReadingSets, MINE_NAME, renameSet, saveSetAs, setActive } from './readingSets';
 export type { ReadingSetRow } from './readingSets';
 export { getPairRuns, recordPairRun, savePairRun } from './pairDrills';
