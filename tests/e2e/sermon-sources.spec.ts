@@ -8,6 +8,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { EXCLUDED_RULES } from '../support/axe-excluded';
+import { LOGOS_RESOURCES } from '../../src/data/logosSermonResources';
 import { CATALOGUE, CATALOGUE_VERSION, KINDS } from '../../src/resources/catalogue';
 import { EVERY_LOGOS_SERMON, keepImport } from './keep-import';
 import { keepSettings } from './keep-settings';
@@ -22,8 +23,11 @@ const TOTAL = 120;
 const UNDER = new Set(EVERY_LOGOS_SERMON);
 /** The Logos books of the list: the sermon books no list stands for, and the books of another kind that also hold sermons. */
 const BOOKS = CATALOGUE.filter((e) => (e.kind === 'sermons' && !UNDER.has(e.resource)) || (e.kind !== 'sermons' && e.alsoSermons === true));
-/** The bundled passage lists (public/sermons/index.json): two on the web, which start On, and the ones made from Logos books, which start Off. */
-const BUNDLED = (JSON.parse(readFileSync('public/sermons/index.json', 'utf8')) as { sources: { id: string }[] }).sources.map((s) => s.id);
+/** The bundled passage lists (public/sermons/index.json): the ones on the web, two of which start On, and the ones made from Logos books, which start Off. */
+const BUNDLED_SOURCES = (JSON.parse(readFileSync('public/sermons/index.json', 'utf8')) as { sources: { id: string; onByDefault?: boolean }[] }).sources;
+const BUNDLED = BUNDLED_SOURCES.map((s) => s.id);
+/** The bundled lists that open on the web (those that name no Logos book), read from the bundle so that a list it gains is counted here with no edit (mw-fnvjof.17.304). */
+const WEB = BUNDLED_SOURCES.filter((s) => !LOGOS_RESOURCES[s.id]);
 const TOWNS = ['Ashford', 'Brookfield', 'Carlow', 'Dunmore', 'Easton', 'Fairhaven', 'Glenrock', 'Harlow', 'Inverness', 'Kingsbridge'];
 const HOUSES = ['Baptist Church', 'Bible Chapel', 'Community Church', 'Presbyterian Church', 'Gospel Hall', 'Free Church'];
 /** The lists of the sermon index service that bring the list to 120, as the phone keeps them (src/data/repositories/sermonSources.ts); every ninth starts On. */
@@ -32,7 +36,7 @@ const FILL = Array.from({ length: TOTAL - BUNDLED.length - BOOKS.length }, (_, i
   return { id: `fill-${i}`, name, credit: name, homepage: `https://fill-${i}.example`, onByDefault: i % 9 === 0 };
 });
 const LISTS = BUNDLED.length + FILL.length;
-/** The lists that are on when the page opens: the two web lists, the two Logos lists switched On below, and the service's lists that start On. */
+/** The lists that are on when the page opens: the two web lists that start On, the two Logos lists switched On below, and the service's lists that start On. */
 const LISTS_ON = 2 + 2 + FILL.filter((s) => s.onByDefault).length;
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
@@ -104,7 +108,7 @@ const toTop = (page: Page) => page.locator('.screen').evaluate((box) => void (bo
 /** The bar at the top of the screen: the one that holds the screen's title. */
 const headerOf = (page: Page) => page.locator('header').filter({ has: page.getByRole('heading', { level: 1 }) });
 
-/** A phone as the Tester's (mw-qtu3zvz.145): Logos On and an import that holds every sermon book, no switch touched, so the two lists on the web are the only sources On. The sermon index service is refused. */
+/** A phone as the Tester's (mw-qtu3zvz.145): Logos On and every sermon book listed (no import narrows them), no switch touched, so the two lists on the web that start On are the only sources On. The sermon index service is refused. */
 async function hisPhone(page: Page): Promise<void> {
   await page.route('https://sermons.allmymind.org/**', (route) => route.abort());
   await openUnlocked(page);
@@ -441,16 +445,21 @@ test('a double tap on All off, or on These 2 off after a search, turns them off 
   await expect(undo).toHaveCount(0);
   await expect(page.locator('[data-source="sermons.spurgeon-ccel"]').getByRole('radio', { name: 'On', exact: true })).toHaveAttribute('aria-checked', 'true');
 
-  // the same with a search typed: the two lists on the web
+  // the same with a search typed: the lists on the web, of which the two that start On are the rows the tap turns Off
   await page.getByRole('searchbox', { name: 'Search sermon sources' }).fill('on the web');
-  await expect(line).toHaveText(`2 of ${total} on · 2 shown`);
+  await expect(line).toHaveText(`2 of ${total} on · ${WEB.length} shown`);
+  await expect(page.locator('[data-source]')).toHaveCount(WEB.length);
   await page.getByRole('button', { name: 'These 2 off', exact: true }).dblclick({ delay: 30 });
-  await expect(line).toHaveText(`none of ${total} on · 2 shown`);
+  await expect(line).toHaveText(`none of ${total} on · ${WEB.length} shown`);
   await expect(undo).toContainText('Turned off 2.');
   await expect(page.getByRole('button', { name: 'These 0 off', exact: true })).toHaveAttribute('aria-disabled', 'true');
   await page.getByRole('button', { name: 'These 0 off', exact: true }).click({ force: true });
   await expect(undo).toContainText('Turned off 2.');
   await undo.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(line).toHaveText(`2 of ${total} on · 2 shown`);
-  await expect(page.locator('[data-source] [role="radio"][aria-checked="true"]')).toHaveText(['On', 'On']);
+  await expect(line).toHaveText(`2 of ${total} on · ${WEB.length} shown`);
+  // Undo puts back the two that were On, and leaves every other list on the web Off
+  for (const source of WEB) {
+    const state = source.onByDefault === false ? 'Off' : 'On';
+    await expect(page.locator(`[data-source="sermons.${source.id}"]`).getByRole('radio', { name: state, exact: true })).toHaveAttribute('aria-checked', 'true');
+  }
 });
