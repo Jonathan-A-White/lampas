@@ -4,6 +4,7 @@ import { searchTalks } from 'voice-kit/talks';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { addTurn, searchConversations } from '../../src/data/repositories';
+import { markLinksUndrawn } from '../../src/data/repositories/talks';
 import { bibleTalks, conversationSearch } from '../../src/data/repositories/talkReader';
 
 beforeEach(() => db.talks.clear());
@@ -78,5 +79,19 @@ describe('searchTalks over bibleTalks', () => {
     const [hit] = await searchTalks(bibleTalks, 'grace', conversationSearch);
     expect(hit?.matchCount).toBe(2);
     expect(hit?.matches.map((m) => m.turn)).toEqual([0, 2]);
+  });
+
+  it('does not match or quote the sentence that promises a link when the turn drew none (mw-fnvjof.17.330)', async () => {
+    const says = 'Open the setting to change it. Tap the link below to go there.';
+    const id = await addTurn('screen.drill-it', 'Bigger text?', says, [], 1000);
+    // not yet marked: the words as written
+    expect((await searchTalks(bibleTalks, 'link', conversationSearch)).map((h) => h.id)).toEqual(['screen.drill-it']);
+    await markLinksUndrawn(id, true);
+    expect(await searchTalks(bibleTalks, 'link', conversationSearch)).toEqual([]);
+    expect(await searchConversations('link below')).toEqual([]);
+    const [hit] = await searchTalks(bibleTalks, 'setting', conversationSearch);
+    expect(hit?.matches.map((m) => m.snippet).join('\n')).not.toMatch(/link below/);
+    // the stored words stay on the turn
+    expect((await bibleTalks.get('screen.drill-it'))?.turns[1]?.text).toBe(says);
   });
 });
