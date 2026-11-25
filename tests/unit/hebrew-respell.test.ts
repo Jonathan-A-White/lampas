@@ -80,6 +80,12 @@ describe('the Israeli respelling', () => {
       }
   });
 
+  it('says the qamats before a final he with a mappiq as a, stressed or not (יָהּ after a maqaf is yah, not yoh)', () => {
+    expect(israeli.respell('הַלְלוּ־יָהּ')).toMatch(/-yah$/);
+    expect(israeli.respell('יָהּ')).toBe('yah');
+    expect(israeli.respell('כָּל־בָּהּ')).toBe('kol-bah');
+  });
+
   it('leaves English and Greek alone', () => {
     expect(israeli.respell('word')).toBe('word');
   });

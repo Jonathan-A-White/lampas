@@ -254,8 +254,8 @@ function textOf(s: Syllable, stressed: boolean): string {
   if (s.glide) vowel = s.glide;
   else if (s.vowel === 'shewa') vowel = s.medial ? 'eh' : 'e';
   else if (s.vowel === 'a') vowel = 'a';
-  // a qamats in a closed syllable that is not stressed is the o of 'kol' (the qamats qatan)
-  else if (s.vowel === 'qamats' && closed && !stressed && !s.meteg) vowel = 'o';
+  // a qamats in a closed syllable that is not stressed is the o of 'kol' (the qamats qatan), but not before a final he with a mappiq (יָהּ is 'yah' after a maqaf too, mw-fnvjof.17.184)
+  else if (s.vowel === 'qamats' && closed && !stressed && !s.meteg && s.coda !== 'h') vowel = 'o';
   else vowel = VOWEL_TEXT[s.vowel][closed ? 'closed' : 'open'];
   return s.onset + vowel + s.coda;
 }
