@@ -141,6 +141,7 @@ describe.skipIf(!real.run)('Amos with the model pass', () => {
     expect(joined(verse(10))).toContain('you name not the name of the Lord.');
     expect(joined(verse(11))).toMatch(/^For, behold,.*the little house with rents\.$/);
     expect(joined(verse(14))).toContain('I will raise up against you a nation');
+    expect(greek(6, 10, /^Is there/)).toEqual(['Εἰ', 'ὑπάρχει']);
     expect(greek(6, 11, /great/)).toContain('μέγαν');
     expect(greek(6, 12, /horses/)).toContain('ἵπποι;');
     expect(greek(6, 13, /horns/)).toContain('κέρατα;');

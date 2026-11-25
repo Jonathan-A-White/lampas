@@ -120,7 +120,7 @@
     },
     "6": {
       "gaps": 0,
-      "model": 9,
+      "model": 11,
       "leftovers": [
         ["6:2:house", "greek-in-the-verse-before"],
         ["6:2:israel", "greek-in-the-verse-before"],
@@ -128,7 +128,9 @@
         ["6:6:occasion", "supplied-word"],
         ["6:8:saying", "supplied-word"],
         ["6:10:behind", "greek-in-the-verse-before"],
+        ["6:10:else", "supplied-word"],
         ["6:10:left", "greek-in-the-verse-before"],
+        ["6:10:one", "supplied-word"],
         ["6:10:other", "supplied-word"],
         ["6:10:remnant", "greek-in-the-verse-before"]
       ],
