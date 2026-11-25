@@ -13,7 +13,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Recording: Majority Standard Bible](https://openbible.com/audio.htm)**, read by David, streamed from openbible.com. Public downloads. Changes: our timings ([wav2vec 2.0](https://docs.pytorch.org/audio/stable/generated/torchaudio.pipelines.WAV2VEC2_ASR_LARGE_LV60K_960H.html), [bsb-align](https://github.com/BSB-publishing/bsb-align); MIT).
 - **[Berean Standard Bible tables](https://berean.bible/licensing.htm).** Public domain. Hebrew: Westminster Leningrad Codex. Changes: pairs fixed, poetry lines.
 - **[Tyndale House's TBESG, TBESH, TIPNR and TVTMS, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House,
-  Cambridge. Greek and Hebrew words, their definitions and parts, TAGNT's variants, the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the verse map. Changes: first entry per Strong's number; cut near 300 letters.
+  Cambridge. Greek and Hebrew words and parts, TAGNT's variants, the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the verse map. Changes: first entry per Strong's number; cut near 300 letters.
 - **[TAGNT and TBESG, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The
   [Septuagint derivation](https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md) learns from them. Changes: applied to the Septuagint by Lampas's derivation.
 - **[Swete's Septuagint, from eliranwong's LXX-Swete](https://github.com/eliranwong/LXX-Swete-1930)**. Public domain; packaging
