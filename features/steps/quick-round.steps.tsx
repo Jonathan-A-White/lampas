@@ -23,13 +23,31 @@ import { stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { storedId } from '../../src/data/grammar/soundScope';
 import { seedHisWords } from '../../tests/support/his-words';
 import { closeDatabase } from './close-database';
+import { afterTurns } from '../../tests/support/turns';
 
 let synth: FakeSynth;
 
+/** The guard's moment (src/ui/settle.ts) is judged by performance.now(): a step that reads a question "for a moment" moves that clock on by the moment, with no sleep.
+ * The clock only ever moves forward, and stays moved until the file ends, so a card drawn after a move is not newer than its own start. */
+let skew = 0;
+const realNow = performance.now.bind(performance);
+const pageClock = vi.spyOn(performance, 'now').mockImplementation(() => realNow() + skew); // clock: the page's performance.now() plus the step's own skew
+
+// every run of the App's startup writes (src/data/startupWrites.ts, started with nobody waiting) is kept, so the file waits for them: one still running when the database is closed
+// logs a closed-database trace, and one that lands late writes into the next scenario (mw-ar5k42b.31)
+const startupRuns = vi.hoisted((): Promise<void>[] => []);
+vi.mock('../../src/data/startupWrites', async (original) => {
+  const real = await original<typeof import('../../src/data/startupWrites')>();
+  return { ...real, startBackgroundWrites: () => { const run = real.startBackgroundWrites(); startupRuns.push(run); return run; } };
+});
+
 afterAll(async () => {
+  pageClock.mockRestore();
+  await Promise.allSettled(startupRuns);
   settle.ms = 0;
   cleanup();
   clearBus();
+  await afterTurns(); // a read the last screen began is answered before the database closes
   await closeDatabase();
   vi.unstubAllGlobals();
 });
@@ -172,7 +190,9 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(screen.getByRole('button', { name }));
     });
     Then('the quick round says {string}', roundSays);
-    When('he reads the question for a moment', () => new Promise<void>((resolve) => setTimeout(resolve, SETTLE_MS + 50)));
+    When('he reads the question for a moment', () => {
+      skew += SETTLE_MS + 50; // clock: the moment a new card ignores taps passes
+    });
     And('he taps {string}', taps);
     Then('the item {string} has no level', async (_, name: string) => expect(await rowOf(name)).toBeUndefined());
     And('the end card names the gaps {string}', gaps);

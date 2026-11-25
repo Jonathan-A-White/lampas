@@ -1,7 +1,7 @@
 // features/steps/read-span.steps.tsx — runs features/read-span.feature: the Play to setting (End of the book, End of the Bible)
 // and how far the header's Play goes. speech synthesis is the honest fake of tests/support/fake-speech.ts.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -17,6 +17,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../te
 import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings, querySettingsHeading } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
+import { afterTurns } from '../../tests/support/turns';
 
 const fileOf = (path: string): Chapter => JSON.parse(readFileSync(`public/data/${path}.json`, 'utf8')) as Chapter;
 const CHAPTERS: Record<string, Chapter> = { 'rom/8': fileOf('rom/8'), 'rom/9': fileOf('rom/9'), 'rev/22': fileOf('rev/22'), '2jn/1': fileOf('2jn/1'), '3jn/1': fileOf('3jn/1') };
@@ -235,7 +236,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('nothing more is spoken', expectNothingMore);
     And('the reading bar is gone', () => expect(bar()).toBeNull());
     And('the Reader does not start Romans 9', async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await act(async () => { await afterTurns(); });
       expectNothingMore();
       expect(read).toEqual([39]);
     });

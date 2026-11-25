@@ -2,7 +2,7 @@
 // Ask the tutor is kept whole, sent whole up to 4000 characters, and past that stays in the box with the reason it cannot go. Postern is a fake
 // (tests/support/fake-postern.ts); a paste is user-event's paste, which hands the box the whole text at once.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -20,6 +20,7 @@ import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, TALK_ANSWER, type Fak
 import { seedHisWords } from '../../tests/support/his-words';
 import { openTutor } from './open-tutor';
 import { closeDatabase } from './close-database';
+import { afterTurns } from '../../tests/support/turns';
 
 afterAll(async () => {
   cleanup();
@@ -92,8 +93,8 @@ describeFeature(feature, ({ Scenario }) => {
     expect(question).toBe(prayer(length).trim());
   };
   const nothingSent = async () => {
-    // give a send that should not happen the time to happen
-    await new Promise((r) => setTimeout(r, 100));
+    // give a send that should not happen the turns to happen
+    await act(async () => { await afterTurns(); });
     expect(fake.received).toHaveLength(0);
   };
 

@@ -30,7 +30,6 @@ afterAll(async () => {
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const AT = { clientX: 100, clientY: 700 };
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 let fake: FakePostern;
 let synth: FakeSynth;
 
@@ -185,7 +184,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given(opened, openAnswerBeingRead);
     When("he holds the sheet's Hold to talk bar", async () => {
       await user.pointer({ keys: '[MouseLeft>]', target: within(sheet()).getByRole('button', { name: 'Hold to talk' }), coords: AT });
-      await sleep(100);
+      await waitFor(() => expect(getReading().status).toBe('paused'));
     });
     Then('the answer is paused, not ended', notEnded);
   });
@@ -260,10 +259,17 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given(opened, openAnswerBeingRead);
     And(firstDone, finishFirst);
     When('he taps the Hebrew word {string} and again <gap> ms later where it was', async (_, word: string) => {
-      await user.click(hebrewWord(word));
-      await sleep(Number(row.gap));
-      // the guide's dim backdrop now covers the spot where the word was
-      await user.click(backdrop());
+      // the app's guard moments are judged by performance.now(): the clock stands still for the first tap and for the second, which comes `gap` ms after it by that clock, whatever the host's load
+      const first = performance.now();
+      const clock = vi.spyOn(performance, 'now').mockReturnValue(first); // clock: the step's own hands for the two taps
+      try {
+        await user.click(hebrewWord(word));
+        clock.mockReturnValue(first + Number(row.gap)); // clock: the gap between the two taps
+        // the guide's dim backdrop now covers the spot where the word was
+        await user.click(backdrop());
+      } finally {
+        clock.mockRestore();
+      }
     });
     Then('the answer is paused, not ended', notEnded);
     And(paused, showsPaused);

@@ -1,9 +1,9 @@
 // features/steps/fresh-install.steps.tsx — runs features/fresh-install.feature (mw-5r3p30.385): a new install starts with none of
 // the Governor's progress, and a phone that already has data keeps every row of it.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, expect } from 'vitest';
+import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
@@ -15,8 +15,17 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { findMenuButton, openTool } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
+// every run of the App's startup writes (src/data/startupWrites.ts, started with nobody waiting) is kept, so the file waits for them: one still running when the database is closed
+// logs a closed-database trace, and one that lands late writes into the next scenario (mw-ar5k42b.31)
+const startupRuns = vi.hoisted((): Promise<void>[] => []);
+vi.mock('../../src/data/startupWrites', async (original) => {
+  const real = await original<typeof import('../../src/data/startupWrites')>();
+  return { ...real, startBackgroundWrites: () => { const run = real.startBackgroundWrites(); startupRuns.push(run); return run; } };
+});
+
 afterAll(async () => {
   cleanup();
+  await Promise.allSettled(startupRuns);
   await closeDatabase();
 });
 
@@ -43,9 +52,9 @@ async function snapshot(): Promise<Record<string, string>> {
 
 let before: Record<string, string> = {};
 
-/** Lets the first-open seeding chain run to its end: it is a few small transactions, started by App's first effect. */
+/** Lets the first-open seeding chain run to its end: it is a few small transactions, started by App's first effect (startBackgroundWrites), which this waits for itself. */
 async function settle(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  await act(async () => { await Promise.allSettled(startupRuns); });
 }
 
 async function openFresh(): Promise<void> {

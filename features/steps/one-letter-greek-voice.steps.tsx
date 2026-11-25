@@ -25,12 +25,10 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { stayDownPastLongPress } from '../../tests/support/finger-down';
 import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)); // clock: a press's own hold time: sleep() is used only by press()
-/** past the app's 500 ms hold */
-const HOLD_MS = 650;
 
 /** What a Greek voice says for a letter handed to it alone: its name (his phone said 'Omicron' for 'ό'; espeak-ng's el says 'omikron tonos'). */
 const LETTER_NAMES: Readonly<Record<string, string>> = {
@@ -135,10 +133,9 @@ const verseEl = (n: number): HTMLElement => {
 const ideaSheet = () => screen.getByRole('dialog', { name: 'Idea' });
 const lastSpoken = () => synth.spoken[synth.spoken.length - 1];
 
-/** Finger down on `el`, held `ms`, then lifted. */
-async function press(el: HTMLElement, ms: number): Promise<void> {
-  await user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } });
-  await sleep(ms);
+/** Finger down on `el`, held past the app's hold (stayDownPastLongPress), then lifted. */
+async function press(el: HTMLElement): Promise<void> {
+  await stayDownPastLongPress(() => user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } }));
   await user.pointer({ keys: '[/MouseLeft]', target: el, coords: { clientX: 100, clientY: 100 } });
 }
 
@@ -239,7 +236,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => open());
     And('he opens "<chapter>" in Greek', () => openChapterInGreek(String(row.chapter), Number(row.verse)));
     When('he long presses the word "<word>" in verse <verse>', async () => {
-      await press(within(verseEl(Number(row.verse))).getByRole('button', { name: String(row.word) }), HOLD_MS);
+      await press(within(verseEl(Number(row.verse))).getByRole('button', { name: String(row.word) }));
     });
     Then('he hears "<sound>", not "<name>"', () => hears(String(row.sound), String(row.name)));
     And(`the phone's Greek voice is handed "<form>" and no clip plays`, () => formAndNoClip(String(row.form)));

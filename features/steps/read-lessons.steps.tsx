@@ -21,6 +21,7 @@ import { pairsAsConsonant } from '../../tests/support/lone-word';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
+import { afterTurns } from '../../tests/support/turns';
 
 const feature = await loadFeature('features/read-lessons.feature');
 const user = userEvent.setup();
@@ -148,9 +149,7 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     Then('the phone has spoken nothing', async () => {
       // the sheet has drawn and the setting has been read before this is judged
       await screen.findByTestId('idea-what');
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      });
+      await act(async () => { await afterTurns(); });
       expect(engine().spoken).toEqual([]);
     });
     When('he taps Read aloud', () => user.click(speaker('Read aloud')));
