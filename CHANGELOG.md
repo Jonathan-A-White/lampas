@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.381
+_2026-11-25_
+- Fixed: In the Septuagint, the English of Deuteronomy 14, Joshua 6, Exodus 25, 35 and 40, Leviticus 6 and 8, and Numbers 9, 21 and 27 now stands beside the Greek verse it translates instead of one verse off.
+- Fixed: the chapter and how far through it you are now stay at the bottom of the Reader whether or not the Immersive reader's bars are showing.
+
 ## 0.7.379
 _2026-11-25_
 - Fixed: In Hands-free, the tutor's spoken answers (and the speaker on an answer) now play whole at normal volume: the microphone stays off while the tutor speaks, so tap Stop to cut an answer short.
