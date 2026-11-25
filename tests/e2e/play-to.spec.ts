@@ -4,6 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, spoken } from '../support/honest-fakes';
+import { noRecording } from './no-recording';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -44,9 +45,10 @@ async function keep(page: Page, values: Record<string, string>) {
   );
 }
 
-/** A licensed phone with a fast reader, open on 2 John 1 in the English view with these settings. */
+/** A licensed phone with a fast reader and no recording of David's (the phone's voice reads), open on 2 John 1 in the English view with these settings. */
 async function start(page: Page, settings: Record<string, string> = {}, msPerWord = 5) {
   await openUnlocked(page);
+  await noRecording(page);
   await honestSpeech(page, { msPerWord });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();

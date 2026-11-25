@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, isSpeaking, spoken } from '../support/honest-fakes';
+import { noRecording } from './no-recording';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openSettings, settingsHeading } from './openSettings';
@@ -12,6 +13,7 @@ test.use({ viewport: PHONE });
 // reader (300 ms a word) keeps a verse on the bar long enough to look at. The shots are written by the spec (shots/ is not committed).
 async function openRomans8(page: Page) {
   await openUnlocked(page);
+  await noRecording(page);
   await honestSpeech(page, { msPerWord: 300 });
   await page.goto('/');
   await expect(page.locator('[data-verse="3"]')).toBeVisible();

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, spoken } from '../support/honest-fakes';
+import { noRecording } from './no-recording';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { menuButton } from './openSettings';
@@ -13,6 +14,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 // (docs/pwa-best-practices.md section 12).
 async function withVoices(page: Page) {
   await openUnlocked(page);
+  await noRecording(page);
   await honestSpeech(page, { msPerWord: 300 });
   await page.clock.install();
 }
