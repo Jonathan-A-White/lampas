@@ -5,9 +5,14 @@ import 'fake-indexeddb/auto';
 import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
+import type { Chapter } from '../../src/data/chapter';
 import { DIAGRAM_VERSION, REDRAWN, getDiagram, keepDiagram } from '../../src/data/repositories/diagrams';
+import { fetchDiagram, type AskDiagram } from '../../src/diagram/fetchDiagram';
+import { buildDiagramRequest } from '../../src/diagram/request';
 import type { Diagram } from '../../src/diagram/types';
 import { loadFixture } from '../support/diagram-fixtures';
+import { flatDiagram } from '../support/flat-diagram';
+import '../support/grinds-in-graph';
 
 type Entry = { book: string; chapter: number; verse: number };
 const overlay = JSON.parse(readFileSync('data/rp2026-overlay.json', 'utf8')) as Entry[];
@@ -74,5 +79,57 @@ describe('a Greek tree kept before the overlay moved the verse’s words', () =>
     const fresh: Diagram = { clauses: [{ clause: { subject: { words: [{ implied: 'he' }], modifiers: [] }, verb: { words: [{ i: 1 }], modifiers: [] } } }] };
     await keepDiagram('Revelation 13:14', 'greek', fresh, 2);
     expect(await getDiagram('Revelation 13:14', 'greek')).toEqual(fresh);
+  });
+});
+
+describe('a tree kept before a vocative stood on its own line, of any verse that holds a vocative (mw-5r3p30.1251)', () => {
+  // Luke 5:8 holds κύριε (N-VSM), 'Lord' as an address; Luke 5:6 holds no vocative.
+  const luke5 = JSON.parse(readFileSync('public/data/luk/5.json', 'utf8')) as Chapter;
+  const verse = (n: number) => [luke5.verses.find((v) => v.n === n)!];
+  const key = new Uint8Array(32).fill(7);
+  /** A tree that holds every word the request for these verses names, so it passes the check; `fresh` is the one the tutor draws now. */
+  const treeFor = (verses: Chapter['verses'], lang: 'greek' | 'english'): Diagram => flatDiagram(buildDiagramRequest(luke5, verses, lang).request as unknown as Record<string, unknown>);
+  const askOnce = (fresh: Diagram): { ask: AskDiagram; asked: number[] } => {
+    const asked: number[] = [];
+    return { asked, ask: async () => (asked.push(1), fresh) };
+  };
+
+  it('holds a vocative in Luke 5:8 and none in Luke 5:6 (the real data)', () => {
+    const parses = (n: number) => verse(n)[0].g.map((w) => w.p);
+    expect(parses(8).some((p) => /^[NA]-V/.test(p))).toBe(true);
+    expect(parses(6).some((p) => /^[NA]-V/.test(p))).toBe(false);
+  });
+
+  it.each(['greek', 'english'] as const)('is not read for Luke 5:8 in %s: the tutor is asked, and the new tree is kept and read', async (lang) => {
+    const old = treeFor(verse(8), lang);
+    const fresh = structuredClone(old);
+    fresh.clauses[0].clause.verb.modifiers = [];
+    fresh.clauses.push({ clause: { subject: { words: [{ implied: 'I' }], modifiers: [] }, verb: { words: [{ implied: 'am' }], modifiers: old.clauses[0].clause.verb.modifiers } } });
+    await keptBefore('Luke 5:8', lang, old);
+    const { ask, asked } = askOnce(fresh);
+    expect(await fetchDiagram(luke5, verse(8), lang, { ask, key, now: 2 })).toMatchObject({ ok: true, diagram: fresh, kept: false });
+    expect(asked).toHaveLength(1);
+    const again = askOnce(old);
+    expect(await fetchDiagram(luke5, verse(8), lang, { ask: again.ask, key })).toMatchObject({ ok: true, diagram: fresh, kept: true });
+    expect(again.asked).toHaveLength(0);
+  });
+
+  it('is not read for a passage of Luke 5:7-8 either', async () => {
+    const both = [luke5.verses.find((v) => v.n === 7)!, luke5.verses.find((v) => v.n === 8)!];
+    const old = treeFor(both, 'greek');
+    await keptBefore('Luke 5:7-8', 'greek', old);
+    const { ask, asked } = askOnce(old);
+    expect(await fetchDiagram(luke5, both, 'greek', { ask, key })).toMatchObject({ ok: true, kept: false });
+    expect(asked).toHaveLength(1);
+  });
+
+  it('still reads a kept tree of Luke 5:6, which holds no vocative: no needless redraw', async () => {
+    for (const lang of ['greek', 'english'] as const) {
+      const old = treeFor(verse(6), lang);
+      await keptBefore('Luke 5:6', lang, old);
+      const { ask, asked } = askOnce(old);
+      expect(await fetchDiagram(luke5, verse(6), lang, { ask, key })).toMatchObject({ ok: true, diagram: old, kept: true });
+      expect(asked).toHaveLength(0);
+    }
   });
 });

@@ -4,6 +4,7 @@
 // before it is returned, so the next opening draws it with no ask. A failure to ask at all (no licence, no answer) is the tutor's, askGrind's TutorError, and passes through.
 import type { Chapter, Verse } from '../data/chapter';
 import { DIAGRAM_VERSION, getDiagram, keepDiagram } from '../data/repositories';
+import { holdsVocative, keptVersion } from '../data/repositories/diagrams';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askGrind, type AskOptions } from '../services/tutor';
 import { expandApart, type WireDiagram } from './apart';
@@ -93,8 +94,10 @@ export type DiagramResult =
  */
 export async function fetchDiagram(chapter: Chapter, verses: readonly Verse[], view: DiagramMode, options: FetchDiagramOptions = {}): Promise<DiagramResult> {
   const { request, words } = buildDiagramRequest(chapter, verses, view, options.sentence);
+  // a unit that holds a vocative is kept under its own mark: a tree kept before the vocative stood on its own line (mw-5r3p30.1251) is never read
+  const version = keptVersion(request.ref, view, holdsVocative((view === 'english' ? request.greek ?? [] : request.words).map((w) => w.parse)));
   if (!options.redraw) {
-    const kept = await getDiagram(request.ref, view);
+    const kept = await getDiagram(request.ref, view, version);
     // a kept diagram the words no longer fit (the text changed under it) is drawn again, not shown wrong
     if (kept && validateDiagram(kept, words.length).ok) return { ok: true, diagram: kept, words, kept: true };
   }
@@ -106,7 +109,7 @@ export async function fetchDiagram(chapter: Chapter, verses: readonly Verse[], v
     const { diagram, faults: placing } = expandApart(await ask(asked, asking));
     const checked = validateDiagram(diagram, words.length);
     if (checked.ok && placing.length === 0) {
-      await keepDiagram(request.ref, view, diagram, options.now);
+      await keepDiagram(request.ref, view, diagram, options.now, version);
       return { ok: true, diagram, words, kept: false };
     }
     faults = [...placing, ...(checked.ok ? [] : checked.faults)];
