@@ -2,7 +2,7 @@
 // said "Drill The article table. ... Tap the link below to open it", and under it there was no table. Two ways it happens, both caught here:
 // - the answer carries the paradigm link, but the talk is over a run (Drill it and its end card, src/overRun.ts), where a chip that leaves the page is not drawn: the table's
 //   chip is drawn there all the same and opens the table as a layer over the run, so the run is not lost;
-// - the answer carries no link at all: the sentence that promises one is dropped from what is shown and spoken (src/talk/linkPromise.ts).
+// - the answer carries no link at all: the sentence that promises one is dropped from what is shown and spoken (src/data/linkPromise.ts).
 import '@testing-library/jest-dom/vitest';
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
@@ -10,9 +10,11 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NO_CHAPTER } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { addTurn, listTurns } from '../../src/data/repositories/talks';
 import { OverRun } from '../../src/overRun';
-import type { TalkScope } from '../../src/services/talk';
-import { promisesLink, withoutUnkeptLinkPromise } from '../../src/talk/linkPromise';
+import { FOLD_MAX_TURNS, MAX_HISTORY_TURNS, buildTalkRequest, type TalkScope } from '../../src/services/talk';
+import { talkPlainText } from '../../src/talk/talkText';
+import { promisesLink, withoutUnkeptLinkPromise } from '../../src/data/linkPromise';
 import { TutorLinks } from '../../src/TutorLinks';
 import { Turn } from '../../src/Talk';
 import type { TalkTurn } from '../../src/data/db';
@@ -151,5 +153,38 @@ describe('a link that arrives but is not drawn', () => {
     const shown = await shownTurn(turnWith([{ kind: 'setting', key: 'textSize' }]), false);
     expect(document.querySelector('[data-tutor-links]')).not.toBeNull();
     expect(shown).toHaveTextContent('Tap the link below to go there.');
+  });
+});
+
+// What he saw is what is copied and what the tutor is told it said (mw-fnvjof.17.318): the stored answer keeps the promise, the copied talk and the history do not.
+describe('a talk with a link that was not drawn, copied and sent as history', () => {
+  const REF = 'screen.drill-it.neuter';
+  const links: TalkTurn['links'] = [{ kind: 'setting', key: 'textSize' }];
+  const keep = async (): Promise<TalkTurn> => {
+    await db.talks.clear();
+    await addTurn(REF, 'How do I make the text bigger?', SAYS, [], 1, { changes: [], refused: [], links });
+    return (await listTurns(REF))[0];
+  };
+  const historyOf = (turns: TalkTurn[]) => buildTalkRequest(scope, 'And then?', turns, []).history;
+
+  it('over a run, where the chip is not drawn: neither holds the sentence', async () => {
+    await shownTurn(await keep(), true);
+    await waitFor(async () => expect(talkPlainText(REF, await listTurns(REF))).not.toMatch(/link below/i));
+    const turns = await listTurns(REF);
+    expect(talkPlainText(REF, turns)).toContain('Tutor: Open the setting to change it.');
+    expect(historyOf(turns)).toEqual([{ q: 'How do I make the text bigger?', a: 'Open the setting to change it.' }]);
+    // a turn that has left the history window is folded into the summary as he saw it too
+    const later = Array.from({ length: MAX_HISTORY_TURNS }, (_, i) => ({ q: `Question ${i}`, a: `Answer ${i}` }));
+    const { fold } = buildTalkRequest(scope, 'And then?', [...turns, ...later], []);
+    expect(fold?.slice(0, FOLD_MAX_TURNS).map((t) => t.a)).toEqual(['Open the setting to change it.']);
+  });
+
+  it('shown again where the chip is drawn: the words as written once more', async () => {
+    await shownTurn(await keep(), true);
+    await waitFor(async () => expect(talkPlainText(REF, await listTurns(REF))).not.toMatch(/link below/i));
+    cleanup();
+    await shownTurn((await listTurns(REF))[0], false);
+    await waitFor(async () => expect(talkPlainText(REF, await listTurns(REF))).toContain('Tap the link below to go there.'));
+    expect(historyOf(await listTurns(REF))[0].a).toBe(SAYS);
   });
 });

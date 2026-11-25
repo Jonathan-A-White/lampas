@@ -152,7 +152,7 @@ interface Group {
   chips: LinkChip[];
 }
 
-/** Tells `onDrawn` how many groups the list drew, once every lookup has answered (the answer's words are judged by it, src/talk/linkPromise.ts); draws nothing. */
+/** Tells `onDrawn` how many groups the list drew, once every lookup has answered (the answer's words are judged by it, src/data/linkPromise.ts); draws nothing. */
 function Drawn({ count, onDrawn }: { count: number; onDrawn?: (count: number) => void }) {
   useEffect(() => {
     onDrawn?.(count);

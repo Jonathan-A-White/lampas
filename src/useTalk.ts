@@ -37,7 +37,7 @@ import { hebrewLevelOf } from './settings/definitions/hebrewInterest';
 import { higherInterest } from './services/interestField';
 import { rustyOfferOf } from './talk/rustyOffer';
 import { quizGoalOfferOf } from './talk/quizGoalOffer';
-import { withoutUnkeptLinkPromise } from './talk/linkPromise';
+import { withoutUnkeptLinkPromise } from './data/linkPromise';
 import { rustyNow } from './data/learnerRusty';
 import { todayNow } from './data/learnerToday';
 import { todayOfferOf } from './talk/todayOffer';

@@ -6,7 +6,8 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { withoutUnkeptLinkPromise } from './talk/linkPromise';
+import { answerAsShown } from './data/linkPromise';
+import { markLinksUndrawn } from './data/repositories/talks';
 import { Waiting } from './ui/Waiting';
 import { AddWord } from './AddWordButton';
 import { findGreekWord, glossOf, lookupFor as lookupOf } from './data/answerWord';
@@ -380,7 +381,15 @@ export function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn
   // How many groups its links drew, once they have answered. An answer whose words point at a link below says so only while a link is drawn: when the answer carried links and none was drawn (a setting
   // or a verse's Reader chip over a run, a work with Logos Off, a map or word of a resource he switched off), the sentences that promise one are not shown, copied or spoken (mw-fnvjof.17.298).
   const [drawn, setDrawn] = useState<number>();
-  const said = turn.links?.length && drawn === 0 ? withoutUnkeptLinkPromise(turn.a, undefined) : turn.a;
+  // undefined while the lookups run, and for an answer with no link: the words as written
+  const undrawn = turn.links?.length && drawn !== undefined ? drawn === 0 : undefined;
+  const said = answerAsShown({ a: turn.a, linksUndrawn: undrawn });
+  // kept with the turn, so Copy the whole talk and the history the tutor is sent say what he saw (mw-fnvjof.17.318)
+  const { id, linksUndrawn } = turn;
+  useEffect(() => {
+    if (id === undefined || undrawn === undefined || undrawn === (linksUndrawn === true)) return;
+    void markLinksUndrawn(id, undrawn).catch(() => undefined);
+  }, [id, undrawn, linksUndrawn]);
   return (
     <article data-turn data-turn-id={turn.id} className="space-y-2">
       <TurnPictures turnId={turn.id} />

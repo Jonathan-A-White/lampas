@@ -153,6 +153,11 @@ export async function keepFetched(turnId: number, passages: HeldPassage[], unrea
   await db.talks.update(turnId, { ...(passages.length > 0 ? { fetched: passages } : {}), ...(unread.length > 0 ? { unread } : {}) });
 }
 
+/** Keeps whether the turn's links drew nothing when it was last shown (mw-fnvjof.17.318): false takes the mark away. */
+export async function markLinksUndrawn(turnId: number, undrawn: boolean): Promise<void> {
+  await db.talks.update(turnId, { linksUndrawn: undrawn ? true : undefined });
+}
+
 /** Marks the turn's feedback offer as sent, so it reads Sent from then on. */
 export async function markFeedbackSent(turnId: number): Promise<void> {
   await db.talks.update(turnId, { feedbackSent: true });

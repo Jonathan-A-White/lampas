@@ -241,6 +241,8 @@ export interface TalkTurn {
   unknown?: string[];
   /** the links the answer carried (at most MAX_LINKS), shown as chips for the study resources he has switched on (src/TutorLinks.tsx) */
   links?: AnswerLink[];
+  /** the links drew no chip the last time the turn was shown (a setting over a run, a work with Logos Off): the sentences of `a` that promise one are left out of what is shown, copied and sent as history (src/data/linkPromise.ts answerAsShown, mw-fnvjof.17.318); `a` itself stays as the tutor wrote it */
+  linksUndrawn?: boolean;
   /** the study way line the answer proposed (mw-5r3p30.76); the reader keeps it with Keep this, or not */
   studyWayLine?: string;
   /** the goal the answer offered to keep as his quiz goal (mw-5r3p30.185); `quizGoalChoice` says what he did with the offer, absent while he has not answered it */
