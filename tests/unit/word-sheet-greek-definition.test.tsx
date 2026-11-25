@@ -29,7 +29,7 @@ describe('the Greek word card’s Definition', () => {
   it('draws no Definition row for a word whose lex entry has no `d`', async () => {
     const chapter = matthew();
     const word = chapter.verses[0].g[0];
-    delete chapter.lex[word.s].d;
+    chapter.lex[word.s] = { g: chapter.lex[word.s].g, d: '' };
     sheet(chapter, 0);
     await screen.findByTestId('sheet-word');
     expect(screen.queryByTestId('sheet-definition')).toBeNull();
