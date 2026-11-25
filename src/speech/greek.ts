@@ -265,6 +265,25 @@ export function whenSaid(key: string, then: () => void): () => void {
   return give;
 }
 
+// When the phone's voice last went quiet (a sentence, a word or an answer ended or was stopped). The 'end' the phone reports comes before its sound has left the speaker, and a microphone opened
+// in that instant clips the tail of the last word on Android ('Hands-free on' heard as 'Hands-free', mw-rl10piw.76), so Hands-free opens none until the voice has been quiet a moment.
+let quietSince = Number.NEGATIVE_INFINITY;
+let wasTalking = false;
+const talkingNow = (): boolean => getSpeech().status === 'playing' || beside !== null;
+
+function noteQuiet(): void {
+  const talking = talkingNow();
+  if (wasTalking && !talking) quietSince = Date.now();
+  wasTalking = talking;
+}
+subscribeEngine(noteQuiet);
+subscribeBeside(noteQuiet);
+
+/** How long the phone's voice has been quiet, in ms: Infinity when it never spoke, or when it is speaking now (nothing has ended; the caller decides what a voice that goes on means). */
+export function msSinceVoiceQuiet(): number {
+  return talkingNow() ? Number.POSITIVE_INFINITY : Date.now() - quietSince;
+}
+
 /** Asks the speech package to say `text` under `key`, in his speed and voice: it cancels what is speaking, cuts the text into sentences
  * (one per line break too) and reads each in the language of its letters. `slowly` is the speed of a word being sounded out. Returns false
  * when the phone cannot speak at all. */
