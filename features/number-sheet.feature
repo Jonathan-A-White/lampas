@@ -1,7 +1,7 @@
 Feature: The Number sheet
   A number the source writes as a run of words (Genesis 14:14 'the 318' is eight, ten, three and hundreds; John 21:11 '153' is a hundred, fifty, three) opens one sheet when he taps its English
   (mw-5r3p30.1127): the number, the words in the order they are written, each word's value, and the sum as a line (8 + 10 + 300 = 318). Each word opens its own word sheet over the Number sheet.
-  A number of one word opens the word sheet as ever, and so does a chunk that says no number ('trained men') or a sum the English does not say.
+  A number of one word opens the word sheet as ever, and so does a chunk that says no number ('of thousands') or a sum the English does not say.
 
   @uc-word-sheet @hebrew
   Scenario: "the 318" in Genesis 14:14 opens the Number sheet with the four Hebrew words and 8 + 10 + 300 = 318
@@ -21,9 +21,9 @@ Feature: The Number sheet
     Then the Number sheet shows the number "318"
 
   @uc-word-sheet @hebrew
-  Scenario: "trained men" holds numeral words but says no number: the word sheet
-    Given Lampas is opened on Genesis 14 in English
-    When he taps "trained men" in verse 14
+  Scenario: "of thousands" holds a numeral word but says no number: the word sheet
+    Given Lampas is opened on Genesis 24 in English
+    When he taps "of thousands" in verse 60
     Then the word sheet opens and no Number sheet
 
   @uc-word-sheet @hebrew

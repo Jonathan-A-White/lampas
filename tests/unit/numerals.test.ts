@@ -108,9 +108,13 @@ describe('numberPhraseOf', () => {
     expect(numberPhraseOf(chapter, chunk.g.map((i) => v.g[i]), chunk.t, 5)).toBeUndefined();
   });
 
-  it('the chunk "the 318" (Hebrew word 10 alone) finds the whole phrase', () => {
+  it('the chunk "the 318" (Hebrew words 10 to 13, all four) finds the whole phrase', () => {
     const chapter = chapterOf('gen', 14);
     const v = chapter.verses.find((x) => x.n === 14)!;
+    const chunk = v.e.find((c) => c.t === 'the 318')!;
+    expect(chunk.g).toEqual([10, 11, 12, 13]);
+    expect(numberPhraseOf(chapter, chunk.g.map((i) => v.g[i]), chunk.t, 14)?.sum).toBe(318);
+    // a tap on the source word the weave draws for any one of them finds it too
     expect(numberPhraseOf(chapter, [v.g[10]], 'the 318', 14)?.sum).toBe(318);
   });
 
@@ -120,10 +124,15 @@ describe('numberPhraseOf', () => {
     expect(numberPhraseOf(chapter, [v.g[13], v.g[14], v.g[15]], '153 ,', 11)?.sum).toBe(153);
   });
 
-  it('the chunk "trained men" holds numeral words but no number of its own: no phrase', () => {
-    const chapter = chapterOf('gen', 14);
-    const v = chapter.verses.find((x) => x.n === 14)!;
-    expect(numberPhraseOf(chapter, [v.g[7], v.g[11], v.g[12], v.g[13]], 'trained men', 14)).toBeUndefined();
+  it('the chunk "of thousands" (Genesis 24:60) holds a word of a two-word numeral phrase but says no number: no phrase', () => {
+    const chapter = chapterOf('gen', 24);
+    const v = chapter.verses.find((x) => x.n === 60)!;
+    const chunk = v.e.find((c) => c.t === 'of thousands')!;
+    // the premise, read from the data: the chunk holds a numeral word of a phrase of two or more words, and its English says no number
+    const phrase = numeralPhrases(v.g, 'hbo').find((p) => p.parts.length > 1 && p.parts.some((part) => chunk.g.includes(part.index) && part.value !== undefined))!;
+    expect(phrase).toBeDefined();
+    expect(englishNumbers(chunk.t)).toEqual([]);
+    expect(numberPhraseOf(chapter, chunk.g.map((i) => v.g[i]), chunk.t, 60)).toBeUndefined();
   });
 
   it('a single-word number ("seven"-ish chunk of one numeral word) opens no phrase', () => {

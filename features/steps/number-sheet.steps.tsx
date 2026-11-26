@@ -83,8 +83,8 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Number sheet shows the number {string}', async (_, sum: string) => expect(within(await numberSheet()).getByTestId('number-sum')).toHaveTextContent(sum));
   });
 
-  Scenario('"trained men" holds numeral words but says no number: the word sheet', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Genesis 14 in English', () => openOn('gen', 14, 'Genesis 14'));
+  Scenario('"of thousands" holds a numeral word but says no number: the word sheet', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Genesis 24 in English', () => openOn('gen', 24, 'Genesis 24'));
     When('he taps {string} in verse {int}', (_, text: string, verse: number) => user.click(chunkEl(text, verse)));
     Then('the word sheet opens and no Number sheet', async () => {
       await wordSheet();

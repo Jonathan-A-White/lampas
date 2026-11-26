@@ -261,7 +261,7 @@ export function phraseSays(verse: Pick<Verse, 'e'>, phrase: NumeralPhrase): numb
 }
 
 /** The phrase a tapped English chunk stands for: the chunk says a number, holds a word of a numeral phrase of two or more words ('the 318' holds only the first Hebrew word of the four), and the English
- * says the phrase's sum too. A chunk that holds numeral words without saying a number ('trained men', which holds the last three) is no number, and neither is a phrase the English reads another
+ * says the phrase's sum too. A chunk that holds a numeral word without saying a number ('of thousands', Genesis 24:60) is no number, and neither is a phrase the English reads another
  * way ('930 years' over 'thirty' and 'nine hundred', split by a noun). `verse` is the number of the verse the chunk is in, when known. */
 export function numberPhraseOf(chapter: Chapter, words: readonly GreekWord[], english: string | undefined, verse: number | undefined): NumeralPhrase | undefined {
   if (english === undefined || englishNumbers(english).length === 0 || words.length === 0) return undefined;

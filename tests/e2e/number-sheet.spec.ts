@@ -95,10 +95,10 @@ test('in the weave the Hebrew words that stand where "the 318" was open the same
   await expect(sheet).toHaveCount(0);
 });
 
-test('"trained men" in Genesis 14:14 holds the last three numeral words but says no number: the word sheet', async ({ page }) => {
+test('"of thousands" in Genesis 24:60 holds a numeral word but says no number: the word sheet', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/?b=gen&c=14');
-  await page.locator('[data-verse="14"] [data-chunk]', { hasText: /^trained men\s*$/ }).first().click();
+  await page.goto('/#/?b=gen&c=24');
+  await page.locator('[data-verse="60"] [data-chunk]', { hasText: /^of thousands\s*$/ }).first().click();
   await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toBeVisible();
   await expect(page.getByRole('dialog', { name: 'Number', exact: true })).toHaveCount(0);
 });
