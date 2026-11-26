@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.410
+_2026-11-26_
+- Fixed: Asking the tutor to play a preacher's sermon on a chapter now works when many other sermons are listed for it.
+
 ## 0.7.409
 _2026-11-26_
 - Fixed: the Plan chapter setting's help no longer says the chapter is read in Logos.

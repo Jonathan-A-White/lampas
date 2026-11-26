@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.410",
+    "date": "2026-11-26",
+    "story": "mw-fnvjof.17.286",
+    "kind": "fixed",
+    "text": "Asking the tutor to play a preacher's sermon on a chapter now works when many other sermons are listed for it."
+  },
+  {
     "version": "0.7.409",
     "date": "2026-11-26",
     "story": "mw-r9xo1pj.32",
