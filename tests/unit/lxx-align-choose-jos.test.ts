@@ -145,6 +145,25 @@ describe.skipIf(!real.run)('Joshua with the model pass', () => {
     expect(left).toEqual([]);
   });
 
+  // Story mw-u2w5klk.349.155: in Joshua 5:13 'drew' (of 'drew near') stood under ἐσπασμένη 'drawn' and 'he' (of 'that he looked up') under the αὐτοῦ of 'in his hand'.
+  it('Joshua 5:13: "drew near" renders προσελθὼν, "drawn" renders ἐσπασμένη, and "he" of "that he looked up" holds no Greek', () => {
+    const verse = withModel.get(5)!.verses.find((x) => x.n === 13)!;
+    const greekOf = (c: { g: number[] }): string[] => c.g.map((g) => verse.g[g].t.replace(/[.,;·:]+$/, ''));
+    const near = verse.e.find((c) => c.t === 'drew near');
+    expect(near, 'drew near').toBeDefined();
+    expect(greekOf(near!)).toEqual(['προσελθὼν']);
+    expect(verse.e.find((c) => c.t === 'drew'), 'drew alone').toBeUndefined();
+    const drawn = verse.e.find((c) => /\bdrawn\b/.test(c.t));
+    expect(drawn, 'drawn').toBeDefined();
+    expect(greekOf(drawn!)).toContain('ἐσπασμένη');
+    const he = verse.e.find((c) => c.t === 'he');
+    expect(he, 'he').toBeDefined();
+    expect(he!.g).toEqual([]);
+    const his = verse.e.find((c) => c.t === 'his');
+    expect(his, 'his').toBeDefined();
+    expect(greekOf(his!)).toContain('αὐτοῦ');
+  });
+
   it('pairs the English of Joshua 3:14 "removed" with ἀπῆρεν, where a tap on "removed" opened the Verse view', () => {
     const verse = withModel.get(3)!.verses.find((v) => v.n === 14)!;
     const chunk = verse.e.find((c) => /removed/.test(c.t));
