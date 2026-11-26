@@ -96,18 +96,26 @@ features/sentence-diagram.feature  # the renderer on both fixtures and the Verse
 - Punctuation is not a word. The type is never shrunk: the picture is as wide as its labels and gaps add up to, and scrolls.
 
 ```
-   (you) | strive                      a clause: subject, full bar, verb on the base line
-   ------+-------------------------
-          \
-           \_______                    a word modifier: a slanted line, its foot line carries the word
-            Therefore
-          \
-           \  for                       a prepositional phrase: the preposition by the slant,
-            \______                    the object on a level line from the slant's foot
-              things
-          :
-          :  since                     a subordinate clause: dotted line from the word it hangs on
-          :                            down to its verb, the connector beside the dotted line
-   you  | have been raised  \ ...       the clause on its own base line, below
-   -----+-------------------
+(you) | strive         [1]
+------+---------
+       \
+        \______
+         Therefore     [2]
+       \
+        \ for         [3]
+         \______
+          things
+       :
+       : since         [4]
+       :
+you | have been raised
+----+---------------   [5]
 ```
+
+Top to bottom, the marks at the right of the picture (a phone shows a code box 30 characters wide, so each label is here, not beside its shape):
+
+1. a clause: subject, full bar, verb on the base line;
+2. a word modifier: a slanted line, its foot line carries the word;
+3. a prepositional phrase: the preposition by the slant, the object on a level line from the slant's foot;
+4. a subordinate clause: a dotted line from the word it hangs on down to its verb, the connector beside the dotted line;
+5. the clause on its own base line, below.
