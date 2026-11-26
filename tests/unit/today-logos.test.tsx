@@ -68,6 +68,15 @@ describe('Today with Logos Off', () => {
     expect(explained).not.toHaveTextContent('Devotional');
     expect(explained).toHaveTextContent('Review');
   });
+
+  it('explains the Devotional as one devotional for the day, not as one opened in Logos, since it can be Morning RePhil (mw-r9xo1pj.31)', async () => {
+    await db.settings.bulkPut(['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'].map((key) => ({ key, value: 'off' })).concat([{ key: 'resource.logos', value: 'on' }]));
+    render(<Today />);
+    const explained = await screen.findByTestId('today-explained');
+    expect(explained).toHaveTextContent('Devotional');
+    expect(explained).toHaveTextContent('one devotional for the day');
+    expect(explained).not.toHaveTextContent('opened in Logos');
+  });
 });
 
 describe('Today: a Psalms and Proverbs row opens in Lampas', () => {

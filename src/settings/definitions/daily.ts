@@ -41,7 +41,7 @@ export const dailyPlanSetting = piece(
   'dailyPlan',
   'Plan chapter',
   "Today holds the plan's chapter.",
-  "Whether Today holds the reading plan's chapter, to read in Logos.",
+  "Whether Today holds the reading plan's chapter, to read or to listen to.",
 );
 
 export const dailyPsalmsSetting = piece(
