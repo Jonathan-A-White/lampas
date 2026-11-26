@@ -133,7 +133,8 @@ Lev.8:27	4	offered	-		0.80
 Lev.8:27	5	for a	-		0.80
 Lev.8:27	6	the	-		0.80
 Lev.8:28	1	them	-		0.80
-Lev.8:28	1	at their	4		0.80
+Lev.8:28	1	at	4		0.80
+Lev.8:28	1	their	-		0.80
 Lev.8:28	2	offered	8		0.80
 Lev.8:28	3	whole burnt	-		0.80
 Lev.8:28	4	is	-		0.80
@@ -212,13 +213,27 @@ Lev.8:36	3	the	-		0.80
 Lev.8:36	4	commanded	11		0.80
 Lev.8:18	fix	brought near	1		0.80
 Lev.8:18	fix	whole burnt offering,	7		0.80
+Lev.8:18	fix	his	14		0.80
+Lev.8:18	fix	their	17		0.80
 Lev.8:21	fix	offered up	9		0.80
 Lev.8:21	fix	the whole	11,12		0.80
 Lev.8:21	fix	whole burnt offering	17		0.80
+Lev.8:22	fix	his	15		0.80
+Lev.8:22	fix	their	18		0.80
+Lev.8:22	fix	he killed him;	-		0.80
+Lev.8:23	fix	his blood,	8,9		0.80
+Lev.8:23	fix	it	2		0.80
 Lev.8:24	fix	brought near	1		0.80
 Lev.8:27	fix	offered	15		0.80
 Lev.8:27	fix	up	-		0.80
+Lev.8:27	fix	them all	2		0.80
+Lev.8:27	fix	them	16		0.80
+Lev.8:27	fix	his	13		0.80
 Lev.8:28	fix	whole burnt offering	16		0.80
+Lev.8:28	fix	took them	1		0.80
+Lev.8:28	fix	their	6		0.80
+Lev.8:28	fix	them	9		0.80
+Lev.8:28	fix	it is	20		0.80
 Lev.8:30	fix	And he sanctified Aaron and his garments, and his sons, and the garments of his sons with him.	-		0.80
 Lev.8:30	fix	sprinkled it	17		0.80
 Lev.8:30	fix	and on his garments,	20,21,22,23		0.80

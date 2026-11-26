@@ -18,6 +18,8 @@ const real = lxxRealData();
 const sources = { rawDir: real.rawDir, morpheusDir: real.morpheusDir };
 const MODELLED = alignFileChapters('lev');
 const joined = (verse: Verse): string => verse.e.map((c) => c.t).join(' ');
+// a Greek word without its accents and punctuation
+const plain = (t: string): string => t.normalize('NFD').replace(/[^\p{L}]/gu, '');
 // The verses the shared LXX2012 map moved (mw-u2w5klk.349.130: its 6:4 holds the Greek 4-5 and its 5-7 are the Greek 6-8; its 8:18 holds the Greek 18-19 and its 19-28 are the Greek 20-29): Lev 6:4-9 and 8:18-30 (mw-u2w5klk.349.134).
 const MOVED = /^(6:[4-9]|8:(1[89]|2\d|30))(?!\d)/;
 // Of those, only these still have English that renders a Greek word of another verse: 6:4 and 8:18 hold the English of two Greek verses, and Brenton cuts 8:20 and 8:22 a clause later than Swete.
@@ -138,11 +140,51 @@ describe.skipIf(!real.run)('Leviticus with the model pass', () => {
     [8, 30, 'στολάς', 'garments'],
   ])('pairs the English of Leviticus %i:%i with its own Greek verse: %s is under "%s"', (chapter, n, greek, english) => {
     const verse = withModel.get(chapter)!.verses.find((v) => v.n === n)!;
-    const plain = (t: string): string => t.normalize('NFD').replace(/[^\p{L}]/gu, '');
     const word = verse.g.find((w) => plain(w.t) === plain(greek));
     expect(word, `${greek} in Lev ${chapter}:${n}`).toBeDefined();
     expect(word!.e, `${greek} has an English chunk`).toBeDefined();
     expect(verse.e[word!.e!].t).toContain(english);
+  });
+
+  // mw-u2w5klk.349.141: in the moved verses the aligner paired the pronouns by their place, so 'his' and 'them' were swapped (a tap on 'his' in 8:27 opened αὐτὰ).
+  it.each([
+    [6, 6, 'his', ['αὐτοῦ']],
+    [6, 6, 'which', ['ὃ', 'αὐτῷ']],
+    [6, 7, 'him', ['αὐτοῦ']],
+    [6, 7, 'he did', ['ἐποίησεν']],
+    [6, 9, 'this', ['αὐτὴ']],
+    [6, 9, 'it,', ['αὐτοῦ']],
+    [8, 18, 'his', ['αὐτοῦ']],
+    [8, 18, 'their', ['αὐτῶν']],
+    [8, 22, 'his', ['αὐτοῦ']],
+    [8, 22, 'their', ['αὐτῶν']],
+    [8, 23, 'his blood,', ['αἵματος', 'αὐτοῦ']],
+    [8, 27, 'his', ['αὐτοῦ']],
+    [8, 27, 'them', ['αὐτὰ']],
+    [8, 28, 'their', ['αὐτῶν']],
+    [8, 28, 'them', ['αὐτὰ']],
+    [8, 28, 'it is', ['ἐστιν']],
+  ] as const)('gives the pronoun of Leviticus %i:%i its own Greek word: "%s" holds %j', (chapter, n, english, greek) => {
+    const verse = withModel.get(chapter)!.verses.find((v) => v.n === n)!;
+    const chunks = verse.e.filter((c) => c.t === english);
+    expect(chunks, `one chunk "${english}" in Lev ${chapter}:${n}`).toHaveLength(1);
+    expect(chunks[0].g.map((g) => plain(verse.g[g].t))).toEqual(greek.map(plain));
+  });
+
+  it('gives no pronoun of Lev 6:4-9 or 8:18-30 an αὐτός of the wrong case or number', () => {
+    // what each English pronoun's αὐτός may be, by the case and number of its parsing code (P-GSM)
+    const fits: Record<string, RegExp> = { his: /^P-GS[MN]/, its: /^P-GS/, their: /^P-GP/, him: /^P-[GDA]S[MN]/, them: /^P-[GDA]P/ };
+    const wrong: string[] = [];
+    for (const [chapter, { verses }] of withModel) {
+      for (const verse of verses.filter((v) => MOVED.test(`${chapter}:${v.n}`))) {
+        for (const chunk of verse.e) {
+          const rule = fits[chunk.t.toLowerCase().replace(/[^a-z]/g, '')];
+          const held = chunk.g.map((g) => verse.g[g]).filter((w) => w.l === 'αὐτός');
+          if (rule && held.length > 0 && !held.some((w) => rule.test(w.p))) wrong.push(`${chapter}:${verse.n} '${chunk.t}' ${held.map((w) => `${w.t} ${w.p}`).join(' ')}`);
+        }
+      }
+    }
+    expect(wrong).toEqual([]);
   });
 
   it('pairs the English of Leviticus 1:16 "take away" with ἀφελεῖ, where a tap on "away" opened the Verse view', () => {

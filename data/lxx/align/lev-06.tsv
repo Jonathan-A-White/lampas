@@ -42,7 +42,8 @@ Lev.6:4	12	of any kind, about which he swore unjustly, he shall even restore it 
 Lev.6:4	13	he shall add to it a fifth part besides; he shall restore it to him whose it is in the day in which he happens to be convicted.	-		0.80
 Lev.6:6	1	shall	-		0.80
 Lev.6:6	2	to	-		0.80
-Lev.6:6	3	for his	1		0.80
+Lev.6:6	3	for	1		0.80
+Lev.6:6	3	his	-		0.80
 Lev.6:6	4	a	-		0.80
 Lev.6:6	5	flock,	10		0.80
 Lev.6:6	5	without blemish,	11		0.80
@@ -323,3 +324,12 @@ Lev.6:40	3	shall belong to	9		0.80
 Lev.6:40	4	of	-		0.80
 Lev.6:40	5	an	15		0.80
 Lev.6:40	6	portion	-		0.80
+Lev.6:6	fix	he shall bring	4		0.80
+Lev.6:6	fix	his	3		0.80
+Lev.6:6	fix	which	14,16		0.80
+Lev.6:6	fix	he trespassed.	15		0.80
+Lev.6:7	fix	him	3		0.80
+Lev.6:7	fix	he did	16		0.80
+Lev.6:9	fix	this	12		0.80
+Lev.6:9	fix	it,	35		0.80
+Lev.6:9	fix	it shall	-		0.80
