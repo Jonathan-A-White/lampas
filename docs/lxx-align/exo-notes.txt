@@ -3,3 +3,4 @@ Exodus: what its pairing passes did (hand-kept; the generated file beside it is 
 the method is docs/lxx-align.md, 'A pairing pass'.
 
 Exodus 1, 6, 8, 11, 14, 15, 17, 18 and 19 are done (story mw-u2w5klk.349.8: 1,342 runs, `data/lxx/align/exo-01` to `exo-19`, `exo.expect.json`); the first chapter left is Exodus 20, then 22, 24, 25, 27, 35, 37, 39 and 40, about 1,000 runs. `npm run lxx:unpaired -- --book exo` says what is left at any time.
+That list was of a ship without a Morpheus cache. exo.txt is now written with the Laptop's cache (mw-u2w5klk.349.149), with which 22 chapters more ship (2 to 5, 7, 9, 10, 12 and others) with no model file, so the first chapter left is Exodus 2.

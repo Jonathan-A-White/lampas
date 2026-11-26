@@ -10,8 +10,8 @@ import { runShip, type Shipped } from '../../scripts/lxx/ship';
 import { joined } from '../support/lxx-align-choose';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
-// Psalms with the model pass (story mw-u2w5klk.349.13; the Governor's 2026-11-10 'I tap removed and get this', Genesis 20:1, for every book). Psalms has no Morpheus cache anywhere (docs/lxx-align/psa.txt says
-// so), so unlike the Genesis block above this one needs only the pinned raw sources (data/raw/lxx, `npm run lxx:link`) and runs the ship with --no-morpheus on Psalms alone.
+// Psalms with the model pass (story mw-u2w5klk.349.13; the Governor's 2026-11-10 'I tap removed and get this', Genesis 20:1, for every book). The pass was made without a Morpheus cache, so
+// unlike the Genesis block above this one needs only the pinned raw sources (data/raw/lxx, `npm run lxx:link`) and runs the ship with --no-morpheus on Psalms alone.
 // The chapters of the pass are the files of data/lxx/align (psa-<nn>.tsv), done in the order the ship ships them: the first chapter left (Psalms 37 at this story) is the next batch's. Each file's reasons for a content word left with no Greek
 // are in data/lxx/align/psa.expect.json (the generic checks of the Genesis block read it too, on a host with the Genesis cache).
 const RAW_PSA = join(process.cwd(), 'data/raw/lxx');

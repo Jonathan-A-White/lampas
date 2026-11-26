@@ -129,5 +129,6 @@ The report is one file a book, `docs/lxx-align/<code>.txt` (`gen.txt`, `exo.txt`
 Each opens with the book's name, a line that it is GENERATED, and 'Derived without a Morpheus cache: <code>.' or '... none.' for this book alone, then 'Each chapter shipped' (a row for each chapter the ship wrote) and the book's own row.
 `npm run lxx:align-expect -- --book gen` writes the book's file (and its sidecar, [A pairing pass](#a-pairing-pass)); `npm run lxx:align` writes the file of every book it ships.
 A run on a host whose Morpheus cache for the book is not the one the file was written with leaves it as it was and fails, naming both lists; `--force` writes it anyway.
+A committed file reads 'none', as the Laptop writes it: a pass made with `--no-morpheus` runs the command again with the cache and `--force` before it commits, and `tests/unit/lxx-align.test.ts` holds it (mw-u2w5klk.349.149).
 `tests/unit/lxx-align-choose-gen.test.ts` fails, naming the command, when a file differs from what the ship gives (on a host whose cache for the book is the file's).
 There is no total across books in the files, since a total would be a file every pass writes: add the book rows when you want it.

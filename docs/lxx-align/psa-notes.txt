@@ -2,6 +2,7 @@ Psalms: what its pairing passes did (hand-kept; the generated file beside it is 
 The real-data checks of Psalms are tests/unit/lxx-align-choose-psa.test.ts; the counts and each leftover's reason are data/lxx/align/psa.expect.json; the method is docs/lxx-align.md, 'A pairing pass'.
 
 Psalms 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 15, 16, 18, 19, 22, 23, 25, 26, 28, 29, 31, 32, 33, 34 and 36 are done (story mw-u2w5klk.349.13: 1,664 runs, `data/lxx/align/psa-02` to `psa-36`, `psa.expect.json`);
-the first chapter left is Psalms 37, then 38, 39, 40, 42, 43, 45 and on in the order the ship ships them (`npm run lxx:unpaired -- --book psa --no-morpheus` says what is left at any time).
-Psalms ships with no Morpheus cache (docs/lxx-align/psa.txt), so list and pair it with `--no-morpheus`: with the Laptop's cache linked the ship has other chapters and other runs.
+the first chapter left is Psalms 37, then 38, 39, 40, 42, 43, 45 and on in the order the ship ships them (`npm run lxx:unpaired -- --book psa` says what is left at any time).
+That pass listed and paired with `--no-morpheus`. psa.txt is now written with the Laptop's Morpheus cache (mw-u2w5klk.349.149), with which 27 chapters more ship, Psalms 1, 9 and 10 among them, with no model file; the 25 chapters of the pass read the same English and pairs with it.
+tests/unit/lxx-align-choose-psa.test.ts still ships with `--no-morpheus` and holds the model files to the first chapters of that list, so a batch paired with the cache changes that test with it.
 Psalms 26 and 34 ship (Swete's and Brenton's text of them are whole) though the report before this pass did not list them; they are in the pass, which has no gap.
