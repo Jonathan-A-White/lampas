@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.408
+_2026-11-26_
+- Fixed: a screen reader no longer reads out "tap the link below" when the tutor's answer has no link drawn under it.
+
 ## 0.7.407
 _2026-11-26_
 - New: The Reader's Split sheet offers a Timeline: a strip of the Bible's dated events and lives under the passage, opened at the chapter's time, which you drag, flick and pinch through, with a Whole Bible button.

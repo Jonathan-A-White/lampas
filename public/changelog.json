@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.408",
+    "date": "2026-11-26",
+    "story": "mw-fnvjof.17.331",
+    "kind": "fixed",
+    "text": "a screen reader no longer reads out \"tap the link below\" when the tutor's answer has no link drawn under it."
+  },
+  {
     "version": "0.7.407",
     "date": "2026-11-26",
     "story": "mw-fnvjof.17.317.2",
