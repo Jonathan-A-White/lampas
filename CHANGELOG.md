@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.400
+_2026-11-26_
+- Fixed: on a slow phone, choosing Settings or Tools from the Menu no longer opens the screen and then drops back to the Bible text.
+- Fixed: In the Septuagint's Joshua 5, the command to take off his shoe now shows at verse 15, and Joshua falling on his face sits with verse 14, where its Greek is.
+
 ## 0.7.399
 _2026-11-26_
 - Fixed: In parts of Leviticus 6 and 8 in the Septuagint, tapping words such as 'his', 'their' and 'them' now opens the right Greek word.

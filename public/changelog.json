@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.400",
+    "date": "2026-11-26",
+    "story": "mw-fnvjof.17.326",
+    "kind": "fixed",
+    "text": "on a slow phone, choosing Settings or Tools from the Menu no longer opens the screen and then drops back to the Bible text."
+  },
+  {
+    "version": "0.7.400",
+    "date": "2026-11-26",
+    "story": "mw-u2w5klk.349.146",
+    "kind": "fixed",
+    "text": "In the Septuagint's Joshua 5, the command to take off his shoe now shows at verse 15, and Joshua falling on his face sits with verse 14, where its Greek is."
+  },
+  {
     "version": "0.7.399",
     "date": "2026-11-26",
     "story": "mw-u2w5klk.349.141",
