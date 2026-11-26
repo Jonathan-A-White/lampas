@@ -107,6 +107,7 @@ import { continueReading, getReading, isReadingOf, pauseReading, stopReading, up
 import { decideVoice } from './speech/voiceDecision';
 import { DataVoiceQuestion } from './speech/DataVoiceQuestion';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
+import { spokenAnswer } from './talk/drawnLinks';
 import { ReaderChips } from './ReaderChips';
 import { TeachSheet } from './TeachSheet';
 import { useNewWords } from './useNewWords';
@@ -330,7 +331,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (openTalkRef.current !== ref || isHolding()) return;
     // Sound it out: the word was said before the answer; now each syllable it lists, slowly, one after another.
     if (info.focus?.kind === 'sound' && !info.focus.language && info.syllables?.length) startAnswerWhenSeen(id, syllableRuns(info.syllables));
-    else speakTutor(id, answerRuns(answer), () => openTalkRef.current === ref);
+    else spokenAnswer(id, answer, info.links, (words) => speakTutor(id, answerRuns(words), () => openTalkRef.current === ref));
   }, {
     // the tutor takes him to a chapter or another place (the answer's `go`) while this talk's sheet is open: the sheet closes, the place opens as a new Back step, and Back opens the sheet again
     // a question asked by voice (Hands-free 'ask') is answered with the sheet closed: the place it names opens all the same

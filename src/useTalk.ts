@@ -70,6 +70,8 @@ export interface UseTalk {
 export interface AnswerInfo {
   focus?: TalkFocus;
   syllables?: string[];
+  /** How many links the answer carries (the chips are drawn under it by the Talk sheet, src/talk/drawnLinks.ts). */
+  links?: number;
 }
 
 /** Puts the lemmas an answer asked for on his words-to-learn list, once each, with the lexicon's gloss; says which were new, which
@@ -317,7 +319,7 @@ export function useTalk(
           setPending(key, undefined);
           void answerDrawn(sentAs);
           // a turn Hands-free asked by voice (src/handsFree/ask.ts) is told its answer: the command speaks it, whether or not this sheet is open, and the sheet does not speak it a second time
-          const heard = tellVoiceTurn(ref, { kind: 'answered', id, answer: answer.answer });
+          const heard = tellVoiceTurn(ref, { kind: 'answered', id, answer: answer.answer, links: answer.links?.slice(0, MAX_LINKS).length });
           if (signal.aborted) {
             dropQueuedSermon();
             dropQueuedParadigm();
@@ -336,7 +338,7 @@ export function useTalk(
             if (reopen) leaveSheetForTutor(reopen);
             await bibleTalkClient().takeAnswer({ go: { name: target.name, args: target.args } }, turns.length).catch(() => undefined);
           } else if (!heard) {
-            answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables) });
+            answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables), links: answer.links?.slice(0, MAX_LINKS).length });
             // a sermon he asked for by typing starts now; one he asked for by voice starts when Hands-free has said the answer (src/handsFree/ask.ts)
             playQueuedSermon();
           }

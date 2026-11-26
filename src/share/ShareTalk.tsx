@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { helpQuestion, scopeTitle, termQuestion, type TalkScope, type WordFocus } from '../services/talk';
 import { answerRuns } from '../speech/answerRuns';
+import { spokenAnswer } from '../talk/drawnLinks';
 import { speakTutor } from '../speech/tutorVoice';
 import { stopReading } from '../speech/readAloud';
 import { isHolding } from '../talk/holding';
@@ -18,9 +19,9 @@ import type { SharedContent } from './shared';
 /** The Talk sheet over `scope`, with the voice, the answers read aloud and the word sheet's help wired as the Reader and the Ask the tutor button wire them. */
 export function TalkHost({ scope, talkRef, book, chapter, shared, onClose }: { scope: TalkScope; talkRef: string; book: string; chapter: number; shared?: SharedContent; onClose: () => void }) {
   const openRef = useRef<string | null>(talkRef);
-  const { states, say, resume } = useTalk(book, chapter, (ref, id, answer) => {
+  const { states, say, resume } = useTalk(book, chapter, (ref, id, answer, info) => {
     if (openRef.current !== ref || isHolding()) return;
-    speakTutor(id, answerRuns(answer), () => openRef.current === ref);
+    spokenAnswer(id, answer, info.links, (words) => speakTutor(id, answerRuns(words), () => openRef.current === ref));
   });
   useEffect(() => {
     openRef.current = talkRef;

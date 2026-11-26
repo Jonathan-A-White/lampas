@@ -14,6 +14,8 @@ import { addTurn, listTurns } from '../../src/data/repositories/talks';
 import { OverRun } from '../../src/overRun';
 import { FOLD_MAX_TURNS, MAX_HISTORY_TURNS, buildTalkRequest, type TalkScope } from '../../src/services/talk';
 import { talkPlainText } from '../../src/talk/talkText';
+import { spokenAnswer } from '../../src/talk/drawnLinks';
+import { answerRuns } from '../../src/speech/answerRuns';
 import { promisesLink, withoutUnkeptLinkPromise } from '../../src/data/linkPromise';
 import { TutorLinks } from '../../src/TutorLinks';
 import { Turn } from '../../src/Talk';
@@ -186,5 +188,48 @@ describe('a talk with a link that was not drawn, copied and sent as history', ()
     await shownTurn((await listTurns(REF))[0], false);
     await waitFor(async () => expect(talkPlainText(REF, await listTurns(REF))).toContain('Tap the link below to go there.'));
     expect(historyOf(await listTurns(REF))[0].a).toBe(SAYS);
+  });
+});
+
+// The answer spoken by itself as it arrives is judged by what is drawn too (mw-fnvjof.17.319): it is spoken once its turn has said how many groups of links it drew.
+describe('an answer spoken as it arrives, with a link that is not drawn', () => {
+  const spokenOf = (id: number, links: number | undefined, drawn?: boolean): { said: () => string | undefined } => {
+    let said: string | undefined;
+    spokenAnswer(id, SAYS, links, (words) => (said = words), drawn);
+    return { said: () => said };
+  };
+  const runsOf = (words: string | undefined): string => answerRuns(words ?? '').map((run) => (typeof run === 'string' ? run : JSON.stringify(run))).join(' ');
+
+  it('a setting link over a run: the spoken runs have no pointer to a link below', async () => {
+    const turn = { ...turnWith([{ kind: 'setting', key: 'textSize' }]), id: 71 };
+    const heard = spokenOf(71, 1);
+    // it waits for the chips: nothing is spoken before the turn has said what it drew
+    await act(async () => {
+      await afterTurns();
+    });
+    expect(heard.said()).toBeUndefined();
+    await shownTurn(turn, true);
+    await waitFor(() => expect(heard.said()).toBeDefined());
+    expect(runsOf(heard.said())).not.toMatch(/link below/i);
+    expect(runsOf(heard.said())).toContain('Open the setting to change it.');
+  });
+
+  it('a setting link on a plain screen: drawn, so the words are spoken as written', async () => {
+    const turn = { ...turnWith([{ kind: 'setting', key: 'textSize' }]), id: 72 };
+    await shownTurn(turn, false);
+    const heard = spokenOf(72, 1);
+    await waitFor(() => expect(heard.said()).toBeDefined());
+    expect(heard.said()).toBe(SAYS);
+  });
+
+  it('no link carried, or words that point at none: spoken at once, as written', () => {
+    expect(spokenOf(73, 0).said()).toBe(SAYS);
+    let said: string | undefined;
+    spokenAnswer(74, 'Open the setting to change it.', 1, (words) => (said = words));
+    expect(said).toBe('Open the setting to change it.');
+  });
+
+  it('a talk with no sheet open to draw the links (Hands-free with it closed): the pointer is left out at once', () => {
+    expect(spokenOf(75, 1, false).said()).toBe('Open the setting to change it.');
   });
 });

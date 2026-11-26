@@ -5,7 +5,7 @@ import type { TutorFailure } from '../services/tutor';
 
 /** What became of the turn: the answer kept (its stored turn's id and its words), the way it failed, a talk already waiting for an answer, or the screen that asked going away. */
 export type VoiceOutcome =
-  | { kind: 'answered'; id: number; answer: string }
+  | { kind: 'answered'; id: number; answer: string; links?: number }
   | { kind: 'failed'; failure: TutorFailure; detail: string }
   | { kind: 'busy' }
   | { kind: 'gone' };

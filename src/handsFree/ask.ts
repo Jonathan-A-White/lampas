@@ -15,6 +15,7 @@ import type { CommandDone } from 'voice-kit/handsfree';
 import { tutorSeat } from '../nav/tutorSeat';
 import { FAILURE_TITLES } from '../services/tutor';
 import { answerRuns } from '../speech/answerRuns';
+import { spokenAnswer } from '../talk/drawnLinks';
 import { stopIfSpeaking } from '../speech/greek';
 import { getReading, readingEndedWhole, stopReading, subscribeReading } from '../speech/readAloud';
 import { startAnswerWhenSeen } from '../speech/tutorVoice';
@@ -83,9 +84,12 @@ let openedByVoice = false;
 
 /** Speaks the answer `id` (`answer`) in the voices of a spoken answer and resolves when it has been said, or cut by a wake (`stop`); a Stop he tapped (the speaking bar, the
  * answer's speaker) cuts it too (mine.cancelled), as a wake would: while the tutor speaks no microphone is open (session.ts, mw-rl10piw.74), so his tap is the way to cut it. */
-function speakAnswer(id: number, answer: string, mine: Asking): Promise<void> {
+function speakAnswer(id: number, answer: string, links: number | undefined, mine: Asking): Promise<void> {
   return new Promise((resolve) => {
-    const runs = answerRuns(answer);
+    // he asked by voice and cannot tap a chip: the sentences that point him at a link below are left out of what is said (src/talk/drawnLinks.ts, mw-fnvjof.17.319)
+    let words = answer;
+    spokenAnswer(id, answer, links, (said) => (words = said), false);
+    const runs = answerRuns(words);
     let unwatch: (() => void) | null = null;
     const done = (): void => {
       unwatch?.();
@@ -186,7 +190,7 @@ export async function askTutor(question: string, say: (text: string) => Promise<
     return;
   }
   if (outcome.kind === 'answered') {
-    await speakAnswer(outcome.id, outcome.answer, mine);
+    await speakAnswer(outcome.id, outcome.answer, outcome.links, mine);
     finish();
     // the sermon the answer named (play-sermon) starts, and the table it named (open-paradigm) opens, as the answer ends, with no tap; a Stop that cut the answer short leaves them
     if (mine.cancelled) {
