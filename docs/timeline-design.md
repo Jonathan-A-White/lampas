@@ -87,18 +87,25 @@ body in the installed app, where the phone's bar keeps 48 px at the foot (`--lp-
 2. the credit line the data asks for (`TIMELINE_CREDIT`, three lines of 14 px at 390 px), the first thing under the strip. Its height is the strip's to give: `strip = max(STRIP_MIN, min(body, max(STRIP_FULL, body - credit)))`, so on the installed phone at Half the strip has all five lanes and the credit is one small scroll down, and from a 350 px body up the credit is in view whole (decision D2);
 3. `Timeline at Bible Mapper`, the link the maps already have, here opening Bible Mapper's own timeline at the year in the middle of the strip (`?date=<signed year>`).
 
-**The strip**, top to bottom:
+**The strip**, top to bottom, sketched no wider than the 30 characters a phone's code box shows whole (so not to scale: the pictures above are):
 
 ```
- ┌ Isaiah 1 ───────────────┐                    FLAG 18   the chapter's name, on its column
- │  [ Reign of Uzziah ][ Prophecies of Micah ]  LANE 44   events, the lane furthest from the ruler
- │  [ Prophecies of Isaiah ]                    LANE 44   events, the lane next to the ruler: the chapter's own first
- ·  · ·· ·     ·    ·                           SPINE 44  ribbon, the line, ticks, years; − and + at its right end
- │ 760 BC   740 BC   720 BC           [−][+]
- │ Uzziah ──┤  Hezekiah ●───────────┤           LANE 44   lives, the lane next to the ruler
- │ Jotham ──────┤                               LANE 44
- │      Ahaz ●────────┤                         LANE 44
+FLAG   + Isaiah 1 ----------+
+LANE    [Prophecies of Micah]
+LANE   [Prophecies of Isaiah]
+SPINE  .  . .. .    .   .
+       760 BC   740 BC [-][+]
+LANE   Uzziah -| Hezekiah o-|
+LANE   Jotham -----|
+LANE        Ahaz o------|
 ```
+
+Reading down, each row has at its left the constant that is its height (the table below has the heights):
+
+- `FLAG`: the chapter's name, on its column, which runs down through every lane.
+- `LANE`, two of events: the upper is the lane furthest from the ruler; the lower is the lane next to it, which the chapter's own events take first.
+- `SPINE`, both of its rows: the ribbon of what has no lane, the line, the ticks, the years; `−` and `+` at its right end.
+- `LANE`, three of lives: the first is the lane next to the ruler. A life is its name, a dot at the birth (`o`), its line and a tick at the death (`|`).
 
 | Constant | Value | What it is |
 | --- | --- | --- |

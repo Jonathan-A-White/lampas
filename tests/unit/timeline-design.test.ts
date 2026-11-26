@@ -36,8 +36,35 @@ const PARTS = [
 const BUILD_STORIES = ['mw-fnvjof.17.317.2', 'mw-fnvjof.17.317.3'] as const;
 const TOKENS = ['canvas', 'surface', 'line', 'fg', 'muted', 'accent', 'accent-fg'] as const;
 
+/** The widest line GitHub's code box shows whole on a 390 px phone, in characters; a wider one is cut at the box's edge until it is scrolled sideways (mw-fnvjof.17.317.7). */
+const BOX_MAX = 30;
+/** A code box that is a picture to be read whole has no language, or `text`; one with a language (`bash`) is lines to copy, which cannot be folded. */
+const PICTURE = ['', 'text'];
+
 const read = (path: string): string => (existsSync(path) ? readFileSync(path, 'utf8') : '');
 const doc = read(DOC);
+
+interface Box {
+  /** the line of the doc its fence opens on, counted from 1 */
+  at: number;
+  /** the word after the opening fence, '' when there is none */
+  lang: string;
+  lines: string[];
+}
+/** The code boxes of the doc, in order; `open` is true when the last fence was never closed. */
+function boxes(): { found: Box[]; open: boolean } {
+  const found: Box[] = [];
+  let box: Box | null = null;
+  for (const [i, line] of doc.split('\n').entries()) {
+    const fence = line.match(/^```(.*)$/);
+    if (!fence) box?.lines.push(line);
+    else if (box) {
+      found.push(box);
+      box = null;
+    } else box = { at: i + 1, lang: fence[1].trim(), lines: [] };
+  }
+  return { found, open: box !== null };
+}
 
 /** The text of the `## <name>` section (the heading may go on after the name), up to the next `## `. */
 function section(name: string): string {
@@ -114,6 +141,18 @@ describe(DOC, () => {
   it('lays the strip out at the phone, sideways and wide', () => {
     const layout = section('Layout');
     for (const size of ['390x844', '844x390', '768']) expect(layout, `the layout at ${size}`).toContain(size);
+  });
+
+  it('draws the strip in a code box the phone shows whole: no line of a picture is over 30 characters', () => {
+    const { found, open } = boxes();
+    expect(open, 'every code box is closed').toBe(false);
+    expect(/^```(text)?$/m.test(section('Layout')), 'the Layout draws the strip in a code box').toBe(true);
+    const wide = found
+      .filter((box) => PICTURE.includes(box.lang))
+      .flatMap((box) => box.lines.map((line, i) => ({ at: box.at + 1 + i, width: [...line].length })))
+      .filter(({ width }) => width > BOX_MAX)
+      .map(({ at, width }) => `${DOC}:${at} is ${width} characters wide`);
+    expect(wide).toEqual([]);
   });
 
   it("names the app's own colours in light and dark, the hex of each as src/index.css has it, and the prototype draws with the same", () => {
