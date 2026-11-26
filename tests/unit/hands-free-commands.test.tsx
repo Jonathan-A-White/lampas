@@ -28,6 +28,7 @@ import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speec
 import { serveWakeModel, stubWake, type WakeFake } from '../support/fake-wake';
 import { ManualClock } from '../support/manual-clock';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
+import { afterTurns } from '../support/turns';
 
 const timeout = ASYNC_WAIT_MS;
 const john1 = JSON.parse(readFileSync('public/data/jhn/1.json', 'utf8')) as Chapter;
@@ -361,8 +362,31 @@ describe('filler words around a command', () => {
     await play("the phone's voice", 5);
     const recogniser = await wakeUp();
     await says(recogniser, words);
+    // 'help' says its sentence first, and the wake opens when that has been said (mw-rl10piw.78); the others say nothing
+    synth.finishAll();
     await vi.waitFor(() => expect(wake.listening).toBe(true), { timeout });
     expect(synth.spoken.map((s) => s.text).filter((t) => t.startsWith('Sorry'))).toEqual([]);
+  });
+
+  it("the wake does not open while the help text is said, but a settle after its end (mw-rl10piw.78)", async () => {
+    const recogniser = await wakeUp();
+    const opened: number[] = [];
+    const start = wake.start.bind(wake);
+    wake.start = async (options) => {
+      opened.push(performance.now());
+      return start(options);
+    };
+    await says(recogniser, 'help');
+    await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toEqual([HELP_SPOKEN]), { timeout });
+    await afterTurns();
+    expect(synth.speaking).toBe(true);
+    expect(opened).toEqual([]);
+    expect(wake.listening).toBe(false);
+    const endedAt = performance.now();
+    synth.finishAll();
+    await vi.waitFor(() => expect(wake.listening).toBe(true), { timeout });
+    // the sentence's last sound was still leaving the phone at its end event (SPEECH_TAIL_MS, 150)
+    expect(opened[0] - endedAt).toBeGreaterThanOrEqual(140);
   });
 
   it("keeps 'for me' in a question put to the tutor", () => {

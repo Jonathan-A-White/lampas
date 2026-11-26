@@ -162,6 +162,33 @@ describe('Hands-free ask', () => {
     expect(FakeRecognizer.instances.length).toBe(before);
   });
 
+  it("the wake does not open while 'Asking the tutor' is said, but a settle after its end, and then it listens for an interrupt (mw-rl10piw.78)", async () => {
+    await openJohn3();
+    fake.autoReply = undefined;
+    const opened: number[] = [];
+    const start = wake.start.bind(wake);
+    wake.start = async (options) => {
+      opened.push(performance.now());
+      return start(options);
+    };
+    const first = await wakeUp();
+    await says(first, 'ask who was Nicodemus');
+    await waitFor(() => expect(spoken()).toContain(ASKING), { timeout });
+    // the sentence is still being said: the microphone is not opened under it
+    await act(async () => {
+      await afterTurns();
+    });
+    expect(synth.speaking).toBe(true);
+    expect(opened).toEqual([]);
+    expect(wake.listening).toBe(false);
+    const endedAt = performance.now();
+    act(() => synth.finish());
+    await waitFor(() => expect(wake.listening).toBe(true), { timeout });
+    expect(opened).toHaveLength(1);
+    // the sentence's last sound was still leaving the phone at its end event (SPEECH_TAIL_MS, 150)
+    expect(opened[0] - endedAt).toBeGreaterThanOrEqual(140);
+  });
+
   it('an answer carrying a command that needs his tap speaks its words, runs nothing and leaves the offer in the talk', async () => {
     // the Reader's registry holds no command that needs a tap (the sheets register theirs), so one is stood in for it, as tests/unit/tutor-looking.test.tsx does
     let ran = 0;

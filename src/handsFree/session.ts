@@ -287,15 +287,58 @@ export const dismissHandsFreeNotice = (): void => setNotice(null);
 
 // --- saying a sentence ----------------------------------------------------------------------------------------------------------------------------
 
-/** Says `text` in the English voice and resolves when it has been said (or SAY_WAIT_MS on, should the phone never say so). */
-function sayAloud(text: string): Promise<void> {
+// A command's own sentence ('Asking the tutor', 'Go ahead', the help text) holds the wake shut. The kit opens the wake as a command begins (carryOut: wakeOn before onCommand), so it would
+// open in the middle of the sentence and cut it off on a phone, as it cut 'Hands-free on' (mw-rl10piw.76, .78). The wake opens, for an interrupt, once the sentences have ended and their sound
+// has left the phone; one the follow-up's microphone takes first (the command ends as the tail has gone) is not opened at all.
+
+/** Sentences of sayAloud still being said. */
+let saying = 0;
+/** A sentence is being said, or has ended and its tail (SPEECH_TAIL_MS, then FOLLOW_UP_FIRST_MS) has not yet passed: a wake that is not open waits. */
+let sayHeld = false;
+let giveSayTail: (() => void) | null = null;
+let sayTailTimer: ReturnType<typeof setTimeout> | undefined;
+
+function sayBegan(): void {
+  saying++;
+  sayHeld = true;
+  giveSayTail?.();
+  giveSayTail = null;
+  clearTimeout(sayTailTimer);
+}
+
+function sayEnded(): void {
+  saying = Math.max(0, saying - 1);
+  if (saying > 0) return;
+  giveSayTail = whenVoiceSettled(() => {
+    giveSayTail = null;
+    // a beat more, so the follow-up the command's end opens takes the microphone first, with no open-and-close of the wake between
+    sayTailTimer = globalThis.setTimeout(() => {
+      if (saying > 0) return;
+      sayHeld = false;
+      shutListeners.forEach((listener) => listener());
+    }, FOLLOW_UP_FIRST_MS);
+  });
+}
+
+function forgetSaying(): void {
+  saying = 0;
+  sayHeld = false;
+  giveSayTail?.();
+  giveSayTail = null;
+  clearTimeout(sayTailTimer);
+}
+
+/** Says `text` in the English voice and resolves when it has been said (or SAY_WAIT_MS on, should the phone never say so). With `holdsWake` (a command's sentence) the wake is not opened while it is said. */
+function sayAloud(text: string, holdsWake = false): Promise<void> {
   const clock = clockNow();
+  if (holdsWake) sayBegan();
   return new Promise((resolve) => {
     let done = false;
     const finish = (): void => {
       if (done) return;
       done = true;
       clock.clearTimeout(timer);
+      if (holdsWake) sayEnded();
       resolve();
     };
     const timer = clock.setTimeout(finish, SAY_WAIT_MS);
@@ -365,9 +408,14 @@ const wake: WakePort = {
       return { ok: false, kind: 'other', message: err instanceof Error ? err.message : String(err) };
     }
     await untilMicMayOpen();
-    const first = await openWake(loaded, onWake);
-    if (!first.ok) return first;
-    let inner: typeof first | null = first;
+    // a sentence of the command being said (sayHeld): the wake is opened when it has ended (settle), not under it
+    let first: Extract<Awaited<ReturnType<WakePort['start']>>, { ok: true }> | null = null;
+    if (!sayHeld) {
+      const opened = await openWake(loaded, onWake);
+      if (!opened.ok) return opened;
+      first = opened;
+    }
+    let inner: typeof first = first;
     let stopped = false;
     let opening = false;
     /** Holds the microphone when it may (not stopped, the tutor not speaking), else lets it go. */
@@ -380,6 +428,7 @@ const wake: WakePort = {
         return;
       }
       if (inner) return;
+      if (sayHeld) return;
       opening = true;
       let again: Awaited<ReturnType<WakePort['start']>>;
       try {
@@ -406,7 +455,8 @@ const wake: WakePort = {
     // the tutor began to speak while it opened
     if (micShut) void settle();
     return {
-      ...first,
+      ok: true,
+      ...(first ?? {}),
       stop() {
         if (stopped) return;
         stopped = true;
@@ -507,7 +557,7 @@ function onState(next: HandsFreeState): void {
 /** Carries a command out (commands.ts), and gives the kit its answer a moment after the last of what it said has left the phone: the kit opens a microphone as this resolves (the follow-up's
  * recogniser, the wake again), and one that opens at the sentence's end event cuts its last words off (mw-rl10piw.76). What the command does is done before the wait. */
 async function commandDone(words: string, info: { followUp: boolean }): ReturnType<typeof runCommand> {
-  const done = await runCommand(words, sayAloud, info);
+  const done = await runCommand(words, (text) => sayAloud(text, true), info);
   await new Promise<void>((resolve) => void whenVoiceSettled(resolve));
   return done;
 }
@@ -592,6 +642,7 @@ export function resetHandsFree(): void {
   wakesOpen = 0;
   closedAt = Number.NEGATIVE_INFINITY;
   micShut = tutorSpeaks();
+  forgetSaying();
   closeWaiters.clear();
   setNotice(null);
   setState(OFF);
