@@ -49,6 +49,22 @@ export const trimShelfDigest: Cut<TalkRequest> = (request) =>
 /** The maps of the passage's chapter (mw-zbjgn3r.4) go whole, after the shelf digest: a map the tutor is not told of is a link it does not offer; null when the request has none. */
 export const dropMaps: Cut<TalkRequest> = (request) => (request.maps ? without(request, 'maps') : null);
 
+/** The fewest sermon rows trimSermons leaves (what a request listed before mw-fnvjof.17.286). */
+export const SERMONS_KEPT = 8;
+
+/**
+ * The sermons beyond the first eight lose a row at a time before the sermons go whole (mw-fnvjof.17.286): the last row that came in by a theme, else the last of a source that has an earlier row (the
+ * source's first row stays, so each source stays told of while any can); null when eight or fewer are left.
+ */
+export const trimSermons: Cut<TalkRequest> = (request) => {
+  const rows = request.sermons?.rows;
+  if (!request.sermons || !rows || rows.length <= SERMONS_KEPT) return null;
+  const byTheme = rows.findLastIndex((r) => r.theme !== undefined);
+  const repeated = rows.findLastIndex((r, i) => rows.findIndex((o) => o.source === r.source) < i);
+  const drop = byTheme >= 0 ? byTheme : repeated >= 0 ? repeated : rows.length - 1;
+  return { ...request, sermons: { ...request.sermons, rows: rows.filter((_, i) => i !== drop) } };
+};
+
 /** The sermons of the passage (mw-qtu3zvz.6) go whole, right after the maps: a sermon the tutor is not told of is a link it does not offer; null when the request has none. */
 export const dropSermons: Cut<TalkRequest> = (request) => (request.sermons ? without(request, 'sermons') : null);
 
@@ -201,6 +217,7 @@ export const bibleTalkSteps = (held: number): readonly Cut<TalkRequest>[] => {
     trimGreekWordsWhileHistory,
     trimShelfDigest,
     dropMaps,
+    trimSermons,
     dropSermons,
     dropVariants,
     dropOlderHeldPassage,
