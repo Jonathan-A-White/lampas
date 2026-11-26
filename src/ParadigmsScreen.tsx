@@ -1005,18 +1005,19 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
         <p data-testid="mode-help" className="text-base text-muted">
           {levels && extent ? (live ? fillHelp(picked !== null, slipped, fillDone) : modeHelp(mode, extent, cells.length, his)) : '…'}
         </p>
+        {/* the row's buttons share one oneTap key, 'paradigms:header': Start again goes and Fill the table (flex-1) spreads over its place, so the second tap of a double tap would start filling (mw-fnvjof.17.339) */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {filling ? null : <Chips name="Mode" current={mode} options={MODES} onChoose={(next) => next !== mode && replaceHash(paradigmHash({ ...address, mode: next as ParadigmMode }))} />}
           {canChoose ? (
             <Chips name="Forms" current={lemma ? 'word' : 'pattern'} options={FORM_VIEWS} onChoose={(next) => next !== (lemma ? 'word' : 'pattern') && replaceHash(paradigmHash({ ...address, mode, own: next === 'word' }))} />
           ) : null}
           {!filling && cells.length > 0 ? (
-            <button type="button" onClick={() => oneTap('paradigms:fill', startFilling)} className={`${BUTTON} flex-1`}>
+            <button type="button" onClick={() => oneTap('paradigms:header', startFilling)} className={`${BUTTON} flex-1`}>
               Fill the table
             </button>
           ) : null}
           {filling && !fillDone ? (
-            <button type="button" onClick={() => oneTap('paradigms:fill', showRest)} className={`${BUTTON} flex-1`}>
+            <button type="button" onClick={() => oneTap('paradigms:header', showRest)} className={`${BUTTON} flex-1`}>
               Show
             </button>
           ) : null}
@@ -1024,7 +1025,7 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
             <button
               type="button"
               onClick={() =>
-                oneTap('paradigms:fill', () => {
+                oneTap('paradigms:header', () => {
                   setFill(undefined);
                   setPicked(null);
                 })
