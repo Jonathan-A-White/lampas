@@ -7,7 +7,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { answerAsShown } from './data/linkPromise';
-import { reportDrawn } from './talk/drawnLinks';
+import { announcedAnswer, reportDrawn } from './talk/drawnLinks';
 import { markLinksUndrawn } from './data/repositories/talks';
 import { Waiting } from './ui/Waiting';
 import { AddWord } from './AddWordButton';
@@ -70,7 +70,6 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { setPending, talkKey, type AskState } from './pending/pendingAsks';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
 import { faceOf } from './script/greekLang';
-import { announce, plainText } from './ui/live';
 import { useDoorBusy } from './tutor/door';
 
 /** A picture in flight: what draws it under his question. */
@@ -623,7 +622,7 @@ export function TalkSheet({ scope, talkRef: ref, state, suggestions, shared, onS
     }
     if (newest?.id === undefined || newest.id === announced.current) return;
     announced.current = newest.id;
-    announce(`The tutor says: ${plainText(newest.a)}`);
+    announcedAnswer(newest);
   }, [turns]);
   useEffect(() => {
     if (waiting) offersOpen.current = new Set((keptTurns.current ?? []).filter((t) => t.id !== undefined && t.feedbackOffer && !t.feedbackSent && !t.feedbackWithdrawn).map((t) => t.id as number));

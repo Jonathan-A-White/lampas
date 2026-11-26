@@ -14,7 +14,8 @@ import { addTurn, listTurns } from '../../src/data/repositories/talks';
 import { OverRun } from '../../src/overRun';
 import { FOLD_MAX_TURNS, MAX_HISTORY_TURNS, buildTalkRequest, type TalkScope } from '../../src/services/talk';
 import { talkPlainText } from '../../src/talk/talkText';
-import { spokenAnswer } from '../../src/talk/drawnLinks';
+import { announcedAnswer, spokenAnswer } from '../../src/talk/drawnLinks';
+import { LiveRegion } from '../../src/ui/LiveRegion';
 import { answerRuns } from '../../src/speech/answerRuns';
 import { answerAsShown, promisesLink, withoutUnkeptLinkPromise } from '../../src/data/linkPromise';
 import { TutorLinks } from '../../src/TutorLinks';
@@ -260,5 +261,38 @@ describe('save-answer-references over a turn whose link was not drawn', () => {
     if (!ran.ok) throw new Error(ran.why);
     expect((await listVerseLists())[0].refs).toEqual(answerReferences(WORDS));
     expect((await listVerseLists())[0].refs).toHaveLength(3);
+  });
+});
+
+// The screen reader is told the answer as it arrives by the same rule (mw-fnvjof.17.331): it waits for the chips and leaves the pointer out when none is drawn.
+describe('an answer announced to a screen reader as it arrives, with a link that is not drawn', () => {
+  const regionText = (): string => screen.getByRole('status').textContent ?? '';
+
+  it('a setting link over a run: nothing is announced before the chips are counted, then no pointer to a link below', async () => {
+    const turn = { ...turnWith([{ kind: 'setting', key: 'textSize' }]), id: 81 };
+    render(<LiveRegion />);
+    announcedAnswer(turn);
+    await act(async () => {
+      await afterTurns();
+    });
+    expect(regionText()).toBe('');
+    await shownTurn(turn, true);
+    await waitFor(() => expect(regionText()).not.toBe(''));
+    expect(regionText()).toContain('The tutor says: Open the setting to change it.');
+    expect(regionText()).not.toMatch(/link below/i);
+  });
+
+  it('a setting link on a plain screen: drawn, so the words are announced as written', async () => {
+    const turn = { ...turnWith([{ kind: 'setting', key: 'textSize' }]), id: 82 };
+    render(<LiveRegion />);
+    await shownTurn(turn, false);
+    announcedAnswer(turn);
+    await waitFor(() => expect(regionText()).toContain('Tap the link below to go there.'));
+  });
+
+  it('no link carried: announced at once', () => {
+    render(<LiveRegion />);
+    announcedAnswer({ ...turnWith(undefined), id: 83 });
+    expect(regionText()).toContain('Tap the link below to go there.');
   });
 });
