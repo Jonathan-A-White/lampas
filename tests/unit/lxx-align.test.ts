@@ -485,6 +485,13 @@ describe('the report', () => {
     }
     expect(readFileSync('docs/lxx-align.md', 'utf8')).not.toContain('| Chapter | Verses |');
   });
+
+  // A report committed as derived without a cache makes the Laptop, which has every book's, refuse to rewrite it: `lxx:align-expect` exits 1 and the run over all books stops there (mw-u2w5klk.349.149).
+  it.each(readdirSync(join('docs', 'lxx-align')).filter((f) => /^[1-3a-z]{3}\.txt$/.test(f)).sort())('%s was committed as derived with the Morpheus cache, so a run on the Laptop is not refused', (f) => {
+    const line = readFileSync(join('docs', 'lxx-align', f), 'utf8').split('\n').find((l) => l.startsWith('Derived without a Morpheus cache:'));
+    const code = f.replace('.txt', '');
+    expect(line, `docs/lxx-align/${f}: on the Laptop, run \`npm run lxx:link\` then \`npm run lxx:align-expect -- --book ${code} --force\`, and commit what it writes`).toBe('Derived without a Morpheus cache: none.');
+  });
 });
 
 // the ship carries the chunks through (a dry ship: the synthetic Genesis of tests/support/lxx-genesis.ts with Gen 1's English)
