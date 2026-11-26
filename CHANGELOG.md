@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.412
+_2026-11-26_
+- New: On the timeline, tap an event or a person for a small card with its date, verses and people; tap a verse to move the text there, and the timeline now follows you from chapter to chapter.
+
 ## 0.7.410
 _2026-11-26_
 - Fixed: Asking the tutor to play a preacher's sermon on a chapter now works when many other sermons are listed for it.
