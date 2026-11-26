@@ -1,20 +1,27 @@
 {
   "reasons": {
     "supplied-word": "A word Brenton supplies; the Greek of this verse has no word for it.",
-    "greek-in-the-verse-before": "The Greek this English renders stands in the verse before in Swete, so no word of this verse fits it.",
+    "greek-in-the-verse-after": "The Greek this English renders stands in the verse after in Swete (Brenton's verse 3 holds Swete's 2 and 3, and the verse map gives a Brenton verse to the first Greek verse it answers), so no word of this verse fits it.",
     "not-in-swete": "Swete's Greek of this verse has no word for 'all the nations drink wine'."
   },
   "chapters": {
     "1": {
       "gaps": 0,
-      "model": 14,
+      "model": 21,
       "leftovers": [
-        ["1:2:arise", "greek-in-the-verse-before"],
-        ["1:3:dishonored", "greek-in-the-verse-before"],
-        ["1:3:gentiles", "greek-in-the-verse-before"],
-        ["1:3:greatly", "greek-in-the-verse-before"],
-        ["1:3:made", "greek-in-the-verse-before"],
-        ["1:3:small", "greek-in-the-verse-before"],
+        ["1:2:bring", "greek-in-the-verse-after"],
+        ["1:2:dwelling", "greek-in-the-verse-after"],
+        ["1:2:elated", "greek-in-the-verse-after"],
+        ["1:2:exalts", "greek-in-the-verse-after"],
+        ["1:2:ground", "greek-in-the-verse-after"],
+        ["1:2:habitation", "greek-in-the-verse-after"],
+        ["1:2:heart", "greek-in-the-verse-after"],
+        ["1:2:heart", "greek-in-the-verse-after"],
+        ["1:2:holes", "greek-in-the-verse-after"],
+        ["1:2:one", "greek-in-the-verse-after"],
+        ["1:2:pride", "greek-in-the-verse-after"],
+        ["1:2:rocks", "greek-in-the-verse-after"],
+        ["1:2:saying", "greek-in-the-verse-after"],
         ["1:6:how", "Brenton says 'how' a second time; the Greek of this verse has one πῶς, which 'How' renders."],
         ["1:10:committed", "supplied-word"],
         ["1:16:drink", "not-in-swete"],
@@ -26,9 +33,6 @@
       ],
       "placePairs": [
         ["1:1 Obdias. @1", "read"],
-        ["1:2 against @7", "read"],
-        ["1:2 rise @6", "read"],
-        ["1:2 war. @10", "read"],
         ["1:7 snares @20", "read"],
         ["1:10 ever. @16", "read"],
         ["1:12 children @14", "read"],

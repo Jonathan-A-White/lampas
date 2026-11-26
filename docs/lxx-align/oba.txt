@@ -6,8 +6,8 @@ Derived without a Morpheus cache: none.
 
 | Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Obadiah 1 | 21 | 456 | 440 | 96.5% | 78.1% | 161 (35.3%) |
+| Obadiah 1 | 21 | 456 | 421 | 92.3% | 74.3% | 150 (32.9%) |
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Obadiah | 21 | 456 | 440 | 96.5% | 78.1% | 161 (35.3%) |
+| Obadiah | 21 | 456 | 421 | 92.3% | 74.3% | 150 (32.9%) |

@@ -324,6 +324,8 @@ export const SUPPLEMENT_ROWS: readonly TvtmsRow[] = [
  * mw-u2w5klk.349.147, each read against Swete's verses (the table's section Jos.8:30--9:27 has a Brenton column that stands 8:30-35 at Rahlfs' sub-verses 9:2.1-6, which Swete does not number):
  * - Jos 8:30-35 and 9: Swete has the altar on Mount Gaebal at 9:3-8, after 9:2, so Brenton's 8:30-35 are the Greek 9:3-8, his 9:3-26 are the Greek 9:9-32 and his 9:27-29 (one USFM verse) the Greek 9:33;
  *   his 9:30-33 ('Then Joshua built an altar ...', an addition from the Alexandrian codex) repeat 8:30-35 and have no verse of Swete's of their own.
+ * mw-u2w5klk.349.150, read against Swete's verses:
+ * - Obad 1: LXX2012's 1:2 ('Arise you, and let us rise up against her to war') is the end of the Greek 1 (Ἀνάστητε ... εἰς πόλεμον), and its 1:3 holds the Greek 2 ('Behold, I have made you small ...') and 3 ('The pride of your heart ...'); both have 21 verses, so its 4-21 are the Greek 4-21.
  */
 export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Psa.10:Title', 'Absent [=Psa.10:1]'],
@@ -376,6 +378,8 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Amo.6:10-11', 'Amo.6:10'],
   ['Amo.6:12-15', 'Amo.6:11-14'],
   ['Jdg.5:31-32', 'Jdg.5:31'],
+  ['Oba.1:2', 'Oba.1:1'],
+  ['Oba.1:3', 'Oba.1:2-3'],
 ].map(([lxx2012, greek]) => ({ section: 'LXX2012', type: 'OneToOne', cells: { 'Brenton (LXX2012)': lxx2012, Greek: greek } }));
 
 /** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows; Exo.35:8-35:27's rows leave LXX2012's 35:8-19 where the Greek has them; Jos.8:30--9:27's stand 8:30-35 at 9:2.1-6). */
