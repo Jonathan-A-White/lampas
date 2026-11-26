@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.407
+_2026-11-26_
+- New: The Reader's Split sheet offers a Timeline: a strip of the Bible's dated events and lives under the passage, opened at the chapter's time, which you drag, flick and pinch through, with a Whole Bible button.
+
 ## 0.7.406
 _2026-11-26_
 - Fixed: Obadiah 1 in the Septuagint now shows 'Arise ... to war' at the end of verse 1, where its Greek is, so tapping 'war' opens the right Greek word.
