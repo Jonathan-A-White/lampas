@@ -54,7 +54,7 @@ import { blocksOf, DEFAULT_LAYOUT } from './layout/layouts';
 import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
-import { answerReadHere, pendingRead, pendingRequest, reopenTalk, takeRead, takeRequest } from './nav/readerRequest';
+import { answerReadHere, bringVerse, openAtVerse, pendingRead, pendingRequest, reopenTalk, takeRead, takeRequest } from './nav/readerRequest';
 import { closeVerse, openPassage, openVerse, openVerseRange, readerOf, routeOf, useAddress } from './nav/route';
 import { hasKeptScroll, useScrollMemory } from './nav/scrollMemory';
 import { useReadChecks } from './useReadChecks';
@@ -634,6 +634,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     };
   }, [chapter, septuagint]);
   const passageVerses = useMemo(() => (chapter ? passageNumbers(chapter) : []), [chapter]);
+  // A verse chip of the timeline's card (mw-fnvjof.17.317.3, src/timeline/EventCard.tsx) moves the text by the Reader's own way to a verse, as Choose a book's Go to does: a verse of the open
+  // chapter is brought to the top of the reading box; another chapter or book opens as a new Back step with the verse there, and the strip follows to that chapter's time (src/timeline/follow.ts).
+  const timelineVerse = useCallback(
+    (book: string, at: number, verse: number) => {
+      if (book === BOOK && at === CHAPTER) bringVerse(book, at, numbers.fromLampas(verse) ?? verse);
+      else openAtVerse(book, at, verse);
+    },
+    [BOOK, CHAPTER, numbers],
+  );
   const textReady = textDocked?.status === 'ready' && chapter !== null;
   useLinkedScroll({ passageBox: mainEl, dockBox: dockBody, numbers, linked: linkOn && dockText !== null, ready: textReady, place: `${dockText}:${BOOK}/${CHAPTER}`, showPage: paging ? showPage : null });
   // A text swapped for another while the Link is off keeps the verse the dock was on (linked, the passage's verse is the dock's)
@@ -822,8 +831,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           inert={sheetOpen || viewUnit !== undefined}
         >
           {dockTimeline ? (
-            // a new chapter is a new strip, opened at that chapter's time (the flight there is mw-fnvjof.17.317.3's)
-            <TimelineDock key={`${BOOK}/${CHAPTER}`} book={BOOK} chapter={CHAPTER} chapterName={TITLE} box={dockBody} onStrip={timeline.onStrip} onRest={timeline.onRest} />
+            // a new chapter is a new strip, which begins where the last chapter's stood and flies to its own chapter's time (src/timeline/follow.ts)
+            <TimelineDock key={`${BOOK}/${CHAPTER}`} book={BOOK} chapter={CHAPTER} chapterName={TITLE} box={dockBody} onStrip={timeline.onStrip} onRest={timeline.onRest} onVerse={timelineVerse} />
           ) : dockText !== null ? (
             textDocked?.status === 'ready' && chapter && !textLacking ? (
               <TextDock

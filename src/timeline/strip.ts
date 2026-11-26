@@ -1,8 +1,11 @@
-// src/timeline/strip.ts — the timeline strip itself (mw-fnvjof.17.317.2, docs/timeline-design.md; the second half of prototypes/timeline/timeline.js, carried over without the card, which is
-// mw-fnvjof.17.317.3's): one 2D canvas for the picture, drawn only while something moves, and the gestures that move it. It owns the view (where the strip stands and how far it is zoomed),
-// the lanes and the frames; what is read, pressed and announced is real DOM that TimelineStrip.tsx lays over the picture from what this says at rest (`onRest`), so nothing here writes to
-// the page while a finger is down. Time on the page's own clock (performance.now) times the finger's speed and every motion.
-import { K_MAX, T0, T1, clamp, fitView, kMin, tAt, ticks, wholeView, yearLabel, yearOf, type View } from './axis';
+// src/timeline/strip.ts — the timeline strip itself (mw-fnvjof.17.317.2, docs/timeline-design.md; the second half of prototypes/timeline/timeline.js): one 2D canvas for the picture, drawn only
+// while something moves, and the gestures that move it. It owns the view (where the strip stands and how far it is zoomed), the lanes and the frames; what is read, pressed and announced
+// is real DOM that TimelineStrip.tsx lays over the picture from what this says at rest (`onRest`), so nothing here writes to the page while a finger is down. Time on the page's own clock
+// (performance.now) times the finger's speed and every motion. The card (mw-fnvjof.17.317.3, EventCard.tsx) is the page's too: the strip is told the mark it is open on and the room it
+// takes at the foot (`choose`), deals its lanes for the height left above it, keeps that mark in a lane and rings it; and it says what a card says of a mark (`cardOf`, card.ts). A strip
+// made after a chapter turn begins where the last chapter's stood (`from`, follow.ts) and flies to its own chapter's time.
+import { K_MAX, T0, T1, clamp, fitView, kMin, tAt, ticks, wholeView, xOf, yearLabel, yearOf, type View } from './axis';
+import { eventCard, listCard, personCard, type Card } from './card';
 import { LAYOUT, MOTION, TYPE_SCALE_MAX } from './design';
 import { dealLanes, packLanes, type Deal, type LaneMark } from './lanes';
 import { chapterYears, marksOf, newTold, take, type Mark } from './marks';
@@ -23,6 +26,8 @@ export interface StripHit {
   h: number;
   /** what is under it, each by name and years: one for a mark, several for a busy place on the ruler */
   names: string[];
+  /** and each by its mark's id, in the same order: what its card or its list is of */
+  ids: string[];
 }
 
 /** Where the strip stands, said each time it comes to rest. */
@@ -54,6 +59,10 @@ export interface StripOptions {
   /** every book's code, in canon order: the open book's file is read first, the rest after the first picture */
   books: readonly string[];
   load(book: string): Promise<BookTimeline>;
+  /** a book's name as a verse chip writes it ('2 Kings'); its code where none is given */
+  bookName?(code: string): string;
+  /** where the last chapter's strip stood when he turned to this chapter: this strip begins there and flies to its own chapter's time */
+  from?: View | null;
   onRest(rest: StripRest): void;
   /** the strip has begun to move: the buttons over the picture are hidden until it rests */
   onMoving(): void;
@@ -75,6 +84,15 @@ export interface Strip {
   readonly width: number;
   readonly deal: Deal;
   readonly stats: { frames: number; last: number; marks: number };
+  /** the mark a card is open on: ringed, and kept in a lane whatever the crowd */
+  readonly chosen: string | null;
+  /**
+   * A card stands at the strip's foot, `tray` px tall, open on the mark `id` (null for the ruler's list; null and 0 when it shuts): the lanes are dealt for the height left above it, and a
+   * mark out of view is flown to.
+   */
+  choose(id: string | null, tray: number): void;
+  /** What a card says of these marks: of one, its own card; of several, the ruler's list, headed `title`. Null when the strip has none of them. */
+  cardOf(ids: readonly string[], title?: string): Card | null;
   earlier(): void;
   later(): void;
   zoomIn(): void;
@@ -118,6 +136,7 @@ interface Packed {
   k: number;
   events: number;
   people: number;
+  selected: string | null;
   reaches: Map<string, Reach>;
   lanes: Map<string, { id: string; lane: number }>;
   ribbons: { event: string[]; person: string[] };
@@ -228,12 +247,18 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
   let aim: View | null = null; // where a move under way is going: a second press steps from there
   let deal: Deal = { events: 1, people: 0 };
   let packed: Packed | null = null; // the lanes of the marks at this zoom, in px from the axis's 0: a pan reuses it
-  let laid: { k: number; reaches: Map<string, Reach>; lists: { event: LaneMark[]; person: LaneMark[] } } | null = null; // every mark's reach and rank at this zoom, worked out once for the lanes and for what the lanes are dealt from
+  let laid: { k: number; selected: string | null; reaches: Map<string, Reach>; lists: { event: LaneMark[]; person: LaneMark[] } } | null = null; // every mark's reach and rank at this zoom, worked out once for the lanes and for what the lanes are dealt from
+  let selected: string | null = null; // the mark a card is open on
+  let tray = 0; // the height the card takes at the strip's foot, px
+  let cameFrom = options.from ?? null; // where the last chapter's strip stood, until this one has opened
   const drawn = new Map<string, { y: number; in: number; label: number }>(); // per mark: where it is drawn now, eased toward where it belongs
   const stats = { frames: 0, last: 0, marks: 0 };
 
-  const laneCount = (): number => Math.max(1, Math.floor((Math.max(LAYOUT.STRIP_MIN, height) - LAYOUT.FLAG - LAYOUT.SPINE) / LAYOUT.LANE));
-  const top = (): number => LAYOUT.FLAG + Math.max(0, Math.max(LAYOUT.STRIP_MIN, height) - LAYOUT.FLAG - LAYOUT.SPINE - laneCount() * LAYOUT.LANE) / 2;
+  /** The height the picture is laid out in: the strip's, less the card at its foot, never under the least strip. */
+  const layoutHeight = (): number => Math.max(LAYOUT.STRIP_MIN, height - tray);
+  const laneCount = (): number => Math.max(1, Math.floor((layoutHeight() - LAYOUT.FLAG - LAYOUT.SPINE) / LAYOUT.LANE));
+  // in whole px: a card is as tall as its words need, and the ruler's hairlines must stay sharp above it
+  const top = (): number => LAYOUT.FLAG + Math.floor(Math.max(0, layoutHeight() - LAYOUT.FLAG - LAYOUT.SPINE - laneCount() * LAYOUT.LANE) / 2);
   const spineY = (): number => top() + deal.events * LAYOUT.LANE;
 
   /** A mark's reach at this zoom, in px from the axis's 0: itself and its name. Never narrower than a thumb. */
@@ -257,8 +282,9 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
     return { x0, x1, label, inside, bar, flip };
   }
 
-  /** Who chooses a lane first at this zoom: the chapter's, the book's, then the rest, those whose length suits the zoom before the far longer and the far shorter. */
+  /** Who chooses a lane first at this zoom: the chosen mark (its card is open), the chapter's, the book's, then the rest, those whose length suits the zoom before the far longer and the far shorter. */
   function rankAt(mark: Mark, k: number, r: Reach): number {
+    if (mark.id === selected) return -1;
     if (mark.rank < 2) return mark.rank;
     // a day's dot suits no zoom more than another, so the spans go first; and a bar that holds its own title before one whose title must stand beside it, where the next bar wants to be
     if (!r.bar) return 2.25;
@@ -267,7 +293,7 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
   }
 
   function lay(): NonNullable<typeof laid> {
-    if (laid && laid.k === view.k) return laid;
+    if (laid && laid.k === view.k && laid.selected === selected) return laid;
     const reaches = new Map<string, Reach>();
     const lists: { event: LaneMark[]; person: LaneMark[] } = { event: [], person: [] };
     for (const mark of marks) {
@@ -275,12 +301,12 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
       reaches.set(mark.id, r);
       lists[mark.kind].push({ id: mark.id, x0: r.x0, x1: r.x1, rank: rankAt(mark, view.k, r) });
     }
-    laid = { k: view.k, reaches, lists };
+    laid = { k: view.k, selected, reaches, lists };
     return laid;
   }
 
   function pack(): Packed {
-    if (packed && packed.k === view.k && packed.events === deal.events && packed.people === deal.people) return packed;
+    if (packed && packed.k === view.k && packed.events === deal.events && packed.people === deal.people && packed.selected === selected) return packed;
     const { reaches, lists } = lay();
     const lanes = new Map<string, { id: string; lane: number }>();
     const ribbons: Packed['ribbons'] = { event: [], person: [] };
@@ -289,7 +315,7 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
       for (const place of placed) lanes.set(place.id, place);
       ribbons[kind] = ribbon;
     }
-    packed = { k: view.k, events: deal.events, people: deal.people, reaches, lanes, ribbons };
+    packed = { k: view.k, events: deal.events, people: deal.people, selected, reaches, lanes, ribbons };
     return packed;
   }
 
@@ -303,7 +329,9 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
   }
 
   function dealAgain(): void {
-    const next = dealLanes(Math.max(LAYOUT.STRIP_MIN, height), need());
+    let next = dealLanes(layoutHeight(), need());
+    // a life's card keeps a lane for the life, whatever the room
+    if (selected?.startsWith('p') && next.people === 0) next = { events: Math.max(0, next.events - 1), people: 1 };
     if (next.events !== deal.events || next.people !== deal.people) {
       deal = next;
       packed = null;
@@ -503,6 +531,15 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
       }
       textX = r.flip ? a - LAYOUT.DOT / 2 - 6 - r.label.w : a + LAYOUT.DOT / 2 + 6;
     }
+    // the mark its card is open on: a ring of the accent round it
+    if (mark.id === selected) {
+      const x = r.bar ? Math.max(a, -12) - 3 : a - LAYOUT.DOT / 2 - 3;
+      const w = r.bar ? Math.min(b, width + 12) - Math.max(a, -12) + 6 : LAYOUT.DOT + 6;
+      roundRect(c, x, y - LAYOUT.BAR / 2 - 3, w, LAYOUT.BAR + 6, 11);
+      c.strokeStyle = colours.accent;
+      c.lineWidth = 2;
+      c.stroke();
+    }
     if (labelShare > 0.02) {
       c.globalAlpha *= labelShare;
       c.fillStyle = textTone;
@@ -534,6 +571,12 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
       c.fill();
     }
     if (!mark.openEnd) c.fillRect(b - 1, line - 6, 2, 12);
+    if (mark.id === selected) {
+      roundRect(c, x - 4, y - 20, Math.min(to, width + 8) - x + 8, 40, 10);
+      c.strokeStyle = colours.accent;
+      c.lineWidth = 2;
+      c.stroke();
+    }
     if (labelShare > 0.02) {
       c.globalAlpha *= labelShare;
       setFont(c, mark.rank === 0 ? fonts.strong : fonts.title);
@@ -629,7 +672,7 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
       if (x1 - x0 < 12) continue;
       const event = mark.kind === 'event';
       const y = event ? spine - (place.lane + 1) * LAYOUT.LANE : spine + LAYOUT.SPINE + place.lane * LAYOUT.LANE;
-      hits.push({ key: mark.id, mark: mark.id, label: nameOf(mark), x: Math.round(x0), y: Math.round(y), w: Math.round(Math.max(x1 - x0, Math.min(LAYOUT.TARGET, width - x0))), h: LAYOUT.LANE, names: [nameOf(mark)] });
+      hits.push({ key: mark.id, mark: mark.id, label: nameOf(mark), x: Math.round(x0), y: Math.round(y), w: Math.round(Math.max(x1 - x0, Math.min(LAYOUT.TARGET, width - x0))), h: LAYOUT.LANE, names: [nameOf(mark)], ids: [mark.id] });
     }
     // the ribbon: what found no lane, a thumb's width at a time
     const crowd = [...ribbons.event, ...ribbons.person]
@@ -651,7 +694,7 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
       const w = Math.max(LAYOUT.TARGET, end - x0);
       const x = clamp(x0 - (w - (end - x0)) / 2, 0, Math.max(0, width - w));
       const near = yearLabel(tAt(x + w / 2, view, width));
-      hits.push({ key: `ribbon${i}`, mark: 'ribbon', label: group.length === 1 ? nameOf(group[0]) : `${group.length} near ${near}`, x: Math.round(x), y: Math.round(spine), w: Math.round(w), h: LAYOUT.SPINE, names: group.map(nameOf) });
+      hits.push({ key: `ribbon${i}`, mark: 'ribbon', label: group.length === 1 ? nameOf(group[0]) : `${group.length} near ${near}`, x: Math.round(x), y: Math.round(spine), w: Math.round(w), h: LAYOUT.SPINE, names: group.map(nameOf), ids: group.map((mark) => mark.id) });
       i = j + 1;
     }
     // the way back to the chapter, at the side it lies on, when its years are out of view
@@ -902,13 +945,41 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
     canvas.height = Math.round(height * ratio);
     whole = wholeView(width);
     home = chapterSpan ? fitView(chapterSpan.a, chapterSpan.b, width) : null;
-    if (first || wasWhole) view = whole;
-    if (begun && (first || (wasHome && !wasWhole))) view = home ?? whole;
+    if (first) view = cameFrom ?? whole;
+    else if (wasWhole) view = whole;
+    if (begun && first) firstPicture();
+    else if (begun && wasHome && !wasWhole) view = home ?? whole;
     view = bounded(view);
     packed = null;
     if (anim) return ask();
     rest();
     draw();
+  }
+
+  /**
+   * The strip's first picture with its data: on the chapter's time (a book with no date: the whole Bible). After a chapter turn it begins where the last chapter's strip stood and flies
+   * there, so the eye keeps its place as the column and its name move; under reduced motion it is there at once.
+   */
+  function firstPicture(): void {
+    home = chapterSpan ? fitView(chapterSpan.a, chapterSpan.b, width) : null;
+    const to = bounded(home ?? whole);
+    const came = cameFrom ? bounded(cameFrom) : null;
+    cameFrom = null;
+    view = to;
+    if (!came || reduced() || (Math.abs((came.c - to.c) * to.k) < 1 && Math.abs(Math.log(came.k / to.k)) < 0.01)) return;
+    view = came;
+    flyTo(to);
+  }
+
+  /** The chosen mark is brought into view when it is out of it: a life whole in the width; an event by a move at this zoom, or drawn back to when it is too long for that. */
+  function bring(mark: Mark): void {
+    const person = mark.kind === 'person';
+    const a = person && mark.openStart ? mark.a - 30 : mark.a;
+    const b = person && mark.openEnd ? mark.b + 30 : mark.b;
+    if (xOf(b, view, width) >= 40 && xOf(a, view, width) <= width - 40) return;
+    if (person) flyTo(fitView(a, b, width, 0.7));
+    else if ((b - a) * view.k <= width * 0.7) flyTo({ c: (a + b) / 2, k: view.k });
+    else flyTo(fitView(a, b, width, 0.4));
   }
 
   readLook();
@@ -939,10 +1010,12 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
       build();
       begun = true;
       if (width) {
-        home = chapterSpan ? fitView(chapterSpan.a, chapterSpan.b, width) : null;
-        view = bounded(home ?? whole);
-        rest();
-        draw();
+        firstPicture();
+        if (anim) ask();
+        else {
+          rest();
+          draw();
+        }
       }
       return Promise.all(options.books.filter((code) => code !== book).map((code) => options.load(code).then((file) => !dead && take(told, file, false, chapter), () => undefined)));
     })
@@ -968,6 +1041,33 @@ export function mountStrip(root: StripRoot, canvas: HTMLCanvasElement, options: 
       return deal;
     },
     stats,
+    get chosen() {
+      return selected;
+    },
+    choose(id, px) {
+      const room = Math.max(0, px);
+      if (id === selected && room === tray) return;
+      const fresh = id !== null && id !== selected;
+      selected = id;
+      tray = room;
+      laid = null;
+      packed = null;
+      if (!begun || !width) return;
+      // a move under way lays the lanes out itself when it lands
+      if (anim || pan || pinch) return ask();
+      rest();
+      ask();
+      const mark = fresh ? byId.get(id) : undefined;
+      if (mark) bring(mark);
+    },
+    cardOf(ids, title = '') {
+      const found = ids.map((id) => byId.get(id)).filter((mark): mark is Mark => mark !== undefined);
+      if (found.length === 0) return null;
+      if (ids.length > 1) return listCard(found, title);
+      const [mark] = found;
+      if (mark.kind === 'person') return personCard(mark, { has: (id) => byId.has(id) });
+      return eventCard(mark, { book, chapter, books: options.books, bookName: options.bookName ?? ((code) => code), person: (key) => told.people.get(key), has: (id) => byId.has(id) });
+    },
     earlier: () => panStep(-1),
     later: () => panStep(1),
     zoomIn: () => zoomStep(MOTION.ZOOM_STEP),

@@ -383,6 +383,7 @@ export const NEUTRAL_FEATURES: Readonly<Record<string, string>> = {
   'long-question': 'a long pasted question: the tutor’s mechanics',
   maps: 'Bible maps: English place names',
   'timeline-dock': 'the timeline in the split: dates and English titles, the same for every chapter',
+  'timeline-card': "the timeline's cards, the verse tap and the chapter turn: dates, English titles and verse numbers, the same for every chapter",
   'maps-settings': 'Maps in Settings: English place names',
   memory: 'the reader’s memory: the tutor’s mechanics',
   'memory-tutor': 'the tutor reads the memory: the tutor’s mechanics',
