@@ -28,6 +28,7 @@ import { validate, type Schema } from '../../tests/support/schema-validate';
 import '../../tests/support/grinds-in-graph';
 import { findButton } from '../../tests/support/find-button';
 import { openTutor } from './open-tutor';
+import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -51,6 +52,8 @@ let fake: FakePostern;
 async function openAt(address: string, goal: string | undefined = '1 John 1:1', slowWriteMs = 0, slowReadMs = 0, slowSettings = false): Promise<void> {
   vi.restoreAllMocks();
   cleanup();
+  // the last scenario's open sheets step history back as they unmount (useSheetBack): that traversal must land before this one sets its address (mw-fnvjof.17.336)
+  await sheetEntriesGone();
   stopReading();
   clearBus();
   forgetTrail();
@@ -497,6 +500,8 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
     When('Lampas is reloaded on #/about', async () => {
       cleanup();
+      // the last scenario's open sheets step history back as they unmount (useSheetBack): that traversal must land before this one sets its address (mw-fnvjof.17.336)
+      await sheetEntriesGone();
       stopReading();
       clearBus();
       window.history.replaceState(null, '', '/#/about');
