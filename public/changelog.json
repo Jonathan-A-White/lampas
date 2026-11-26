@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.398",
+    "date": "2026-11-26",
+    "story": "mw-fnvjof.17.314",
+    "kind": "fixed",
+    "text": "The tutor can now read any verse of an Old Testament chapter you are talking about, not only the first few."
+  },
+  {
+    "version": "0.7.398",
+    "date": "2026-11-26",
+    "story": "mw-fnvjof.17.330",
+    "kind": "fixed",
+    "text": "Searching your saved talks no longer finds or shows a sentence about a link that was never drawn."
+  },
+  {
+    "version": "0.7.398",
+    "date": "2026-11-26",
+    "story": "mw-fnvjof.17.319",
+    "kind": "fixed",
+    "text": "The tutor no longer says \"tap the link below\" aloud when no link is shown under its answer."
+  },
+  {
+    "version": "0.7.398",
+    "date": "2026-11-26",
+    "story": "mw-rl10piw.76",
+    "kind": "fixed",
+    "text": "Hands-free no longer opens the microphone while the end of its own voice is still sounding, so \"Hands-free on\" and the tutor's answers are heard to the last word."
+  },
+  {
+    "version": "0.7.398",
+    "date": "2026-11-26",
+    "story": "mw-u2w5klk.349.64",
+    "kind": "fixed",
+    "text": "In the Septuagint's Obadiah, tapping an English word now opens its Greek word where the Greek has one, except in verse 2, where the two texts number the verses differently."
+  },
+  {
     "version": "0.7.397",
     "date": "2026-11-26",
     "story": "mw-fnvjof.17.316",

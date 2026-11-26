@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.398
+_2026-11-26_
+- Fixed: The tutor can now read any verse of an Old Testament chapter you are talking about, not only the first few.
+- Fixed: Searching your saved talks no longer finds or shows a sentence about a link that was never drawn.
+- Fixed: The tutor no longer says "tap the link below" aloud when no link is shown under its answer.
+- Fixed: Hands-free no longer opens the microphone while the end of its own voice is still sounding, so "Hands-free on" and the tutor's answers are heard to the last word.
+- Fixed: In the Septuagint's Obadiah, tapping an English word now opens its Greek word where the Greek has one, except in verse 2, where the two texts number the verses differently.
+
 ## 0.7.397
 _2026-11-26_
 - New: Paradigm tables can be filled in backwards: the cells empty and the forms are tiles you tap or drag into place.
