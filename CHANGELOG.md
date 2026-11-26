@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.401
+_2026-11-26_
+- Fixed: when you read Old Testament chapters at Just English, the passages the tutor looks up no longer carry Hebrew you did not ask for.
+- Fixed: Hands-free no longer cuts off the end of its own spoken replies, such as "Asking the tutor" and the help list.
+- Fixed: when the tutor is asked to save the references of the answer above, it saves the ones in the words you saw, not in a sentence the app had left out.
+
 ## 0.7.400
 _2026-11-26_
 - Fixed: on a slow phone, choosing Settings or Tools from the Menu no longer opens the screen and then drops back to the Bible text.

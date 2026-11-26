@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.401",
+    "date": "2026-11-26",
+    "story": "mw-fnvjof.17.333",
+    "kind": "fixed",
+    "text": "when you read Old Testament chapters at Just English, the passages the tutor looks up no longer carry Hebrew you did not ask for."
+  },
+  {
+    "version": "0.7.401",
+    "date": "2026-11-26",
+    "story": "mw-rl10piw.78",
+    "kind": "fixed",
+    "text": "Hands-free no longer cuts off the end of its own spoken replies, such as \"Asking the tutor\" and the help list."
+  },
+  {
+    "version": "0.7.401",
+    "date": "2026-11-26",
+    "story": "mw-fnvjof.17.329",
+    "kind": "fixed",
+    "text": "when the tutor is asked to save the references of the answer above, it saves the ones in the words you saw, not in a sentence the app had left out."
+  },
+  {
     "version": "0.7.400",
     "date": "2026-11-26",
     "story": "mw-fnvjof.17.326",
