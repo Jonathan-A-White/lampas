@@ -27,7 +27,7 @@ import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
 import { wasSpoken } from './speech/spoken';
 import { readTarget, type GoPlace } from './talk/go';
-import { addWord, askBack, askedNames, bibleTalkClient, bibleTalkRegistry, changeSettings, lookingLine, noteLateAsks, withPreviousAnswer, withTalkSermons, withTutorFacts } from './tutor/registry';
+import { addWord, askBack, askedNames, bibleTalkClient, bibleTalkRegistry, changeSettings, lookingLine, noteLateAsks, previousAnswerOf, withPreviousAnswer, withTalkSermons, withTutorFacts } from './tutor/registry';
 import { doneLinesOf } from './talk/doneLines';
 import { holdUndo } from './talk/doneUndo';
 import { leaveSheetForTutor } from './ui/sheetBack';
@@ -281,7 +281,7 @@ export function useTalk(
           // a sermon or a table held by an earlier answer is not this one's (play-sermon and open-paradigm hold one for when the answer is done, src/sermons/player.ts, src/tutor/paradigmQueue.ts)
           dropQueuedSermon();
           dropQueuedParadigm();
-          const taken = answer.do?.length || answer.misses?.length ? await withTalkSermons(chapterSermons?.rows ?? [], () => withPreviousAnswer(turns.at(-1) && { answer: turns[turns.length - 1].a, question: turns[turns.length - 1].cleanQ ?? turns[turns.length - 1].q }, () => bibleTalkClient().takeAnswer({ do: answer.do, misses: answer.misses }, turns.length))).catch(() => undefined) : undefined;
+          const taken = answer.do?.length || answer.misses?.length ? await withTalkSermons(chapterSermons?.rows ?? [], () => withPreviousAnswer(previousAnswerOf(turns.at(-1)), () => bibleTalkClient().takeAnswer({ do: answer.do, misses: answer.misses }, turns.length))).catch(() => undefined) : undefined;
           const ranDo = taken ? doneLinesOf(answer.do ?? [], taken, bibleTalkRegistry()) : undefined;
           if (ranDo) refused.push(...ranDo.refused);
           // A place he asked to be taken to (a chapter, or a screen the registry names): opened only while this talk's sheet is open. The chapter he is on stays (said so); a chapter that came after he closed the

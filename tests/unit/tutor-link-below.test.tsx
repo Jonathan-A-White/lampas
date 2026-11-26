@@ -16,12 +16,15 @@ import { FOLD_MAX_TURNS, MAX_HISTORY_TURNS, buildTalkRequest, type TalkScope } f
 import { talkPlainText } from '../../src/talk/talkText';
 import { spokenAnswer } from '../../src/talk/drawnLinks';
 import { answerRuns } from '../../src/speech/answerRuns';
-import { promisesLink, withoutUnkeptLinkPromise } from '../../src/data/linkPromise';
+import { answerAsShown, promisesLink, withoutUnkeptLinkPromise } from '../../src/data/linkPromise';
 import { TutorLinks } from '../../src/TutorLinks';
 import { Turn } from '../../src/Talk';
 import type { TalkTurn } from '../../src/data/db';
 import { afterTurns } from '../support/turns';
 import { dropHeldTalk, heldTalk } from '../../src/talkReturn';
+import { answerReferences } from '../../src/lists/answerRefs';
+import { listVerseLists } from '../../src/data/repositories';
+import { bibleTalkRegistry, previousAnswerOf, withPreviousAnswer } from '../../src/tutor/registry';
 
 const scope: TalkScope = {
   title: 'Drill it',
@@ -231,5 +234,31 @@ describe('an answer spoken as it arrives, with a link that is not drawn', () => 
 
   it('a talk with no sheet open to draw the links (Hands-free with it closed): the pointer is left out at once', () => {
     expect(spokenOf(75, 1, false).said()).toBe('Open the setting to change it.');
+  });
+});
+
+// The command reads the answer as the tap under it does (mw-fnvjof.17.329): the sentence dropped from what he saw may name a reference, and neither the tap's list nor the command's holds it.
+describe('save-answer-references over a turn whose link was not drawn', () => {
+  const WORDS = 'Daniel 2 is the statue. Tap the link below to read Ezekiel 10 and Daniel 7.';
+  const turn: TalkTurn = { id: 5, ref: 'drill-it', q: 'Which books?', a: WORDS, words: [], when: 1, links: [{ kind: 'setting', key: 'textSize' }], linksUndrawn: true };
+
+  it('saves the same list as the tap under the answer: the references of the sentences he saw', async () => {
+    await db.verseLists.clear();
+    const shown = answerAsShown(turn);
+    expect(shown).toBe('Daniel 2 is the statue.');
+    const ran = await withPreviousAnswer(previousAnswerOf(turn), () => bibleTalkRegistry().run('save-answer-references', {}));
+    // what he saw names one reference; the dropped sentence's two are in neither the tap's list nor the command's
+    expect(answerReferences(shown)).toEqual(['Dan.2']);
+    if (!ran.ok) throw new Error(ran.why);
+    expect((await listVerseLists())[0].refs).toEqual(answerReferences(shown));
+  });
+
+  it('a turn whose links were drawn is read as written', async () => {
+    await db.verseLists.clear();
+    const drawn = { ...turn, linksUndrawn: false };
+    const ran = await withPreviousAnswer(previousAnswerOf(drawn), () => bibleTalkRegistry().run('save-answer-references', {}));
+    if (!ran.ok) throw new Error(ran.why);
+    expect((await listVerseLists())[0].refs).toEqual(answerReferences(WORDS));
+    expect((await listVerseLists())[0].refs).toHaveLength(3);
   });
 });

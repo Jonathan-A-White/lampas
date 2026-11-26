@@ -22,6 +22,7 @@ import { memorizingNow } from '../memorize/memorizing';
 import { verseTextsOf } from '../memorize/verseText';
 import { listMemorized } from '../data/repositories/memorize';
 import { getVerseList, listVerseLists, removeVerseList } from '../data/repositories/verseLists';
+import { answerAsShown } from '../data/linkPromise';
 import { answerReferences } from '../lists/answerRefs';
 import { saveAsListCommand, type ListSaved } from '../services/formCommands';
 import { LIST_NAME_MAX, suggestedListName } from '../share/listName';
@@ -424,6 +425,12 @@ export async function withPreviousAnswer<T>(previous: { answer: string; question
   } finally {
     previousAnswer = kept;
   }
+}
+
+/** The previous answer for withPreviousAnswer, from the newest kept turn of the talk (none for a talk with no turn): the answer as he saw it (answerAsShown), the words the tap under it reads
+ *  (src/talk/SaveReferences.tsx), so a reference in a sentence dropped for pointing at a link that was not drawn is saved by neither (mw-fnvjof.17.329). */
+export function previousAnswerOf(turn: { a: string; q: string; cleanQ?: string; linksUndrawn?: boolean } | undefined): { answer: string; question: string } | undefined {
+  return turn && { answer: answerAsShown(turn), question: turn.cleanQ ?? turn.q };
 }
 
 /** Saves the Bible references the answer before names, as the tap under that answer does (mw-5r3p30.929): every reference its links stand for, in answer order, a run of chapters as its chapters, through the
