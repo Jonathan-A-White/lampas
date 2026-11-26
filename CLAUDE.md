@@ -138,6 +138,7 @@ docs/links.md # every link form Lampas takes in, with an example; where web+lamp
 docs/data.md # the data's JSON shape, its two sources and licences, build changes
 docs/maps.md # the maps: src/maps/, Bible Mapper's data and terms, adding an atlas
 docs/timeline.md # the timeline's data: Theographic, the corrections file, upstream
+docs/timeline-design.md # the timeline strip's design: look, motion, lanes, the frame budget; prototypes/timeline/
 docs/sermons.md # the sermon index: build, files, sources
 docs/audio-judge.md # David's cuts judged
 docs/audio-run.md # one command a book, a fresh box, the Bible's cost
