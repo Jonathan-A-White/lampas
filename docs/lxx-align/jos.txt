@@ -14,6 +14,7 @@ Derived without a Morpheus cache: none.
 | Joshua 6 | 27 | 617 | 572 | 92.7% | 66.5% | 99 (16.0%) |
 | Joshua 7 | 26 | 644 | 613 | 95.2% | 68.2% | 110 (17.1%) |
 | Joshua 8 | 29 | 647 | 607 | 93.8% | 66.6% | 108 (16.7%) |
+| Joshua 9 | 33 | 844 | 680 | 80.6% | 53.1% | — |
 | Joshua 13 | 32 | 707 | 664 | 93.9% | 68.2% | 102 (14.4%) |
 | Joshua 16 | 10 | 238 | 230 | 96.6% | 68.9% | 27 (11.3%) |
 | Joshua 17 | 18 | 473 | 371 | 78.4% | 54.1% | — |
@@ -25,4 +26,4 @@ Derived without a Morpheus cache: none.
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Joshua | 402 | 9,540 | 8,320 | 87.2% | 61.1% | 875 (9.2%) |
+| Joshua | 435 | 10,384 | 9,000 | 86.7% | 60.5% | 875 (8.4%) |

@@ -27,7 +27,7 @@ export const WATCHED = [
   // the app's Weave, which tests/unit/weave-lxx-every-word.test.ts and lxx-align-choose-gen.test.ts draw over the ship's output (mw-u2w5klk.349.145): the weave itself, what lays its words out and what reads them
   'src/data/weave.ts', 'src/copy/format.ts', 'src/diagram/request.ts', 'src/diagram/weave.ts', 'src/memorize/target.ts', 'src/reader/VerseText.tsx', 'src/reader/useWoven.ts', 'src/services/reading.ts', 'src/speech/readAloud.ts',
   // the tests that read the real data, and what they share
-  'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose', 'tests/support/lxx-align-choose.ts', 'tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-align-low-confidence.test.ts', 'tests/unit/weave-lxx-every-word.test.ts',
+  'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose', 'tests/support/lxx-align-choose.ts', 'tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-ship-jos-chapters.test.ts', 'tests/unit/lxx-align-low-confidence.test.ts', 'tests/unit/weave-lxx-every-word.test.ts',
 ] as const;
 
 export interface LxxRealData {
