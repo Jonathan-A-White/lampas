@@ -2,6 +2,7 @@
 // answer, and that is known only once the chips have loaded (src/TutorLinks.tsx, told to src/Talk.tsx's Turn, which reports it here). An answer that carries links and whose words point at
 // one is therefore spoken when the Turn has said how many groups it drew: none, and the sentences that promise one are left out of the speech, as they are left out of the screen.
 import { answerAsShown, promisesLink } from '../data/linkPromise';
+import { announce, plainText } from '../ui/live';
 
 /** The groups each turn drew, by the turn's id, once its links have answered. */
 const known = new Map<number, number>();
@@ -31,4 +32,11 @@ export function spokenAnswer(id: number, answer: string, links: number | undefin
   if (!links || !promisesLink(answer)) return speak(answer);
   if (!drawn) return speak(answerAsShown({ a: answer, linksUndrawn: true }));
   void drawnOf(id).then((count) => speak(answerAsShown({ a: answer, linksUndrawn: count === 0 })));
+}
+
+/** Tells a screen reader the answer of `turn` as it arrives (the Talk sheet is open, so its Turn draws the links): by the same rule as the speech, after the chips are counted (mw-fnvjof.17.331). */
+export function announcedAnswer(turn: { id?: number; a: string; links?: unknown[] }): void {
+  const say = (words: string) => announce(`The tutor says: ${plainText(words)}`);
+  if (turn.id === undefined) return say(turn.a);
+  spokenAnswer(turn.id, turn.a, turn.links?.length, say);
 }
