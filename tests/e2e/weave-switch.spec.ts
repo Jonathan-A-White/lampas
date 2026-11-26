@@ -16,6 +16,26 @@ test.beforeEach(async ({ page }) => {
   await page.clock.install();
 });
 
+// One scroll to a verse is not a place on a loaded host: the weave and the fonts arrive late and the lines above it change height (verse 13 on top where 12 was wanted,
+// mw-fnvjof.17.335). The verse is put on top again at every look until two looks in a row find it there with nothing left to move.
+async function holdOnTop(page: Page, verse: number) {
+  const putOnTop = () =>
+    page.evaluate((n) => {
+      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+      const gap = document.querySelector(`[data-verse="${n}"]`)!.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+      if (Math.abs(gap) > 1) box.scrollTop += gap;
+      return Math.round(gap);
+    }, verse);
+  let steady = 0;
+  await expect
+    .poll(async () => {
+      const gap = await putOnTop();
+      steady = gap === 0 && (await topVerse(page)) === verse ? steady + 1 : 0;
+      return steady >= 2 ? 'on top and still' : `looked ${steady} times, the gap was ${gap}`;
+    }, { message: `verse ${verse} is on top and the page has stopped moving` })
+    .toBe('on top and still');
+}
+
 const choice = (page: Page, name: string) => page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name, exact: true });
 
 // holdFor presses where the box was when it read it. A page just opened lays its header and chip rows out a little after the first verse is drawn (more so on a loaded host and
@@ -270,11 +290,7 @@ test('the layout changed under an open Reader keeps the verse that is on top', a
   await openUnlocked(page);
   await page.goto('/#/?b=rom&c=16');
   await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
-  await page.evaluate(() => {
-    const box = document.querySelector<HTMLElement>('main[data-reader]')!;
-    const el = document.querySelector('[data-verse="12"]')!;
-    box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-  });
+  await holdOnTop(page, 12);
   const firstVerse = () =>
     page.evaluate(() => {
       const box = document.querySelector<HTMLElement>('main[data-reader]')!;
@@ -338,24 +354,8 @@ test.describe('Text size, Font, the weave’s Grammar and the Immersive reader c
     await openUnlocked(page);
     await page.goto(hash);
     await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
-    // The chapter's lines are still laid when the first one-shot scroll lands on a loaded host (the weave and the fonts arrive late and the lines above verse 12 change height), so verse 12 is put on top
-    // again at every look until two looks in a row find it there with nothing left to move; only then do the changes under test begin.
-    const putOnTop = () =>
-      page.evaluate(() => {
-        const box = document.querySelector<HTMLElement>('main[data-reader]')!;
-        const el = document.querySelector('[data-verse="12"]')!;
-        const gap = el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-        if (Math.abs(gap) > 1) box.scrollTop += gap;
-        return Math.round(gap);
-      });
-    let steady = 0;
-    await expect
-      .poll(async () => {
-        const gap = await putOnTop();
-        steady = gap === 0 && (await firstVerse(page)) === 12 ? steady + 1 : 0;
-        return steady >= 2 ? 'on top and still' : `looked ${steady} times, the gap was ${gap}`;
-      }, { message: 'verse 12 is on top and the page has stopped moving' })
-      .toBe('on top and still');
+    // The chapter's lines are still laid when a one-shot scroll lands on a loaded host, so verse 12 is held on top until the page has stopped moving; only then do the changes under test begin.
+    await holdOnTop(page, 12);
   }
 
   test('Text size', async ({ page }) => {
@@ -428,11 +428,7 @@ test('a word gaining or losing its hint line under an open Reader keeps the vers
   await openUnlocked(page);
   await page.goto('/#/?b=rom&c=16&weave=solid%2Blearning');
   await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
-  await page.evaluate(() => {
-    const box = document.querySelector<HTMLElement>('main[data-reader]')!;
-    const el = document.querySelector('[data-verse="12"]')!;
-    box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-  });
+  await holdOnTop(page, 12);
   const firstVerse = () =>
     page.evaluate(() => {
       const box = document.querySelector<HTMLElement>('main[data-reader]')!;
@@ -465,3 +461,12 @@ test('a word gaining or losing its hint line under an open Reader keeps the vers
   await expect.poll(hints).toBe(0);
   await stillOnTop(page, 12);
 });
+
+// The verse on top: the first verse whose top is at or below the reading box's top.
+const topVerse = (page: Page) =>
+  page.evaluate(() => {
+    const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+    const top = box.getBoundingClientRect().top;
+    const el = [...document.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top - 1);
+    return Number(el?.dataset.verse);
+  });
