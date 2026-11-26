@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.409
+_2026-11-26_
+- Fixed: the Plan chapter setting's help no longer says the chapter is read in Logos.
+
 ## 0.7.408
 _2026-11-26_
 - Fixed: a screen reader no longer reads out "tap the link below" when the tutor's answer has no link drawn under it.
