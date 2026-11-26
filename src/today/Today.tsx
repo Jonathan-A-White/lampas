@@ -490,7 +490,7 @@ const COULD_HOLD: readonly { key: string; name: string; text: string }[] = [
   { key: 'dailyMemorize', name: 'Memorize', text: 'the verses you are memorizing that are due' },
   { key: 'dailyPlan', name: 'Reading plan', text: "the reading plan's chapter for the day" },
   { key: 'dailyPsalms', name: 'Psalms and Proverbs', text: "the day's Psalms and Proverbs, read in Lampas" },
-  { key: 'dailyDevotional', name: 'Devotional', text: 'one devotional for the day, opened in Logos' },
+  { key: 'dailyDevotional', name: 'Devotional', text: 'one devotional for the day, from your Logos library or Morning RePhil' },
 ];
 
 /** The pieces that exist to open Logos: drawn only while it is On. (The Psalms and Proverbs read in Lampas since mw-5r3p30.1007.) */
