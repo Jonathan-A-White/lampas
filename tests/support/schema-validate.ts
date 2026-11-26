@@ -17,8 +17,8 @@ export interface Schema {
   /** `if` a value fits this schema, it must also fit `then` (the bible-talk answer: a quiz_goal_offer only beside a quiz_goal_state of none) */
   if?: Schema;
   then?: Schema;
-  /** every one of these must hold (the bible-talk answer: a second if/then, a setting link only beside a setting_link_ask of where-a-setting-is) */
-  allOf?: Schema[];
+  /** what a value that does not fit `if` must fit (the bible-talk answer: the setting-link rule sits in both `then` and `else`, as the API refuses allOf at the top) */
+  else?: Schema;
   /** an array must hold at least one item that fits this schema */
   contains?: Schema;
   const?: unknown;
@@ -28,7 +28,7 @@ export interface Schema {
   $ref?: string;
   $defs?: Record<string, Schema>;
 }
-const KEYWORDS = new Set(['$schema', 'title', 'description', 'type', 'properties', 'required', 'additionalProperties', 'items', 'maxItems', 'minItems', 'minLength', 'maxLength', 'pattern', 'anyOf', 'if', 'then', 'allOf', 'contains', 'const', 'enum', 'minimum', 'maximum', '$ref', '$defs']);
+const KEYWORDS = new Set(['$schema', 'title', 'description', 'type', 'properties', 'required', 'additionalProperties', 'items', 'maxItems', 'minItems', 'minLength', 'maxLength', 'pattern', 'anyOf', 'if', 'then', 'else', 'contains', 'const', 'enum', 'minimum', 'maximum', '$ref', '$defs']);
 
 /** The schema a `$ref` names, in the root's `$defs`; a schema with no `$ref` is itself. */
 export function resolveRef(s: Schema, root: Schema): Schema {
@@ -49,7 +49,7 @@ export function validate(value: unknown, schema: Schema, path = '$', root: Schem
   if (s.enum && !s.enum.includes(value)) problems.push(`${path}: not one of ${JSON.stringify(s.enum)}`);
   if (s.anyOf && !s.anyOf.some((option) => validate(value, option, path, root).length === 0)) problems.push(`${path}: matches none of the options`);
   if (s.if && s.then && validate(value, s.if, path, root).length === 0) problems.push(...validate(value, s.then, path, root));
-  for (const part of s.allOf ?? []) problems.push(...validate(value, part, path, root));
+  if (s.if && s.else && validate(value, s.if, path, root).length > 0) problems.push(...validate(value, s.else, path, root));
   if (typeof value === 'number') {
     if (s.minimum !== undefined && value < s.minimum) problems.push(`${path}: below ${s.minimum}`);
     if (s.maximum !== undefined && value > s.maximum) problems.push(`${path}: above ${s.maximum}`);

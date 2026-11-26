@@ -923,8 +923,9 @@ describe("the answer schema's links description names no setting as a reason to 
 // {"kind":"setting","key":"sermons.spurgeon-ccel"} in about 1 live run in 6 (11 of 12 on 998c884e2), though part 200 says NO setting link for a
 // sermon, map or book that is not listed. Three rewordings did not hold it (mw-5r3p30.1250). As for quiz_goal_state (mw-gdcyf98.32), the tutor
 // now writes what he asked, `setting_link_ask`, just before `links`, and the schema allows a setting link only beside 'where-a-setting-is'.
+// The API refuses allOf, anyOf or oneOf at a tool schema's top, so that rule sits in both the quiz rule's `then` and its `else`.
 describe('a setting link only when he asks where a setting is (mw-fnvjof.17.332)', () => {
-  const s = schema as Schema & { allOf?: Schema[] };
+  const s = schema as Schema;
   const base = { answer: 'No sermons are listed for me here.', question: 'Is there a Spurgeon sermon on this?', words: [] };
   const spurgeon = { kind: 'setting', key: 'sermons.spurgeon-ccel' };
 
@@ -952,8 +953,14 @@ describe('a setting link only when he asks where a setting is (mw-fnvjof.17.332)
     expect(field.description).toMatch(/sermon, map or book/);
   });
 
-  it('keeps the quiz goal rule beside it', () => {
+  it('holds in a quiz with a goal offered too, and keeps the quiz goal rule beside it', () => {
+    expect(validate({ ...base, quiz_goal_offer: 'learning Greek', quiz_goal_state: 'none', links: [spurgeon] }, s)).not.toEqual([]);
+    expect(validate({ ...base, quiz_goal_offer: 'learning Greek', quiz_goal_state: 'none', setting_link_ask: 'where-a-setting-is', links: [spurgeon] }, s)).toEqual([]);
     expect(validate({ ...base, quiz_goal_offer: 'learning Greek', quiz_goal_state: 'kept' }, s)).not.toEqual([]);
+  });
+
+  it('has no allOf, anyOf or oneOf at the top, which the API refuses in a tool schema ("input_schema does not support oneOf, allOf, or anyOf at the top level")', () => {
+    expect(Object.keys(schema).filter((k) => ['allOf', 'anyOf', 'oneOf'].includes(k))).toEqual([]);
   });
 
   it('is a key the app accepts and checks', () => {
