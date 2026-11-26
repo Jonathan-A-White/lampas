@@ -7,7 +7,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { answerAsShown } from './data/linkPromise';
-import { reportDrawn } from './talk/drawnLinks';
+import { reportDrawn, spokenAnswer } from './talk/drawnLinks';
 import { markLinksUndrawn } from './data/repositories/talks';
 import { Waiting } from './ui/Waiting';
 import { AddWord } from './AddWordButton';
@@ -613,7 +613,16 @@ export function TalkSheet({ scope, talkRef: ref, state, suggestions, shared, onS
   const offersOpen = useRef<Set<number>>(new Set());
   // The tutor's answer, when it arrives, is said to a screen reader through the app's one live region (src/ui/live.ts). The turns that were there when the sheet
   // opened are not news, and neither is a turn that changes (an offer settled): only a newer last turn is announced.
+  // It says the answer as shown: one that points at a link below waits for its Turn to say what it drew, and leaves the sentences that promise one out when none was
+  // drawn (src/talk/drawnLinks.ts, as the answer spoken by itself does). A sheet that has closed by then says nothing (mw-fnvjof.17.337).
   const announced = useRef<number | null | undefined>(undefined);
+  const sheetOpen = useRef(true);
+  useEffect(() => {
+    sheetOpen.current = true;
+    return () => {
+      sheetOpen.current = false;
+    };
+  }, []);
   useEffect(() => {
     if (!turns) return;
     const newest = turns[turns.length - 1];
@@ -623,7 +632,9 @@ export function TalkSheet({ scope, talkRef: ref, state, suggestions, shared, onS
     }
     if (newest?.id === undefined || newest.id === announced.current) return;
     announced.current = newest.id;
-    announce(`The tutor says: ${plainText(newest.a)}`);
+    spokenAnswer(newest.id, newest.a, newest.links?.length, (words) => {
+      if (sheetOpen.current) announce(`The tutor says: ${plainText(words)}`);
+    });
   }, [turns]);
   useEffect(() => {
     if (waiting) offersOpen.current = new Set((keptTurns.current ?? []).filter((t) => t.id !== undefined && t.feedbackOffer && !t.feedbackSent && !t.feedbackWithdrawn).map((t) => t.id as number));
