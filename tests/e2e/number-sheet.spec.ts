@@ -1,4 +1,4 @@
-// The Number sheet at 390x844 (mw-5r3p30.1127): in Genesis 14:14 the English chunk "the 318" holds one Hebrew word of the four that write the number; a tap opens a sheet with the whole phrase in
+// The Number sheet at 390x844 (mw-5r3p30.1127): in Genesis 14:14 the English chunk "the 318" holds the four Hebrew words that write the number; a tap opens a sheet with the whole phrase in
 // source order, each word's value and the line '8 + 10 + 300 = 318', and each word opens its own word sheet. The Greek of John 21:11 ('153') does the same; a number of one word opens the word sheet.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
@@ -79,14 +79,16 @@ async function giveHebrewWords(page: Page, lemmas: string[]): Promise<void> {
   }, words);
 }
 
-test('in the weave the Hebrew word that stands where "the 318" was opens the same Number sheet', async ({ page }) => {
-  await giveHebrewWords(page, ['שְׁמֹנֶה']);
+test('in the weave the Hebrew words that stand where "the 318" was open the same Number sheet', async ({ page }) => {
+  // a chunk is woven only when he knows every word it holds (src/data/weave.ts weaveVerse): all four of the number's
+  await giveHebrewWords(page, ['שְׁמֹנֶה', 'עָשָׂר', 'שָׁלֹשׁ', 'מֵאָה']);
   await openUnlocked(page);
   await page.goto('/#/?b=gen&c=14&weave=solid');
-  const woven = page.locator('[data-verse="14"] [data-woven]').first();
-  // the weave draws the word with its cantillation: שְׁמֹנָ֤ה
-  await expect(woven).toHaveAttribute('data-chunk', '6');
-  await woven.click();
+  const woven = page.locator('[data-verse="14"] [data-woven][data-chunk="6"]');
+  // the weave draws each word with its cantillation, each its own tap
+  const words = woven.getByRole('button');
+  await expect(words).toHaveText(['שְׁמֹנָ֤ה', 'עָשָׂר֙', 'וּשְׁלֹ֣שׁ', 'מֵא֔וֹת']);
+  await words.first().click();
   const sheet = page.getByRole('dialog', { name: 'Number', exact: true });
   await expect(sheet.getByTestId('number-line')).toHaveText('8 + 10 + 300 = 318');
   await sheet.getByRole('button', { name: 'Done' }).click();
