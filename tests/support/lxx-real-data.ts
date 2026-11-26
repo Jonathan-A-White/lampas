@@ -115,3 +115,13 @@ export function lxxRealData(): LxxRealData {
   if (given) return JSON.parse(given) as LxxRealData;
   return decideLxxRealData(realProbe());
 }
+
+/**
+ * For a test that runs the ship with --no-morpheus on a book, so needs the pinned raw sources alone (Psalms, Isaiah): the decision's directory, the cwd's or the lent one, and its verdict (mw-u2w5klk.349.144).
+ * The decision counts a checkout with data/raw/lxx and no Morpheus cache as having no sources; such a checkout's own raw sources still run these, unless LAMPAS_LXX_REAL=skip.
+ */
+export function lxxRawData(real: LxxRealData = lxxRealData(), probe: LxxProbe = realProbe()): Pick<LxxRealData, 'run' | 'rawDir'> {
+  if (real.rawDir) return { run: real.run, rawDir: real.rawDir };
+  const own = join(probe.cwd, 'data/raw/lxx');
+  return probe.env.LAMPAS_LXX_REAL !== 'skip' && probe.exists(own) ? { run: true, rawDir: own } : { run: false, rawDir: '' };
+}

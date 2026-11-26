@@ -1,7 +1,7 @@
 // tests/support/lxx-real-data.ts: when the gate runs the Septuagint tests that read the real, git-ignored sources, and the one line it prints (story mw-cv2w9um).
 import { describe, expect, it } from 'vitest';
-import { decideLxxRealData, type LxxProbe, WATCHED } from '../support/lxx-real-data';
-import { readFileSync } from 'node:fs';
+import { decideLxxRealData, type LxxProbe, lxxRawData, WATCHED } from '../support/lxx-real-data';
+import { readdirSync, readFileSync } from 'node:fs';
 
 const SRC = '/laptop/lampas';
 const CWD = '/work/tree';
@@ -65,5 +65,33 @@ describe('the real-data Septuagint tests in the gate', () => {
     const test = readFileSync('tests/unit/lxx-align-choose.test.ts', 'utf8');
     expect(test).toContain('lxxRealData()');
     expect(test).not.toMatch(/existsSync\('data\/raw\/lxx'\)/);
+  });
+
+  // Story mw-u2w5klk.349.144: Psalms and Isaiah looked for data/raw/lxx in the cwd only, so a worktree gate printed RUN and skipped both files
+  it('lets no test look for the raw sources in the cwd alone: each asks for the ones the decision found, lent ones too', () => {
+    const tests = readdirSync('tests/unit').filter((name) => /\.test\.tsx?$/.test(name));
+    const cwdOnly = tests.filter((name) => /(process\.cwd\(\),\s*|existsSync\()'data\/raw\/lxx/.test(readFileSync(`tests/unit/${name}`, 'utf8')));
+    expect(cwdOnly).toEqual([]);
+  });
+});
+
+describe('the tests that need the pinned raw sources alone, Psalms and Isaiah with --no-morpheus (mw-u2w5klk.349.144)', () => {
+  const asked = (over: Parameters<typeof probe>[0]): { run: boolean; rawDir: string } => lxxRawData(decideLxxRealData(probe(over)), probe(over));
+
+  it('run on the sources lent to a worktree with no data/raw when the decision says run, and are given that directory', () => {
+    expect(asked({ have: sourcesIn(SRC), env: { LAMPAS_LXX_REAL: 'run' } })).toEqual({ run: true, rawDir: `${SRC}/data/raw/lxx` });
+    expect(asked({ have: sourcesIn(SRC), changed: ['scripts/lxx/ship.ts'] })).toEqual({ run: true, rawDir: `${SRC}/data/raw/lxx` });
+  });
+
+  it('skip with the decision: borrowed sources the work does not touch, LAMPAS_LXX_REAL=skip, or no sources anywhere', () => {
+    expect(asked({ have: sourcesIn(SRC), changed: ['src/App.tsx'] }).run).toBe(false);
+    expect(asked({ have: sourcesIn(SRC), env: { LAMPAS_LXX_REAL: 'skip' } }).run).toBe(false);
+    expect(asked({ changed: ['scripts/lxx/ship.ts'] }).run).toBe(false);
+  });
+
+  it('still run on a checkout that holds the raw sources and no Morpheus cache, which the decision counts as no sources, unless told to skip', () => {
+    const rawOnly = [`${CWD}/data/raw/lxx`];
+    expect(asked({ have: rawOnly })).toEqual({ run: true, rawDir: `${CWD}/data/raw/lxx` });
+    expect(asked({ have: rawOnly, env: { LAMPAS_LXX_REAL: 'skip' } }).run).toBe(false);
   });
 });
