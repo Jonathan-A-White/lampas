@@ -14,6 +14,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { landTraversalsLate } from '../../tests/support/late-traversal';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { seedHisWords } from '../../tests/support/his-words';
 import { ensureSettingsGroup, openSettingsGroup } from '../../tests/support/settings-pages';
@@ -25,13 +26,12 @@ const user = userEvent.setup();
 const real = { ...browserEnv };
 
 // A loaded host lands a closed sheet's history traversal late; jsdom lands it at once, which hides a step that does not wait for it. Every traversal the app asks for lands this late here.
-const realGo = window.history.go.bind(window.history);
-const LATE_TRAVERSAL_MS = 150;
-window.history.go = (delta?: number): void => void setTimeout(() => realGo(delta), LATE_TRAVERSAL_MS); // clock: the fake history's own late traversal, a step of the fake's clock (LATE_TRAVERSAL_MS)
+// (in turns of the task queue after the ask, not milliseconds: a traversal 150 ms after a late ask lost to the app's own 400 ms fallback and popped Settings back to the Reader, mw-fnvjof.17.325)
+const restoreGo = landTraversalsLate();
 
 afterAll(async () => {
   Object.assign(browserEnv, real);
-  window.history.go = realGo;
+  restoreGo();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
