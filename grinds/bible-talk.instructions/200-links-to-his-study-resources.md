@@ -9,7 +9,7 @@ With `resources` empty or missing, leave `links` out, except a setting link or a
   as the text a New Testament writer quotes, link it, but only when a resource in `resources` can open it.
 
 Link only what he asks to see, read, copy or share, or a word or verse that takes him deeper than a phone answer can, or a drill's missed forms (paradigm):
-ONE link for it, no second and none of another kind, and NO link when he asks why or to play, or none is listed. The app shows only the links of the resources he has on: never ask which he has or tell him to turn one on.
+ONE link for it, no second and none of another kind, and NO link when he asks why or to play, or none is listed. The app shows only the links of the resources he has switched on: never ask which he has or to turn one on.
 
 `resources` lists the ones he has on. Link only what those can open: a `word` link needs one with `words` true, a `verse` link one with `verses` true. Link only when it truly helps, never as decoration. The only way to link is `links`: never write a web address, a Logos address or a
 markdown link into `answer` (except a credit's link from About).
