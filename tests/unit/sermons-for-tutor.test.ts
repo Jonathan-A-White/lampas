@@ -1,4 +1,4 @@
-// The sermons the Bible talk tells the tutor (mw-qtu3zvz.6, src/sermons/forTutor.ts): the passage's rows then those on the same theme, at most 8, and the verse's themes, at most 6; nothing for a screen talk or About.
+// The sermons the Bible talk tells the tutor (mw-qtu3zvz.6, src/sermons/forTutor.ts): the passage's rows then those on the same theme, at most 12, a row of every source first, and the verse's themes, at most 6; nothing for a screen talk or About.
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import 'fake-indexeddb/auto';
@@ -40,10 +40,10 @@ describe('sermonsForTutor', () => {
   });
 
   it(`lists at most ${MAX_TUTOR_SERMONS} rows, the passage's first, a sermon once`, () => {
-    const rows = Array.from({ length: 12 }, (_, i) => row('s', `${i}`, `Sermon ${i}`, ['rom', 5, 1, 2]));
+    const rows = Array.from({ length: MAX_TUTOR_SERMONS + 4 }, (_, i) => row('s', `${i}`, `Sermon ${i}`, ['rom', 5, 1, 2]));
     const told = sermonsForTutor([rows[0], ...rows], []);
     expect(told.rows).toHaveLength(MAX_TUTOR_SERMONS);
-    expect(told.rows.map((r) => r.id)).toEqual(['0', '1', '2', '3', '4', '5', '6', '7']);
+    expect(told.rows.map((r) => r.id)).toEqual(Array.from({ length: MAX_TUTOR_SERMONS }, (_, i) => `${i}`));
   });
 
   it(`lists at most ${MAX_TUTOR_THEMES} themes, each name once`, () => {

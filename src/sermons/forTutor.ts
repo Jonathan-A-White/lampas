@@ -9,8 +9,8 @@ import { themeKey } from '../themes/themesFor';
 import { videoOfRow } from './player';
 import type { SermonPlace, SermonRef, SermonRow } from './types';
 
-/** The most sermon rows a request lists. */
-export const MAX_TUTOR_SERMONS = 8;
+/** The most sermon rows a request lists (mw-fnvjof.17.286: twelve, from eight, so a chapter with several sources On lists a row of each; the fit gives rows up to eight before it gives the sermons up, trimSermons). */
+export const MAX_TUTOR_SERMONS = 12;
 
 /** The most themes (topics of the verse) a request lists. */
 export const MAX_TUTOR_THEMES = 6;
@@ -49,18 +49,26 @@ export function refText(ref: SermonRef): string {
   return ref.to === ref.from ? `${name}:${ref.from}` : `${name}:${ref.from}-${ref.to}`;
 }
 
-/** The rows the request lists: `rows` in the order given (the passage's own, then those on the same theme), a sermon once, at most MAX_TUTOR_SERMONS. */
+/**
+ * The rows the request lists, a sermon once, at most MAX_TUTOR_SERMONS, in the order given (the passage's own, then those on the same theme). When there are more than fit, the passage's own rows
+ * are taken a source at a time (mw-fnvjof.17.286): the first row of each source, then the rest in order, then the rows that came in by a theme. A source that comes late in the list (Life Bible
+ * Ministry's, after Spurgeon's six rows of Isaiah 1) still has a row to be linked or played, which 'play Pastor Paul's sermon' needs.
+ */
 export function listedSermons(rows: readonly ListedSermon[]): ListedSermon[] {
   const seen = new Set<string>();
-  const listed: ListedSermon[] = [];
-  for (const row of rows) {
+  const once = rows.filter((row) => {
     const key = `${row.source}:${row.id}`;
-    if (seen.has(key)) continue;
+    if (seen.has(key)) return false;
     seen.add(key);
-    listed.push(row);
-    if (listed.length === MAX_TUTOR_SERMONS) break;
-  }
-  return listed;
+    return true;
+  });
+  if (once.length <= MAX_TUTOR_SERMONS) return once;
+  const sources = new Set<string>();
+  const firsts = once.filter((row) => !row.theme && !sources.has(row.source) && !!sources.add(row.source));
+  const own = once.filter((row) => !row.theme && !firsts.includes(row));
+  const byTheme = once.filter((row) => row.theme);
+  const taken = new Set([...firsts, ...own, ...byTheme].slice(0, MAX_TUTOR_SERMONS));
+  return once.filter((row) => taken.has(row));
 }
 
 /** The sermons to tell the tutor of, from the passage's rows and the rows on the same theme (`rows`, in that order) and the verse's `themes`. Undefined fields are left out. */
