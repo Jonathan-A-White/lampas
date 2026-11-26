@@ -137,6 +137,7 @@ describe('the sermon sources (mw-qtu3zvz.236): one summary line, however many th
   it('names how many are on and where they are set, and carries no sermons.<id> row', async () => {
     await db.settings.put({ key: 'sermons.spurgeon-ccel', value: 'on' });
     await db.settings.put({ key: 'sermons.henry-sermons', value: 'off' });
+    await db.settings.put({ key: 'sermons.clarkson-works', value: 'off' }); // On to start (mw-qtu3zvz.280.16)
     const got = await settingsForTutor();
     const line = got.filter((s) => s.name === SOURCES_LINE);
     expect(line).toHaveLength(1);
