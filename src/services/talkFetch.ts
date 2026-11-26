@@ -6,7 +6,6 @@ import { loadChapter, markSupplied, sourceLanguage, type Chapter, type SourceLan
 import type { HeldPassage } from '../data/db';
 import { osisOf, parseCanonReference } from '../nav/links';
 import { hebrewPointedForm } from '../speech/hebrewPronunciation';
-import type { HebrewLevel } from '../settings/definitions/hebrewInterest';
 
 export type { HeldPassage };
 
@@ -86,15 +85,15 @@ const startOf = (reference: string): string | null => {
 };
 
 /** Reads the passages an answer's `fetch` names from the app's chapter data (`load`, loadChapter): a chapter that does not load and verses it does not have are left out, each reference left out is
- * returned in `unread`; it never throws. `hebrewLevel` is the Hebrew dial (`settings.hebrewInterest` as the request read it): an Old Testament passage is read with its Hebrew from step 1 up and
- * with the English alone at 0 (mw-fnvjof.17.333). */
-export async function fetchOutcome(refs: readonly string[], load: (book: string, chapter: number) => Promise<Chapter> = loadChapter, hebrewLevel: HebrewLevel = 1): Promise<FetchOutcome> {
+ * returned in `unread`; it never throws. `hebrewOn` is whether the Hebrew dial is at Curious or above (hebrewLevelOf(settings.hebrewInterest) >= 1, as the request's own text is, src/services/talk.ts): an Old Testament passage is read
+ * with its Hebrew while it is on and with the English alone at Just English (mw-fnvjof.17.333). */
+export async function fetchOutcome(refs: readonly string[], load: (book: string, chapter: number) => Promise<Chapter> = loadChapter, hebrewOn = true): Promise<FetchOutcome> {
   const read: HeldPassage[] = [];
   for (const want of wantedOf(refs)) {
     const chapter = await load(want.book, want.chapter).catch(() => undefined);
     const verses = chapter?.verses.filter((v) => v.n >= want.from && v.n <= want.to) ?? [];
     if (verses.length === 0) continue;
-    const passage = passageOf(want.book, want.chapter, verses, sourceLanguage({ lang: chapter?.lang }), hebrewLevel >= 1);
+    const passage = passageOf(want.book, want.chapter, verses, sourceLanguage({ lang: chapter?.lang }), hebrewOn);
     if (!read.some((p) => p.reference === passage.reference)) read.push(passage);
   }
   const got = new Set(read.map((p) => startOf(p.reference)));
@@ -109,7 +108,7 @@ export async function fetchOutcome(refs: readonly string[], load: (book: string,
 }
 
 /** The passages `fetchOutcome` read. */
-export const fetchPassages = async (refs: readonly string[], load?: (book: string, chapter: number) => Promise<Chapter>, hebrewLevel?: HebrewLevel): Promise<HeldPassage[]> => (await fetchOutcome(refs, load, hebrewLevel)).read;
+export const fetchPassages = async (refs: readonly string[], load?: (book: string, chapter: number) => Promise<Chapter>, hebrewOn?: boolean): Promise<HeldPassage[]> => (await fetchOutcome(refs, load, hebrewOn)).read;
 
 /** 'Rev 2:8-11', '1 John 1:9': a reference by its book's short name. */
 function shortReference(reference: string): string {

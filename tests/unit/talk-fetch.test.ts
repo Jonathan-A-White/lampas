@@ -43,21 +43,21 @@ describe('what an answer\'s fetch reads', () => {
 
   // mw-fnvjof.17.333: an Old Testament passage carried `hebrew` whatever the Hebrew dial said, so at Just English a fetch added pointed Hebrew he had not asked for
   it('reads an Old Testament passage with its pointed Hebrew from the Hebrew dial\'s Curious up, and with the English alone at Just English', async () => {
-    const [on] = await fetchPassages(['Isaiah 1:2-3'], undefined, 1);
+    const [on] = await fetchPassages(['Isaiah 1:2-3'], undefined, true);
     expect(on.hebrew).toMatch(/\S/);
     expect('greek' in on).toBe(false);
-    const held = await fetchPassages(['Isaiah 1:2-3'], undefined, 0);
+    const held = await fetchPassages(['Isaiah 1:2-3'], undefined, false);
     expect(held).toHaveLength(1);
     expect('hebrew' in held[0]).toBe(false);
     expect('greek' in held[0]).toBe(false);
     expect(held[0].reference).toBe('Isaiah 1:2-3');
     expect(held[0].english).toBe(on.english);
-    const outcome = await fetchOutcome(['Isaiah 1:2-3'], undefined, 0);
+    const outcome = await fetchOutcome(['Isaiah 1:2-3'], undefined, false);
     expect(outcome.unread).toEqual([]);
   });
 
   it('the Hebrew dial changes nothing of a New Testament passage', async () => {
-    const [held] = await fetchPassages(['Revelation 2:8-11'], undefined, 0);
+    const [held] = await fetchPassages(['Revelation 2:8-11'], undefined, false);
     expect(held.greek).toBe(greekOf(rev2, [8, 9, 10, 11]));
   });
 

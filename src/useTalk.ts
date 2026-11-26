@@ -310,7 +310,7 @@ export function useTalk(
           // and the next request holds them (mw-5r3p30.734, src/services/talkFetch.ts); what could not be read is said too (mw-5r3p30.825); it never fails the talk.
           const fetching = answer.fetch;
           if (fetching?.length) {
-            void fetchOutcome(fetching, undefined, hebrewLevelOf(settings.hebrewInterest))
+            void fetchOutcome(fetching, undefined, hebrewLevelOf(settings.hebrewInterest) >= 1)
               .catch((): FetchOutcome => ({ read: [], unread: fetching }))
               .then(({ read, unread }) => (read.length > 0 || unread.length > 0 ? keepFetched(id, read, unread) : undefined))
               .catch(() => undefined);
