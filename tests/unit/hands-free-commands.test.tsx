@@ -14,7 +14,7 @@ import { clearBus } from '../../src/events/bus';
 import { questionAfterAsk } from '../../src/handsFree/ask';
 import { HELP_LINES, HELP_SPOKEN, SPOKEN_COMMANDS } from '../../src/handsFree/commands';
 import { goOnNow } from '../../src/handsFree/playback';
-import { handsFreeSeam, resetHandsFree, runHandsFree } from '../../src/handsFree/session';
+import { handsFreeSeam, handsFreeSource, resetHandsFree, runHandsFree } from '../../src/handsFree/session';
 import { cardOf } from '../../src/markdown/verseLinks';
 import { answerReadHere, forgetRead, pendingRead } from '../../src/nav/readerRequest';
 import { readerOf } from '../support/routes';
@@ -108,6 +108,8 @@ async function play(sound: Sound, from = 2): Promise<void> {
 
 async function wakeUp(): Promise<FakeRecognizer> {
   await vi.waitFor(() => expect(wake.listening).toBe(true), { timeout });
+  // the session answers the wake word once it waits again: a command it has just carried out holds it 'working' until its last sound has left the phone (mw-rl10piw.76)
+  await vi.waitFor(() => expect(handsFreeSource.state().name).toBe('waiting'), { timeout });
   const before = FakeRecognizer.instances.length;
   expect(wake.say()).toBe(true);
   await vi.waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(before), { timeout });

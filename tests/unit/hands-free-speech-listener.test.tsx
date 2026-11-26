@@ -54,6 +54,8 @@ interface Event {
   speaking: boolean;
   /** at a 'speak': the wake's microphone was open, or a recogniser was listening */
   micOpen?: boolean;
+  /** when it happened (performance.now: tests/setup.ts lets Date.now run ahead of real time) */
+  at?: number;
 }
 let events: Event[] = [];
 /** Recognisers started and not yet stopped or aborted. */
@@ -84,7 +86,7 @@ function watchMicrophones(): void {
   const make = FakeRecognizer.prototype.start;
   vi.spyOn(FakeRecognizer.prototype, 'start').mockImplementation(function (this: FakeRecognizer, track?: unknown) {
     live.add(this);
-    events.push({ what: 'recogniser start', speaking: synth.speaking });
+    events.push({ what: 'recogniser start', speaking: synth.speaking, at: performance.now() });
     const end = (): void => {
       if (live.delete(this)) events.push({ what: 'recogniser end', speaking: synth.speaking });
     };
@@ -159,11 +161,15 @@ async function askAloud(question: string): Promise<void> {
 }
 
 /** The voice speaks each sentence of `text` to its end, as the phone reports it (the engine may be handed them one by one or all at once). */
+/** When the voice last reached the end of a sentence in hearWhole (performance.now). */
+let lastEndAt = 0;
+
 async function hearWhole(text: string): Promise<void> {
   const sentences = text.split(/(?<=\.) /);
   const ended = (sentence: string): boolean => synth.honest.log.some((entry) => entry.outcome === 'ended' && String(entry.text).replace(/\s+/g, ' ').trim().includes(sentence));
   for (let i = 0; i < 50 && !sentences.every(ended); i++) {
     await waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    lastEndAt = performance.now();
     act(() => synth.finish());
   }
   expect(sentences.filter((sentence) => !ended(sentence))).toEqual([]);
@@ -206,6 +212,9 @@ describe('Hands-free: while the tutor speaks no microphone is open (mw-rl10piw.7
     const before = during.filter((e) => e.what === 'recogniser start').length;
     await waitFor(() => expect(spokenOf(LONG).filter((e) => e.what === 'recogniser start').length).toBeGreaterThan(before), { timeout });
     expect(getReading().status).toBe('idle');
+    // mw-rl10piw.76: not at the answer's end event, while its last words are still leaving the phone: the follow-up's recogniser opens a settle after it
+    const followUp = spokenOf(LONG).filter((e) => e.what === 'recogniser start')[before];
+    expect((followUp?.at ?? 0) - lastEndAt).toBeGreaterThanOrEqual(140);
   });
 
   it("his tap on the answer's speaker shuts the microphone before the voice starts (the follow-up's recogniser too), Stop stops it, and the wake listens again after", async () => {
