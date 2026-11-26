@@ -161,3 +161,54 @@ test('with no gesture the split can be made larger and smaller, moved with the k
   await expect(dock).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Larger split' })).toHaveCount(0);
 });
+
+test('with no gesture the timeline moves through time and zooms: Earlier and Later, Zoom in and Zoom out, and on the focused strip the arrows, + and - and Home (mw-fnvjof.17.317.2)', async ({ page }) => {
+  await openMark12(page, { readerSplit: 'on', splitTimeline: 'on' });
+  const strip = page.locator('[data-timeline-strip]');
+  await expect(strip).toHaveAttribute('data-timeline-loaded', '');
+  // where the strip stands is its description: what a screen reader hears with its name
+  const stands = async () => ((await strip.getAttribute('aria-describedby').then((id) => page.locator(`[id="${id}"]`).textContent())) ?? '').trim();
+  await expect.poll(stands).toMatch(/, Mark 12$/);
+  const home = await stands();
+
+  // Earlier and Later are among the Reader's controls, out of sight until the keyboard reaches them
+  const group = page.getByRole('group', { name: 'Reading controls' });
+  expect((await group.boundingBox())?.height).toBeLessThanOrEqual(2);
+  await page.getByRole('button', { name: 'Later', exact: true }).focus();
+  expect((await group.boundingBox())?.height).toBeGreaterThan(40);
+  await page.keyboard.press('Enter');
+  await expect.poll(stands).not.toBe(home);
+  await press(page, 'Earlier');
+  await expect.poll(stands).toBe(home);
+
+  // the zoom's own buttons, at the ruler's end
+  // (out first: Mark 12 opens zoomed to days, a step short of the closest zoom, so a step in and a step out would not come back)
+  await press(page, 'Zoom out');
+  await expect.poll(stands).not.toBe(home);
+  await press(page, 'Zoom in');
+  await expect.poll(stands).toBe(home);
+
+  // the strip itself takes focus, and its keys do the same
+  await strip.focus();
+  await expect(strip).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(stands).not.toBe(home);
+  await page.keyboard.press('Home');
+  await expect.poll(stands).toBe(home);
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(stands).not.toBe(home);
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(stands).toBe(home);
+  await page.keyboard.press('-');
+  await expect.poll(stands).not.toBe(home);
+  await page.keyboard.press('+');
+  await expect.poll(stands).toBe(home);
+
+  // the long way out and back is a button of the dock's row
+  await press(page, 'Whole Bible');
+  await expect.poll(stands).toBe('4004 BC to AD 100');
+  await expect(page.getByRole('button', { name: 'Whole Bible', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await press(page, 'Whole Bible');
+  await expect.poll(stands).toBe(home);
+  await shot(page, 'no-gesture-timeline');
+});

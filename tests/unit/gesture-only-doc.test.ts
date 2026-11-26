@@ -22,6 +22,11 @@ const CONTROLS = [
   'Smaller split',
   'Close the split',
   'Hands-free',
+  'Earlier',
+  'Later',
+  'Zoom in',
+  'Zoom out',
+  'Whole Bible',
 ];
 
 function sources(dir: string): string {
@@ -33,7 +38,7 @@ function sources(dir: string): string {
 describe('the gesture-only actions', () => {
   it('docs/accessibility.md has the section, with a row for each gesture of the app', () => {
     expect(section).not.toBe('');
-    for (const gesture of ['Tap with two fingers', 'Tap with three fingers', 'Tap on the outer thirds', 'Swipe left or right: the next or previous chapter', 'Long press on a word', 'Hold a bar', 'Swipe down on a sheet', 'Drag the split', 'Pinch and drag the grammar ladder graph', 'Double tap']) {
+    for (const gesture of ['Tap with two fingers', 'Tap with three fingers', 'Tap on the outer thirds', 'Swipe left or right: the next or previous chapter', 'Long press on a word', 'Hold a bar', 'Swipe down on a sheet', 'Drag the split', 'Drag the timeline strip', 'Pinch the timeline strip', 'Pinch and drag the grammar ladder graph', 'Double tap']) {
       expect(section, `no row for: ${gesture}`).toContain(gesture);
     }
   });
@@ -49,6 +54,14 @@ describe('the gesture-only actions', () => {
     for (const gone of ['Pan up', 'Pan down', 'Pan left', 'Pan right', 'Zoom in', 'Zoom out']) expect(graph, `${gone} is a button no longer`).not.toContain(gone);
     for (const key of ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']) expect(graph).toContain(key);
     expect(section).toContain('arrow keys');
+  });
+  it('the timeline strip has its buttons and its keys (mw-fnvjof.17.317.2)', () => {
+    const controls = readFileSync('src/ReaderControls.tsx', 'utf8');
+    for (const name of ['Earlier', 'Later']) expect(controls, `${name} is among the Reader's controls`).toContain(name);
+    const strip = readFileSync('src/timeline/TimelineStrip.tsx', 'utf8');
+    for (const name of ['Zoom in', 'Zoom out']) expect(strip, `${name} is a button of the strip`).toContain(`aria-label="${name}"`);
+    const keys = readFileSync('src/timeline/strip.ts', 'utf8');
+    for (const key of ['ArrowLeft', 'ArrowRight', 'Home', "'+'", "'-'"]) expect(keys, `the focused strip takes ${key}`).toContain(key);
   });
   it('src/ReaderControls.tsx draws the Reader\'s four', () => {
     const text = readFileSync('src/ReaderControls.tsx', 'utf8');
