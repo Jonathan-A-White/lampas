@@ -1,0 +1,87 @@
+ref	run	text	g	mark	confidence
+Jon.2:1	1	Now the	0		0.80
+Jon.2:1	2	had	-		0.80
+Jon.2:1	3	a	-		0.80
+Jon.2:1	4	whale	-		0.80
+Jon.2:1	4	to	-		0.80
+Jon.2:1	5	up	-		0.80
+Jon.2:1	6	of	-		0.80
+Jon.2:2	1	the	5		0.80
+Jon.2:2	2	of	-		0.80
+Jon.2:2	3	of	-		0.80
+Jon.2:3	1	affliction	4		0.80
+Jon.2:3	2	the	8		0.80
+Jon.2:3	3	my	-		0.80
+Jon.2:3	4	he	-		0.80
+Jon.2:3	5	to	-		0.80
+Jon.2:3	6	even to	-		0.80
+Jon.2:3	7	cry	17		0.80
+Jon.2:3	8	of the	-		0.80
+Jon.2:3	9	of	-		0.80
+Jon.2:3	10	you	-		0.80
+Jon.2:4	1	did	-		0.80
+Jon.2:4	2	the	-		0.80
+Jon.2:4	3	of the	-		0.80
+Jon.2:4	4	of the	-		0.80
+Jon.2:4	5	the	-		0.80
+Jon.2:4	5	floods	7		0.80
+Jon.2:4	5	compassed	9		0.80
+Jon.2:4	6	billows	11,12		0.80
+Jon.2:4	7	your	-		0.80
+Jon.2:4	8	have	-		0.80
+Jon.2:5	1	I am	-		0.80
+Jon.2:5	2	of	-		0.80
+Jon.2:5	3	presence:	5		0.80
+Jon.2:5	3	shall I	-		0.80
+Jon.2:5	3	indeed	7		0.80
+Jon.2:5	4	again	8		0.80
+Jon.2:6	1	was	-		0.80
+Jon.2:6	2	around	-		0.80
+Jon.2:6	3	the	-		0.80
+Jon.2:6	4	lowest	8		0.80
+Jon.2:6	4	deep	5		0.80
+Jon.2:6	4	compassed	6		0.80
+Jon.2:6	5	went down	9		0.80
+Jon.2:7	1	to the clefts of the mountains;	-		0.80
+Jon.2:7	2	down	-		0.80
+Jon.2:7	3	the	-		0.80
+Jon.2:7	4	are the	4		0.80
+Jon.2:7	4	everlasting	8		0.80
+Jon.2:7	4	barriers:	7		0.80
+Jon.2:7	4	yet,	9		0.80
+Jon.2:7	4	O	-		0.80
+Jon.2:7	5	my	-		0.80
+Jon.2:7	6	let	-		0.80
+Jon.2:7	7	ruined	11		0.80
+Jon.2:7	8	be	-		0.80
+Jon.2:7	8	restored.	10		0.80
+Jon.2:8	1	When	0,1		0.80
+Jon.2:8	1	my	-		0.80
+Jon.2:8	2	was	-		0.80
+Jon.2:8	3	may	-		0.80
+Jon.2:9	1	They that	-		0.80
+Jon.2:9	2	lies	3		0.80
+Jon.2:9	2	have forsaken	6		0.80
+Jon.2:9	3	own	-		0.80
+Jon.2:10	1	will	-		0.80
+Jon.2:10	2	to	-		0.80
+Jon.2:10	3	the	-		0.80
+Jon.2:10	4	of	-		0.80
+Jon.2:10	5	all that	9		0.80
+Jon.2:10	5	I have	-		0.80
+Jon.2:10	6	I will	-		0.80
+Jon.2:10	7	to	-		0.80
+Jon.2:10	8	of my	-		0.80
+Jon.2:10	8	salvation.	13		0.80
+Jon.2:11	1	whale	3		0.80
+Jon.2:11	1	was commanded	1		0.80
+Jon.2:11	1	by the Lord,	-		0.80
+Jon.2:11	2	it	-		0.80
+Jon.2:11	3	up	-		0.80
+Jon.2:11	4	land.	-		0.80
+Jon.2:1	fix	had commanded	1		0.80
+Jon.2:1	fix	a great whale	3,4		0.80
+Jon.2:1	fix	to swallow up	5		0.80
+Jon.2:6	fix	was poured around	0		0.80
+Jon.2:9	fix	their own mercy.	4,5		0.80
+Jon.2:11	fix	dry land.	10		0.80
