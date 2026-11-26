@@ -400,7 +400,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   const section = page.locator('[data-section="sermons"]');
   await expect(section).toBeVisible();
   // the section is the door to the list, with its count, and Open web sermons in: no source has a row here
-  await expect(section.getByTestId('sources-count')).toHaveText(`2 of ${bundledSources().length} on`);
+  await expect(section.getByTestId('sources-count')).toHaveText(`3 of ${bundledSources().length} on`);
   await expect(section.getByRole('group', { name: 'Open web sermons in', exact: true })).toBeVisible();
   await expect(section.getByRole('group', { name: /Spurgeon/ })).toHaveCount(0);
   await section.getByRole('button', { name: /^Sermon sources/ }).click();
@@ -408,6 +408,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   const on = async (name: string, value: 'On' | 'Off') => expect(page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: value, exact: true })).toHaveAttribute('aria-checked', 'true');
   await on('Spurgeon\'s sermons', 'On');
   await on('Matthew Henry\'s sermons', 'On');
+  await on('David Clarkson\'s sermons', 'On'); // On to start, as its source.toml says (mw-qtu3zvz.280.16)
   for (const name of ['Greg Laurie\'s sermons', 'Life Bible Ministry\'s Through the Bible', 'Mike Winger\'s Bible Thinker teachings']) await on(name, 'Off'); // the last two are web lists, Off to start (mw-qtu3zvz.280.3, mw-qtu3zvz.280.4)
   // his batch 2 books (mw-qtu3zvz.18)
   for (const name of ['Spurgeon\'s My Sermon Notes', 'John Wesley\'s sermons', 'George Whitefield\'s sermons', 'D. L. Moody\'s sermons']) await on(name, 'Off');
@@ -419,13 +420,13 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   for (const name of ['Sedgwick\'s sermons', 'Moberly\'s Sermons on the Beatitudes', 'Eyton\'s The Beatitudes', 'Chapin\'s Discourses on the Beatitudes', 'Watson\'s sermons on the Beatitudes', 'Pope\'s The Inward Witness', 'Smale\'s The Pentecostal Blessing', 'W. I. Evans\'s This River Must Flow!', 'Calvin\'s sermons in Portuguese']) await on(name, 'Off');
   // his batch 6 books (mw-qtu3zvz.31): the eleven Sermon Outlines and the five Sermon Starters, each a list of its own (the Settings list has no group for a series), all Off
   for (const name of ['Sermon Outlines: Evangelistic', 'Sermon Outlines: for Growing Christians', 'Sermon Outlines: for Seekers', 'Sermon Outlines: for Special Days', 'Sermon Outlines: on 1 Corinthians', 'Sermon Outlines: on Acts', 'Sermon Outlines: on Christian Living', 'Sermon Outlines: on Ephesians', 'Sermon Outlines: on Galatians-Ephesians-Philippians-Colossians', 'Sermon Outlines: on Romans', 'Sermon Outlines: on the Gospels', 'Sermon Starters, vol 1', 'Sermon Starters, vol 2', 'Sermon Starters, vol 3', 'Sermon Starters, vol 4', 'Sermon Starters, vol 5']) await on(name, 'Off');
-  await expect(page.getByRole('radio', { name: 'Off', exact: true, checked: true })).toHaveCount(bundledSources().length - 2); // every list but Spurgeon's and Henry's is Off, a list bundled later too
+  await expect(page.getByRole('radio', { name: 'Off', exact: true, checked: true })).toHaveCount(bundledSources().length - 3); // every list but Spurgeon's, Henry's and Clarkson's is Off, a list bundled later too
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(0); // the bundled lists and no book: one group, so no heading; from eight sources up there is a search field
   await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', `Search ${bundledSources().length} sermon sources`);
   await shot(page, 'sermons-settings');
 
-  // Spurgeon and Henry Off: Romans 5:8 has no listed sermon, and so no door
-  for (const name of ['Spurgeon\'s sermons', 'Matthew Henry\'s sermons']) {
+  // Spurgeon, Henry and Clarkson Off: Romans 5:8 has no listed sermon, and so no door
+  for (const name of ['Spurgeon\'s sermons', 'Matthew Henry\'s sermons', 'David Clarkson\'s sermons']) {
     await page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: 'Off', exact: true }).click();
     await on(name, 'Off');
   }

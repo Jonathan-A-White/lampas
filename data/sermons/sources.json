@@ -1,6 +1,6 @@
 {
   "repo": "https://github.com/Jonathan-A-White/sermon-index",
-  "commit": "85ddaa72cdb1bbd9748eea55b46aa547e25d760a",
+  "commit": "739ba8415c02fa45c8b278e0719d64fef51a0c24",
   "sources": [
     "spurgeon-ccel",
     "henry-sermons",
@@ -53,7 +53,8 @@
     "sermon-starters-volume-4-logos",
     "sermon-starters-volume-5-logos",
     "lifebible-ttb",
-    "biblethinker"
+    "biblethinker",
+    "clarkson-works"
   ],
   "themes": [
     "themes-tcr1934",
@@ -109,6 +110,7 @@
     "sermon-starters-volume-4-logos": "Sermon Starters, vol 4 (Logos library)",
     "sermon-starters-volume-5-logos": "Sermon Starters, vol 5 (Logos library)",
     "lifebible-ttb": "Life Bible Ministry's Through the Bible",
-    "biblethinker": "Mike Winger's Bible Thinker teachings"
+    "biblethinker": "Mike Winger's Bible Thinker teachings",
+    "clarkson-works": "David Clarkson's sermons (Practical Works, 1864-65; Internet Archive)"
   }
 }

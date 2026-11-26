@@ -60,6 +60,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Theographic Bible Metadata', use: 'The dates of Bible events and people', licence: 'CC BY-SA 4.0', link: 'https://github.com/robertrouse/theographic-bible-metadata' },
   { name: 'Spurgeon\'s sermons', use: 'The sermon list: titles, passages, links; the words Lampas reads aloud', licence: 'Public domain; CCEL\'s terms', link: 'https://ccel.org/ccel/spurgeon' },
   { name: 'Matthew Henry\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; Archive\'s terms', link: 'https://archive.org' },
+  { name: 'David Clarkson\'s sermons', use: 'The sermon list: titles, passages, links to the scans', licence: 'Public domain; Archive\'s terms', link: 'https://archive.org/details/practicalworksof01clar' },
   { name: 'Life Bible Ministry', use: 'The sermon list: titles, passages, links and videos of Through the Bible', licence: 'Free; no terms stated', link: 'https://www.lifebibleministry.com/through-the-bible' },
   { name: 'Bible Thinker', use: 'The sermon list: titles, passages, links and videos of Mike Winger\'s teachings', licence: 'No terms stated', link: 'https://biblethinker.org/mark/' },
   LOGOS_SERMONS_CREDIT,

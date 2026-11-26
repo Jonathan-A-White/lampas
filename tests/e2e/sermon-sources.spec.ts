@@ -23,11 +23,13 @@ const TOTAL = 120;
 const UNDER = new Set(EVERY_LOGOS_SERMON);
 /** The Logos books of the list: the sermon books no list stands for, and the books of another kind that also hold sermons. */
 const BOOKS = CATALOGUE.filter((e) => (e.kind === 'sermons' && !UNDER.has(e.resource)) || (e.kind !== 'sermons' && e.alsoSermons === true));
-/** The bundled passage lists (public/sermons/index.json): the ones on the web, two of which start On, and the ones made from Logos books, which start Off. */
+/** The bundled passage lists (public/sermons/index.json): the ones on the web, some of which start On (WEB_ON), and the ones made from Logos books, which start Off. */
 const BUNDLED_SOURCES = (JSON.parse(readFileSync('public/sermons/index.json', 'utf8')) as { sources: { id: string; onByDefault?: boolean }[] }).sources;
 const BUNDLED = BUNDLED_SOURCES.map((s) => s.id);
 /** The bundled lists that open on the web (those that name no Logos book), read from the bundle so that a list it gains is counted here with no edit (mw-fnvjof.17.304). */
 const WEB = BUNDLED_SOURCES.filter((s) => !LOGOS_RESOURCES[s.id]);
+/** How many of those start On (Spurgeon, Henry and, since mw-qtu3zvz.280.16, Clarkson): read from the bundle, so a list it gains is counted with no edit. */
+const WEB_ON = WEB.filter((s) => s.onByDefault !== false).length;
 const TOWNS = ['Ashford', 'Brookfield', 'Carlow', 'Dunmore', 'Easton', 'Fairhaven', 'Glenrock', 'Harlow', 'Inverness', 'Kingsbridge'];
 const HOUSES = ['Baptist Church', 'Bible Chapel', 'Community Church', 'Presbyterian Church', 'Gospel Hall', 'Free Church'];
 /** The lists of the sermon index service that bring the list to 120, as the phone keeps them (src/data/repositories/sermonSources.ts); every ninth starts On. */
@@ -36,8 +38,8 @@ const FILL = Array.from({ length: TOTAL - BUNDLED.length - BOOKS.length }, (_, i
   return { id: `fill-${i}`, name, credit: name, homepage: `https://fill-${i}.example`, onByDefault: i % 9 === 0 };
 });
 const LISTS = BUNDLED.length + FILL.length;
-/** The lists that are on when the page opens: the two web lists that start On, the two Logos lists switched On below, and the service's lists that start On. */
-const LISTS_ON = 2 + 2 + FILL.filter((s) => s.onByDefault).length;
+/** The lists that are on when the page opens: the web lists that start On, the two Logos lists switched On below, and the service's lists that start On. */
+const LISTS_ON = WEB_ON + 2 + FILL.filter((s) => s.onByDefault).length;
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 /** Puts rows in the app's `meta` store through raw IndexedDB, as the app wrote them (the page must have opened once, so the store exists). */
@@ -108,7 +110,7 @@ const toTop = (page: Page) => page.locator('.screen').evaluate((box) => void (bo
 /** The bar at the top of the screen: the one that holds the screen's title. */
 const headerOf = (page: Page) => page.locator('header').filter({ has: page.getByRole('heading', { level: 1 }) });
 
-/** A phone as the Tester's (mw-qtu3zvz.145): Logos On and every sermon book listed (no import narrows them), no switch touched, so the two lists on the web that start On are the only sources On. The sermon index service is refused. */
+/** A phone as the Tester's (mw-qtu3zvz.145): Logos On and every sermon book listed (no import narrows them), no switch touched, so the lists on the web that start On are the only sources On. The sermon index service is refused. */
 async function hisPhone(page: Page): Promise<void> {
   await page.route('https://sermons.allmymind.org/**', (route) => route.abort());
   await openUnlocked(page);
@@ -362,7 +364,7 @@ test('the count of those on is said once, under the search field, and the header
   const other = (await headerOf(page).boundingBox())!;
   await openList(page);
   const total = await page.locator('[data-source]').count();
-  await expect(page.getByTestId('sources-line')).toHaveText(`2 of ${total} on`);
+  await expect(page.getByTestId('sources-line')).toHaveText(`${WEB_ON} of ${total} on`);
   // said once: the line under the field has it, the header does not
   await expect(page.getByText(`of ${total} on`)).toHaveCount(1);
   await expect(headerOf(page)).toHaveText('‹ Study resourcesSermon sources');
@@ -386,7 +388,7 @@ test('with a search typed a button counts only the rows it would change, and one
   const states = page.locator('[data-source] [role="radio"][aria-checked="true"]');
   // the Wesley rows, every one Off on a phone that has not switched them
   await page.getByRole('searchbox', { name: 'Search sermon sources' }).fill('wesley');
-  await expect(line).toHaveText(new RegExp(`^2 of ${total} on · \\d+ shown$`));
+  await expect(line).toHaveText(new RegExp(`^${WEB_ON} of ${total} on · \\d+ shown$`));
   const shown = await page.locator('[data-source]').count();
   expect(shown).toBeGreaterThanOrEqual(2);
   expect(shown).toBeLessThan(10);
@@ -403,22 +405,22 @@ test('with a search typed a button counts only the rows it would change, and one
   await shot(page, 'sermon-sources-these-none');
   // a tap on the dimmed one changes nothing and says nothing
   await off.click({ force: true });
-  await expect(line).toHaveText(`2 of ${total} on · ${shown} shown`);
+  await expect(line).toHaveText(`${WEB_ON} of ${total} on · ${shown} shown`);
   await expect(undo).toHaveCount(0);
   // the other turns them On, says how many, and Undo puts them back
   await on.click();
   await expect(undo).toContainText(`Turned on ${shown}.`);
-  await expect(line).toHaveText(`${2 + shown} of ${total} on · ${shown} shown`);
+  await expect(line).toHaveText(`${WEB_ON + shown} of ${total} on · ${shown} shown`);
   await expect(on).toHaveText('These 0 on');
   await expect(on).toHaveAttribute('aria-disabled', 'true');
   await expect(off).toHaveText(`These ${shown} off`);
   await expect(off).not.toHaveAttribute('aria-disabled', 'true');
   await undo.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(line).toHaveText(`2 of ${total} on · ${shown} shown`);
+  await expect(line).toHaveText(`${WEB_ON} of ${total} on · ${shown} shown`);
   await expect(states).toHaveText(allOff);
 });
 
-test('a double tap on All off, or on These 2 off after a search, turns them off once and leaves the Undo', async ({ page }) => {
+test('a double tap on All off, or on These N off after a search, turns them off once and leaves the Undo', async ({ page }) => {
   test.setTimeout(120_000);
   await hisPhone(page);
   await openList(page);
@@ -426,38 +428,38 @@ test('a double tap on All off, or on These 2 off after a search, turns them off 
   const line = page.getByTestId('sources-line');
   const undo = page.getByTestId('sources-undo');
   const allOff = page.getByRole('button', { name: 'All off', exact: true });
-  await expect(line).toHaveText(`2 of ${total} on`);
+  await expect(line).toHaveText(`${WEB_ON} of ${total} on`);
 
   // two taps 30 ms apart, as a thumb's: the second finds nothing left to change, and the line that says what the first changed stays
   await allOff.dblclick({ delay: 30 });
   await expect(line).toHaveText(`none of ${total} on`);
-  await expect(undo).toContainText('Turned off 2.');
+  await expect(undo).toContainText(`Turned off ${WEB_ON}.`);
   // a third tap, later: the button is dimmed, and a tap on it leaves the Undo too
   await expect(allOff).toHaveAttribute('aria-disabled', 'true');
   await allOff.click({ force: true });
   await expect(page.getByRole('button', { name: 'All on', exact: true })).not.toHaveAttribute('aria-disabled', 'true');
-  await expect(undo).toContainText('Turned off 2.');
+  await expect(undo).toContainText(`Turned off ${WEB_ON}.`);
   await toTop(page);
   await shot(page, 'sermon-sources-double-tap');
   // Undo puts both back
   await undo.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(line).toHaveText(`2 of ${total} on`);
+  await expect(line).toHaveText(`${WEB_ON} of ${total} on`);
   await expect(undo).toHaveCount(0);
   await expect(page.locator('[data-source="sermons.spurgeon-ccel"]').getByRole('radio', { name: 'On', exact: true })).toHaveAttribute('aria-checked', 'true');
 
-  // the same with a search typed: the lists on the web, of which the two that start On are the rows the tap turns Off
+  // the same with a search typed: the lists on the web, of which the ones that start On are the rows the tap turns Off
   await page.getByRole('searchbox', { name: 'Search sermon sources' }).fill('on the web');
-  await expect(line).toHaveText(`2 of ${total} on · ${WEB.length} shown`);
+  await expect(line).toHaveText(`${WEB_ON} of ${total} on · ${WEB.length} shown`);
   await expect(page.locator('[data-source]')).toHaveCount(WEB.length);
-  await page.getByRole('button', { name: 'These 2 off', exact: true }).dblclick({ delay: 30 });
+  await page.getByRole('button', { name: `These ${WEB_ON} off`, exact: true }).dblclick({ delay: 30 });
   await expect(line).toHaveText(`none of ${total} on · ${WEB.length} shown`);
-  await expect(undo).toContainText('Turned off 2.');
+  await expect(undo).toContainText(`Turned off ${WEB_ON}.`);
   await expect(page.getByRole('button', { name: 'These 0 off', exact: true })).toHaveAttribute('aria-disabled', 'true');
   await page.getByRole('button', { name: 'These 0 off', exact: true }).click({ force: true });
-  await expect(undo).toContainText('Turned off 2.');
+  await expect(undo).toContainText(`Turned off ${WEB_ON}.`);
   await undo.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(line).toHaveText(`2 of ${total} on · ${WEB.length} shown`);
-  // Undo puts back the two that were On, and leaves every other list on the web Off
+  await expect(line).toHaveText(`${WEB_ON} of ${total} on · ${WEB.length} shown`);
+  // Undo puts back those that were On, and leaves every other list on the web Off
   for (const source of WEB) {
     const state = source.onByDefault === false ? 'Off' : 'On';
     await expect(page.locator(`[data-source="sermons.${source.id}"]`).getByRole('radio', { name: state, exact: true })).toHaveAttribute('aria-checked', 'true');

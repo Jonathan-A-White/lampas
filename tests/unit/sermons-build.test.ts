@@ -577,3 +577,61 @@ describe('runSermonsBuild: the biblethinker source (mw-qtu3zvz.280.4)', () => {
     ]);
   });
 });
+
+describe('runSermonsBuild: the clarkson-works source (mw-qtu3zvz.280.16)', () => {
+  const toml = readFileSync('tests/fixtures/sermons/clarkson-works.toml', 'utf8');
+  const rows = readFileSync('tests/fixtures/sermons/clarkson-works-3.jsonl', 'utf8');
+  function clarkson(names?: Record<string, string>) {
+    const dir = mkdtempSync(join(tmpdir(), 'sermons-build-'));
+    const configFile = join(dir, 'sources.json');
+    writeFileSync(configFile, JSON.stringify({ repo: 'https://github.com/Jonathan-A-White/sermon-index', commit: SHA, sources: ['clarkson-works'], ...(names ? { names } : {}) }));
+    const download = async (url: string, dest: string): Promise<void> => {
+      const { mkdirSync, writeFileSync: write } = await import('node:fs');
+      const { dirname } = await import('node:path');
+      mkdirSync(dirname(dest), { recursive: true });
+      write(dest, url.endsWith('source.toml') ? toml : rows);
+    };
+    return { dir, options: { configFile, rawDir: join(dir, 'raw'), outDir: join(dir, 'out'), download, verses } };
+  }
+
+  it('lists the source On to start with its licence, its credit and the Archive item it links to, and one file for each book its three sermons touch', async () => {
+    const w = clarkson();
+    const result = await runSermonsBuild(w.options);
+    const [s] = readJson<SermonIndex>(join(w.options.outDir, 'index.json')).sources;
+    expect(s).toMatchObject({
+      id: 'clarkson-works',
+      kind: 'sermons',
+      credit: expect.stringContaining('David Clarkson; Internet Archive'),
+      homepage: 'https://archive.org/details/practicalworksof01clar',
+      rows: 3,
+    });
+    expect(s?.name).toBe('David Clarkson\'s sermons (Practical Works, 1864-65; Internet Archive)');
+    expect(s?.onByDefault).toBeUndefined(); // on_by_default = true: the index carries the key only for Off
+    expect(s?.licence).toContain('Access to the Archive');
+    expect([...(s?.books ?? [])].sort()).toEqual(['eph', 'heb', 'rev']);
+    expect(result.sources[0]).toMatchObject({ read: 3, listed: 3, withoutRef: 0, omitted: [] });
+    expect(filesUnder(w.options.outDir)).toEqual(['eph.json', 'heb.json', 'rev.json'].map((f) => `clarkson-works/${f}`).concat('index.json').sort());
+  });
+
+  it('writes the Archive\'s reader page as the row\'s url and no alt, for Hebrews 11:13, and keeps no sentence of the notes', async () => {
+    const w = clarkson();
+    await runSermonsBuild(w.options);
+    const heb = readJson<SermonBookFile>(join(w.options.outDir, 'clarkson-works', 'heb.json'));
+    expect(heb.rows).toEqual([
+      {
+        id: 'v1-p238',
+        title: 'Of Dying in Faith',
+        ref: { book: 'heb', chapter: 11, from: 13, to: 13 },
+        role: 'text',
+        url: 'https://archive.org/details/practicalworksof01clar/page/n267',
+        preacher: 'David Clarkson',
+      },
+    ]);
+  });
+
+  it('names the source as sources.json says where it does, and as source.toml does where it does not', async () => {
+    const w = clarkson({ 'clarkson-works': 'David Clarkson\'s sermons' });
+    await runSermonsBuild(w.options);
+    expect(readJson<SermonIndex>(join(w.options.outDir, 'index.json')).sources[0]?.name).toBe('David Clarkson\'s sermons');
+  });
+});
