@@ -321,6 +321,9 @@ export const SUPPLEMENT_ROWS: readonly TvtmsRow[] = [
  * - Amos 6: LXX2012 has 15 verses and Swete 14: its 6:10 and 6:11 are both in the Greek 10, its 12-15 are the Greek 11-14.
  * - Judg 5: LXX2012's 5:32 ('And the land had rest forty years') ends the Greek 5:31, so its 31 and 32 are both the Greek 31.
  * - Jos 5 (mw-u2w5klk.349.146; the table's section Jos.5:14--6:27 has no Brenton column): LXX2012 has 16 verses and Swete 15: its 5:14 and 5:15 ('Joshua fell on his face') are both in the Greek 14 and its 16 ('Loose your shoe') is the Greek 15.
+ * mw-u2w5klk.349.147, each read against Swete's verses (the table's section Jos.8:30--9:27 has a Brenton column that stands 8:30-35 at Rahlfs' sub-verses 9:2.1-6, which Swete does not number):
+ * - Jos 8:30-35 and 9: Swete has the altar on Mount Gaebal at 9:3-8, after 9:2, so Brenton's 8:30-35 are the Greek 9:3-8, his 9:3-26 are the Greek 9:9-32 and his 9:27-29 (one USFM verse) the Greek 9:33;
+ *   his 9:30-33 ('Then Joshua built an altar ...', an addition from the Alexandrian codex) repeat 8:30-35 and have no verse of Swete's of their own.
  */
 export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Psa.10:Title', 'Absent [=Psa.10:1]'],
@@ -338,6 +341,10 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Deu.5:18', 'Deu.5:17'],
   ['Deu.14:15-29', 'Deu.14:14-28'],
   ['Jos.5:14-15', 'Jos.5:14'],
+  ['Jos.8:30-35', 'Jos.9:3-8'],
+  ['Jos.9:3-26', 'Jos.9:9-32'],
+  ['Jos.9:27-29', 'Jos.9:33'],
+  ['Jos.9:30-33', 'NoVerse'],
   ['Jos.5:16', 'Jos.5:15'],
   ['Jos.6:7', 'Jos.6:8'],
   ['Jos.6:8', 'Jos.6:7'],
@@ -371,8 +378,8 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Jdg.5:31-32', 'Jdg.5:31'],
 ].map(([lxx2012, greek]) => ({ section: 'LXX2012', type: 'OneToOne', cells: { 'Brenton (LXX2012)': lxx2012, Greek: greek } }));
 
-/** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows; Exo.35:8-35:27's rows leave LXX2012's 35:8-19 where the Greek has them). */
-const LXX2012_REPLACED: ReadonlySet<string> = new Set(['Psa.11:1-11:7', 'Exo.35:8-35:27']);
+/** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows; Exo.35:8-35:27's rows leave LXX2012's 35:8-19 where the Greek has them; Jos.8:30--9:27's stand 8:30-35 at 9:2.1-6). */
+const LXX2012_REPLACED: ReadonlySet<string> = new Set(['Psa.11:1-11:7', 'Exo.35:8-35:27', 'Jos.8:30--9:27']);
 
 /** The three maps of the rows, each total: a reference the table lacks maps to itself with the state `same`. */
 export function buildMaps(tableRows: readonly TvtmsRow[]): TvtmsMaps {
