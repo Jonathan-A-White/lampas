@@ -92,6 +92,21 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
     expect(problems).toEqual([]);
   });
 
+  // the test above skips a book whose file says another list than this host's, so a file that says 'exo' on a host that has exo's cache would be skipped unchecked for ever (mw-u2w5klk.349.143):
+  // a file names no book whose cache is on the disk here; regenerate it on a host that has it (npm run lxx:align-expect -- --book <code> --force, docs/lxx-align.md 'A pairing pass')
+  it('has no docs/lxx-align file that says it was derived without the Morpheus cache of a book this host has', () => {
+    const problems: string[] = [];
+    for (const { code } of shipped.books) {
+      const file = alignReportFile(code);
+      if (!existsSync(file)) continue;
+      const recorded = recordedWithout(readFileSync(file, 'utf8'));
+      if (recorded === undefined || recorded === 'none') continue;
+      const here = recorded.split(', ').filter((c) => existsSync(join(real.morpheusDir, `${c}.tsv`)));
+      if (here.length > 0) problems.push(`${file} says it was derived without the Morpheus cache of ${here.join(', ')}, which is in ${real.morpheusDir}: run \`${expectCommand(code)} --force\``);
+    }
+    expect(problems).toEqual([]);
+  });
+
   it('re-chooses every remainder: no chunk is left y "align?", every model chunk has c and its Greek positions are real, free and used once', () => {
     for (const [n, chapter] of withModel) {
       for (const verse of chapter.verses) {
