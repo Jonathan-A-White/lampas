@@ -154,6 +154,15 @@ describe.skipIf(!real.run)('Leviticus with the model pass', () => {
     [6, 7, 'he did', ['ἐποίησεν']],
     [6, 9, 'this', ['αὐτὴ']],
     [6, 9, 'it,', ['αὐτοῦ']],
+    // mw-u2w5klk.349.152: the verses the move did not touch, where the aligner paired the pronouns by place
+    [6, 17, 'it', ['αὐτὴν']],
+    [6, 17, 'to them', ['αὐτοῖς']],
+    [6, 20, 'his', ['αὐτοῦ']],
+    [6, 20, 'they', []],
+    [8, 14, 'his', ['αὐτοῦ']],
+    [8, 14, 'their', []],
+    [8, 17, 'his dung,', ['κόπρον', 'αὐτοῦ']],
+    [8, 17, 'he burnt', ['κατέκαυσεν', 'αὐτὰ']],
     [8, 18, 'his', ['αὐτοῦ']],
     [8, 18, 'their', ['αὐτῶν']],
     [8, 22, 'his', ['αὐτοῦ']],
@@ -182,6 +191,20 @@ describe.skipIf(!real.run)('Leviticus with the model pass', () => {
           const held = chunk.g.map((g) => verse.g[g]).filter((w) => w.l === 'αὐτός');
           if (rule && held.length > 0 && !held.some((w) => rule.test(w.p))) wrong.push(`${chapter}:${verse.n} '${chunk.t}' ${held.map((w) => `${w.t} ${w.p}`).join(' ')}`);
         }
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+
+  it('gives no pronoun of Lev 6:17, 6:20, 8:14 or 8:17 an αὐτός of the wrong case or number (mw-u2w5klk.349.152)', () => {
+    const fits: Record<string, RegExp> = { his: /^P-GS[MN]/, its: /^P-GS/, their: /^P-GP/, him: /^P-[GDA]S/, them: /^P-[GDA]P/, it: /^P-[NGDA]S/ };
+    const wrong: string[] = [];
+    for (const [chapter, n] of [[6, 17], [6, 20], [8, 14], [8, 17]] as const) {
+      const verse = withModel.get(chapter)!.verses.find((v) => v.n === n)!;
+      for (const chunk of verse.e) {
+        const rules = chunk.t.toLowerCase().split(/\s+/).map((w) => fits[w.replace(/[^a-z]/g, '')]).filter(Boolean);
+        const held = chunk.g.map((g) => verse.g[g]).filter((w) => w.l === 'αὐτός');
+        if (rules.length === 1 && held.length > 0 && !held.some((w) => rules[0].test(w.p))) wrong.push(`${chapter}:${n} '${chunk.t}' ${held.map((w) => `${w.t} ${w.p}`).join(' ')}`);
       }
     }
     expect(wrong).toEqual([]);
