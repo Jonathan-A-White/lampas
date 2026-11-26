@@ -41,7 +41,7 @@ Jos.1:9#8	V-AAS-2S	δειλιάω		0.80
 Jos.1:9#9	CONJ-N	μηδέ		0.80	
 Jos.1:9#19	A-APN	πᾶς		0.80	
 Jos.1:9#20	ADV	οὗ		0.80	
-Jos.1:9#22	V-PMS-2S	πορεύω	unsure	0.50	model: unsure
+Jos.1:9#22	V-PNS-2S	πορεύομαι		0.80	
 Jos.1:11#3	A-ASN	μέσος		0.80	
 Jos.1:11#9	V-ADM-2P	ἐντέλλω	guess	0.40	guess: the model answered with no candidates
 Jos.1:11#13	V-PMM-2P	ἑτοιμάζω	unsure	0.50	model: unsure
@@ -120,7 +120,7 @@ Jos.2:8#20	T-ASN	ὁ		0.80
 Jos.2:8#21	N-ASN	δῶμα		0.80	
 Jos.2:9#12	V-RAI-3S	ἐπιπίπτω		0.80	
 Jos.2:10#14	CONJ	ὅτε		0.80	
-Jos.2:10#15	V-IMI-2P	ἐκπορεύω	unsure	0.50	model: unsure
+Jos.2:10#15	V-INI-2P	ἐκπορεύομαι		0.80	
 Jos.2:10#20	K-APN	ὅσος		0.80	
 Jos.2:10#25	T-GPM	ὁ		0.80	
 Jos.2:10#26	N-GPM	Ἀμορραῖος	guess	0.40	guess: the model answered with no candidates
@@ -203,7 +203,7 @@ Jos.3:4#29	ADV	ἐχθές	unsure	0.50	model: unsure
 Jos.3:4#32	N-GSF	ἡμέρα		0.80	
 Jos.3:5#6	V-AMM-2P	ἁγνίζω	unsure	0.50	model: unsure
 Jos.3:5#15	A-APN	θαυμαστός		0.80	
-Jos.3:6#13	V-PMM-2P	προπορεύω	unsure	0.50	model: unsure
+Jos.3:6#13	V-PNM-2P	προπορεύομαι		0.80	
 Jos.3:7#10	V-PNI-1S	ἄρχομαι	unsure	0.50	model: unsure
 Jos.3:7#16	N-GSM	Ἰσραήλ		0.80	
 Jos.3:7#18	V-2AAS-3P	γινώσκω		0.80	

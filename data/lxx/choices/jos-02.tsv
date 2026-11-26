@@ -244,7 +244,7 @@ Jos.9:16#25	V-IAI-3S	κατοικέω		0.80
 Jos.9:16#27	N-DSF	Ἀσταρώθ	unsure	0.50	model: unsure
 Jos.9:16#30	N-DSF	Ἐδράειν	guess	0.40	guess: the model chose outside the candidates
 Jos.9:17#18	F-2DPM	ἑαυτοῦ		0.80	
-Jos.9:17#24	V-APM-2P	πορεύω		0.80	
+Jos.9:17#24	V-AOM-2P	πορεύομαι	guess	0.40	guess: the model chose outside the candidates
 Jos.9:17#27	P-GPM	αὐτός		0.80	
 Jos.9:17#37	V-2AMM-2P	διατίθημι		0.80	
 Jos.9:18#4	A-APM	θερμός		0.80	
@@ -372,6 +372,7 @@ Jos.10:7#18	N-DSF	ἰσχύς		0.80
 Jos.10:8#17	V-FPI-3S	ὑπολείπω	guess	0.40	guess: the model answered with no candidates
 Jos.10:8#19	P-GPM	αὐτός		0.80	
 Jos.10:8#20	A-NSM	οὐθείς		0.80	
+Jos.10:9#11	V-AOI-3S	εἰσπορεύομαι		0.80	
 Jos.10:9#13	N-GPN	Γάλγαλα	guess	0.40	guess: the model answered with no candidates
 Jos.10:10#2	V-AAI-3S	ἐξίστημι		0.80	
 Jos.10:10#9	N-GSM	Ἰσραήλ		0.80	
