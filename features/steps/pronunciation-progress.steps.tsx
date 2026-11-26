@@ -16,7 +16,6 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { registerPronunciation } from '../../src/speech/pronunciation';
 import { MODERN } from '../../src/speech/schemes/modern';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { setEachOnItsOwn } from '../../tests/support/settings-pages';
 import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
@@ -46,12 +45,25 @@ async function solidIdeas(): Promise<string[]> {
   return [...group.querySelectorAll('[data-idea]')].map((li) => li.getAttribute('data-idea') ?? '');
 }
 
-/** Opens Settings and taps the pronunciation with this label; waits until it is the saved one. */
+/** A Settings row by its key, once it is drawn (a row is drawn after its saved value is read). */
+async function settingRow(key: string): Promise<HTMLElement> {
+  return waitFor(() => {
+    const row = document.querySelector<HTMLElement>(`[data-setting="${key}"]`);
+    if (!row) throw new Error(`the ${key} row is not drawn yet`);
+    return row;
+  });
+}
+
+/**
+ * Opens Settings and taps the pronunciation with this label; waits until it is the saved one. The rows are found by their key and the buttons
+ * inside them only: a role query over the whole Listening page costs about a second in jsdom, and on a loaded host a step of them outran its time (mw-u2w5klk.349.148).
+ */
 async function chooseInSettings(label: string): Promise<void> {
   await openAt('#/settings?group=listening');
-  // the Greek row shows while each language is set on its own (mw-gdcyf98.6)
-  await setEachOnItsOwn(user, true);
-  await user.click(await screen.findByRole('radio', { name: label }));
+  // the Greek row shows while each language is set on its own (mw-gdcyf98.6); once On it stays so, and a second tap on it is not needed
+  const on = await within(await settingRow('pronunciationSeparate')).findByRole('button', { name: 'On' });
+  if (on.getAttribute('aria-pressed') !== 'true') await user.click(on);
+  await user.click(await within(await settingRow('greekPronunciation')).findByRole('radio', { name: label }));
   const id = label === 'Modern Greek' ? 'modern' : 'erasmian';
   await waitFor(async () => expect((await db.settings.get('greekPronunciation'))?.value).toBe(id));
 }
