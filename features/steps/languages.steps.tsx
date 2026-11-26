@@ -22,7 +22,7 @@ import { applyChanges } from '../../tests/support/settings';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { waitWhileChanging } from '../../tests/support/wait-progress';
+import { waitForGrists, waitWhileChanging } from '../../tests/support/wait-progress';
 import { openTutor } from './open-tutor';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
@@ -410,7 +410,8 @@ describeFeature(feature, ({ Scenario }) => {
       const sheet = await screen.findByRole('dialog', { name: /^Talk about / });
       await user.type(await within(sheet).findByRole('textbox', { name: 'Your message' }), question);
       await user.click(within(sheet).getByRole('button', { name: 'Send' }));
-      await waitFor(() => expect(talkGrists()).toHaveLength(1));
+      // the app writes the talk, signs and makes its calls one after the other before the grist is in: each wait that ends with the store or the fake having moved goes on (mw-u2w5klk.349.151)
+      await waitForGrists(fake!, 'bible-talk', 1, { also: async () => JSON.stringify(await db.talks.toArray()) });
     });
     Then('the request carries greek_interest {string} with {string} next', (_: unknown, name: string, next: string) => {
       const field = (talkGrists()[0].input as { greek_interest?: { name: string; next?: { name: string } } }).greek_interest;

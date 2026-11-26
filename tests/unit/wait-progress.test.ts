@@ -2,7 +2,7 @@
 // Choosing "Greek and Hebrew" again moves two dials one after the other, each move a run of writes that every drawn Settings row re-reads over fake-indexeddb: the first took 3-4 s
 // at load 16, so at load 30 the two moves outran the one ASYNC_WAIT_MS a plain waitFor gives to the whole choice. The wait runs on as long as each wait ends on a new state.
 import { describe, expect, it } from 'vitest';
-import { waitWhileChanging } from '../support/wait-progress';
+import { waitForGrists, waitWhileChanging } from '../support/wait-progress';
 
 const BUDGET_MS = 300;
 
@@ -63,4 +63,51 @@ describe('waitWhileChanging', () => {
       stuck.stop();
     }
   }, 3000);
+});
+
+// mw-u2w5klk.349.151: 'A talk on Genesis 1 carries hebrew_interest beside greek_interest' failed once at load 31.7 of 20 cores: no talk request seen within the wait. Between the tap on Send
+// and the grist the app writes the talk, signs and makes the calls challenge, me and messages one after the other, each slow on a loaded host; the one wait outran them.
+describe('waitForGrists', () => {
+  /** A fake Postern as the talk meets it on a loaded host: each call and then the grist arrive `every` ms after the one before. */
+  function slowTalk(every: number): { fake: { calls: string[]; received: { grist: { kind: string } }[] }; stop: () => void } {
+    const fake = { calls: [] as string[], received: [] as { grist: { kind: string } }[] };
+    const steps = [() => fake.calls.push('GET /api/challenge'), () => fake.calls.push('GET /api/me'), () => fake.calls.push('POST /api/messages'), () => fake.received.push({ grist: { kind: 'bible-talk' } })];
+    let at = 0;
+    const timer = setInterval(() => {
+      if (at < steps.length) steps[at++]();
+    }, every);
+    return { fake, stop: () => clearInterval(timer) };
+  }
+
+  it('waits past its budget while the calls to the backend go on, until the grist is in', async () => {
+    const talk = slowTalk(150);
+    try {
+      await waitForGrists(talk.fake, 'bible-talk', 1, { timeout: BUDGET_MS });
+      expect(talk.fake.received).toHaveLength(1);
+    } finally {
+      talk.stop();
+    }
+  });
+
+  it('fails when a whole wait goes by with no call made and no grist in, saying how many it saw', async () => {
+    const talk = slowTalk(10_000);
+    try {
+      await expect(waitForGrists(talk.fake, 'bible-talk', 1, { timeout: BUDGET_MS })).rejects.toThrow(/bible-talk/);
+    } finally {
+      talk.stop();
+    }
+  }, 3000);
+
+  it('goes on while what else it is given to watch moves, as the talk written to the store does before any call', async () => {
+    const talk = slowTalk(10_000);
+    const stored = moving(['0', '1', '2'], 250);
+    try {
+      setTimeout(() => talk.fake.received.push({ grist: { kind: 'bible-talk' } }), 700);
+      await waitForGrists(talk.fake, 'bible-talk', 1, { timeout: BUDGET_MS, also: async () => stored.now() });
+      expect(talk.fake.received).toHaveLength(1);
+    } finally {
+      talk.stop();
+      stored.stop();
+    }
+  });
 });
