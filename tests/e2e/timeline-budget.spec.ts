@@ -9,7 +9,7 @@ import { openUnlocked } from './unlocked';
 // 240 frames of a pan across six widths at the chapter's zoom, then 240 of a zoom out to the whole Bible and in to a day. A loaded host makes a run slow without the strip's doing (the
 // design holds the worst frame only on a quiet host): the best of five runs is held to the budget, and only on a calm host, one whose 1-minute load is under a quarter of its cores (half let a gate beside other work through, and the budget failed there at 9 to 10 ms on a host the figures show was not quiet: batch 725); on a busier
 // one (a gate beside other work) every figure is still written to the log, the run is still made and its shape checked, and the test says the budget was not held to. Every run and its
-// worst frame are in the log either way.
+// worst frame are in the log either way. Item 3 (mw-fnvjof.17.317.3): the same two with a card open, the strip laid out in the room above it with the chosen mark ringed.
 test.use({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 
 const MEAN_MS = 8;
@@ -31,7 +31,7 @@ interface Bench {
   pan: Timing;
   zoom: Timing;
 }
-type Root = HTMLElement & { timeline?: { bench(frames: number): Bench | null; toggleWhole(): void; stats: { frames: number } } };
+type Root = HTMLElement & { timeline?: { bench(frames: number): Bench | null; toggleWhole(): void; stats: { frames: number }; chosen: string | null } };
 
 async function keep(page: Page, values: Record<string, string>) {
   await page.evaluate(
@@ -64,16 +64,26 @@ async function openDocked(page: Page, at: string) {
   await expect(page.locator('[data-timeline-strip]')).toHaveAttribute('data-timeline-loaded', '');
 }
 
+/** Opens the card of the first of the chapter's events that has a button over the picture, and waits until the strip has made room above it. */
+async function openCard(page: Page) {
+  await page.locator('[data-timeline-strip] [data-mark^="e"]').first().click();
+  await expect(page.locator('[data-timeline-card]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (document.querySelector('[data-timeline-strip]') as Root).timeline!.chosen)).not.toBeNull();
+}
+
 const frames = (page: Page) => page.evaluate(() => (document.querySelector('[data-timeline-strip]') as Root).timeline!.stats.frames);
 const fmt = (run: Timing) => `mean ${run.mean.toFixed(2)} ms, 95th ${run.p95.toFixed(2)} ms, worst ${run.worst.toFixed(2)} ms`;
 
-for (const [name, at] of [
-  ['Isaiah 1', 'b=isa&c=1'],
-  ['Luke 23, AD 30, the busiest year', 'b=luk&c=23'],
+for (const [name, at, card] of [
+  ['Isaiah 1', 'b=isa&c=1', false],
+  ['Luke 23, AD 30, the busiest year', 'b=luk&c=23', false],
+  ['Isaiah 1 with a card open', 'b=isa&c=1', true],
+  ['Luke 23 with a card open', 'b=luk&c=23', true],
 ] as const) {
   test(`${name}, every book loaded, the processor slowed 4x: the strip's work is at most ${MEAN_MS} ms a frame on average and ${P95_MS} ms at the 95th frame, panning and zooming`, async ({ page }) => {
     test.setTimeout(180_000);
     await openDocked(page, at);
+    if (card) await openCard(page);
     const session = await page.context().newCDPSession(page);
     await session.send('Emulation.setCPUThrottlingRate', { rate: 4 });
     const runs: Bench[] = [];
@@ -122,4 +132,22 @@ test('at rest the strip runs no frame: after a flight out to the whole Bible has
   const landed = await frames(page);
   await afterFrames(page, 120);
   expect(await frames(page)).toBe(landed);
+});
+
+test('with a card open the strip runs no frame at rest: once the lanes have eased into the room above the card, its frame count does not move for two seconds', async ({ page }) => {
+  await openDocked(page, 'b=isa&c=1');
+  const began = await frames(page);
+  await openCard(page);
+  // making room drew frames of its own: the lanes ease to their new places
+  await expect.poll(() => frames(page)).toBeGreaterThan(began);
+  await expect
+    .poll(async () => {
+      const before = await frames(page);
+      await afterFrames(page, 60);
+      return (await frames(page)) - before;
+    })
+    .toBe(0);
+  const settled = await frames(page);
+  await afterFrames(page, 120);
+  expect(await frames(page)).toBe(settled);
 });

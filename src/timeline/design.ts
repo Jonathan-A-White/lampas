@@ -95,3 +95,13 @@ export const TYPE_SCALE_MAX = 1.3;
  * while the body has them, grows with a taller body so the credit is in view whole, and is never under its least.
  */
 export const stripHeight = (body: number, credit: number): number => Math.max(LAYOUT.STRIP_MIN, Math.min(body, Math.max(LAYOUT.STRIP_FULL, body - credit)));
+
+/** The least room a card is given at the strip's foot: its head, its date and a row of chips (the prototype's own 132 px). */
+export const CARD_MIN = 132;
+
+/**
+ * The most a card may take of a strip `strip` px tall (docs/timeline-design.md 'The card'): never more than the strip less its least (STRIP_MIN: the chapter's name, one lane and the
+ * ruler stay in view above it), longer and it scrolls. A strip too small to leave both that and a card's least gives the card its least, up to the whole strip (the dock pulled to
+ * its smallest: the card takes the strip until it is shut or the dock is pulled taller).
+ */
+export const cardRoom = (strip: number): number => (strip - LAYOUT.STRIP_MIN >= CARD_MIN ? strip - LAYOUT.STRIP_MIN : Math.min(strip, CARD_MIN));
