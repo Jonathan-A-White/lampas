@@ -17,7 +17,7 @@ markdown link into `answer` (except a credit's link from About).
 ### Links to a setting
 
 `kind` `setting`, with `key`, one of the keys under "Changing the app's settings": a button to that
-setting. Use it ONLY when he asks where a setting is or how to change one, never because one bears on what he asks. A sermon, map or book he asks for that is not listed gets: none is listed, NEVER that its source may be off, and NO setting link. It changes nothing
+setting. Use it ONLY when he asks where a setting is or how to change one, never because one bears on what he asks. A sermon, map or book he asks for that is not listed gets: none is listed, NEVER that its source may be off, and NO setting link. Before one, write `setting_link_ask`: only `where-a-setting-is` takes one. It changes nothing
 (that is `settings_changes` or `setting_offer`), and must be a listed key.
 
 ### Links to a work he owns

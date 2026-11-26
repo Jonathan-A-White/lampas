@@ -405,6 +405,8 @@ export interface TalkAnswer {
   transliteration?: string[];
   /** only when the request carried `fold` (mw-5r3p30.700): the talk's new running summary, `summary` and every turn of `fold` folded in, at most TALK_SUMMARY_MAX characters; the app keeps it on the phone and sends it next time */
   summary?: string;
+  /** written before `links` when they hold a setting link (mw-fnvjof.17.332): what he asked; the schema allows a setting link only beside where-a-setting-is */
+  setting_link_ask?: 'where-a-setting-is' | 'a-thing-not-listed' | 'other';
   /** the words and verses the answer links to a study resource (mw-5r3p30.75): the app shows each in the resources he has switched on */
   links?: AnswerLink[];
   /** in a quiz, one line the tutor proposes for his study way (mw-5r3p30.76): shown with Keep this, kept only when he taps it */
@@ -512,7 +514,7 @@ const isRustyOffer = (value: unknown): value is RustyOfferAnswer =>
 /** The app's own check of an answer, run before anything is kept (the schema's limits). */
 export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if (!isObject(value) || !isText(value.answer, 1500)) return false;
-  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'quiz_goal_state' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'today_offer' && k !== 'welcome_done' && k !== 'summary' && k !== 'fetch' && k !== 'asks' && k !== 'do' && k !== 'misses' && k !== 'said')) return false;
+  if (Object.keys(value).some((k) => k !== 'answer' && k !== 'words' && k !== 'question' && k !== 'settings_changes' && k !== 'words_to_add' && k !== 'syllables' && k !== 'transliteration' && k !== 'links' && k !== 'setting_link_ask' && k !== 'study_way_line' && k !== 'quiz_goal_offer' && k !== 'quiz_goal_state' && k !== 'profile_update' && k !== 'profile_question' && k !== 'feedback_offer' && k !== 'setting_offer' && k !== 'offer_reply' && k !== 'bridge' && k !== 'form_values' && k !== 'form_ask' && k !== 'go' && k !== 'memory_update' && k !== 'wished_notes' && k !== 'greek_offer' && k !== 'greek_asked' && k !== 'rusty_offer' && k !== 'today_offer' && k !== 'welcome_done' && k !== 'summary' && k !== 'fetch' && k !== 'asks' && k !== 'do' && k !== 'misses' && k !== 'said')) return false;
   if ('question' in value && !isText(value.question, MAX_TALK_CHARS)) return false;
   if ('memory_update' in value && !(Array.isArray(value.memory_update) && value.memory_update.length <= MAX_MEMORY_UPDATES && value.memory_update.every(isMemoryUpdate))) return false;
   if ('wished_notes' in value && !(Array.isArray(value.wished_notes) && value.wished_notes.length <= MAX_WISHED_NOTES && value.wished_notes.every((n) => isText(n, MEMORY_NAME_MAX)))) return false;
@@ -538,6 +540,7 @@ export function isTalkAnswer(value: unknown): value is TalkAnswer {
   if ('setting_offer' in value && !(isObject(value.setting_offer) && Object.keys(value.setting_offer).length === 2 && isText(value.setting_offer.key, 60) && (isText(value.setting_offer.value, 80) || typeof value.setting_offer.value === 'number'))) return false;
   if ('form_ask' in value && !isText(value.form_ask, 30)) return false;
   if ('form_values' in value && !(Array.isArray(value.form_values) && value.form_values.length <= 8 && value.form_values.every(isFormValue))) return false;
+  if ('setting_link_ask' in value && value.setting_link_ask !== 'where-a-setting-is' && value.setting_link_ask !== 'a-thing-not-listed' && value.setting_link_ask !== 'other') return false;
   if ('links' in value && !(Array.isArray(value.links) && value.links.length <= 12 && value.links.every(isAnswerLink))) return false;
   if ('settings_changes' in value && !Array.isArray(value.settings_changes)) return false;
   if ('words_to_add' in value && !(Array.isArray(value.words_to_add) && value.words_to_add.length <= 12 && value.words_to_add.every((l) => isText(l, 80)))) return false;

@@ -6,6 +6,15 @@
   "required": ["answer", "question", "words"],
   "if": { "required": ["quiz_goal_offer"] },
   "then": { "required": ["quiz_goal_state"], "properties": { "quiz_goal_state": { "const": "none" } } },
+  "allOf": [
+    {
+      "if": {
+        "required": ["links"],
+        "properties": { "links": { "contains": { "required": ["kind"], "properties": { "kind": { "const": "setting" } } } } }
+      },
+      "then": { "required": ["setting_link_ask"], "properties": { "setting_link_ask": { "const": "where-a-setting-is" } } }
+    }
+  ],
   "properties": {
     "answer": {
       "description": "The reply to what he said, in short plain English; or the one-sentence refusal for anything outside the Bible. Asked to play a sermon by title whose row has no `plays`: say it is not played in the app and link it; `do` nothing, never play another row in its place. Point him at a link (the link below, tap the link) only when `links` carries it; then it is drawn under the answer.",
@@ -632,6 +641,11 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 30
+    },
+    "setting_link_ask": {
+      "description": "Written just before `links` whenever they would hold a `setting` link: what his question asks. 'where-a-setting-is' when he asks where a setting is or how to change one; 'a-thing-not-listed' when he asks for a sermon, map or book the request does not list (no setting link then, not even its source's switch); 'other' for anything else. A setting link is allowed only beside 'where-a-setting-is'.",
+      "type": "string",
+      "enum": ["where-a-setting-is", "a-thing-not-listed", "other"]
     },
     "links": {
       "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, a work (a commentary, grammar, Greek text or book on his Logos shelf, listed in the request's `works`) opens in Logos, a map (a line of the request's `maps`) opens in the app, a sermon (a row of the request's `sermons`) opens where it lives, a paradigm (a table of the Paradigms screen, by its id) opens that table, and a copy or a share (a passage he named, by its reference) is a button that puts its text on his clipboard or opens his share sheet. A table `answer` sends him to in a drill always comes with its paradigm link: the words and the button go together. At most three, and at most one of them a work (two in a quiz). Leave it out unless 'Links to his study resources' calls for one.",

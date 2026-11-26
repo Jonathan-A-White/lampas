@@ -919,6 +919,55 @@ describe("the answer schema's links description names no setting as a reason to 
   });
 });
 
+// mw-fnvjof.17.332: asked 'is there a Spurgeon sermon on this?' with no `sermons` listed (the example no-sermon-listed), the tutor added
+// {"kind":"setting","key":"sermons.spurgeon-ccel"} in about 1 live run in 6 (11 of 12 on 998c884e2), though part 200 says NO setting link for a
+// sermon, map or book that is not listed. Three rewordings did not hold it (mw-5r3p30.1250). As for quiz_goal_state (mw-gdcyf98.32), the tutor
+// now writes what he asked, `setting_link_ask`, just before `links`, and the schema allows a setting link only beside 'where-a-setting-is'.
+describe('a setting link only when he asks where a setting is (mw-fnvjof.17.332)', () => {
+  const s = schema as Schema & { allOf?: Schema[] };
+  const base = { answer: 'No sermons are listed for me here.', question: 'Is there a Spurgeon sermon on this?', words: [] };
+  const spurgeon = { kind: 'setting', key: 'sermons.spurgeon-ccel' };
+
+  it('refuses the answer seen live: a sermons.<id> setting link with no setting_link_ask', () => {
+    expect(validate({ ...base, links: [spurgeon] }, s)).not.toEqual([]);
+  });
+
+  it('refuses a setting link beside a-thing-not-listed or other, and allows one beside where-a-setting-is', () => {
+    expect(validate({ ...base, setting_link_ask: 'a-thing-not-listed', links: [spurgeon] }, s)).not.toEqual([]);
+    expect(validate({ ...base, setting_link_ask: 'other', links: [{ kind: 'map', map: 'x' }, spurgeon] }, s)).not.toEqual([]);
+    expect(validate({ ...base, setting_link_ask: 'where-a-setting-is', links: [{ kind: 'setting', key: 'textSize' }] }, s)).toEqual([]);
+  });
+
+  it('asks nothing of an answer with no setting link', () => {
+    expect(validate({ ...base, links: [{ kind: 'map', map: 'x' }] }, s)).toEqual([]);
+    expect(validate(base, s)).toEqual([]);
+    expect(validate({ ...base, setting_link_ask: 'a-thing-not-listed' }, s)).toEqual([]);
+  });
+
+  it('puts setting_link_ask just before links, so the model writes it first, and names the trap in its description', () => {
+    const keys = Object.keys(s.properties ?? {});
+    expect(keys.indexOf('setting_link_ask')).toBe(keys.indexOf('links') - 1);
+    const field = (s.properties as Record<string, Schema & { description: string }>).setting_link_ask;
+    expect(field.enum).toEqual(['where-a-setting-is', 'a-thing-not-listed', 'other']);
+    expect(field.description).toMatch(/sermon, map or book/);
+  });
+
+  it('keeps the quiz goal rule beside it', () => {
+    expect(validate({ ...base, quiz_goal_offer: 'learning Greek', quiz_goal_state: 'kept' }, s)).not.toEqual([]);
+  });
+
+  it('is a key the app accepts and checks', () => {
+    expect(isTalkAnswer({ ...base, setting_link_ask: 'where-a-setting-is', links: [{ kind: 'setting', key: 'textSize' }] })).toBe(true);
+    expect(isTalkAnswer({ ...base, setting_link_ask: 'maybe' })).toBe(false);
+  });
+
+  it('is named in the setting section of part 200', () => {
+    const text = instructionsOf('bible-talk');
+    const section = text.slice(text.indexOf('### Links to a setting'), text.indexOf('### Links to a work he owns')).replace(/\s+/g, ' ');
+    expect(section).toMatch(/`setting_link_ask`[^.]*`where-a-setting-is`/);
+  });
+});
+
 // mw-5r3p30.727: the smoke missed now and then because an English word's question (`what does 'love' really mean?`) read as a Greek word's question, so the offer's word
 // went into `words` too, and because a talk's `summary` was left out of an answer to a Greek-word question. The rules say it in one place each.
 describe('two rules the smoke found not to hold (mw-5r3p30.727)', () => {
