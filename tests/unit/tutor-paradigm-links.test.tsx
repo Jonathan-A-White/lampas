@@ -149,6 +149,6 @@ describe("a drill's missed forms get their table's link even when he asks what t
   });
 
   it('says in the paradigm section that the link goes with what to drill too', () => {
-    expect(paradigm).toContain('whatever he asks of them (what to drill too)');
+    expect(paradigm).toContain('and ALWAYS in a drill (`screen` Drill it) when he missed forms a table holds (the article\'s τό too), whatever he asks, even what to drill:');
   });
 });
