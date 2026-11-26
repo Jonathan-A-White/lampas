@@ -50,8 +50,10 @@ const cells = (page: Page, state: string) => page.locator(`[data-cell][data-stat
 const tiles = (page: Page) => page.getByTestId('fill-tray').locator('[data-tile]');
 const tile = (page: Page, form: string) => tiles(page).filter({ hasText: new RegExp(`^${form}$`) }).first();
 const cell = (page: Page, place: string) => page.locator(`[data-cell="${place}"]`);
-/** A real drag by hand, in steps: the mouse goes down on the tile, leaves it a little (the browser starts the drag only on a move after the press), then walks to the cell and lets go. */
+/** A real drag by hand, in steps: the mouse goes down on the tile, leaves it a little (the browser starts the drag only on a move after the press), then walks to the cell and lets go.
+ *  The cell is first put in the middle of its scroll box: one under the sticky header counts as in view, and the drop would land on the header. */
 async function drag(page: Page, from: Locator, to: Locator) {
+  await to.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await from.scrollIntoViewIfNeeded();
   const a = (await from.boundingBox())!;
   const b = (await to.boundingBox())!;
@@ -92,6 +94,8 @@ test('Fill the table empties the cells and lays the forms as tiles: a right tile
   await expect(cell(page, 'Genitive Singular Masculine')).toHaveAttribute('data-state', 'empty');
   await expect(tiles(page)).toHaveCount(12);
   await expect(page.getByTestId('mode-help')).toContainText('Not there');
+  // the shake ends and is cleared; a tap on a cell still shaking makes Playwright retry it as not stable, and a retry scrolls the table about
+  await expect(cell(page, 'Genitive Singular Masculine')).not.toHaveAttribute('data-shake', 'true');
 
   // a right tile stays
   await tile(page, 'τοῦ').click();
