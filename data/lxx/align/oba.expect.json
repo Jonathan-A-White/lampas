@@ -1,0 +1,44 @@
+{
+  "reasons": {
+    "supplied-word": "A word Brenton supplies; the Greek of this verse has no word for it.",
+    "greek-in-the-verse-before": "The Greek this English renders stands in the verse before in Swete, so no word of this verse fits it.",
+    "not-in-swete": "Swete's Greek of this verse has no word for 'all the nations drink wine'."
+  },
+  "chapters": {
+    "1": {
+      "gaps": 0,
+      "model": 14,
+      "leftovers": [
+        ["1:2:arise", "greek-in-the-verse-before"],
+        ["1:3:dishonored", "greek-in-the-verse-before"],
+        ["1:3:gentiles", "greek-in-the-verse-before"],
+        ["1:3:greatly", "greek-in-the-verse-before"],
+        ["1:3:made", "greek-in-the-verse-before"],
+        ["1:3:small", "greek-in-the-verse-before"],
+        ["1:6:how", "Brenton says 'how' a second time; the Greek of this verse has one πῶς, which 'How' renders."],
+        ["1:10:committed", "supplied-word"],
+        ["1:16:drink", "not-in-swete"],
+        ["1:16:nations", "not-in-swete"],
+        ["1:16:wine", "not-in-swete"],
+        ["1:18:israel", "supplied-word"],
+        ["1:18:left", "supplied-word"],
+        ["1:20:inherit", "Brenton says 'shall inherit' twice; the Greek of this verse has one κληρονομήσουσιν, which 'they shall inherit' renders."]
+      ],
+      "placePairs": [
+        ["1:1 Obdias. @1", "read"],
+        ["1:2 against @7", "read"],
+        ["1:2 rise @6", "read"],
+        ["1:2 war. @10", "read"],
+        ["1:7 snares @20", "read"],
+        ["1:10 ever. @16", "read"],
+        ["1:12 children @14", "read"],
+        ["1:17 sanctuary; @9", "read"],
+        ["1:19 Philistines: @15", "read"],
+        ["1:19 plain @13", "read"],
+        ["1:20 captives @16", "read"],
+        ["1:20 children @7", "read"],
+        ["1:20 south. @24", "read"]
+      ]
+    }
+  }
+}
