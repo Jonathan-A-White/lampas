@@ -630,3 +630,35 @@ describe("LXX2012's Obadiah 1 stands at the Greek verses its text is", () => {
     expect(obaMaps.lxx2012ToGreek('oba 1:4')).toEqual({ state: 'same', refs: ['oba 1:4'] });
   });
 });
+
+// mw-u2w5klk.349.157: Brenton's Jonah 2:7 opens with the end of the sentence of his 2:6 ('my head went down | to the clefts of the mountains;'), the Greek words of Swete's 2:6 (εἰς σχισμὰς ὀρέων),
+// so that lead is placed at the end of his 2:6, where the Greek words are, and a tap on 'clefts' opens one of them.
+describe("Brenton's Jonah 2:7 lead stands at the verse before it", () => {
+  const usfm = [
+    '\\id JON', '\\c 2',
+    '\\v 5 Then I said, I am cast out.',
+    '\\v 6 Water was poured around me to the soul: the \\f + \\fr 2:6 \\fl Gr. \\ft last. \\f* lowest deep compassed me, my head went down',
+    '\\v 7 to the clefts of the mountains; I went down into the earth, whose bars are the \\add everlasting\\add* barriers.',
+    '\\v 8 When my soul was failing me, I remembered the Lord.',
+  ].join('\n');
+  const jon = parseUsfm(usfm);
+  const jonMaps = buildMaps(parseTvtms(fixture('tvtms-slice.txt')));
+  const textAt = (ref: string): string => (englishByGreekVerse(jon, jonMaps).byGreek.get(ref) ?? []).map((s) => s.text).join(' | ');
+
+  it('ends 2:6 with the lead and opens 2:7 with what follows it', () => {
+    expect(textAt('jon 2:6')).toBe('Water was poured around me to the soul: the lowest deep compassed me, my head went down to the clefts of the mountains;');
+    expect(textAt('jon 2:7')).toBe('I went down into the earth, whose bars are the everlasting barriers.');
+    expect(textAt('jon 2:5')).toBe('Then I said, I am cast out.');
+  });
+
+  it("keeps the supplied words of the verse after the lead at their own place (the word 'everlasting' is the 10th of 2:7 without the lead)", () => {
+    const segment = (englishByGreekVerse(jon, jonMaps).byGreek.get('jon 2:7') ?? [])[0];
+    expect(segment.supplied.map((i) => segment.text.split(' ')[i])).toEqual(['everlasting']);
+  });
+
+  it('leaves the parsed book as it was read, and the other verses alone', () => {
+    englishByGreekVerse(jon, jonMaps);
+    expect(verseOf(jon, 2, 7)?.text).toMatch(/^to the clefts of the mountains; I went down/);
+    expect(textAt('jon 2:8')).toBe('When my soul was failing me, I remembered the Lord.');
+  });
+});

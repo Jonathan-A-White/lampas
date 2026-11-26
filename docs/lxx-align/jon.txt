@@ -7,10 +7,10 @@ Derived without a Morpheus cache: none.
 | Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
 | Jonah 1 | 16 | 395 | 384 | 97.2% | 69.4% | 92 (23.3%) |
-| Jonah 2 | 11 | 184 | 170 | 92.4% | 65.8% | 38 (20.7%) |
+| Jonah 2 | 11 | 184 | 173 | 94.0% | 66.3% | 38 (20.7%) |
 | Jonah 3 | 10 | 237 | 222 | 93.7% | 71.3% | 50 (21.1%) |
 | Jonah 4 | 11 | 264 | 247 | 93.6% | 72.0% | 55 (20.8%) |
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Jonah | 48 | 1,080 | 1,023 | 94.7% | 69.8% | 235 (21.8%) |
+| Jonah | 48 | 1,080 | 1,026 | 95.0% | 69.9% | 235 (21.8%) |

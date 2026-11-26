@@ -7,7 +7,7 @@ import { decodeParse } from '../../src/data/parseCode';
 import type { BookInfo, Chapter, EnglishChunk, GreekWord, Verse, VerseRef } from '../../src/data/chapter';
 import { bookOf, sweteTokens, type SweteWord } from '../lxx/swete';
 import type { UsfmBook } from './lxx2012';
-import { carriedAsGreek } from './lxx2012';
+import { carriedAsGreek, moveLeads } from './lxx2012';
 import { chapterFingerprint } from './chapterWriter';
 import { OT_BOOKS, refOf, type TvtmsMaps } from './tvtms';
 
@@ -140,7 +140,7 @@ export function englishByGreekVerse(book: UsfmBook, maps: TvtmsMaps): { byGreek:
     if (list) list.push(segment);
     else byGreek.set(greek[0], [segment]);
   };
-  for (const chapter of book.chapters) {
+  for (const chapter of moveLeads(book).chapters) {
     if (chapter.title !== undefined) {
       const ref = refOf(book.code, chapter.chapter, 'T');
       put(ref, maps.lxx2012ToGreek(ref).refs, { text: titleWords(chapter.title), supplied: [] });

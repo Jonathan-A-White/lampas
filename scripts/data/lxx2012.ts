@@ -136,6 +136,35 @@ export function carriedAsGreek(book: string, chapter: number, verse: number): { 
   return { chapter, verse };
 }
 
+/**
+ * Where Brenton breaks a sentence a few words later than Swete does: the first words of his verse are the last of the Greek verse before it, so a chunk made of the verse's own text could not point at them.
+ * `lead` is the text his verse opens with; `moveLeads` ends the verse before it with those words (the Greek words that render them stand there) and takes them off the verse.
+ * Jonah 2:6-7 (mw-u2w5klk.349.157): 'my head went down | to the clefts of the mountains;' is Swete's 2:6 ending εἰς σχισμὰς ὀρέων.
+ */
+export const LXX2012_LEADS: ReadonlyArray<{ book: string; chapter: number; verse: number; lead: string }> = [
+  { book: 'jon', chapter: 2, verse: 7, lead: 'to the clefts of the mountains;' },
+];
+
+/** The book with each lead of LXX2012_LEADS moved from the start of its verse to the end of the verse before it (a new book; the one given is not changed). A lead the verse does not start with is an error: the source changed. */
+export function moveLeads(book: UsfmBook): UsfmBook {
+  const leads = LXX2012_LEADS.filter((l) => l.book === book.code);
+  if (leads.length === 0) return book;
+  const chapters = book.chapters.map((c) => ({ ...c, verses: c.verses.map((v) => ({ ...v, supplied: [...v.supplied] })) }));
+  for (const { chapter, verse, lead } of leads) {
+    const verses = chapters.find((c) => c.chapter === chapter)?.verses ?? [];
+    const at = verses.findIndex((v) => v.verse === verse);
+    if (at < 1) throw new Error(`${book.code} ${chapter}:${verse}: no verse before it to move the lead '${lead}' to`);
+    const [from, to] = [verses[at], verses[at - 1]];
+    if (!(from.text === lead || from.text.startsWith(`${lead} `))) throw new Error(`${book.code} ${chapter}:${verse}: the text does not start with the lead '${lead}' (LXX2012_LEADS)`);
+    const count = lead.split(/\s+/).length;
+    if (from.supplied.some((i) => i < count)) throw new Error(`${book.code} ${chapter}:${verse}: the lead '${lead}' holds a supplied word`);
+    to.text = `${to.text} ${lead}`;
+    from.text = from.text.slice(lead.length).trim();
+    from.supplied = from.supplied.map((i) => i - count);
+  }
+  return { ...book, chapters };
+}
+
 // ---------------------------------------------------------------- the files
 
 /** The entries of a zip as name and bytes (stored or deflated; the zip eBible serves has no other kind), read from its central directory. */

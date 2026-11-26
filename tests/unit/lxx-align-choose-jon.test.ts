@@ -40,6 +40,8 @@ describe('the model pass files of Jonah', () => {
       expect(chapter.gaps, `Jon ${n}`).toBe(0);
       expect(chapter.leftovers, `Jon ${n}`).toBeDefined();
       for (const [key, why] of chapter.leftovers!) {
+        // mw-u2w5klk.349.157: 'to the clefts of the mountains' stands at the end of Brenton's 2:6 (scripts/data/lxx2012.ts LXX2012_LEADS), where the Greek words are
+        expect(['2:7:clefts', '2:7:mountains'], `Jon ${n}: ${key}`).not.toContain(key);
         expect(why.trim(), `Jon ${n}: ${key}`).not.toBe('');
         expect(expectJon.reasons[why] ?? why, `Jon ${n}: ${key}`).not.toBe('');
       }
@@ -139,5 +141,11 @@ describe.skipIf(!real.run)('Jonah with the model pass', () => {
     expect(greek(3, 3, /^journey/)).toEqual(['πορείας', 'ὁδοῦ']);
     expect(greek(4, 11, /human beings/)).toEqual(['ἀνθρώπων,']);
     expect(greek(4, 11, /right hand/)).toEqual(['δεξιὰν']);
+  });
+
+  it("puts 'to the clefts of the mountains' with the Greek words of 2:6 that render it, not at the start of 2:7 (mw-u2w5klk.349.157)", () => {
+    expect(greek(2, 6, /^to$/).concat(greek(2, 6, /clefts/), greek(2, 6, /^mountains/))).toEqual(['εἰς', 'σχισμὰς', 'ὀρέων,']);
+    const seven = withModel.get(2)!.verses.find((x) => x.n === 7)!;
+    expect(seven.e.map((c) => c.t).join(' ')).not.toMatch(/clefts|mountains/);
   });
 });
