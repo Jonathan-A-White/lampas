@@ -40,11 +40,11 @@ beforeEach(async () => {
 describe('a setting link in the schema and the guard', () => {
   it('is accepted for every key of the registry, and refused for an invented key, by the schema and not by the guard', () => {
     for (const s of SETTINGS) {
-      const value = { ...base, links: [{ kind: 'setting', key: s.key }] };
+      const value = { ...base, setting_link_ask: 'where-a-setting-is', links: [{ kind: 'setting', key: s.key }] };
       expect(validate(value, schema), s.key).toEqual([]);
       expect(isTalkAnswer(value), s.key).toBe(true);
     }
-    const invented = { ...base, links: [{ kind: 'setting', key: 'noSuchSetting' }] };
+    const invented = { ...base, setting_link_ask: 'where-a-setting-is', links: [{ kind: 'setting', key: 'noSuchSetting' }] };
     expect(validate(invented, schema)).not.toEqual([]);
     // the phone draws nothing for it but does not lose the answer
     expect(isTalkAnswer(invented)).toBe(true);
@@ -56,10 +56,12 @@ describe('a setting link in the schema and the guard', () => {
     }
   });
 
-  it('keeps the limit of three links', () => {
+  it('keeps the limit of three links, each setting link beside a setting_link_ask of where-a-setting-is', () => {
     const links = [text, text, text, text];
     expect(validate({ ...base, links }, schema)).not.toEqual([]);
-    expect(validate({ ...base, links: links.slice(0, MAX_LINKS) }, schema)).toEqual([]);
+    expect(validate({ ...base, setting_link_ask: 'where-a-setting-is', links: links.slice(0, MAX_LINKS) }, schema)).toEqual([]);
+    // mw-fnvjof.17.332: a setting link with no setting_link_ask of where-a-setting-is is no valid answer
+    expect(validate({ ...base, links: links.slice(0, MAX_LINKS) }, schema)).not.toEqual([]);
   });
 });
 
