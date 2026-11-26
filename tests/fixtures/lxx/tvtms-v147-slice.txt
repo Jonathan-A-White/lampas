@@ -1,0 +1,14 @@
+﻿TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY												
+A slice for tests (mw-u2w5klk.349.147): the section of the condensed data for Jos.8:30--9:27, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge).
+#DataStart(Condensed)
+$Jos.8:30--9:27	English KJV	Hebrew	Latin	Greek*	GreekUndivided*	Greek2 (eg Brenton)						
+TEST: If...	Jos.8:35=Last	Jos.8:35=Last	Jos.8:35=Last	Jos.8:29=Last	Jos.8:29=Last	Jos.8:35=Last						
+TEST: & if... 	Jos.9:4>Jos.9:2	Jos.9:4>Jos.9:2	Jos.9:4>Jos.9:2	Jos.9:4<Jos.9:2	Jos.9:4<Jos.9:2	Jos.9:4>Jos.9:2						
+TEST: & if... 	Jos.9:2.1=NotExist	Jos.9:2.1=NotExist	Jos.9:2.1=NotExist	Jos.9:2.1=Exist	Jos.9:2.1=NotExist	Jos.9:2.1=NotExist						
+TEST: & if... 	Jos.9:28=NotExist	Jos.9:28=NotExist	Jos.9:28=NotExist	Jos.9:28=NotExist	Jos.9:28=NotExist	Jos.9:28=Exist						
+LongVerseElsewhere	Jos.8:30-35	Jos.8:30-35	Jos.8:30-35	Jos.9:2.1-6	Absent [=Jos.9:2.1-6]	Jos.8:30-35						
+LongVerse/LVElsewhere	Jos.9:2	Jos.9:2	Jos.9:2	Jos.9:2.0	Jos.9:2 [=+Jos.8:30-35]	Jos.9:2						
+OneToOne	Jos.9:27.0	Jos.9:27	Jos.9:27	Jos.9:27	Jos.9:27	Jos.9:27						
+OneToOne	Jos.9:27.1-6	NoVerse	NoVerse	NoVerse	NoVerse	Jos.9:28-33[=Jos.8:30-35]						
+											
+#DataEnd(Condensed)

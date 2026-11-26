@@ -581,3 +581,39 @@ describe("LXX2012's Joshua 5 stands at the Greek verses its text is", () => {
     expect(unplacedVerses(placedAt, swete)).toEqual([]);
   });
 });
+
+// mw-u2w5klk.349.147: Swete puts the altar on Mount Ebal (Brenton's 8:30-35) at 9:3-8, after 9:2, so Brenton's 9:3-26 are the Greek 9:9-32 and his 9:27-29 the Greek 9:33. TVTMS's section Jos.8:30--9:27
+// has a Brenton column that stands 8:30-35 at 9:2.1-6 (Rahlfs' sub-verses, which Swete does not number), so they were shown nowhere and chapter 9 stood six verses off. LXX2012's 9:30-33 repeat 8:30-35 as an addition.
+describe("LXX2012's Joshua 8:30-35 and chapter 9 stand at the Greek verses their text is", () => {
+  const maps147 = buildMaps(parseTvtms(fixture('tvtms-v147-slice.txt')));
+  const woven = () => englishByGreekVerse(parseUsfm(fixture('lxx2012-v147-jos.usfm')), maps147);
+
+  it("puts Brenton's Joshua 8:30-35 at the Greek 9:3-8 and his 9:3-26 six verses on", () => {
+    expect(maps147.lxx2012ToGreek('jos 8:29')).toEqual({ state: 'same', refs: ['jos 8:29'] });
+    for (const v of [30, 31, 32, 33, 34, 35]) expect(maps147.lxx2012ToGreek(`jos 8:${v}`)).toEqual({ state: 'one', refs: [`jos 9:${v - 27}`] });
+    for (const v of [1, 2]) expect(maps147.lxx2012ToGreek(`jos 9:${v}`)).toEqual({ state: 'same', refs: [`jos 9:${v}`] });
+    for (const v of [3, 4, 10, 11, 12, 26]) expect(maps147.lxx2012ToGreek(`jos 9:${v}`)).toEqual({ state: 'one', refs: [`jos 9:${v + 6}`] });
+    for (const v of [27, 28, 29]) expect(maps147.lxx2012ToGreek(`jos 9:${v}`)).toEqual({ state: 'part', refs: ['jos 9:33'] });
+  });
+
+  it('weaves the altar at the Greek 9:3-8 and the Gabaonites at 9:9 on, nothing unplaced and no Greek verse of them left without English', () => {
+    const { byGreek, placedAt } = woven();
+    const text = (ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' ');
+    expect(text('jos 9:2')).toMatch(/^they came all together/);
+    expect(text('jos 9:3')).toMatch(/^Then Joshua built an altar to the Lord God of Israel in mount Gaebal,$/);
+    expect(text('jos 9:4')).toMatch(/^as Moses the servant of the Lord commanded/);
+    expect(text('jos 9:5')).toMatch(/^And Joshua wrote upon the stones/);
+    expect(text('jos 9:6')).toMatch(/^And all Israel, and their elders/);
+    expect(text('jos 9:7')).toMatch(/^And afterwards Joshua read/);
+    expect(text('jos 9:8')).toMatch(/^There was not a word of all that Moses charged Joshua/);
+    expect(text('jos 9:9')).toMatch(/^And the inhabitants of Gabaon heard/);
+    expect(text('jos 9:10')).toMatch(/^And they also wrought craftily/);
+    expect(text('jos 9:18')).toMatch(/^These .*the loaves/);
+    expect(text('jos 9:32')).toMatch(/^And they did so to them/);
+    expect(text('jos 9:33')).toMatch(/^And Joshua made them in that day hewers of wood/);
+    expect(text('jos 9:33')).not.toMatch(/Then Joshua built an altar/);
+    const swete = ['jos 8:29', ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17, 18, 32, 33].map((v) => `jos 9:${v}`)];
+    expect(versesWithoutEnglish(byGreek, swete.filter((r) => !['jos 9:16', 'jos 9:17'].includes(r)))).toEqual([]);
+    expect(unplacedVerses(placedAt, new Set(swete))).toEqual([]);
+  });
+});
