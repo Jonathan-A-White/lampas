@@ -1,0 +1,12 @@
+﻿TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY												
+A slice for tests (mw-u2w5klk.349.159): the section of the condensed data for Jos.21:36-21:45, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge).
+#DataStart(Condensed)
+$Jos.21:36-21:45	English KJV	Hebrew	Latin	Greek								
+TEST: If...	Jos.21:45=Last	Jos.21:45=Last	Jos.21:43=Last	Jos.21:45=Last								
+OneToOne	Jos.21:36	Jos.21:36	Jos.21:36	Jos.21:36								
+MergedPrevVerse	Jos.21:37	Jos.21:37	Absent [=Jos.21:36]	Jos.21:37								
+OneToOne	Jos.21:38	Jos.21:38	Jos.21:37	Jos.21:38								
+MergedPrevVerse	Jos.21:39	Jos.21:39	Absent [=Jos.21:37]	Jos.21:39								
+OneToOne	Jos.21:40-45	Jos.21:40-45	Jos.21:38-43	Jos.21:40-45								
+												
+#DataEnd(Condensed)
