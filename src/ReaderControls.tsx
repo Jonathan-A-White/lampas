@@ -1,7 +1,7 @@
 // src/ReaderControls.tsx — the Reader's actions that are otherwise a gesture, each as a button with a name (mw-cwf538.4, the epic 'Lampas for every age and every
 // ability'; docs/accessibility.md 'Gesture-only actions'): the two-finger tap that shows or puts away the Immersive reader's bars, going in and out of the
 // Immersive reader (Settings > Immersive reader), and with Turn pages the tap on the outer thirds and the swipe that turn a page; with the split open the drag of its divider (Larger split, Smaller split)
-// and its Close (Close the split). Previous page, Next page, Larger split and Smaller split carry `data-repeat`: they are meant to be tapped twice quickly, and the app-wide
+// and its Close (Close the split); with the timeline in the dock the drag that moves it through time (Earlier, Later; mw-fnvjof.17.317.2). Previous page, Next page, Larger split, Smaller split, Earlier and Later carry `data-repeat`: they are meant to be tapped twice quickly, and the app-wide
 // guard (src/ui/tapGuard.ts) drops the second quick tap on any other control. They are out of sight (one
 // pixel, clipped: `.reveal-on-focus` in src/index.css) until the keyboard or a screen reader's focus reaches one, and then the row shows at the top of the
 // screen: a sighted reader on a touch screen sees nothing new, and TalkBack finds them as buttons. A button that changes what it is (Leave / Start immersive
@@ -28,7 +28,13 @@ export interface SplitControls {
   close(): void;
 }
 
-export function ReaderControls({ immersive, away, onBars, pages, inert, split }: {
+/** The timeline strip's drag left and right as buttons: each moves it by 40% of its width (src/timeline/). Its zoom has its own buttons at the ruler's end. */
+export interface TimelineControls {
+  earlier(): void;
+  later(): void;
+}
+
+export function ReaderControls({ immersive, away, onBars, pages, inert, split, timeline }: {
   immersive: boolean;
   /** the Immersive reader's bars are out of view */
   away: boolean;
@@ -40,6 +46,8 @@ export function ReaderControls({ immersive, away, onBars, pages, inert, split }:
   inert: boolean;
   /** with the split open: its divider and its close */
   split?: SplitControls | null;
+  /** with the timeline in the dock: the move through time */
+  timeline?: TimelineControls | null;
 }) {
   const bars = () => {
     announce(away ? 'The bars are back' : 'The bars are away');
@@ -79,6 +87,16 @@ export function ReaderControls({ immersive, away, onBars, pages, inert, split }:
           </button>
           <button type="button" onClick={split.close} className={BUTTON}>
             Close the split
+          </button>
+        </>
+      ) : null}
+      {timeline ? (
+        <>
+          <button type="button" onClick={timeline.earlier} data-repeat className={BUTTON}>
+            Earlier
+          </button>
+          <button type="button" onClick={timeline.later} data-repeat className={BUTTON}>
+            Later
           </button>
         </>
       ) : null}

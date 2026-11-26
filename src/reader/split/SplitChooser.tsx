@@ -1,5 +1,5 @@
 // src/reader/split/SplitChooser.tsx — the sheet 'Beside Genesis 14' (mw-5r3p30.1130, docs/design/reader-split.md 'Opening and closing'): one row per text the chapter can be read beside, each with whose it is on a second line,
-// and 'A map' last (with the chapter's maps counted) when the chapter has maps. The Verse view's Split opens it over the verse; the dock's name opens it again with the text it holds ticked, so a second text changes
+// then 'Timeline' (mw-fnvjof.17.317.2: the dated events and lives, on a strip under the passage), and 'A map' last (with the chapter's maps counted) when the chapter has maps. The Verse view's Split opens it over the verse; the dock's name opens it again with the text it holds ticked, so a second text changes
 // without leaving the split. Done, Back, Escape, a swipe down or a tap outside close it. A portal, above the Verse view and the dock.
 import { createPortal } from 'react-dom';
 import { DialogAskTutor } from '../../AskTutor';
@@ -13,7 +13,7 @@ import { useSeptuagintShipped } from './useDockedText';
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left active:bg-line';
 
-function Sheet({ book, chapter, title, current, onChoose, onMap, onClose }: SplitChooserProps) {
+function Sheet({ book, chapter, title, current, timeline = false, onChoose, onTimeline, onMap, onClose }: SplitChooserProps) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
@@ -51,14 +51,21 @@ function Sheet({ book, chapter, title, current, onChoose, onMap, onClose }: Spli
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pb-2">
           {texts.map((text) => (
-            <button key={text.key} type="button" data-split-text={text.key} aria-current={current === text.key ? 'true' : undefined} onClick={() => onChoose(text.key)} className={`${ROW} ${current === text.key ? 'bg-accent/15' : ''}`}>
+            <button key={text.key} type="button" data-split-text={text.key} aria-current={!timeline && current === text.key ? 'true' : undefined} onClick={() => onChoose(text.key)} className={`${ROW} ${!timeline && current === text.key ? 'bg-accent/15' : ''}`}>
               <span className="min-w-0 flex-1">
                 <span className="block text-base font-medium text-fg">{text.label}</span>
                 <span className="block text-sm text-muted">{text.whose}</span>
               </span>
-              {current === text.key ? <span aria-hidden="true" className="text-accent">✓</span> : null}
+              {!timeline && current === text.key ? <span aria-hidden="true" className="text-accent">✓</span> : null}
             </button>
           ))}
+          <button type="button" data-split-text="timeline" aria-current={timeline ? 'true' : undefined} onClick={onTimeline} className={`${ROW} ${timeline ? 'bg-accent/15' : ''}`}>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-medium text-fg">Timeline</span>
+              <span className="block text-sm text-muted">Events and lives by date, from Theographic</span>
+            </span>
+            {timeline ? <span aria-hidden="true" className="text-accent">✓</span> : null}
+          </button>
           {maps && maps.length > 0 ? (
             <button type="button" data-split-text="map" onClick={onMap} className={ROW}>
               <span className="min-w-0 flex-1">
@@ -83,7 +90,11 @@ export interface SplitChooserProps {
   title: string;
   /** the text the dock holds now, ticked; none from the Verse view */
   current?: SplitTextKey | null;
+  /** the dock holds the timeline now: its row is the ticked one */
+  timeline?: boolean;
   onChoose(key: SplitTextKey): void;
+  /** the Timeline row: the dated events and lives on a strip under the passage (src/timeline/) */
+  onTimeline(): void;
   onMap(): void;
   onClose(): void;
 }

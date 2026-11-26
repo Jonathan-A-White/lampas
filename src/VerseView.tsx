@@ -31,7 +31,7 @@ import { InLogosDoors } from './library/InLogosDoors';
 import { MapsDoor } from './maps/MapsDoor';
 import { openMaps } from './maps/openMaps';
 import { SplitChooser } from './reader/split/SplitChooser';
-import { keepVerseBeside, openSplitWithText } from './reader/split/splitSettings';
+import { keepVerseBeside, openSplitWithText, openSplitWithTimeline } from './reader/split/splitSettings';
 import { closeVerse } from './nav/route';
 import { afterSheetEntryGone } from './ui/sheetBack';
 import { sermonPlaceOf } from './sermons/place';
@@ -450,6 +450,13 @@ export function VerseView(props: VerseViewProps) {
             // the text goes to the dock beside the passage at this verse; the sheet and then the Verse view close (both are Back steps: the sheet takes its own off, the Verse view's is popped once it has gone)
             keepVerseBeside(verse.n);
             void openSplitWithText(key);
+            setSplitting(false);
+            afterSheetEntryGone(closeVerse);
+          }}
+          onTimeline={() => {
+            // the timeline goes to the dock as a text does: beside the passage at this verse, the sheet and then the Verse view closed
+            keepVerseBeside(verse.n);
+            void openSplitWithTimeline();
             setSplitting(false);
             afterSheetEntryGone(closeVerse);
           }}
