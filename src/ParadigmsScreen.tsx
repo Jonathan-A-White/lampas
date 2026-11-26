@@ -5,7 +5,9 @@
 // screen's header) says which cells are shown: Any (every cell, the ones not his marked not yet), Solid and frontier (his cells; a locked form shows as
 // locked, not hidden, so the table keeps its shape) or Solid only (the frontier cells hidden, the locked ones locked). Two modes, Learn | Drill (mw-irpgqi.2):
 // Learn shows every shown cell's form; Drill leaves them blank, a tap shows one with Had it / Missed under its row, after the last 'N of M' and Drill the
-// missed again (data/paradigms/drill.ts keeps the run while the page lives); a miss puts the table in Review due now (recordDrillMiss). Ask the tutor (the list's and
+// missed again (data/paradigms/drill.ts keeps the run while the page lives); a miss puts the table in Review due now (recordDrillMiss). Fill the table (mw-fnvjof.17.316, data/paradigms/fill.ts) is the Drill the other way round: the cells
+// the filter shows are emptied and their forms laid as shuffled tiles under the table (the NextBar, pinned to the foot); a tap on a tile then a cell, or a drag, places it; a right tile stays,
+// a wrong one goes back and the cell shakes; Show fills the rest; the run's first slip puts the table in Review, due now, as a Drill's first Missed does. Every table gets it from ParadigmTable. Ask the tutor (the list's and
 // each table's, mw-irpgqi.3) opens the round control's sheet over the screen (src/tutor/askNow.ts): the screen reports the table, the mode, the cell in focus and the word he came
 // from (paradigmTalk), and the talk is kept per table. From a word's sheet a table can show that word's own forms, This word | The pattern (mw-irpgqi.4, ownForms.ts: the
 // forms the text has laid in the cells, the cells it lacks marked 'not in the NT'). The parts this screen shares are listed in docs/paradigm-components.md.
@@ -24,7 +26,6 @@ import {
   paradigmById,
   paradigmsIn,
   standingOf,
-  type CellStanding,
   type Levels,
   type Paradigm,
   type ParadigmCell,
@@ -38,6 +39,7 @@ import { useSetting } from './settings/store';
 import { septuagintSetting } from './settings/definitions/septuagint';
 import { drillMissed, drillOf, forgetDrill, gradeCell, markMissWritten, revealCell, scoreOf, startRun, type Drill } from './data/paradigms/drill';
 import { cellPrompt, PARADIGM_KIND } from './data/paradigms/cells';
+import { fillOf, fillScore, placeTile, shownCells, showTheRest, slipWritten, startFill, type Fill } from './data/paradigms/fill';
 import { ensureScheduled, listLevels, markParadigmOpened, recordDrillMiss, reviewsOf, screenRef } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { backTo, openParadigm, paradigmHash, paradigmOf, replaceHash, useAddress, type ParadigmAddress, type ParadigmMode } from './nav/route';
@@ -57,6 +59,7 @@ import { useReportScreen } from './tutor/screenContext';
 import { languageFact, type ScreenFact } from './tutor/screen';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { ToolBack } from './ToolBack';
+import { NextBar } from './ui/NextBar';
 import { ScrollMore } from './ScrollMore';
 import { HintCard } from './tips/HintCard';
 import { PARADIGMS_OPENED } from './tips/hints';
@@ -208,7 +211,7 @@ function useColumnsThatFit(table: Paradigm, box: RefObject<HTMLDivElement | null
 // Each cell is drawn by its standing under How much of a table (data/paradigms standingOf) and the mode: locked (a lock; a tap says what it needs),
 // outside (an empty cell: Solid only hides a frontier form), open or notYet (Learn: the form; Drill: blank until tapped, then the form with Had it / Missed
 // under its row; a notYet cell carries a small lock and, once tapped, what it needs).
-function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onFocus }: {
+function Table({ table, levels, extent, mode, drill, fill, lit, onReveal, onGrade, onFocus }: {
   table: Paradigm;
   /** the name of the cell that is a tapped word's own: outlined and brought into view, and for a locked one its Needs line is open (mw-irpgqi.1) */
   lit?: string;
@@ -217,6 +220,8 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
   mode: ParadigmMode;
   /** the Drill's run, when one has started */
   drill: Drill | undefined;
+  /** Fill the table, while it is on (mw-fnvjof.17.316): the cells it emptied are drawn blank, each a place for a tile; the others as they stand */
+  fill?: FillView;
   onReveal: (place: string) => void;
   onGrade: (place: string, right: boolean) => void;
   /** he tapped the cell `place` (a locked or not-yet one in Learn): the cell the tutor is told he is on */
@@ -376,6 +381,52 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                           const notYet = standing === 'notYet';
                           const mark = notYet ? { 'data-standing': 'notYet' as const } : {};
                           const tone = notYet ? 'text-muted' : '';
+                          const filling = fill ? fillOf(fill.run, place) : undefined;
+                          if (fill && filling === 'empty') {
+                            // Fill the table: a blank that takes the tile he has picked (a tap) or is dragging (a drop); a wrong tile shakes it (animationend clears the shake)
+                            const shaking = fill.shaking === place;
+                            return (
+                              <td key={c} className="border-b border-l border-line p-0.5">
+                                <button
+                                  type="button"
+                                  data-cell={place}
+                                  data-state="empty"
+                                  data-shake={shaking || undefined}
+                                  {...mark}
+                                  aria-label={`Place a form in ${place}${notYet ? ' (not yet)' : ''}`}
+                                  onClick={() => fill.onPlace(place)}
+                                  onDragOver={(event) => event.preventDefault()}
+                                  onDrop={(event) => {
+                                    event.preventDefault();
+                                    const id = Number(event.dataTransfer.getData('text/plain'));
+                                    if (Number.isInteger(id)) fill.onPlace(place, id);
+                                  }}
+                                  onAnimationEnd={() => fill.onShaken(place)}
+                                  className={`${frame} rounded-lg bg-accent/15 active:bg-accent/30 ${fill.picked ? 'ring-1 ring-accent' : ''} ${shaking ? 'paradigm-shake' : ''}`}
+                                >
+                                  {notYet ? <LockIcon small /> : null}
+                                </button>
+                              </td>
+                            );
+                          }
+                          if (fill && filling === 'filled') {
+                            return (
+                              <td key={c} className="border-b border-l border-line p-0.5">
+                                <div
+                                  data-cell={place}
+                                  data-state="shown"
+                                  data-fill={fill.run.placed.has(place) ? 'placed' : 'shown'}
+                                  {...mark}
+                                  {...(notYet ? {} : lang)}
+                                  aria-label={`${place}: ${cell.form}${notYet ? ', not yet' : ''}`}
+                                  className={`${cellBox} ${tone} gap-1 rounded-lg ${fill.run.placed.has(place) ? 'bg-good/15' : ''}`}
+                                >
+                                  {notYet ? <span {...lang}>{cell.form}</span> : cell.form}
+                                  {notYet ? <LockIcon small /> : null}
+                                </div>
+                              </td>
+                            );
+                          }
                           if (mode === 'learn') {
                             if (notYet) {
                               // under Any: the form is shown, marked not yet; a tap says what it needs (as a lock's does)
@@ -501,6 +552,16 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
   );
 }
 
+/** What the table needs to draw Fill the table: the run, the tile picked (a tap on a blank then places it), the cell that is shaking and what to do with a tap or a drop on a blank. */
+interface FillView {
+  run: Fill;
+  /** a tile is picked: every blank says it takes one */
+  picked: boolean;
+  shaking: string | null;
+  onPlace: (place: string, tileId?: number) => void;
+  onShaken: (place: string) => void;
+}
+
 /** The two words of the Drill's grade (mw-irpgqi.2). */
 const HAD_IT = 'Had it';
 const MISSED = 'Missed';
@@ -572,11 +633,6 @@ function NeedsNote({ cell, levels, onIdea }: { cell: ParadigmCell; levels: Level
   );
 }
 
-/** The cells the table shows, in its order, each with its name and standing: open and notYet are shown (and asked by the Drill); outside and locked are not. */
-function shownCells(table: Paradigm, levels: Levels, extent: GrammarExtent): { place: string; cell: ParadigmCell; standing: CellStanding }[] {
-  return table.rows.flatMap((row) => row.cells.map((cell, c) => ({ place: cellName(table, row, c), cell, standing: standingOf(cell, levels, extent) }))).filter(({ cell, standing }) => !cell.absent && (standing === 'open' || standing === 'notYet'));
-}
-
 /** Whether a Drill cell shows its form: it is the open one, graded, or kept from an earlier run. */
 const revealedIn = (drill: Drill | undefined, place: string): boolean => drill !== undefined && (drill.open === place || drill.graded.has(place) || drill.kept.has(place));
 
@@ -631,6 +687,59 @@ function WordLine({ word, parse, lit, hebrew }: { word: string; parse: string; l
   );
 }
 
+/** The forms of Fill the table laid as tiles under the table: a tap picks one (a second tap puts it down), and it can be dragged to a blank. `lang` is each form's language, from its cell. */
+function FillTray({ tiles, picked, langOf, onPick }: { tiles: Fill['tiles']; picked: number | null; langOf: (form: string) => ParadigmCell['lang']; onPick: (id: number) => void }) {
+  return (
+    <ul data-testid="fill-tray" aria-label="Forms to place" className="mt-3 flex flex-wrap gap-2">
+      {tiles.map((tile) => {
+        const lang = langOf(tile.form);
+        const font = lang === 'el' ? 'font-greek text-xl' : lang === 'he' ? 'script-he' : 'text-base';
+        return (
+          <li key={tile.id}>
+            <button
+              type="button"
+              data-tile={tile.id}
+              aria-pressed={picked === tile.id}
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.setData('text/plain', String(tile.id));
+                event.dataTransfer.effectAllowed = 'move';
+              }}
+              onClick={() => onPick(tile.id)}
+              {...(lang === 'he' ? HEBREW_LANG_ATTRS : greekLang(lang === 'el'))}
+              className={`min-h-12 min-w-12 rounded-xl border px-3 ${font} ${picked === tile.id ? 'border-accent bg-accent/20 ring-2 ring-accent' : 'border-line bg-surface'} active:bg-line`}
+            >
+              {tile.form}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** The end of Fill the table: how many he placed himself, and Fill it again. */
+function FillEnd({ fill, onAgain }: { fill: Fill; onAgain: () => void }) {
+  const { placed, of, shown } = fillScore(fill);
+  return (
+    <div data-testid="fill-end" className="mt-3 flex flex-wrap items-center gap-3">
+      <p data-testid="fill-score" role="status" className="text-lg font-semibold">
+        {placed} of {of} placed{shown > 0 ? `, ${shown} shown` : ''}
+      </p>
+      <button type="button" onClick={onAgain} className={`${BUTTON} flex-1 text-accent`}>
+        Fill it again
+      </button>
+    </div>
+  );
+}
+
+/** The line under the title while the table is being filled: what to do next. */
+function fillHelp(picked: boolean, slipped: boolean, done: boolean): string {
+  if (done) return 'Fill the table: every cell is filled.';
+  if (slipped) return 'Not there: the form is back with the others. Try another cell.';
+  return picked ? 'Fill the table: now tap the cell it belongs to.' : 'Fill the table: tap a form below, then the cell it belongs to. Dragging works too.';
+}
+
 /** The end of a Drill run: 'N of M', and Drill the missed again while any was missed. */
 function DrillEnd({ drill, onMissedAgain }: { drill: Drill; onMissedAgain: () => void }) {
   const { had, of, missed } = scoreOf(drill);
@@ -673,12 +782,12 @@ function placeOf(table: Paradigm, place: string, levels: Levels, extent: Grammar
  * What the tutor is told on a table (mw-irpgqi.3): the focus the first question carries (the table, the mode, the forms showing, the cell in focus and the word he came from) and the facts
  * every question of the table's talk carries, so a question asked after he moved to another cell is about that one. `cell` is the last cell he tapped, or the word's own.
  */
-function paradigmTalk(table: Paradigm, mode: ParadigmMode, lemma: string | undefined, state: { levels: Levels; extent: GrammarExtent; drill: Drill | undefined; cell: string | undefined; word: string | undefined; parse: string | undefined } | undefined): { focus: ParadigmFocus; facts: ScreenFact[] } {
+function paradigmTalk(table: Paradigm, mode: ParadigmMode, lemma: string | undefined, state: { levels: Levels; extent: GrammarExtent; drill: Drill | undefined; cell: string | undefined; word: string | undefined; parse: string | undefined; filling?: boolean } | undefined): { focus: ParadigmFocus; facts: ScreenFact[] } {
   const here = state?.cell !== undefined ? placeOf(table, state.cell, state.levels, state.extent, mode, state.drill) : undefined;
   const word = state?.word && state.parse ? { form: state.word, parse: plainParse(state.parse) } : undefined;
   const facts: ScreenFact[] = [
     { label: 'Table', value: table.name },
-    { label: 'Mode', value: mode === 'learn' ? 'Learn' : 'Drill' },
+    { label: 'Mode', value: state?.filling ? 'Fill the table (the forms are tiles he places in the emptied cells; only the cells he has filled show their form)' : mode === 'learn' ? 'Learn' : 'Drill' },
     ...(lemma
       ? [
           {
@@ -797,6 +906,11 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
   useEffect(() => {
     void markParadigmOpened(table.id).catch((error: unknown) => console.error('could not keep that the table was opened', error));
   }, [table.id]);
+  // Fill the table (mw-fnvjof.17.316): the run while it is on, the tile he has picked, whether the last tile went back, and the blank that shakes
+  const [fill, setFill] = useState<Fill | undefined>();
+  const [picked, setPicked] = useState<number | null>(null);
+  const [slipped, setSlipped] = useState(false);
+  const [shaking, setShaking] = useState<string | null>(null);
   // a change of How much of a table starts the Drill over: the cells it asked are no longer the blank ones
   const extentSeen = useRef(extent);
   useEffect(() => {
@@ -808,6 +922,8 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
     extentSeen.current = extent;
     forgetDrill(drillKey);
     setDrill(undefined);
+    setFill(undefined);
+    setPicked(null);
   }, [extent, drillKey]);
   // a table with no form his has nothing for Review to ask: it is not offered until a form opens (mw-svw421.28), whatever the extent shows
   const his = levels ? availableCount(pattern, levels).available : 0;
@@ -817,6 +933,44 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
   const run = runOf(drill, shown);
   const score = run && mode === 'drill' ? scoreOf(run) : undefined;
   const started = run !== undefined && (run.open !== null || run.graded.size > 0 || run.kept.size > 0);
+  // a run whose cells the table no longer shows (his levels changed under it) is over
+  const live = fill && fill.asking.every((place) => shown.has(place)) ? fill : undefined;
+  const fillDone = live ? fillScore(live).done : false;
+  const langOf = (form: string): ParadigmCell['lang'] => cells.find(({ cell }) => cell.form === form)?.cell.lang ?? 'el';
+  const startFilling = () => {
+    setPicked(null);
+    setSlipped(false);
+    setShaking(null);
+    setFill(startFill(cells.map(({ place, cell }) => ({ place, form: cell.form })), Math.random));
+  };
+  /** The run's first slip puts the table in Review, due now, as a Drill's first Missed does (one write a run). */
+  const told = (before: Fill, next: Fill): Fill => {
+    if (next.slips === before.slips || next.slipWritten) return next;
+    // Review asks Greek cells only: a Hebrew table's slip stays in its Fill
+    if (!hebrewTable) void recordDrillMiss(PARADIGM_KIND, table.id).catch((error: unknown) => console.error('could not record the miss', error));
+    return slipWritten(next);
+  };
+  const pick = (id: number) => {
+    setPicked(picked === id ? null : id);
+    setSlipped(false);
+  };
+  const place = (cellPlace: string, tileId?: number) => {
+    const id = tileId ?? picked;
+    if (!live || id === null) return;
+    const result = placeTile(live, id, cellPlace);
+    if (!result.changed) return;
+    setTapped(cellPlace);
+    setFill(told(live, result.fill));
+    setPicked(null);
+    setSlipped(!result.right);
+    if (!result.right) setShaking(cellPlace);
+  };
+  const showRest = () => {
+    if (!live) return;
+    setFill(told(live, showTheRest(live)));
+    setPicked(null);
+    setSlipped(false);
+  };
   const reveal = (place: string) => {
     setTapped(place);
     if (!drillOf(drillKey)) startRun(drillKey, [...shown]);
@@ -833,7 +987,10 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
     setDrill(next);
   };
   // the tutor is told the table, the mode, the cell in focus and the word (paradigmTalk); the talk is the table's own
-  const talk = paradigmTalk(table, mode, lemma, levels && extent ? { levels, extent, drill: run, cell: tapped ?? lit, word, parse } : undefined);
+  // while the table is filled, the forms showing are the cells he has filled: the tutor is told them as a Drill's revealed cells
+  const filling = live !== undefined;
+  const fillRun: Drill | undefined = live && { asking: live.asking, graded: new Map([...live.placed, ...live.shown].map((place) => [place, true] as const)), open: null, kept: new Set(), missWritten: live.slipWritten };
+  const talk = paradigmTalk(table, filling ? 'drill' : mode, lemma, levels && extent ? { levels, extent, drill: filling ? fillRun : run, cell: tapped ?? lit, word, parse, filling } : undefined);
   const { both } = useLanguageInHand();
   useReportScreen({ name: 'Paradigms', facts: [...languageFact(hebrewTable ? 'hbo' : 'grc', both || hebrewTable), ...talk.facts], kept: screenRef(`paradigms.${table.id}`) });
   const ask = () => askTheTutor({ question: paradigmQuestion(table.name, talk.focus.revealed.length, talk.focus), focus: talk.focus });
@@ -846,14 +1003,38 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
           {levels && extent ? availableText(availableCount(table, levels, extent), extent) : '…'}
         </p>
         <p data-testid="mode-help" className="text-base text-muted">
-          {levels && extent ? modeHelp(mode, extent, cells.length, his) : '…'}
+          {levels && extent ? (live ? fillHelp(picked !== null, slipped, fillDone) : modeHelp(mode, extent, cells.length, his)) : '…'}
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Chips name="Mode" current={mode} options={MODES} onChoose={(next) => next !== mode && replaceHash(paradigmHash({ ...address, mode: next as ParadigmMode }))} />
+          {filling ? null : <Chips name="Mode" current={mode} options={MODES} onChoose={(next) => next !== mode && replaceHash(paradigmHash({ ...address, mode: next as ParadigmMode }))} />}
           {canChoose ? (
             <Chips name="Forms" current={lemma ? 'word' : 'pattern'} options={FORM_VIEWS} onChoose={(next) => next !== (lemma ? 'word' : 'pattern') && replaceHash(paradigmHash({ ...address, mode, own: next === 'word' }))} />
           ) : null}
-          {mode === 'drill' && started ? (
+          {!filling && cells.length > 0 ? (
+            <button type="button" onClick={() => oneTap('paradigms:fill', startFilling)} className={`${BUTTON} flex-1`}>
+              Fill the table
+            </button>
+          ) : null}
+          {filling && !fillDone ? (
+            <button type="button" onClick={() => oneTap('paradigms:fill', showRest)} className={`${BUTTON} flex-1`}>
+              Show
+            </button>
+          ) : null}
+          {filling ? (
+            <button
+              type="button"
+              onClick={() =>
+                oneTap('paradigms:fill', () => {
+                  setFill(undefined);
+                  setPicked(null);
+                })
+              }
+              className={`${BUTTON} flex-1`}
+            >
+              Stop filling
+            </button>
+          ) : null}
+          {mode === 'drill' && started && !filling ? (
             <button
               type="button"
               onClick={() =>
@@ -868,8 +1049,29 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
             </button>
           ) : null}
         </div>
-        {levels && extent ? <Table table={table} levels={levels} extent={extent} mode={mode} drill={run} lit={lit} onReveal={reveal} onGrade={grade} onFocus={setTapped} /> : null}
-        {score?.done && run ? <DrillEnd drill={run} onMissedAgain={() => oneTap('paradigms:end', () => setDrill(drillMissed(drillKey)))} /> : null}
+        {levels && extent ? (
+          <Table
+            table={table}
+            levels={levels}
+            extent={extent}
+            mode={mode}
+            drill={run}
+            fill={live ? { run: live, picked: picked !== null, shaking, onPlace: place, onShaken: (cellPlace) => setShaking((now) => (now === cellPlace ? null : now)) } : undefined}
+            lit={lit}
+            onReveal={reveal}
+            onGrade={grade}
+            onFocus={setTapped}
+          />
+        ) : null}
+        {live && !fillDone ? (
+          <NextBar>
+            <div className="max-h-[40dvh] overflow-y-auto">
+              <FillTray tiles={live.tiles} picked={picked} langOf={langOf} onPick={pick} />
+            </div>
+          </NextBar>
+        ) : null}
+        {live && fillDone ? <FillEnd fill={live} onAgain={() => oneTap('paradigms:fill', startFilling)} /> : null}
+        {!filling && score?.done && run ? <DrillEnd drill={run} onMissedAgain={() => oneTap('paradigms:end', () => setDrill(drillMissed(drillKey)))} /> : null}
         <div className="mt-4 flex gap-2">
           {/* Review asks a Greek table's cells; a Hebrew table is drilled here, in its own Drill, until Review draws Hebrew cells */}
           {hebrewTable ? null : (

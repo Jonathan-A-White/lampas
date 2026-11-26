@@ -8,6 +8,7 @@ mw-irpgqi.4 reuse what the last section says and add nothing this file does not 
 
 - [What the app already had, and the epic uses](#what-the-app-already-had-and-the-epic-uses)
 - [What mw-irpgqi.2 makes, shared](#what-mw-irpgqi2-makes-shared)
+- [Fill the table, the Drill reversed (mw-fnvjof.17.316)](#fill-the-table-the-drill-reversed-mw-fnvjof17316)
 - [Duplicates mw-irpgqi.2 removes](#duplicates-mw-irpgqi2-removes)
 - [What mw-irpgqi.3 must reuse](#what-mw-irpgqi3-must-reuse)
 - [What mw-irpgqi.4 must reuse](#what-mw-irpgqi4-must-reuse)
@@ -49,6 +50,18 @@ mw-irpgqi.4 reuse what the last section says and add nothing this file does not 
 | `recordDrillMiss` | `src/data/repositories/reviews.ts` | a miss in a self-drill: the table's row takes a wrong answer and is due now | the Drill's first Missed of a run |
 | `ownTable`, `loadLemmaForms`, `ownFormOf`, `referenceText`, `fitsNoTable`, `OwnNote`, `ParadigmWord` | `src/data/paradigms/ownForms.ts`, `src/ParadigmsScreen.tsx` | mw-irpgqi.4: a table laid with a word's own forms (`ParadigmCell.own`, `absent`), the lemma's file fetched on demand, the form's note under its row, and the switch This word \| The pattern | the table screen opened from a word's sheet |
 | `Table`, `NeedsNote`, `DrillEnd`, `shownCells`, `shownForms`, `modeHelp`, `MODES` | `src/ParadigmsScreen.tsx` | the table drawn by each cell's standing and the mode (its `grade-row` under the open cell is `Grades` with Had it / Missed; the Learn \| Drill switch is `Chips` over `MODES`, group 'Mode'); what a cell needs, with its Go to buttons; 'N of M' and Drill the missed again; the cells shown and the forms showing; the line under the title | the table screen; mw-irpgqi.4 draws This word with the same `Table` |
+
+## Fill the table, the Drill reversed (mw-fnvjof.17.316)
+
+Every paradigm sheet (the Greek tables and the four Hebrew ones, with or without a word's own forms) is drawn by `ParadigmTable`, so Fill the table is one component and one rule for all of them.
+It adds nothing a second time: it reuses `Table`'s cells and `standingOf`, the extent (`useParadigmExtent`, so the filter is the Drill's), `recordDrillMiss` for review, `Chips` (the Mode switch it
+replaces while it is on), `NextBar` for the pinned tray, `oneTap` and the Drill's `Start again` rule that a change of the extent ends the run.
+
+| Component | File | Props or shape | Who calls it |
+| --- | --- | --- | --- |
+| `shownCells` | `src/data/paradigms/fill.ts` | `(table, levels, extent)`: the cells shown, in order, with their standing (it moved here from the screen) | the Drill's blanks, Fill the table's empties, the tutor's forms |
+| `Fill`, `startFill`, `placeTile`, `showTheRest`, `fillOf`, `fillScore`, `tileFits`, `slipWritten` | `src/data/paradigms/fill.ts` | the run: cells, forms, the tiles on the tray, the cells placed or shown, the slips; pure and seeded | `ParadigmTable` |
+| `FillTray`, `FillEnd`, `fillHelp`, `FillView` | `src/ParadigmsScreen.tsx` | the tiles (tap or drag), the end line with Fill it again, the line under the title, what `Table` needs to draw a blank | `ParadigmTable`, `Table` |
 
 ## Duplicates mw-irpgqi.2 removes
 
