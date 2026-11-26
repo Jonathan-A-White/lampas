@@ -3,6 +3,7 @@
 // row is the drag surface, so a finger or a mouse drags the dock to any height and it rests where he lets go (useSplit.ts); pulled down past the smallest size by 80 px the name says
 // 'Let go to close' and the body fades. The body is a slot: a map (mw-5r3p30.1129.2) or a second text (mw-5r3p30.1130) goes in it, and scrolls in its own box, so a scroll in it never moves the divider.
 // A text's name is a button that opens the chooser (`onTitle`, with a small arrow after it) and its row has the Link (`link`) before Close; a map has neither. A drag may start on the name: the name only answers a tap.
+// The timeline (mw-fnvjof.17.317.2) has the name as a text has, and Whole Bible where a text has Link: the same pressed button with its own words (`link.label`).
 import type { ReactNode } from 'react';
 import { HANDLE_ROW } from './splitSize';
 import type { Split } from './useSplit';
@@ -10,9 +11,11 @@ import type { Split } from './useSplit';
 export interface DockLink {
   on: boolean;
   toggle(): void;
+  /** the button's words: 'Link' for a text, 'Whole Bible' for the timeline */
+  label?: string;
 }
 
-export function Dock({ split, footRef, bodyRef, title, onTitle, link, quiet = false, inert, children }: {
+export function Dock({ split, footRef, bodyRef, title, onTitle, link, quiet = false, faint = false, inert, children }: {
   split: Split;
   footRef: (el: HTMLElement | null) => void;
   /** the dock's scroll box (the body), for the Link */
@@ -24,6 +27,8 @@ export function Dock({ split, footRef, bodyRef, title, onTitle, link, quiet = fa
   link?: DockLink;
   /** the row says there is nothing to show (No map for Genesis 15): muted, not the dock's name */
   quiet?: boolean;
+  /** the same, of a name that is a button (No dates for 3 John): it stays a way to the chooser, drawn muted */
+  faint?: boolean;
   inert: boolean;
   children: ReactNode;
 }) {
@@ -51,7 +56,7 @@ export function Dock({ split, footRef, bodyRef, title, onTitle, link, quiet = fa
         className={`grid shrink-0 touch-none select-none ${link ? 'grid-cols-[minmax(0,1fr)_auto_auto_auto]' : 'grid-cols-[minmax(0,1fr)_auto_auto]'} items-center gap-2 px-3 ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}
       >
         {onTitle && !closing ? (
-          <button type="button" data-drag-through onClick={onTitle} aria-haspopup="dialog" className="col-start-1 flex min-h-11 min-w-0 items-center gap-1 rounded-xl text-start text-base font-medium text-fg active:bg-line">
+          <button type="button" data-drag-through onClick={onTitle} aria-haspopup="dialog" className={`col-start-1 flex min-h-11 min-w-0 items-center gap-1 rounded-xl text-start text-base font-medium ${faint ? 'text-muted' : 'text-fg'} active:bg-line`}>
             <span data-dock-title className="truncate">
               {title}
             </span>
@@ -82,9 +87,9 @@ export function Dock({ split, footRef, bodyRef, title, onTitle, link, quiet = fa
             type="button"
             aria-pressed={link.on}
             onClick={link.toggle}
-            className={`${bare ? 'hidden ' : ''}min-h-11 justify-self-end rounded-xl px-2 text-base font-medium active:bg-line ${link.on ? 'bg-accent/15 text-accent' : 'text-muted'}`}
+            className={`${bare ? 'hidden ' : ''}min-h-11 justify-self-end whitespace-nowrap rounded-xl px-2 text-base font-medium active:bg-line ${link.on ? 'bg-accent/15 text-accent' : 'text-muted'}`}
           >
-            Link
+            {link.label ?? 'Link'}
           </button>
         ) : null}
         <button type="button" onClick={split.close} className={`${bare ? 'hidden ' : ''}min-h-11 justify-self-end rounded-xl px-2 text-base font-medium text-accent active:bg-line`}>

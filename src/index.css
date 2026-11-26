@@ -315,8 +315,9 @@
   outline: 4px solid var(--lp-accent);
   outline-offset: 3px;
 }
-/* The words of the text are buttons too (a tap looks one up), but a ring round each would break a verse into boxes: they have the focus ring only. */
-:root[data-theme="contrast"] :is(button, [role="button"], input, select, textarea, [role="slider"], summary):not([data-word], [data-chunk], [data-hint], [data-verse-number]) {
+/* The words of the text are buttons too (a tap looks one up), but a ring round each would break a verse into boxes: they have the focus ring only. So do the marks of the
+ * timeline strip (src/timeline/TimelineStrip.tsx, mw-fnvjof.17.317.2): the picture under each button draws the mark itself from this theme's tokens, and a ring round every one would box in the ruler's years. */
+:root[data-theme="contrast"] :is(button, [role="button"], input, select, textarea, [role="slider"], summary):not([data-word], [data-chunk], [data-hint], [data-verse-number], [data-mark]) {
   box-shadow: inset 0 0 0 2px var(--lp-fg);
 }
 

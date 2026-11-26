@@ -8,7 +8,7 @@ import { SPLIT_TEXT_KEYS } from '../../reader/split/splitTexts';
 
 export type ReaderSplit = 'on' | 'off';
 
-/** Whether the dock is open. What is in it is `splitText` (a text beside the passage) or, while that is empty, `splitMap` (a map). */
+/** Whether the dock is open. What is in it is the timeline while `splitTimeline` is on, else `splitText` (a text beside the passage) or, while that is empty, `splitMap` (a map). */
 export const readerSplitSetting = defineSetting<ReaderSplit>({
   outside: 'kept out like Hand (src/settings/hand.ts): the split is chosen, sized and closed in place',
   key: 'readerSplit',
@@ -95,5 +95,24 @@ export const splitLinkSetting = defineSetting<SplitLink>({
   hint: 'Keep the passage and the dock on the same verse as either scrolls.',
 });
 
+export type SplitTimeline = 'on' | 'off';
+
+/** Whether the dock holds the timeline (mw-fnvjof.17.317.2, docs/timeline-design.md): while it is on the dock shows the strip, not a text or a map. Only that is kept: where the strip was panned or zoomed is not, since it opens at the chapter's time. A reload brings the timeline back. */
+export const splitTimelineSetting = defineSetting<SplitTimeline>({
+  outside: 'kept out like Hand (src/settings/hand.ts)',
+  key: 'splitTimeline',
+  default: 'off',
+  allowed: {
+    kind: 'choice',
+    values: [
+      { value: 'on', label: 'On' },
+      { value: 'off', label: 'Off' },
+    ],
+  },
+  section: 'tools',
+  label: 'Split timeline',
+  hint: 'The dock holds the timeline.',
+});
+
 /** The settings of the split, for the tutor's table (src/tutor/knows.ts). */
-export const SPLIT_SETTINGS = [readerSplitSetting, splitSizeSetting, splitMapSetting, splitTextSetting, splitLinkSetting] as const;
+export const SPLIT_SETTINGS = [readerSplitSetting, splitSizeSetting, splitMapSetting, splitTextSetting, splitLinkSetting, splitTimelineSetting] as const;

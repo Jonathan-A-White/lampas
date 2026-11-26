@@ -56,7 +56,7 @@ The tests run the import on small real cuts of the three files (`tests/fixtures/
 
 ## Reading it
 
-`src/timeline/timelineData.ts`: `loadTimeline(book)` loads a book's file on first use, as its own chunk (a book with no file answers an empty timeline with the credit); `eventsOfChapter(timeline, chapter)`, `spanOf(events)` and `chapterSpan(timeline, chapter)` give a period as `{ from, to }` years. Nothing in the app imports it yet, so it is not in the build until a screen does.
+`src/timeline/timelineData.ts`: `loadTimeline(book)` loads a book's file on first use, as its own chunk (a book with no file answers an empty timeline with the credit); `eventsOfChapter(timeline, chapter)`, `spanOf(events)` and `chapterSpan(timeline, chapter)` give a period as `{ from, to }` years. The timeline strip in the Reader's dock reads it (`src/timeline/strip.ts`, mw-fnvjof.17.317.2, docs/timeline-design.md): the open book's file first, the other books' after its first picture, each its own chunk of the build.
 
 Not every chapter has an event (the Psalms, most letters): `chapterSpan` is `null` there. Where a chapter holds events centuries apart (the genealogy of Luke 3), its span runs from the oldest; which year a strip opens at is the screen's to choose.
 

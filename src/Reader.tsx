@@ -21,7 +21,7 @@ import { ImmersiveHint } from './ImmersiveHint';
 import { ReaderControls } from './ReaderControls';
 import { Dock } from './reader/split/Dock';
 import { useSplit } from './reader/split/useSplit';
-import { keepSplitLink, openSplitWithText, takeVerseBeside, useSplitLink, useSplitOpen, useSplitText } from './reader/split/splitSettings';
+import { keepSplitLink, openSplitWithText, openSplitWithTimeline, takeVerseBeside, useSplitLink, useSplitOpen, useSplitText, useSplitTimeline } from './reader/split/splitSettings';
 import { TextDock } from './reader/split/TextDock';
 import { SplitChooser } from './reader/split/SplitChooser';
 import { useDockedText } from './reader/split/useDockedText';
@@ -30,6 +30,9 @@ import { noTextFor, splitTextNamed } from './reader/split/splitTexts';
 import { passageNumbers } from './reader/split/splitPairing';
 import { openMaps } from './maps/openMaps';
 import { MapDockBody } from './maps/MapDock';
+import { LAYOUT as TIMELINE } from './timeline/design';
+import { TimelineDock } from './timeline/TimelineDock';
+import { useTimelineDock } from './timeline/useTimelineDock';
 import { dockedTitle, MAP_CREDIT_ROW, useDockedMap } from './maps/useDockedMap';
 import { useAiAllowed } from './gate/licenceContext';
 import { LicenceTip } from './gate/LicenceTip';
@@ -276,12 +279,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Genesis 1 or Revelation 22 a short note says so.
   const sheetOpen = useSheetOpen();
   // The split (src/reader/split/): a dock below the passage, side by side sideways and wide, whose handle row is the divider. The box is the passage and the dock in one column; shut, it is no box at all.
-  // The dock holds a text beside the passage (mw-5r3p30.1130) or, while it holds none, a map (mw-5r3p30.1129.2).
+  // The dock holds the timeline (mw-fnvjof.17.317.2, src/timeline/), else a text beside the passage (mw-5r3p30.1130) or, while it holds none, a map (mw-5r3p30.1129.2).
   const splitOn = useSplitOpen();
-  const dockText = useSplitText();
-  const docked = useDockedMap(splitOn && dockText === null, { book: BOOK, chapter: CHAPTER });
+  const dockTimeline = useSplitTimeline();
+  const keptText = useSplitText();
+  const dockText = dockTimeline ? null : keptText;
+  const docked = useDockedMap(splitOn && dockText === null && !dockTimeline, { book: BOOK, chapter: CHAPTER });
   const textDocked = useDockedText(splitOn ? dockText : null, BOOK, CHAPTER);
-  const split = useSplit({ body: docked ? MAP_CREDIT_ROW : undefined });
+  const timeline = useTimelineDock(`${BOOK}/${CHAPTER}`, bookOf(BOOK)?.name ?? BOOK);
+  const split = useSplit({ body: dockTimeline ? TIMELINE.STRIP_MIN : docked ? MAP_CREDIT_ROW : undefined });
   const { setBox: boxRef, setFoot: footRef } = split;
   const [dockBody, setDockBody] = useState<HTMLElement | null>(null);
   const [choosing, setChoosing] = useState(false);
@@ -721,6 +727,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           pages={paging ? { page: pages.page, count: pages.count, turn: pages.turn, chapterBefore: around.previous !== null, chapterAfter: around.next !== null } : null}
           inert={sheetOpen || viewUnit !== undefined}
           split={split.open ? { larger: split.larger, smaller: split.smaller, close: split.close } : null}
+          timeline={split.open && dockTimeline ? timeline.controls : null}
         />
       ) : null}
       {copyHold.said ? (
@@ -807,13 +814,17 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           split={split}
           footRef={footRef}
           bodyRef={setDockBody}
-          title={dockTitle}
-          onTitle={dockText !== null ? () => setChoosing(true) : undefined}
-          link={dockText !== null && textReady ? { on: linkOn, toggle: () => void keepSplitLink(!linkOn) } : undefined}
-          quiet={dockText !== null ? textLacking : docked?.card === null}
+          title={dockTimeline ? timeline.title : dockTitle}
+          onTitle={dockTimeline || dockText !== null ? () => setChoosing(true) : undefined}
+          link={dockTimeline ? timeline.whole : dockText !== null && textReady ? { on: linkOn, toggle: () => void keepSplitLink(!linkOn) } : undefined}
+          quiet={dockTimeline ? timeline.quiet : dockText !== null ? textLacking : docked?.card === null}
+          faint={dockTimeline && timeline.quiet}
           inert={sheetOpen || viewUnit !== undefined}
         >
-          {dockText !== null ? (
+          {dockTimeline ? (
+            // a new chapter is a new strip, opened at that chapter's time (the flight there is mw-fnvjof.17.317.3's)
+            <TimelineDock key={`${BOOK}/${CHAPTER}`} book={BOOK} chapter={CHAPTER} chapterName={TITLE} box={dockBody} onStrip={timeline.onStrip} onRest={timeline.onRest} />
+          ) : dockText !== null ? (
             textDocked?.status === 'ready' && chapter && !textLacking ? (
               <TextDock
                 text={dockText}
@@ -951,8 +962,13 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           chapter={CHAPTER}
           title={TITLE}
           current={dockText}
+          timeline={dockTimeline}
           onClose={() => setChoosing(false)}
           onChoose={swapText}
+          onTimeline={() => {
+            setChoosing(false);
+            void openSplitWithTimeline();
+          }}
           onMap={() => {
             setChoosing(false);
             openMaps({ book: BOOK, chapter: CHAPTER });

@@ -1,6 +1,6 @@
 // src/reader/split/splitSettings.ts — the split's two settings read and saved (src/settings/definitions/split.ts): whether the dock is open, and the share of the box it takes.
-import { setSetting, useSetting } from '../../settings/store';
-import { readerSplitSetting, splitLinkSetting, splitMapSetting, splitSizeSetting, splitTextSetting } from '../../settings/definitions/split';
+import { getSetting, setSetting, useSetting } from '../../settings/store';
+import { readerSplitSetting, splitLinkSetting, splitMapSetting, splitSizeSetting, splitTextSetting, splitTimelineSetting } from '../../settings/definitions/split';
 import { fractionOf } from './splitSize';
 import { splitTextOf, type SplitTextKey } from './splitTexts';
 
@@ -21,6 +21,7 @@ export const useSplitMap = (): string | undefined => useSetting(splitMapSetting)
 export const openSplitWithMap = async (map: string): Promise<void> => {
   await setSetting(splitMapSetting, map);
   await setSetting(splitTextSetting, '');
+  await letTimelineGo();
   await openSplit();
 };
 
@@ -29,8 +30,21 @@ export const useSplitText = (): SplitTextKey | null => splitTextOf(useSetting(sp
 /** Opens the dock with a text beside the passage (kept first, as the map is), or swaps the text of a dock already open. */
 export const openSplitWithText = async (key: SplitTextKey): Promise<void> => {
   await setSetting(splitTextSetting, key);
+  await letTimelineGo();
   await openSplit();
 };
+
+/** Whether the dock holds the timeline (mw-fnvjof.17.317.2), following every change; false until the setting has been read. While it does, the dock shows the strip, whatever text or map it held before. */
+export const useSplitTimeline = (): boolean => useSetting(splitTimelineSetting) === 'on';
+/** Opens the dock with the timeline in it, or puts the timeline in a dock already open. The text or map it held is kept under it, and is let go when another is chosen. */
+export const openSplitWithTimeline = async (): Promise<void> => {
+  await setSetting(splitTimelineSetting, 'on');
+  await openSplit();
+};
+/** A text or a map takes the timeline's place: written after the new one is kept, so the dock never draws a moment with a third thing; nothing is written while the dock holds no timeline. */
+async function letTimelineGo(): Promise<void> {
+  if ((await getSetting(splitTimelineSetting)) === 'on') await setSetting(splitTimelineSetting, 'off');
+}
 
 /** Whether the Link is on, following every change; true until the setting has been read (it is on by default). */
 export const useSplitLink = (): boolean => useSetting(splitLinkSetting) !== 'off';
