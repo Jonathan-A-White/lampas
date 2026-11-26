@@ -410,7 +410,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
   const on = async (name: string, value: 'On' | 'Off') => expect(page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: value, exact: true })).toHaveAttribute('aria-checked', 'true');
   for (const name of WEB_ON) await on(name, 'On');
-  for (const name of ['Greg Laurie\'s sermons', 'Life Bible Ministry\'s Through the Bible', 'Mike Winger\'s Bible Thinker series']) await on(name, 'Off'); // the last two are web lists, Off to start (mw-qtu3zvz.280.3, mw-qtu3zvz.280.4)
+  for (const name of ['Greg Laurie\'s sermons', 'Life Bible Ministry\'s Through the Bible', 'Mike Winger\'s Bible Thinker teachings']) await on(name, 'Off'); // the last two are web lists, Off to start (mw-qtu3zvz.280.3, mw-qtu3zvz.280.4)
   // his batch 2 books (mw-qtu3zvz.18)
   for (const name of ['Spurgeon\'s My Sermon Notes', 'John Wesley\'s sermons', 'George Whitefield\'s sermons', 'D. L. Moody\'s sermons']) await on(name, 'Off');
   // his batch 3 books (mw-qtu3zvz.20), Jimmy Evans's archive among them, which names no passage
