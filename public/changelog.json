@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.406",
+    "date": "2026-11-26",
+    "story": "mw-u2w5klk.349.150",
+    "kind": "fixed",
+    "text": "Obadiah 1 in the Septuagint now shows 'Arise ... to war' at the end of verse 1, where its Greek is, so tapping 'war' opens the right Greek word."
+  },
+  {
+    "version": "0.7.406",
+    "date": "2026-11-26",
+    "story": "mw-fnvjof.17.339",
+    "kind": "fixed",
+    "text": "a quick double tap on Start again in a paradigm Drill no longer starts Fill the table by mistake."
+  },
+  {
     "version": "0.7.403",
     "date": "2026-11-26",
     "story": "mw-r9xo1pj.31",

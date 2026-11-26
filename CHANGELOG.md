@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.406
+_2026-11-26_
+- Fixed: Obadiah 1 in the Septuagint now shows 'Arise ... to war' at the end of verse 1, where its Greek is, so tapping 'war' opens the right Greek word.
+- Fixed: a quick double tap on Start again in a paradigm Drill no longer starts Fill the table by mistake.
+
 ## 0.7.403
 _2026-11-26_
 - Fixed: Today's empty page no longer says the day's devotional is always opened in Logos, since it can be Morning RePhil.
