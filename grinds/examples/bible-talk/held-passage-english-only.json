@@ -1,0 +1,42 @@
+{
+  "description": "Isaiah 1 at Just English (the Hebrew dial at 0): the request holds verse 1's English alone and, from an earlier fetch, `held_passages` Isaiah 1:2-3 in English alone (no `hebrew`, as the app sends it at Hebrew 0). Asked what the ox and the donkey show, the answer is from the held passage and does not fetch it again, and writes no Hebrew it was not given.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Isaiah 1",
+    "english": "The vision of Isaiah son of Amoz concerning Judah and Jerusalem, which he saw in the days of Uzziah, Jotham, Ahaz, and Hezekiah, kings of Judah.",
+    "verses": "1:1",
+    "held_passages": [
+      {
+        "reference": "Isaiah 1:2-3",
+        "english": "Listen, O heavens, and give ear, O earth, for the LORD has spoken: “I have raised children and brought them up, but they have rebelled against Me. The ox knows its owner, and the donkey its master’s manger, but Israel does not know; My people do not understand.”"
+      }
+    ],
+    "question": "What do the ox and the donkey show here?",
+    "history": [
+      {
+        "q": "What does the LORD say in verse 2?",
+        "a": "He calls heaven and earth to listen, because the children he raised have rebelled against him."
+      }
+    ],
+    "solid_words": [],
+    "settings": {
+      "greekInterest": "0",
+      "hebrewInterest": "0"
+    },
+    "reader_view": "english",
+    "greek_interest": { "level": 0, "name": "Just English", "next": { "level": 1, "name": "Curious" } },
+    "hebrew_interest": { "level": 0, "name": "Just English", "next": { "level": 1, "name": "Curious" } },
+    "learner": "solid 0 words; learning: ; new today: ; due now: 0"
+  },
+  "expect": {
+    "answer": {
+      "matches": "owner|master"
+    },
+    "fetch": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

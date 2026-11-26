@@ -10,14 +10,13 @@
     "english": { "description": "The same text in English (the Majority Standard Bible), of the same verses. Words the translators supplied are between asterisks (*was* king): they are in italics in his reader. A text that ends in ' …' was clipped to fit, as `greek` is. Missing in a talk from a screen.", "type": "string", "minLength": 1 },
     "verses": { "description": "The verses `greek` (or `hebrew`) and `english` hold, the chapter and then the verses: `2:8-10` or `2:9`, in the chapter `reference` names. The window follows the talk (the verses his newest question names, else the verse links of the last answer, else the selected verse, else the chapter's first verses) and a request too big to send gives up whole verses, the farthest from the talk's verse first. A verse outside this range is one you do not hold. Missing in a talk from a screen.", "type": "string", "minLength": 3, "maxLength": 20 },
     "held_passages": {
-      "description": "Optional. The passages you asked for in `fetch` on earlier turns of this talk, read by the app from its own text: newest first, each `reference` (`Revelation 2:8-11`), its `greek` (the Byzantine text), or for an Old Testament passage its `hebrew` (pointed, cantillation off), and its `english` (the Majority Standard Bible, the English his Reader shows, supplied words between asterisks). Hold them as you hold `greek` and `english`: answer from them, never from memory, and do not fetch them again. But a text that ends in ' …' was clipped to fit the request: it goes on past where it stops, so fetch the rest by its reference before you answer from it, and never answer as if you held the whole passage. Kept under a byte budget, so an old one drops off. Missing when the talk holds none, and in About.",
+      "description": "Optional. The passages you asked for in `fetch` on earlier turns of this talk, read by the app from its own text: newest first, each `reference` (`Revelation 2:8-11`), its `greek` (the Byzantine text), or for an Old Testament passage its `hebrew` (pointed, cantillation off; missing for a reader with no Hebrew yet, whose passage is the English alone), and its `english` (the Majority Standard Bible, the English his Reader shows, supplied words between asterisks). Hold them as you hold `greek` and `english`: answer from them, never from memory, and do not fetch them again. But a text that ends in ' …' was clipped to fit the request: it goes on past where it stops, so fetch the rest by its reference before you answer from it, and never answer as if you held the whole passage. Kept under a byte budget, so an old one drops off. Missing when the talk holds none, and in About.",
       "type": "array",
       "maxItems": 8,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "required": ["reference", "english"],
-        "anyOf": [{ "required": ["greek"] }, { "required": ["hebrew"] }],
         "properties": {
           "reference": { "type": "string", "minLength": 3, "maxLength": 40 },
           "greek": { "description": "A text that ends in ' …' was clipped to fit: the passage goes on.", "type": "string", "minLength": 1 },

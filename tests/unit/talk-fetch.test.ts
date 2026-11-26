@@ -41,6 +41,32 @@ describe('what an answer\'s fetch reads', () => {
     expect(held).toHaveLength(1);
   });
 
+  // mw-fnvjof.17.333: an Old Testament passage carried `hebrew` whatever the Hebrew dial said, so at Just English a fetch added pointed Hebrew he had not asked for
+  it('reads an Old Testament passage with its pointed Hebrew from the Hebrew dial\'s Curious up, and with the English alone at Just English', async () => {
+    const [on] = await fetchPassages(['Isaiah 1:2-3'], undefined, true);
+    expect(on.hebrew).toMatch(/\S/);
+    expect('greek' in on).toBe(false);
+    const held = await fetchPassages(['Isaiah 1:2-3'], undefined, false);
+    expect(held).toHaveLength(1);
+    expect('hebrew' in held[0]).toBe(false);
+    expect('greek' in held[0]).toBe(false);
+    expect(held[0].reference).toBe('Isaiah 1:2-3');
+    expect(held[0].english).toBe(on.english);
+    const outcome = await fetchOutcome(['Isaiah 1:2-3'], undefined, false);
+    expect(outcome.unread).toEqual([]);
+  });
+
+  it('the Hebrew dial changes nothing of a New Testament passage', async () => {
+    const [held] = await fetchPassages(['Revelation 2:8-11'], undefined, false);
+    expect(held.greek).toBe(greekOf(rev2, [8, 9, 10, 11]));
+  });
+
+  it('a held English-only passage carries to the request as it is, with no empty Greek', () => {
+    const only: HeldPassage = { reference: 'Isaiah 1:2-3', english: 'Hear, O heavens.' };
+    expect(heldPassagesOf([{ fetched: [only] }])).toEqual([only]);
+    expect(Object.keys(heldPassagesOf([{ fetched: [only] }])[0])).toEqual(['reference', 'english']);
+  });
+
   it('leaves out what it cannot read: an Apocrypha verse (Lampas holds no text of it), a book it does not know, a chapter or verse the book does not have, a range across chapters', async () => {
     expect(await fetchPassages(['Sirach 1:1', 'Hezekiah 1:1', 'Revelation 40:1'])).toEqual([]);
     const held = await fetchPassages(['Jude 1:30', 'Revelation 2:29-3:6', 'Romans 8:28']);

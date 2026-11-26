@@ -59,12 +59,14 @@ const referenceOf = (book: string, chapter: number, verses: readonly Verse[]): s
   return `${bookOf(book)?.name ?? book} ${chapter}:${first}${last > first ? `-${last}` : ''}`;
 };
 
-/** The passage of `verses` (of a chapter in `lang`), cut to its first verses that fit HELD_PASSAGES_BYTES (always one at least). */
-export function passageOf(book: string, chapter: number, verses: readonly Verse[], lang: SourceLanguage = 'grc'): HeldPassage {
+/** The passage of `verses` (of a chapter in `lang`), cut to its first verses that fit HELD_PASSAGES_BYTES (always one at least). An Old Testament passage carries its Hebrew only while `hebrewOn`
+ * (the Hebrew dial at Curious or above, as the request's own text does, src/services/talk.ts): at Just English it holds the English alone (mw-fnvjof.17.333). */
+export function passageOf(book: string, chapter: number, verses: readonly Verse[], lang: SourceLanguage = 'grc', hebrewOn = true): HeldPassage {
   let kept = verses;
   for (;;) {
     const text = kept.map((v) => verseSource({ lang }, v)).join(' ');
-    const passage = { reference: referenceOf(book, chapter, kept), ...(lang === 'hbo' ? { hebrew: text } : { greek: text }), english: kept.map(verseEnglish).join(' ') };
+    const source = lang === 'grc' ? { greek: text } : hebrewOn ? { hebrew: text } : {};
+    const passage = { reference: referenceOf(book, chapter, kept), ...source, english: kept.map(verseEnglish).join(' ') };
     if (kept.length <= 1 || bytesOf(passage) <= HELD_PASSAGES_BYTES) return passage;
     kept = kept.slice(0, -1);
   }
@@ -83,14 +85,15 @@ const startOf = (reference: string): string | null => {
 };
 
 /** Reads the passages an answer's `fetch` names from the app's chapter data (`load`, loadChapter): a chapter that does not load and verses it does not have are left out, each reference left out is
- * returned in `unread`; it never throws. */
-export async function fetchOutcome(refs: readonly string[], load: (book: string, chapter: number) => Promise<Chapter> = loadChapter): Promise<FetchOutcome> {
+ * returned in `unread`; it never throws. `hebrewOn` is whether the Hebrew dial is at Curious or above (hebrewLevelOf(settings.hebrewInterest) >= 1, as the request's own text is, src/services/talk.ts): an Old Testament passage is read
+ * with its Hebrew while it is on and with the English alone at Just English (mw-fnvjof.17.333). */
+export async function fetchOutcome(refs: readonly string[], load: (book: string, chapter: number) => Promise<Chapter> = loadChapter, hebrewOn = true): Promise<FetchOutcome> {
   const read: HeldPassage[] = [];
   for (const want of wantedOf(refs)) {
     const chapter = await load(want.book, want.chapter).catch(() => undefined);
     const verses = chapter?.verses.filter((v) => v.n >= want.from && v.n <= want.to) ?? [];
     if (verses.length === 0) continue;
-    const passage = passageOf(want.book, want.chapter, verses, sourceLanguage({ lang: chapter?.lang }));
+    const passage = passageOf(want.book, want.chapter, verses, sourceLanguage({ lang: chapter?.lang }), hebrewOn);
     if (!read.some((p) => p.reference === passage.reference)) read.push(passage);
   }
   const got = new Set(read.map((p) => startOf(p.reference)));
@@ -105,7 +108,7 @@ export async function fetchOutcome(refs: readonly string[], load: (book: string,
 }
 
 /** The passages `fetchOutcome` read. */
-export const fetchPassages = async (refs: readonly string[], load?: (book: string, chapter: number) => Promise<Chapter>): Promise<HeldPassage[]> => (await fetchOutcome(refs, load)).read;
+export const fetchPassages = async (refs: readonly string[], load?: (book: string, chapter: number) => Promise<Chapter>, hebrewOn?: boolean): Promise<HeldPassage[]> => (await fetchOutcome(refs, load, hebrewOn)).read;
 
 /** 'Rev 2:8-11', '1 John 1:9': a reference by its book's short name. */
 function shortReference(reference: string): string {
@@ -128,7 +131,7 @@ export function heldPassagesOf(turns: readonly { fetched?: readonly HeldPassage[
     for (const passage of turn.fetched ?? []) {
       if (held.some((p) => p.reference === passage.reference)) continue;
       if (held.length >= MAX_HELD_PASSAGES || bytesOf([...held, passage]) > HELD_PASSAGES_BYTES) return held;
-      held.push({ reference: passage.reference, ...(passage.hebrew === undefined ? { greek: passage.greek } : { hebrew: passage.hebrew }), english: passage.english });
+      held.push({ reference: passage.reference, ...(passage.hebrew !== undefined ? { hebrew: passage.hebrew } : passage.greek !== undefined ? { greek: passage.greek } : {}), english: passage.english });
     }
   }
   return held;
