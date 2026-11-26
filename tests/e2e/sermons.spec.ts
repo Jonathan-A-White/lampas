@@ -578,9 +578,10 @@ test('online: a source the bundle lacks gets an Off row in the list of sermon so
   await expect(group.getByRole('radio', { name: 'Off', exact: true })).toHaveAttribute('aria-checked', 'true');
   expect((await group.getByRole('radio', { name: 'On', exact: true }).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
   await expect(page.locator('[data-source="sermons.newbie-sermons"]')).toContainText('on the web');
-  // Logos is off, so the lists are the bundled ones that name no Logos book and the new one; two of them start On
-  const onTheWeb = bundledSources().filter(({ id }) => !(id in LOGOS_RESOURCES)).length;
-  await expect(page.getByTestId('sources-line')).toHaveText(`2 of ${onTheWeb + 1} on`);
+  // Logos is off, so the lists are the bundled ones that name no Logos book and the new one; those that start On (Spurgeon, Henry, Clarkson) are the count on, read from the bundle
+  const web = bundledSources().filter(({ id }) => !(id in LOGOS_RESOURCES));
+  const webOn = web.filter((s) => s.onByDefault !== false).length;
+  await expect(page.getByTestId('sources-line')).toHaveText(`${webOn} of ${web.length + 1} on`);
   await group.scrollIntoViewIfNeeded();
   await shot(page, 'sermons-online-source');
 });
@@ -813,6 +814,6 @@ test('a Subsplash row plays in Subsplash\'s own embed player in the same sheet (
 });
 
 /** The bundled passage lists (public/sermons/index.json): the totals the list of sermon sources says are counted from them, so a source bundled later needs no new number in this spec. */
-function bundledSources(): { id: string }[] {
-  return (JSON.parse(readFileSync('public/sermons/index.json', 'utf8')) as { sources: { id: string }[] }).sources;
+function bundledSources(): { id: string; onByDefault?: boolean }[] {
+  return (JSON.parse(readFileSync('public/sermons/index.json', 'utf8')) as { sources: { id: string; onByDefault?: boolean }[] }).sources;
 }
