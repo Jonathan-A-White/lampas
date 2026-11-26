@@ -40,6 +40,15 @@ const CODE_NOT_WATCHED: Readonly<Record<string, string>> = {
   'src/data/variantVerse.ts': "the New Testament's variant English (scripts/data/variantEnglish.ts)",
 };
 
+/** The tests that run the app's Weave over the real ship's output (mw-u2w5klk.349.145): a change to the app's code they import is a change to what they check. */
+const WEAVE_TESTS = ['tests/unit/weave-lxx-every-word.test.ts', 'tests/unit/lxx-align-choose-gen.test.ts'];
+
+/** The app's files those tests import for their values that need no real-data run, each with why. */
+const WEAVE_NOT_WATCHED: Readonly<Record<string, string>> = {
+  'src/data/db.ts': 'the test only closes the Dexie database after the run (db.close()); it draws nothing',
+  'src/data/chapter.ts': 'wordLemma, a one-line reader of a word\'s lemma, and types; the drawing is in the files watched',
+};
+
 /** The files and folders read at run time, which no import names, and whose change needs a real-data run. A folder ends with '/'. */
 const DATA_WATCHED = [
   `${CHOICES_DIR}/`,
@@ -89,11 +98,27 @@ function inputsOfTheShip(): string[] {
   return [...seen].sort();
 }
 
+/** The files under src/ the Weave tests import for their values. */
+const appCodeOfTheWeaveTests = (): string[] => [...new Set(WEAVE_TESTS.flatMap(importsOf).filter((f) => f.startsWith('src/')))].sort();
+
 describe('what makes the gate run the real-data Septuagint tests', () => {
   it('reads a diff of the verse map alone as a change to run them for (mw-u2w5klk.349.130 landed main red)', () => {
     const r = decideLxxRealData(borrowed(['scripts/data/tvtms.ts']));
     expect(r.line).toContain('the work touches scripts/data/tvtms.ts');
     expect(r.run).toBe(true);
+  });
+
+  it('reads a diff of the app\'s Weave alone as a change to run them for (mw-u2w5klk.349.145)', () => {
+    const r = decideLxxRealData(borrowed(['src/data/weave.ts']));
+    expect(r.line).toContain('the work touches src/data/weave.ts');
+    expect(r.run).toBe(true);
+  });
+
+  it('watches every file of the app the Weave tests import, or names it with why not', () => {
+    const inputs = appCodeOfTheWeaveTests();
+    expect(inputs).toEqual(expect.arrayContaining(['src/data/weave.ts', 'src/reader/septuagint.ts', 'src/reader/VerseText.tsx']));
+    expect(inputs.filter((f) => !watched(f) && !(f in WEAVE_NOT_WATCHED))).toEqual([]);
+    expect(Object.keys(WEAVE_NOT_WATCHED).filter((f) => watched(f) || !inputs.includes(f))).toEqual([]);
   });
 
   it('watches every file the ship and the model-pass checks run, or names it with why not', () => {
