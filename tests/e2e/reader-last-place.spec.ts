@@ -23,12 +23,26 @@ async function goTo(page: Page, title: string, query: string): Promise<void> {
   await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible();
 }
 
+// One scroll to a verse is not a place on a loaded host: the weave and the fonts arrive late and the lines above it change height, so the verse he is "last on" moves
+// (mw-fnvjof.17.335 found it in weave-switch.spec.ts). The verse is put on top again at every look until two looks in a row find it there with nothing left to move.
 async function putOnTop(page: Page, verse: number): Promise<void> {
   await page.locator(`[data-verse="${verse}"]`).first().waitFor();
-  await page.locator('[data-reader]').evaluate((box, n) => {
-    const el = box.querySelector(`[data-verse="${n}"]`) as HTMLElement;
-    box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-  }, verse);
+  let steady = 0;
+  await expect
+    .poll(
+      async () => {
+        const gap = await page.locator('[data-reader]').evaluate((box, n) => {
+          const el = box.querySelector(`[data-verse="${n}"]`) as HTMLElement;
+          const gap = el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+          if (Math.abs(gap) > 1) box.scrollTop += gap;
+          return Math.round(gap);
+        }, verse);
+        steady = Math.abs(gap) <= 1 ? steady + 1 : 0;
+        return steady >= 2 ? 'on top and still' : `looked ${steady} times, the gap was ${gap}`;
+      },
+      { message: `verse ${verse} is on top and the page has stopped moving` },
+    )
+    .toBe('on top and still');
 }
 
 for (const { book, title, verse } of [
