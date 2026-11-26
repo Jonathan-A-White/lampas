@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.397
+_2026-11-26_
+- New: Paradigm tables can be filled in backwards: the cells empty and the forms are tiles you tap or drag into place.
+
 ## 0.7.394
 _2026-11-25_
 - New: Morning RePhil on Today now plays inside Lampas, in the same player as the video sermons.
