@@ -121,7 +121,7 @@ export const HELP_PAGES: HelpPage[] = [
     body: [
       'If you own Logos, Your Logos library (in Tools) lists the books Lampas opens, each Off, On or Pinned; Import reads your list, and Lampas keeps only that. On a verse, In Logos opens it in your Bible.',
       'Maps · N on a verse or heading opens its maps. Split docks a map under the passage.',
-      'Sermons · N lists sermons on the verse, then its chapter; each opens where it lives, a Spurgeon one reads aloud here. Online, the index adds newer ones and a search.',
+      'Sermons · N lists sermons on the verse, then its chapter; videos play here, Spurgeon\'s read aloud, others open on the web. Online, the index adds newer ones and a search.',
       'Switch map sources in Settings > Study resources, sermon sources in Settings > Study resources > Sermons > Sermon sources.',
     ],
   },
