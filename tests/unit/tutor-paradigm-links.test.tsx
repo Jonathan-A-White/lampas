@@ -136,3 +136,19 @@ describe('a question on a sound or a meaning (mw-5r3p30.1207)', () => {
     expect(section('### Links to a setting')).toContain('Use it ONLY when he asks where a setting is or how to change one, never because one bears on what he asks.');
   });
 });
+
+describe("a drill's missed forms get their table's link even when he asks what to drill (mw-5r3p30.1253)", () => {
+  // paradigm-link-article-drill ('What should I drill to get these right?', every miss τό) gave no link in 1 smoke run in 3:
+  // the intro's 'link only what he asks to see' and 'NO link when he asks why' read as covering a question of what to drill.
+  const text = instructionsOf('bible-talk').replace(/\s+/g, ' ');
+  const intro = text.slice(text.indexOf('## Links to his study resources'), text.indexOf('### Links to a setting'));
+  const paradigm = text.slice(text.indexOf('### Links to a paradigm table'));
+
+  it('says in the links intro, where a no-link rule is read, that a drill\'s missed forms are the exception', () => {
+    expect(intro).toContain("or a drill's missed forms (paradigm)");
+  });
+
+  it('says in the paradigm section that the link goes with what to drill too', () => {
+    expect(paradigm).toContain('whatever he asks of them (what to drill too)');
+  });
+});
