@@ -190,6 +190,9 @@ test('turning Variants on and off keeps the verse that is on top, Romans 16, in 
   await openUnlocked(page);
   await page.goto('/#/?b=rom&c=16&weave=solid');
   await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
+  // The address's weave=solid is written into the settings after the Reader opens, and until it lands the switch has no Weave choice and a tap on English is made with the Weave Off:
+  // the write that follows then turns the Weave on over it and English is not pressed (8 of 340 runs on a loaded host, mw-fnvjof.17.342). The Weave choice is the sign it has landed.
+  await expect(choice(page, 'Weave')).toBeVisible();
   const chip = page.getByRole('button', { name: /^Variants,/ });
   const firstVerse = () =>
     page.evaluate(() => {
