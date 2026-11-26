@@ -144,7 +144,10 @@ describe.skipIf(!real.run)('Jonah with the model pass', () => {
   });
 
   it("puts 'to the clefts of the mountains' with the Greek words of 2:6 that render it, not at the start of 2:7 (mw-u2w5klk.349.157)", () => {
-    expect(greek(2, 6, /^to$/).concat(greek(2, 6, /clefts/), greek(2, 6, /^mountains/))).toEqual(['εἰς', 'σχισμὰς', 'ὀρέων,']);
+    const six = withModel.get(2)!.verses.find((x) => x.n === 6)!;
+    const lead = six.e.slice(-5);
+    expect(lead.map((c) => c.t)).toEqual(['to', 'the', 'clefts', 'of the', 'mountains;']);
+    expect(lead.flatMap((c) => c.g.map((g) => six.g[g].t))).toEqual(['εἰς', 'σχισμὰς', 'ὀρέων,']);
     const seven = withModel.get(2)!.verses.find((x) => x.n === 7)!;
     expect(seven.e.map((c) => c.t).join(' ')).not.toMatch(/clefts|mountains/);
   });
