@@ -25,7 +25,7 @@ export const WATCHED = [
   // what the ship runs outside scripts/lxx/: the Septuagint's build, the verse map, Brenton's English, the lexicon's reader and its glosses, the parsing codes, the rule of a linked chunk, Lampas's verse counts
   'scripts/data/', 'scripts/data-build-lxx.ts', 'scripts/data-build.ts', 'src/data/gloss.ts', 'src/data/irregular-aorists.ts', 'src/data/parseCode.ts', 'src/reader/septuagint.ts', 'public/data/index.json',
   // the tests that read the real data, and what they share
-  'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose', 'tests/support/lxx-align-choose.ts', 'tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-align-low-confidence.test.ts', 'tests/unit/weave-lxx-every-word.test.ts',
+  'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose', 'tests/support/lxx-align-choose.ts', 'tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-ship-jos-chapters.test.ts', 'tests/unit/lxx-align-low-confidence.test.ts', 'tests/unit/weave-lxx-every-word.test.ts',
 ] as const;
 
 export interface LxxRealData {
