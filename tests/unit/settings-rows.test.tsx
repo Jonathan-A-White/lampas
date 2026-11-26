@@ -107,7 +107,12 @@ describe('visibleRows', () => {
 
   it('shows the Logos settings for "logos", and the rows whose help names Logos after them in the list\'s order', () => {
     expect(keys(visibleRows(ALL_ON, 'logos')).slice(0, 2)).toEqual(['resource.logos', 'logosBible']);
-    expect(keys(visibleRows(ALL_ON, 'logos'))).toEqual(expect.arrayContaining(['dailyPlan', 'dailyDevotional']));
+    expect(keys(visibleRows(ALL_ON, 'logos'))).toContain('dailyDevotional');
+  });
+
+  it("does not say the Plan chapter is read in Logos: the plan piece reads in Lampas and listens in Audible (mw-r9xo1pj.32)", () => {
+    expect(rowOf('dailyPlan')?.help).not.toMatch(/logos/i);
+    expect(keys(visibleRows(ALL_ON, 'logos'))).not.toContain('dailyPlan');
   });
 
   it('reaches a hidden detail through the setting that turns it on', () => {
