@@ -134,7 +134,7 @@ export const PROGRESS: Readonly<Record<string, string>> = {
   rusty: 'the solid words and ideas he now slips on or has not met for a long while (src/data/rusty.ts, src/data/learnerRusty.ts)',
   works: 'his Logos shelf: the pinned books, the commentaries covering the chapter, and for a question about a form or a reading the grammars and Greek texts, chosen by the place (src/resources/tutorLinks.ts worksForTutor, src/data/repositories/library.ts)',
   maps: 'the maps of the passage the talk holds, as the tutor may link them: the chapter\'s maps with the places the held verse or range names (src/maps/forTutor.ts, Bible Mapper through src/maps)',
-  sermons: 'the sermons of the passage the talk holds, as the tutor may link or narrow them: the sheet\'s own rows for the verse (else the chapter) and those on the same theme, at most 8, with the verse\'s themes, at most 6 (src/sermons/forTutor.ts, the free index through src/sermons)',
+  sermons: 'the sermons of the passage the talk holds, as the tutor may link or narrow them: the sheet\'s own rows for the verse (else the chapter) and those on the same theme, at most 12, with the verse\'s themes, at most 6 (src/sermons/forTutor.ts, the free index through src/sermons)',
   variants: "the variant units set in the verses the talk holds, while Settings > Variants is on: each reading in Greek and English with its witness spelled out, the chapter's count, and which reading he is reading under the reading set in force (src/tutor/variantFacts.ts)",
   today: "the items behind the Reader's chip 'Today · N of M', each with its title and whether he ticked it (src/data/learnerToday.ts)",
 };

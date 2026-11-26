@@ -1,4 +1,4 @@
-// The sermons the Bible talk tells the tutor (mw-qtu3zvz.6, src/sermons/forTutor.ts): the passage's rows then those on the same theme, at most 8, and the verse's themes, at most 6; nothing for a screen talk or About.
+// The sermons the Bible talk tells the tutor (mw-qtu3zvz.6, src/sermons/forTutor.ts): the passage's rows then those on the same theme, at most 12, a row of every source first, and the verse's themes, at most 6; nothing for a screen talk or About.
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import 'fake-indexeddb/auto';
