@@ -18,7 +18,7 @@ import { landTraversalsLate } from '../../tests/support/late-traversal';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { seedHisWords } from '../../tests/support/his-words';
 import { ensureSettingsGroup, openSettingsGroup } from '../../tests/support/settings-pages';
-import { openSettings } from '../../tests/unit/openSettings';
+import { openSettings, openSettingsFromReader } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
@@ -153,10 +153,19 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Settings has the same entry', ({ Given, When, And, Then }) => {
     Given('Lampas is opened with the Reading plan off', () => openWith({ off: true }));
     When('he opens Settings', async () => {
-      await openSettings(user);
+      // the Menu's row is looked for inside the Reader's header, not through the chapter behind it (a whole-screen role query is seconds a call on a loaded host)
+      await openSettingsFromReader(user);
       await openSettingsGroup(user, 'study');
     });
-    And('he taps {string} in Settings', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
+    And('he taps {string} in Settings', async (_, name: string) => {
+      // inside the Reading plan row: the Study page is large, and a role query over all of it outran the wait at load 24-51 of 20 cores (mw-u2w5klk.349.163)
+      const row = await waitFor(() => {
+        const found = document.querySelector<HTMLElement>('[data-setting="readingPlan"]');
+        if (!found) throw new Error('the Reading plan row is not drawn yet');
+        return found;
+      });
+      await user.click(await within(row).findByRole('button', { name }));
+    });
     Then('the sheet {string} is shown with the plan {string}', async (_, title: string, plan: string) => {
       const sheet = await screen.findByRole('dialog', { name: title });
       expect(within(sheet).getByRole('button', { name: plan })).toBeTruthy();
