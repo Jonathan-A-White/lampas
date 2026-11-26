@@ -630,3 +630,42 @@ describe("LXX2012's Obadiah 1 stands at the Greek verses its text is", () => {
     expect(obaMaps.lxx2012ToGreek('oba 1:4')).toEqual({ state: 'same', refs: ['oba 1:4'] });
   });
 });
+
+// mw-u2w5klk.349.159: Swete's Joshua 20 numbers 4-6 with no word and has the cities of refuge at 7-9, so Brenton's 20:4-6 stood at three verses with no word and 7-9 had no English; his 21:36-43 are the Greek
+// 21:36-45 (his 36 holds the Greek 36-37, his 37 the Greek 38-39), so the Greek 44 and 45 had no English and the end of the chapter stood two verses off.
+describe("LXX2012's Joshua 20 and 21 stand at the Greek verses their text is", () => {
+  const maps159 = buildMaps(parseTvtms(fixture('tvtms-v159-slice.txt')));
+  const woven = () => englishByGreekVerse(parseUsfm(fixture('lxx2012-v159-jos.usfm')), maps159);
+  const range = (from: number, to: number): number[] => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+  const text = (byGreek: ReadonlyMap<string, readonly { text: string }[]>, ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' ');
+
+  it("puts Brenton's Joshua 20:4-6 at the Greek 20:7-9 and his 21:36-43 at the Greek 21:36-45", () => {
+    for (const v of [1, 2, 3]) expect(maps159.lxx2012ToGreek(`jos 20:${v}`)).toEqual({ state: 'same', refs: [`jos 20:${v}`] });
+    for (const v of [4, 5, 6]) expect(maps159.lxx2012ToGreek(`jos 20:${v}`)).toEqual({ state: 'one', refs: [`jos 20:${v + 3}`] });
+    expect(maps159.lxx2012ToGreek('jos 21:35')).toEqual({ state: 'same', refs: ['jos 21:35'] });
+    expect(maps159.lxx2012ToGreek('jos 21:36').refs).toEqual(['jos 21:36', 'jos 21:37']);
+    expect(maps159.lxx2012ToGreek('jos 21:37').refs).toEqual(['jos 21:38', 'jos 21:39']);
+    for (const v of [38, 39, 40, 41, 42, 43]) expect(maps159.lxx2012ToGreek(`jos 21:${v}`)).toEqual({ state: 'one', refs: [`jos 21:${v + 2}`] });
+  });
+
+  it('weaves the cities of refuge at the Greek 20:7-9 and the Lord giving rest at 21:44, nothing unplaced and no Greek verse with words left without English but the second of a pair', () => {
+    const { byGreek, placedAt } = woven();
+    expect(text(byGreek, 'jos 20:3')).toMatch(/until he have stood before the congregation for judgment\.$/);
+    expect(text(byGreek, 'jos 20:7')).toMatch(/^And Joshua separated Cades in Galilee/);
+    expect(text(byGreek, 'jos 20:8')).toMatch(/^And beyond Jordan he appointed Bosor/);
+    expect(text(byGreek, 'jos 20:9')).toMatch(/^These were the cities selected for the sons of Israel/);
+    for (const v of [4, 5, 6]) expect(text(byGreek, `jos 20:${v}`)).toBe('');
+    expect(text(byGreek, 'jos 21:36')).toMatch(/^And beyond Jordan over against Jericho.* Mapha and its suburbs; four cities\.$/);
+    expect(text(byGreek, 'jos 21:38')).toMatch(/^And out of the tribe of Gad.* the cities were four in all\.$/);
+    expect(text(byGreek, 'jos 21:40')).toMatch(/^All these cities were given to the sons of Merari/);
+    expect(text(byGreek, 'jos 21:41')).toMatch(/^All the cities of the Levites in the midst of the possession.* forty-eight cities,$/);
+    expect(text(byGreek, 'jos 21:42')).toMatch(/^and their suburbs round about these cities.* put them in Thamnasachar\.$/);
+    expect(text(byGreek, 'jos 21:43')).toMatch(/^So the Lord gave to Israel all the land/);
+    expect(text(byGreek, 'jos 21:44')).toMatch(/^And the Lord gave them rest round about/);
+    expect(text(byGreek, 'jos 21:45')).toMatch(/^There failed not one of the good things/);
+    const swete20 = [1, 2, 3, 7, 8, 9].map((v) => `jos 20:${v}`);
+    const swete21 = range(35, 45).map((v) => `jos 21:${v}`);
+    expect(versesWithoutEnglish(byGreek, [...swete20, ...swete21])).toEqual(['jos 21:37', 'jos 21:39']);
+    expect(unplacedVerses(placedAt, new Set([...range(1, 9).map((v) => `jos 20:${v}`), ...range(1, 45).map((v) => `jos 21:${v}`)]))).toEqual([]);
+  });
+});

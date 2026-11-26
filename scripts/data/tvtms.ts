@@ -324,6 +324,9 @@ export const SUPPLEMENT_ROWS: readonly TvtmsRow[] = [
  * mw-u2w5klk.349.147, each read against Swete's verses (the table's section Jos.8:30--9:27 has a Brenton column that stands 8:30-35 at Rahlfs' sub-verses 9:2.1-6, which Swete does not number):
  * - Jos 8:30-35 and 9: Swete has the altar on Mount Gaebal at 9:3-8, after 9:2, so Brenton's 8:30-35 are the Greek 9:3-8, his 9:3-26 are the Greek 9:9-32 and his 9:27-29 (one USFM verse) the Greek 9:33;
  *   his 9:30-33 ('Then Joshua built an altar ...', an addition from the Alexandrian codex) repeat 8:30-35 and have no verse of Swete's of their own.
+ * mw-u2w5klk.349.159, each read against Swete's verses:
+ * - Jos 20: Swete numbers 4-6 with no word and has the cities of refuge at 7-9, so Brenton's 20:4-6 are the Greek 20:7-9.
+ * - Jos 21: Brenton's 36 (Reuben's four cities) holds the Greek 36-37 and his 37 (Gad's) the Greek 38-39, so his 38-43 are the Greek 40-45; his 40 holds the long ending the Greek 42 has.
  * mw-u2w5klk.349.150, read against Swete's verses:
  * - Obad 1: LXX2012's 1:2 ('Arise you, and let us rise up against her to war') is the end of the Greek 1 (Ἀνάστητε ... εἰς πόλεμον), and its 1:3 holds the Greek 2 ('Behold, I have made you small ...') and 3 ('The pride of your heart ...'); both have 21 verses, so its 4-21 are the Greek 4-21.
  */
@@ -348,6 +351,10 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Jos.9:27-29', 'Jos.9:33'],
   ['Jos.9:30-33', 'NoVerse'],
   ['Jos.5:16', 'Jos.5:15'],
+  ['Jos.20:4-6', 'Jos.20:7-9'],
+  ['Jos.21:36', 'Jos.21:36-37'],
+  ['Jos.21:37', 'Jos.21:38-39'],
+  ['Jos.21:38-43', 'Jos.21:40-45'],
   ['Jos.6:7', 'Jos.6:8'],
   ['Jos.6:8', 'Jos.6:7'],
   ['Exo.25:6', 'Exo.25:5'],
