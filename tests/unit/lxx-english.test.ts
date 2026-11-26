@@ -617,3 +617,16 @@ describe("LXX2012's Joshua 8:30-35 and chapter 9 stand at the Greek verses their
     expect(unplacedVerses(placedAt, new Set(swete))).toEqual([]);
   });
 });
+
+// mw-u2w5klk.349.150: LXX2012's Obadiah 1:2 ('Arise you, and let us rise up against her to war') is the end of Swete's 1:1 and its 1:3 holds Swete's 2 and 3 (both have 21 verses); the map stood them
+// at the Greek 2 and 3, so a tap in 1:2 opened the words of 'Behold, I have made you small'. The table has no section for Obadiah, so these rows stand alone.
+describe("LXX2012's Obadiah 1 stands at the Greek verses its text is", () => {
+  const obaMaps = buildMaps([]);
+
+  it("puts Brenton's 1:2 at the Greek 1:1 and his 1:3 at the Greek 1:2 (and 1:3), and leaves 1:1 and 1:4 where they were", () => {
+    expect(obaMaps.lxx2012ToGreek('oba 1:1')).toEqual({ state: 'same', refs: ['oba 1:1'] });
+    expect(obaMaps.lxx2012ToGreek('oba 1:2')).toEqual({ state: 'one', refs: ['oba 1:1'] });
+    expect(obaMaps.lxx2012ToGreek('oba 1:3')).toEqual({ state: 'range', refs: ['oba 1:2', 'oba 1:3'] });
+    expect(obaMaps.lxx2012ToGreek('oba 1:4')).toEqual({ state: 'same', refs: ['oba 1:4'] });
+  });
+});

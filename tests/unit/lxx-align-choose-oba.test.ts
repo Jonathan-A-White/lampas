@@ -125,6 +125,26 @@ describe.skipIf(!real.run)('Obadiah with the model pass', () => {
     return chunk.g.map((g) => verse.g[g].t);
   };
 
+  it('stands the end of Swete\'s verse 1 under Brenton\'s verse 2: "war." holds πόλεμον, and "Arise" holds Ἀνάστητε (mw-u2w5klk.349.150)', () => {
+    const verses = withModel.get(1)!.verses;
+    const verse = verses.find((v) => v.e.some((c) => c.t === 'war.'))!;
+    expect(verse, 'the verse that holds "war."').toBeDefined();
+    const war = verse.e.find((c) => c.t === 'war.')!;
+    expect(war.g.map((g) => verse.g[g].t.replace(/[.·;,]/g, ''))).toEqual(['πόλεμον']);
+    expect(verse.g.map((w) => w.t)).toContain('Ἀνάστητε');
+    const arise = verse.e.find((c) => /^Arise/.test(c.t))!;
+    expect(arise.g.map((g) => verse.g[g].t.replace(/[.·;,]/g, ''))).toEqual(['Ἀνάστητε']);
+  });
+
+  it('leaves Brenton\'s second sentence of verse 3 (the Greek of Swete\'s verse 3) with no Greek word, and gives the first its own words (verse 2 as shipped)', () => {
+    const verse = withModel.get(1)!.verses.find((v) => v.n === 2)!;
+    const chunk = verse.e.find((c) => /^The pride of your heart/.test(c.t))!;
+    expect(chunk.g).toEqual([]);
+    const dishonored = verse.e.find((c) => /dishonored/.test(c.t))!;
+    expect(dishonored.g.map((g) => verse.g[g].t.replace(/[.·;,]/g, ''))).toEqual(['ἠτιμωμένος', 'σὺ', 'εἶ', 'σφόδρα']);
+    expect(withModel.get(1)!.verses.find((v) => v.n === 3)!.e).toEqual([]);
+  });
+
   it('gives "domain" the rule and "captivity" the carrying away (Obadiah 20), where the aligner had them crossed', () => {
     expect(greek(20, /domain/)).toEqual(['ἡ', 'ἀρχὴ']);
     expect(greek(20, /captivity/)).toEqual(['τῆς', 'μετοικεσίας']);
@@ -135,10 +155,9 @@ describe.skipIf(!real.run)('Obadiah with the model pass', () => {
     expect(greek(13, /perishing/)).toEqual(['ἀπωλίας']);
   });
 
-  it('gives back the aligner\'s wrong pairs of verses 1, 3, 11 and 19 by fix rows', () => {
+  it('gives back the aligner\'s wrong pairs of verses 1, 11 and 19 by fix rows', () => {
     expect(greek(1, /^nations/)).toEqual(['ἔθνη']);
     expect(greek(1, /sent forth/)).toEqual(['ἐξαπέστειλεν']);
-    expect(greek(3, /habitation/)).toEqual(['κατοικίαν']);
     expect(greek(11, /forces/)).toEqual(['δύναμιν']);
     expect(greek(19, /dwell in the south/)).toEqual(['οἱ', 'ἐν', 'Νάγεβ']);
   });
