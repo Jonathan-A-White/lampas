@@ -1,4 +1,4 @@
-// The Logos switch governs Today (mw-rfjjzd.23): the devotional exists to open Logos, so Today draws it only while Logos is On (what he set for it is kept), and with Logos Off the
+// The Logos switch governs Today (mw-rfjjzd.23): a Logos devotional exists to open Logos, so Today draws it only while Logos is On (what he set for it is kept); Morning RePhil is a web page, so it is drawn with Logos Off too (mw-qtu3zvz.213), and with Logos Off the
 // tutor is not told of it. The day's Psalms and Proverbs open in Lampas (mw-5r3p30.1007), which holds every chapter of both books, so they are drawn with Logos Off too.
 import '@testing-library/react/dont-cleanup-after-each';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
@@ -8,6 +8,8 @@ import { db } from '../../src/data/db';
 import { startPlan } from '../../src/data/repositories';
 import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { getDay, localDate } from '../../src/data/daily/dailyStore';
+import { EPISODES } from '../../src/data/daily/morningRephil';
+import { MORNING_REPHIL_ID } from '../../src/data/daily/devotionals';
 import { Today } from '../../src/today/Today';
 
 afterAll(() => {
@@ -43,6 +45,16 @@ describe('Today with Logos Off', () => {
     expect(screen.queryAllByText('Open in Logos')).toHaveLength(0);
     expect((await db.settings.get('dailyPsalms'))?.value).toBe('on');
     expect((await db.settings.get('dailyDevotional'))?.value).toBe('on');
+  });
+
+  it('with Which devotional on Morning RePhil still draws the Devotional, a link to its share address, since it is a web page that needs no Logos (mw-qtu3zvz.213)', async () => {
+    await settings('off');
+    await db.settings.put({ key: 'devotional', value: MORNING_REPHIL_ID });
+    render(<Today />);
+    const devotional = await screen.findByRole('region', { name: 'Devotional' });
+    const link = await within(devotional).findByRole('link', { name: new RegExp(EPISODES[0].title) });
+    expect(link).toHaveAttribute('href', EPISODES[0].share);
+    expect(within(devotional).queryByText(/Open in Logos/)).toBeNull();
   });
 
   it('with only the Psalms and Proverbs On draws them, not the explanation', async () => {
