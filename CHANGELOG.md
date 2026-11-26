@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.403
+_2026-11-26_
+- Fixed: Today's empty page no longer says the day's devotional is always opened in Logos, since it can be Morning RePhil.
+- Fixed: Tapping an English word in the book of Jonah now opens the Greek word that renders it.
+
 ## 0.7.401
 _2026-11-26_
 - Fixed: when you read Old Testament chapters at Just English, the passages the tutor looks up no longer carry Hebrew you did not ask for.

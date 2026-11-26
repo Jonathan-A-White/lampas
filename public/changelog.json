@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.403",
+    "date": "2026-11-26",
+    "story": "mw-r9xo1pj.31",
+    "kind": "fixed",
+    "text": "Today's empty page no longer says the day's devotional is always opened in Logos, since it can be Morning RePhil."
+  },
+  {
+    "version": "0.7.403",
+    "date": "2026-11-26",
+    "story": "mw-u2w5klk.349.65",
+    "kind": "fixed",
+    "text": "Tapping an English word in the book of Jonah now opens the Greek word that renders it."
+  },
+  {
     "version": "0.7.401",
     "date": "2026-11-26",
     "story": "mw-fnvjof.17.333",
