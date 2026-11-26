@@ -5,16 +5,22 @@
   "additionalProperties": false,
   "required": ["answer", "question", "words"],
   "if": { "required": ["quiz_goal_offer"] },
-  "then": { "required": ["quiz_goal_state"], "properties": { "quiz_goal_state": { "const": "none" } } },
-  "allOf": [
-    {
-      "if": {
-        "required": ["links"],
-        "properties": { "links": { "contains": { "required": ["kind"], "properties": { "kind": { "const": "setting" } } } } }
-      },
-      "then": { "required": ["setting_link_ask"], "properties": { "setting_link_ask": { "const": "where-a-setting-is" } } }
-    }
-  ],
+  "then": {
+    "required": ["quiz_goal_state"],
+    "properties": { "quiz_goal_state": { "const": "none" } },
+    "if": {
+      "required": ["links"],
+      "properties": { "links": { "contains": { "required": ["kind"], "properties": { "kind": { "const": "setting" } } } } }
+    },
+    "then": { "required": ["setting_link_ask"], "properties": { "setting_link_ask": { "const": "where-a-setting-is" } } }
+  },
+  "else": {
+    "if": {
+      "required": ["links"],
+      "properties": { "links": { "contains": { "required": ["kind"], "properties": { "kind": { "const": "setting" } } } } }
+    },
+    "then": { "required": ["setting_link_ask"], "properties": { "setting_link_ask": { "const": "where-a-setting-is" } } }
+  },
   "properties": {
     "answer": {
       "description": "The reply to what he said, in short plain English; or the one-sentence refusal for anything outside the Bible. Asked to play a sermon by title whose row has no `plays`: say it is not played in the app and link it; `do` nothing, never play another row in its place. Point him at a link (the link below, tap the link) only when `links` carries it; then it is drawn under the answer.",
