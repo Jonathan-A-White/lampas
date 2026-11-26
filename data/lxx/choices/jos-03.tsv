@@ -75,7 +75,7 @@ Jos.12:9#10	R-NSF	ὅς, ἥ		0.80
 Jos.12:9#12	ADV	πλησίον		0.80	
 Jos.12:9#13	N-GSF	Βαιθήλ		0.80	
 Jos.12:10#2	N-GSF	Ἱερουσαλήμ		0.80	
-Jos.12:10#4	N-GSF	Χεβρών		0.80	
+Jos.12:10#4	N-GSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.12:11#2	N-GSF	Ἰερειμούθ		0.80	
 Jos.12:11#4	N-GSF	Λαχείς	guess	0.40	guess: the model answered with no candidates
 Jos.12:12#2	N-GSF	Αἰλάμ	guess	0.40	guess: the model chose outside the candidates
@@ -410,12 +410,13 @@ Jos.14:12#26	N-NSM	Ἐνακείμ		0.80
 Jos.14:12#29	N-NPF	πόλις		0.80	
 Jos.14:12#37	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
 Jos.14:12#39	V-FAI-1S	ἐξολεθρεύω		0.80	
-Jos.14:13#7	N-ASF	Χεβρών		0.80	
+Jos.14:13#7	N-ASF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.14:13#8	T-DSM	ὁ		0.80	
 Jos.14:13#9	N-DSM	Χαλέβ		0.80	
 Jos.14:13#11	N-GSM	Ἰεφοννή		0.80	
 Jos.14:13#13	N-GSM	Κενέζ		0.80	
 Jos.14:14#2	D-ASN	οὗτος		0.80	
+Jos.14:14#5	N-NSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.14:14#6	T-DSM	ὁ		0.80	
 Jos.14:14#7	N-DSM	Χαλέβ		0.80	
 Jos.14:14#8	T-DSM	ὁ		0.80	
@@ -427,6 +428,7 @@ Jos.14:14#20	T-ASN	ὁ		0.80
 Jos.14:14#27	N-GSM	Ἰσραήλ		0.80	
 Jos.14:15#1	T-NSN	ὁ		0.80	
 Jos.14:15#3	N-NSN	ὄνομα		0.80	
+Jos.14:15#5	N-GSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.14:15#7	T-ASN	ὁ		0.80	
 Jos.14:15#8	ADV-C	πρότερον		0.80	
 Jos.14:15#9	N-NSF	πόλις		0.80	
@@ -548,7 +550,7 @@ Jos.15:13#11	N-GSM	Ἰούδας		0.80
 Jos.15:13#18	P-DSM	αὐτός		0.80	
 Jos.15:13#22	N-ASF	Ἀρβόκ		0.80	
 Jos.15:13#24	N-GSM	Ἐνάκ		0.80	
-Jos.15:13#27	N-NSF	Χεβρών		0.80	
+Jos.15:13#27	N-NSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.15:14#4	N-NSM	Χαλέβ		0.80	
 Jos.15:14#6	N-GSM	Ἰεφοννή		0.80	
 Jos.15:14#10	N-GSM	Ἐνάκ		0.80	
@@ -684,7 +686,7 @@ Jos.15:48#9	N-NSF	Σωχά		0.80
 Jos.15:49#2	N-NSF	Ῥεννά		0.80	
 Jos.15:49#4	N-NSF	πόλις		0.80	
 Jos.15:49#7	N-NSF	Δαβείρ	guess	0.40	guess: the model chose outside the candidates
-Jos.15:50#2	N-NSF	Ἀνών		0.80	
+Jos.15:50#2	N-NSF	Ἀνών	guess	0.40	guess: the model chose outside the candidates
 Jos.15:50#4	N-NSF	Ἐσκαιμάν		0.80	
 Jos.15:50#6	N-NSF	Αἰσάμ		0.80	
 Jos.15:51#2	N-NSF	Γόσομ		0.80	
@@ -701,7 +703,7 @@ Jos.15:53#6	N-NSF	Φακουά		0.80
 Jos.15:54#2	N-NSF	Εὑμά		0.80	
 Jos.15:54#4	N-NSF	πόλις		0.80	
 Jos.15:54#5	N-GSM	Ἀρβόκ		0.80	
-Jos.15:54#8	N-NSF	Χεβρών		0.80	
+Jos.15:54#8	N-NSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.15:54#10	N-NSF	Σώρθ		0.80	
 Jos.15:54#11	N-NPF	πόλις		0.80	
 Jos.15:54#16	P-GPF	αὐτός		0.80	
