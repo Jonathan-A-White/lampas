@@ -3,6 +3,7 @@
 // search read the talks without the tables changing. Read only: addTurn, mark*Choice and keepTalkSummary in talks.ts stay the writers.
 import type { SearchOptions, Talk, TalkReader, TalkSummary, Turn } from 'voice-kit/talks';
 import { db, type TalkTurn } from '../db';
+import { answerAsShown } from '../linkPromise';
 
 /** What is kept with his turn: the question as the tutor cleaned it, and whether he spoke it. */
 export interface UserFields {
@@ -102,7 +103,9 @@ export const conversationSearch: SearchOptions<BibleTurnFields> = {
     talk.turns.flatMap((turn, index): { in: 'turn'; turn: number; role: 'user'; text: string }[] => {
       if (turn.role !== 'user') return [];
       const fields = turn.fields as UserFields | undefined;
-      const answer = talk.turns[index + 1]?.text ?? '';
+      const next = talk.turns[index + 1];
+      // the answer as he saw it: a sentence that promised a link which drew nothing is neither matched nor quoted (mw-fnvjof.17.330)
+      const answer = next ? answerAsShown({ a: next.text, linksUndrawn: (next.fields as AssistantFields | undefined)?.linksUndrawn }) : '';
       return [{ in: 'turn', turn: index, role: 'user', text: [fields?.cleanQ ?? turn.text, turn.text, answer].join('\n') }];
     }),
   fold: (text) => text.toLowerCase(),
