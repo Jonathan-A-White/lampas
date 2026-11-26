@@ -114,12 +114,13 @@ const OPENED = 'Lampas is opened on {string} with Greek at {string} and Hebrew a
  * steps below ask on every poll of a waitFor, 1 s of a 2 s step on a loaded host (mw-indx1x6.41).
  */
 const groupNamed = (name: string): HTMLElement | null => document.querySelector<HTMLElement>(`[role="group"][aria-label="${name}"]`);
-const findGroup = (name: string): Promise<HTMLElement> =>
-  waitFor(() => {
-    const found = groupNamed(name);
-    if (!found) throw new Error(`no group named ${name}`);
-    return found;
-  });
+const findGroup = async (name: string): Promise<HTMLElement> => {
+  // the Settings home is drawn again after a choice that is a run of writes, each re-read by the rows: a wait for each state it passes through (mw-u2w5klk.349.162)
+  await waitWhileChanging(() => {
+    if (!groupNamed(name)) throw new Error(`no group named ${name}`);
+  }, progressOf(name));
+  return groupNamed(name)!;
+};
 const languages = (): HTMLElement => {
   const found = groupNamed('Which languages?');
   if (!found) throw new Error('no group named Which languages?');
@@ -201,14 +202,22 @@ describeFeature(feature, ({ Scenario }) => {
     await waitFor(() => expect(pressed(languages(), label)).toBe(true));
     expect(within(languages()).getAllByRole('button')).toHaveLength(4);
   };
+  // a choice of languages is up to two dial moves with the levels kept for each put back, write by write (mw-u2w5klk.349.162): the dial checks after it wait through each state the dials pass
+  // through, as the steps that move them do, and fail only when a whole wait goes by with the screen and the store where they were
   const dialHas = async (_: unknown, name: string, step: string): Promise<void> => {
-    await waitFor(() => expect(pressed(dial(name), step), `${name} ${step}, drawn: ${pressedIn(dial(name))}`).toBe(true));
+    await waitWhileChanging(
+      () => expect(pressed(dial(name), step), `${name} ${step}, drawn: ${pressedIn(dial(name))}`).toBe(true),
+      progressOf(name),
+    );
   };
   const noDialNamed = async (_: unknown, name: string): Promise<void> => {
-    await waitFor(() => expect(dial(name)).toBeNull());
+    await waitWhileChanging(() => expect(dial(name), `${name} is still drawn`).toBeNull(), progressOf(name));
   };
   const noDial = async (): Promise<void> => {
-    await waitFor(() => expect([dial('How much Greek?'), dial('How much Hebrew?')]).toEqual([null, null]));
+    await waitWhileChanging(
+      () => expect([dial('How much Greek?'), dial('How much Hebrew?')], 'a dial is still drawn').toEqual([null, null]),
+      async () => `${await progressOf('How much Greek?')()} | ${await progressOf('How much Hebrew?')()}`,
+    );
   };
   const noGroup = async (_: unknown, title: string): Promise<void> => {
     await toHome();
