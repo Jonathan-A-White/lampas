@@ -26,7 +26,8 @@ const user = userEvent.setup();
 const real = { ...browserEnv };
 
 // A loaded host lands a closed sheet's history traversal late; jsdom lands it at once, which hides a step that does not wait for it. Every traversal the app asks for lands this late here.
-// (in turns of the task queue after the ask, not milliseconds: a traversal 150 ms after a late ask lost to the app's own 400 ms fallback and popped Settings back to the Reader, mw-fnvjof.17.325)
+// (in turns of the task queue after the ask, not milliseconds: a traversal 150 ms after a late ask lost to the app's own 400 ms fallback and popped Settings back to the Reader, mw-fnvjof.17.325;
+// a host starved past 400 ms after the ask did the same with turns, until the app waited for a go it had asked for, mw-fnvjof.17.326)
 const restoreGo = landTraversalsLate();
 
 afterAll(async () => {

@@ -63,6 +63,11 @@ let suspending = false;
 /** The depth to settle at once this commit's effects have run, when a sheet closed and left its entry on top. */
 let settleAt: number | null = null;
 
+/** When settle last asked for its step Back and the traversal has not landed yet (performance.now()), else null: afterSheetEntryGone waits for that landing past its 400 ms. */
+let goAskedAt: number | null = null;
+/** The longest afterSheetEntryGone waits for a step Back that was asked: a go with nowhere to land never brings a popstate. */
+const LANDING_CAP_MS = 3000;
+
 function settle(): void {
   const target = settleAt;
   settleAt = null;
@@ -70,7 +75,10 @@ function settle(): void {
   // the entries of moves made on the sheets that closed are about to go
   for (const depth of [...steps.keys()]) if (depth > target) steps.delete(depth);
   const extra = depthOf() - target;
-  if (extra > 0) window.history.go(-extra);
+  if (extra > 0) {
+    goAskedAt = performance.now();
+    window.history.go(-extra);
+  }
 }
 
 /** A sheet the tutor took him away from (mw-t3xu9a.4): the depth of its entry, a mark left on that entry, and how to open the sheet again. */
@@ -153,6 +161,9 @@ let guarded = false;
 function guard(): void {
   if (guarded) return;
   guarded = true;
+  window.addEventListener('popstate', () => {
+    goAskedAt = null;
+  });
   window.addEventListener('popstate', skipStale);
   window.addEventListener('popstate', undoSteps);
 }
@@ -276,9 +287,12 @@ export function useSheetBack(onClose: () => void): () => number {
 }
 
 /** Runs `then` once the history entry of a sheet that has just closed, which closing it takes off with a step Back, has gone, or at the latest a moment later: a screen opened before then
- *  would be opened over an entry that is about to be popped. (The reference card's Open, the chooser's Manage.) */
+ *  would be opened over an entry that is about to be popped. (The reference card's Open, the chooser's Manage.)
+ *  The moment is 400 ms, but not while the step Back is asked and has not landed: a loaded phone can land it later, and a screen opened first would be popped back by it
+ *  (Settings from the Menu popped back to the Reader, mw-fnvjof.17.326); it then waits for the landing, up to LANDING_CAP_MS from the ask. */
 export function afterSheetEntryGone(then: () => void): void {
   let done = false;
+  let timer: ReturnType<typeof setTimeout>;
   const run = (): void => {
     if (done) return;
     done = true;
@@ -286,6 +300,11 @@ export function afterSheetEntryGone(then: () => void): void {
     clearTimeout(timer);
     then();
   };
-  const timer = setTimeout(run, 400);
+  const fallback = (): void => {
+    const waiting = goAskedAt === null ? 0 : LANDING_CAP_MS - (performance.now() - goAskedAt);
+    if (waiting > 0) timer = setTimeout(fallback, waiting);
+    else run();
+  };
+  timer = setTimeout(fallback, 400);
   window.addEventListener('popstate', run);
 }
