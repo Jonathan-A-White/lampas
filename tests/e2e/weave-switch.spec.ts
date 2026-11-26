@@ -198,18 +198,12 @@ test('turning Variants on and off keeps the verse that is on top, Romans 16, in 
       const el = [...document.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top - 1);
       return Number(el?.dataset.verse);
     });
-  const scrollTo = (verse: number) =>
-    page.evaluate((n) => {
-      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
-      const el = document.querySelector(`[data-verse="${n}"]`)!;
-      box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-    }, verse);
   for (const label of ['English', 'Weave', 'Greek']) {
     await choice(page, label).click();
     await expect(choice(page, label)).toHaveAttribute('aria-pressed', 'true');
     await page.evaluate(() => (document.querySelector<HTMLElement>('main[data-reader]')!.scrollTop = 0));
-    await scrollTo(15);
-    await expect.poll(firstVerse).toBe(15);
+    // one scroll is not a place on a loaded host (the weave and the fonts arrive late and move the lines above verse 15, mw-fnvjof.17.335): put it on top until the page stops moving
+    await holdOnTop(page, 15);
     // Variants goes on, off, on: verse 15 is first at the top after each
     for (const on of ['true', 'false', 'true']) {
       await chip.click();
