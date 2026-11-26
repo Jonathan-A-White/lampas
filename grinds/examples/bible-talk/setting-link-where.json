@@ -13,6 +13,7 @@
   "expect": {
     "links.0.kind": { "equals": "setting" },
     "links.0.key": { "equals": "textSize" },
+    "setting_link_ask": { "equals": "where-a-setting-is" },
     "settings_changes": { "present": false },
     "setting_offer": { "present": false }
   }
