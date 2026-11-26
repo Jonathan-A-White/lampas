@@ -25,6 +25,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -63,6 +64,8 @@ const OTHER_FOUNDATIONS = ['Breathing marks', 'The iota under a letter'];
 /** Opens the app on Romans 8 with every store emptied, `goal` saved, and the levels `levels` (title -> where it stands) put in place. */
 async function open(goal: string, levels: Record<string, Start>): Promise<void> {
   cleanup();
+  // the last scenario's open sheets step history back as they unmount (useSheetBack): that traversal must land before this one sets its address (mw-fnvjof.17.336)
+  await sheetEntriesGone();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();

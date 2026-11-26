@@ -34,6 +34,7 @@ import { validate, type Schema } from '../../tests/support/schema-validate';
 import { asSpoken, isOneLetter } from '../../tests/support/lone-word';
 import '../../tests/support/grinds-in-graph';
 import { openTutor } from './open-tutor';
+import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { closeDatabase } from './close-database';
 
 let unregisterTestish: (() => void) | undefined;
@@ -77,6 +78,8 @@ async function open(goal: string | undefined, chosen?: string, greekVoice = fals
   unregisterTestish = undefined;
   chooseAccent(DEFAULT_ACCENT);
   cleanup();
+  // the last scenario's open sheets step history back as they unmount (useSheetBack): that traversal must land before this one sets its address (mw-fnvjof.17.336)
+  await sheetEntriesGone();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
