@@ -126,6 +126,25 @@ describe.skipIf(!real.run)('Joshua with the model pass', () => {
     expect(left.filter((key) => /^6:[78]:/.test(key))).toEqual([]);
   });
 
+  // Story mw-u2w5klk.349.146: LXX2012's Joshua 5 has 16 verses and Swete's 15, so 'Joshua fell on his face' stood under Λῦσαι τὸ ὑπόδημα and 'Loose your shoe' was shown nowhere.
+  it.each([
+    [14, 'fell', 'ἔπεσεν'],
+    [14, 'servant?', 'οἰκέτῃ'],
+    [14, 'command', 'προστάσσεις'],
+    [15, 'Loose', 'Λῦσαι'],
+    [15, 'shoe', 'ὑπόδημα'],
+  ])('Joshua 5:%i: the chunk holding "%s" renders %s', (n, words, greek) => {
+    const verse = withModel.get(5)!.verses.find((x) => x.n === n)!;
+    const chunk = verse.e.find((c) => c.t.includes(words));
+    expect(chunk, `Jos 5:${n} ${words}`).toBeDefined();
+    expect(chunk!.g.map((g) => verse.g[g].t.replace(/[.,;·:]+$/, ''))).toContain(greek);
+  });
+
+  it('leaves no English word of Joshua 5:14 or 5:15 in the sidecar as one whose Greek is in the other verse', () => {
+    const left = readExpect('jos')!.chapters['5'].leftovers!.filter(([key, why]) => /^5:1[45]:/.test(key) && why === 'other-verse-jos');
+    expect(left).toEqual([]);
+  });
+
   it('pairs the English of Joshua 3:14 "removed" with ἀπῆρεν, where a tap on "removed" opened the Verse view', () => {
     const verse = withModel.get(3)!.verses.find((v) => v.n === 14)!;
     const chunk = verse.e.find((c) => /removed/.test(c.t));

@@ -558,3 +558,26 @@ describe("LXX2012's Amos 6 and Judges 5 stand at the Greek verses their text is"
     expect(unplacedVerses(placedAt, ['jdg 5:30', 'jdg 5:31'])).toEqual([]);
   });
 });
+
+// mw-u2w5klk.349.146: LXX2012 numbers Joshua 5 with 16 verses where Swete has 15: his 5:14 and 5:15 ('Joshua fell on his face') are both in the Greek 5:14 and his 5:16 ('Loose your shoe') is the Greek 5:15, so
+// 'Joshua fell on his face' stood under 'Λῦσαι τὸ ὑπόδημα' and 'Loose your shoe' was shown nowhere. TVTMS's section Jos.5:14--6:27 has no Brenton column.
+describe("LXX2012's Joshua 5 stands at the Greek verses its text is", () => {
+  const maps146 = buildMaps(parseTvtms(fixture('tvtms-v146-slice.txt')));
+  const woven = () => englishByGreekVerse(parseUsfm(fixture('lxx2012-v146-jos.usfm')), maps146);
+
+  it("puts Brenton's Joshua 5:14 and 5:15 at the Greek 5:14 and his 5:16 at the Greek 5:15", () => {
+    expect(maps146.lxx2012ToGreek('jos 5:13')).toEqual({ state: 'same', refs: ['jos 5:13'] });
+    for (const v of [14, 15]) expect(maps146.lxx2012ToGreek(`jos 5:${v}`)).toEqual({ state: 'part', refs: ['jos 5:14'] });
+    expect(maps146.lxx2012ToGreek('jos 5:16')).toEqual({ state: 'one', refs: ['jos 5:15'] });
+  });
+
+  it("weaves 'Loose your shoe' at the Greek Joshua 5:15, nothing unplaced and no verse of the three left without English", () => {
+    const { byGreek, placedAt } = woven();
+    const text = (ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' ');
+    expect(text('jos 5:14')).toMatch(/^And he said to him, I am now come.* And Joshua fell on his face upon the earth.* what command you your servant\?$/);
+    expect(text('jos 5:15')).toMatch(/^And the captain of the Lord's host said to Joshua, Loose your shoe off your feet/);
+    const swete = [13, 14, 15].map((v) => `jos 5:${v}`);
+    expect(versesWithoutEnglish(byGreek, swete)).toEqual([]);
+    expect(unplacedVerses(placedAt, swete)).toEqual([]);
+  });
+});
