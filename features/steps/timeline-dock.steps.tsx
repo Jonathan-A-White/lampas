@@ -14,6 +14,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton, queryButton } from '../../tests/support/find-button';
+import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { closeDatabase } from './close-database';
 
 const STRIP = { width: 390, height: 282 };
@@ -57,6 +58,7 @@ const rowOf = async (sheet: HTMLElement, label: string): Promise<HTMLElement> =>
 /** Draws the app on a chapter ('Isaiah 1': the book's name and the chapter), keeping what the store holds. */
 async function draw(title: string): Promise<void> {
   cleanup();
+  await sheetEntriesGone();
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
   if (!book) throw new Error(`no book ${title}`);
