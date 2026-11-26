@@ -17,6 +17,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedExampleWords } from '../../tests/support/his-words';
+import { waitForGrists } from '../../tests/support/wait-progress';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist } from '../../tests/support/fake-postern';
 import { openTutor } from './open-tutor';
 import { closeDatabase } from './close-database';
@@ -173,7 +174,7 @@ describeFeature(feature, ({ Scenario }) => {
       await send(words);
     });
     Then('the second bible-talk grist carries the pending offer of kind greek with the text {string}', async (_, text: string) => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await waitForGrists(fake, 'bible-talk', 2);
       expect((talkGrists()[1].input as { pending_offer?: unknown }).pending_offer).toEqual({ kind: 'greek', text, lang: 'grc' });
     });
     And('the memory index says he said no to the Greek offer', async () => {
@@ -188,7 +189,7 @@ describeFeature(feature, ({ Scenario }) => {
       await send(words);
     });
     Then('the third bible-talk grist carries the memory line {string}', async (_, line: string) => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(3));
+      await waitForGrists(fake, 'bible-talk', 3);
       expect((talkGrists()[2].input as { memory?: { index: string } }).memory?.index).toContain(line);
     });
     And('the talk still shows no button {string}', async (_, name: string) => {

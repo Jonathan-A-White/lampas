@@ -19,6 +19,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
+import { waitForGrists } from '../../tests/support/wait-progress';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { validate, type Schema } from '../../tests/support/schema-validate';
@@ -187,7 +188,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
     });
     Then('the second bible-talk grist carries the pending offer of kind feedback with the summary {string}', async (_, summary: string) => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await waitForGrists(fake, 'bible-talk', 2);
       expect(pending(2)).toEqual({ kind: 'feedback', text: summary });
     });
     And('the mill received {int} grists for the lampas app, kind feedback', grists);
@@ -220,7 +221,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('the tutor will take his next words as a yes', nextIsYes);
     And('he speaks {string} in the Talk sheet', (_, words: string) => holdAndSay(words));
     Then('the second bible-talk grist is marked as spoken and carries the pending offer of kind feedback with the summary {string}', async (_, summary: string) => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await waitForGrists(fake, 'bible-talk', 2);
       expect(talkGrists()[1].input.spoken).toBe(true);
       expect(pending(2)).toEqual({ kind: 'feedback', text: summary });
     });

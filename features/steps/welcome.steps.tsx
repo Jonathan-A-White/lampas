@@ -20,6 +20,7 @@ import type { LicenceStatus } from '../../src/services/licenceCheck';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { waitForGrists } from '../../tests/support/wait-progress';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist } from '../../tests/support/fake-postern';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
@@ -168,7 +169,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the welcome talk is open and the tutor asks {string}', asksFirst);
     And('the first bible-talk grist is in welcome mode with no Greek text', async () => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(1));
+      await waitForGrists(fake, 'bible-talk', 1);
       const input = talkGrists()[0].input as Record<string, unknown>;
       expect(input.mode).toBe('welcome');
       expect('greek' in input).toBe(false);

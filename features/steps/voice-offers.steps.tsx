@@ -15,6 +15,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { waitForGrists } from '../../tests/support/wait-progress';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist } from '../../tests/support/fake-postern';
 import { openTutor } from './open-tutor';
 import { closeDatabase } from './close-database';
@@ -126,7 +127,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('the tutor will take his next words as a yes', nextIsYes);
     And('he says {string}', sends);
     Then('the second bible-talk grist carries the pending offer of kind feedback with the exact text of the summary', async () => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await waitForGrists(fake, 'bible-talk', 2);
       exactSummaryPending(null, 'second');
     });
     And('the mill received a feedback grist carrying his first words, the summary and the screen {string}', feedbackSentWith);
@@ -172,7 +173,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he says {string}', async (_, words: string) => {
       await send(words);
       // the yes is answered (its grist reached the mill) while the tap is still sending
-      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await waitForGrists(fake, 'bible-talk', 2);
     });
     And('the mill takes the feedback', () => releaseFeedback());
     Then('the mill received exactly {int} feedback grist', exactlyOneFeedback);
@@ -202,7 +203,7 @@ describeFeature(feature, ({ Scenario }) => {
     fake.autoReply = undefined;
   };
   const yesReachedTutor = async () => {
-    await waitFor(() => expect(talkGrists()).toHaveLength(2));
+    await waitForGrists(fake, 'bible-talk', 2);
     exactSummaryPending(null, 'second');
   };
   const yesComesAtLast = (extra: Record<string, unknown> = {}) =>
@@ -309,7 +310,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('the tutor will take his next words as a yes', nextIsYes);
     And('he then asks {string}', sends);
     Then('the third bible-talk grist carries the pending offer of kind feedback with the exact text of the summary', async () => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(3));
+      await waitForGrists(fake, 'bible-talk', 3);
       exactSummaryPending(null, 'third');
     });
     And('the mill received a feedback grist carrying his first words, the summary and the screen {string}', feedbackSentWith);
@@ -336,7 +337,7 @@ describeFeature(feature, ({ Scenario }) => {
       await send(question);
     });
     Then('the third bible-talk grist carries no pending offer', async () => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(3));
+      await waitForGrists(fake, 'bible-talk', 3);
       expect(pendingOf(3)).toBeUndefined();
       await allAnswered();
       expect('pending_offer' in (talkGrists()[2].input as object)).toBe(false);
@@ -351,7 +352,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('the tutor will take his next words as an ordinary question', () => answerNext({ answer: 'You are on the Goal screen.', words: [] }));
     And('he says {string}', sends);
     Then('the second bible-talk grist carries the pending offer of kind feedback with the exact text of the summary', async () => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await waitForGrists(fake, 'bible-talk', 2);
       exactSummaryPending(null, 'second');
     });
     And('the first turn still shows the button {string}', async (_, name: string) => {
@@ -364,7 +365,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('the tutor will take his next words as a yes', nextIsYes);
     And('he then asks {string}', sends);
     Then('the third bible-talk grist carries the pending offer of kind feedback with the exact text of the summary', async () => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(3));
+      await waitForGrists(fake, 'bible-talk', 3);
       exactSummaryPending(null, 'third');
     });
     And('the mill received a feedback grist carrying his first words, the summary and the screen {string}', feedbackSentWith);
@@ -381,7 +382,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('the tutor will take his next words as a yes', () => answerNext({ answer: 'Done: the theme is Dark.', words: [], offer_reply: 'confirm' }));
     And('he says {string}', sends);
     Then('the second bible-talk grist carries the pending offer of kind setting with the text {string}', async (_, text: string) => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await waitForGrists(fake, 'bible-talk', 2);
       expect(pendingOf(2)).toEqual({ kind: 'setting', text });
     });
     And('the Theme is Dark', async () => {
@@ -430,7 +431,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('the tutor is slow to answer his next words', slowTutor);
     And('he says {string}', sends);
     And('the second bible-talk grist has reached the tutor with the pending offer of kind setting', async () => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await waitForGrists(fake, 'bible-talk', 2);
       expect(pendingOf(2)).toEqual({ kind: 'setting', text: 'Change Theme: Dark' });
     });
     And('he taps Change Theme: Dark', async () => {

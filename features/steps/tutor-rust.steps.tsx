@@ -16,6 +16,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { waitForGrists } from '../../tests/support/wait-progress';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist } from '../../tests/support/fake-postern';
 import { openTutor } from './open-tutor';
 import { closeDatabase } from './close-database';
@@ -184,7 +185,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('the tutor will take his next words as a yes', answerFor('confirm'));
     And('he says {string}', says);
     Then('the second bible-talk grist carries the pending offer of kind rusty with the text {string}', async (_, text: string) => {
-      await waitFor(() => expect(talkGrists()).toHaveLength(2));
+      await waitForGrists(fake, 'bible-talk', 2);
       expect((talkGrists()[1].input as { pending_offer?: unknown }).pending_offer).toEqual({ kind: 'rusty', text });
     });
     And('the word {string} and the idea {string} are on the Frontier', onFrontier);
