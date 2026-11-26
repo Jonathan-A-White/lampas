@@ -246,9 +246,10 @@ function QuizGoalOffer({ turn }: { turn: TalkTurn }) {
 
 /** The tutor's offer to pass an ask Lampas cannot meet to the makers: its summary and Send this to the makers. The tap sends one feedback grist
  * through the one sender (src/services/feedback.ts): his words, the summary, the screen's name and what it showed; then the turn reads Sent, 'The answer will come back.' and a link to Your requests, where it does (mw-5r3p30.677). */
-function FeedbackOffer({ turn, scope, onLeave }: { turn: TalkTurn; scope: TalkScope; onLeave: () => void }) {
+export function FeedbackOffer({ turn, scope, onLeave }: { turn: TalkTurn; scope: TalkScope; onLeave: () => void }) {
   const [failure, setFailure] = useState<{ failure: TutorFailure; detail: string } | undefined>();
   const sending = useOfferSending(turn.id);
+  const [, , alive] = useBusy();
   if (!turn.feedbackOffer) return null;
   const summary = turn.feedbackOffer;
   const send = async (): Promise<void> => {
@@ -257,6 +258,7 @@ function FeedbackOffer({ turn, scope, onLeave }: { turn: TalkTurn; scope: TalkSc
     try {
       await sendMakersOffer(turn, scope);
     } catch (err) {
+      if (!alive()) return; // the offer is gone (the sheet closed): setState would read a window that may be gone too (mw-fnvjof.17.328)
       const error = err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
       setFailure({ failure: error.failure, detail: error.message });
     }
