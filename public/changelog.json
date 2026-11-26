@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.399",
+    "date": "2026-11-26",
+    "story": "mw-u2w5klk.349.141",
+    "kind": "fixed",
+    "text": "In parts of Leviticus 6 and 8 in the Septuagint, tapping words such as 'his', 'their' and 'them' now opens the right Greek word."
+  },
+  {
+    "version": "0.7.399",
+    "date": "2026-11-26",
+    "story": "mw-r9xo1pj.30",
+    "kind": "fixed",
+    "text": "A Subsplash sermon opened while offline now says it needs the internet, as the YouTube ones do, instead of showing a browser error."
+  },
+  {
+    "version": "0.7.399",
+    "date": "2026-11-26",
+    "story": "mw-r9xo1pj.29",
+    "kind": "fixed",
+    "text": "The help for sermons now says that video sermons play inside Lampas, not in the browser."
+  },
+  {
     "version": "0.7.398",
     "date": "2026-11-26",
     "story": "mw-fnvjof.17.314",

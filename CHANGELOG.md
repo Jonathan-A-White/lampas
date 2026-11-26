@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.399
+_2026-11-26_
+- Fixed: In parts of Leviticus 6 and 8 in the Septuagint, tapping words such as 'his', 'their' and 'them' now opens the right Greek word.
+- Fixed: A Subsplash sermon opened while offline now says it needs the internet, as the YouTube ones do, instead of showing a browser error.
+- Fixed: The help for sermons now says that video sermons play inside Lampas, not in the browser.
+
 ## 0.7.398
 _2026-11-26_
 - Fixed: The tutor can now read any verse of an Old Testament chapter you are talking about, not only the first few.
