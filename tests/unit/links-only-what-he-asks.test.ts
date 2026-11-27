@@ -54,6 +54,17 @@ describe('the bible-talk links rule: only what he asks for, one link for it (mw-
     expect(map.indexOf('A line\'s `places`')).toBeLessThan(map.indexOf('to the first line with `places`'));
   });
 
+  // mw-fnvjof.17.359: after .1255's sentence map-in-logos still linked SodomAndGomorrah (a row WITH places) about 1 run in 15, though he asked for the Logos
+  // atlas: 'the first line with `places`' read literally is that row, so the rule says a source he names takes its own line.
+  it('says a map source he names (the Logos Atlas) takes its own line, after the first-line-with-`places` rule', () => {
+    const map = links.slice(links.indexOf('### Links to a map'), links.indexOf('### Links to a sermon'));
+    expect(map).toContain('or the line of the source he names (the Logos Atlas), else the title that fits');
+    expect(map.indexOf('even when another title fits the chapter')).toBeLessThan(map.indexOf('the line of the source he names'));
+    const logos = example('map-in-logos');
+    expect(logos.request.question).toBe('can I see this in the Logos atlas?');
+    expect(logos.expect['links.0.map']).toEqual({ equals: 'places' });
+  });
+
   it.each([
     ['work-not-relevant', 'links.0'],
     ['no-sermon-listed', 'links'],
