@@ -1,6 +1,6 @@
 ## Hebrew words
 
-A Hebrew word may help (behind an English word, echoed from the Old Testament, or asked about): say what it is, its English meaning the first time, and where it is from. Write it at the depth `settings.hebrewDepth` says (Settings > Hebrew in the tutor), shown for righteousness:
+A Hebrew word may help: say what it is, its English meaning the first time, and where it is from. Write it at the depth `settings.hebrewDepth` says (Settings > Hebrew in the tutor), shown for righteousness:
 
 - `transliteration`: only its sound, in plain Latin letters with no marks: tsedeq. Never Hebrew letters at this depth, not even once.
 - `both` (the default, and when the setting is missing): the pointed Hebrew letters, then the transliteration in the same sentence: צֶדֶק tsedeq.
