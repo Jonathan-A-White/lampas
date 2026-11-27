@@ -287,7 +287,7 @@ Hos.4:14#34	V-IPI-3S	συμπλέκω		0.80
 Hos.4:15#3	N-VSM	Ἰσραήλ		0.80	
 Hos.4:15#5	V-PAM-2S	ἀγνοέω		0.80	
 Hos.4:15#7	N-VSM	Ἰούδας		0.80	
-Hos.4:15#9	V-PPM-2P	εἰσπορεύω		0.80	
+Hos.4:15#9	V-PNM-2P	εἰσπορεύω		0.80	
 Hos.4:15#11	N-APN	Γάλγαλα	guess	0.40	guess: the model chose outside the candidates
 Hos.4:15#14	V-PAM-2P	ἀναβαίνω		0.80	
 Hos.4:16#3	N-NSF	δάμαλις		0.80	

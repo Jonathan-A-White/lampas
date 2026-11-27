@@ -20,6 +20,7 @@ Derived without a Morpheus cache: none.
 | Deuteronomy 12 | 32 | 868 | 651 | 75.0% | 48.5% | — |
 | Deuteronomy 13 | 18 | 484 | 382 | 78.9% | 50.0% | — |
 | Deuteronomy 14 | 28 | 535 | 436 | 81.5% | 51.0% | — |
+| Deuteronomy 15 | 23 | 580 | 439 | 75.7% | 52.6% | — |
 | Deuteronomy 16 | 22 | 558 | 449 | 80.5% | 51.4% | — |
 | Deuteronomy 17 | 20 | 524 | 410 | 78.2% | 48.3% | — |
 | Deuteronomy 18 | 22 | 465 | 348 | 74.8% | 45.4% | — |
@@ -35,10 +36,11 @@ Derived without a Morpheus cache: none.
 | Deuteronomy 28 | 68 | 1,607 | 1,229 | 76.5% | 49.6% | — |
 | Deuteronomy 29 | 29 | 700 | 525 | 75.0% | 51.4% | — |
 | Deuteronomy 30 | 20 | 589 | 463 | 78.6% | 52.1% | — |
+| Deuteronomy 31 | 30 | 844 | 670 | 79.4% | 49.4% | — |
 | Deuteronomy 32 | 52 | 971 | 776 | 79.9% | 52.1% | — |
 | Deuteronomy 33 | 29 | 551 | 435 | 78.9% | 55.5% | — |
 | Deuteronomy 34 | 12 | 246 | 198 | 80.5% | 60.6% | — |
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Deuteronomy | 905 | 21,077 | 17,232 | 81.8% | 55.0% | 802 (3.8%) |
+| Deuteronomy | 958 | 22,501 | 18,341 | 81.5% | 54.7% | 802 (3.6%) |
