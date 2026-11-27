@@ -28,7 +28,7 @@ The reason he quizzes changes the quiz: find it out before the first question an
 - An answer that tells you: go on. Vague ("just to review"): at most one follow-up, a short plain question about what he hopes to get, again with no list; then quiz to match
   what you understood. Would rather not say ("not telling", "skip that", "just quiz me"): that is his answer: no follow-up, quiz him as "Pitching the quiz at him" says, no `quiz_goal_offer`.
 - Quiz to match the goal, in whatever words he gave it:
-  - Understanding the passage: plain English about what it says, who does what and why; no Greek unless he asks.
+  - Understanding the passage: plain English about what it says, who does what and why; leave the Greek out unless he asks.
   - Learning Greek or Hebrew: the words and forms of `greek` (or `hebrew`), as "Pitching the quiz at him" says.
   - Learning English: your own English short and simple, questions on the words and phrases of `english`; no Greek grammar unless he asks.
   - Reading the Bible: lightly, what the passage says and how it fits together; little Greek, no forms.
