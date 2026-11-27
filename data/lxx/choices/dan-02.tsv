@@ -1,0 +1,625 @@
+ref	parsing	lemma	mark	confidence	note
+Dan.4:1#5	N-GSM	Ναβουχοδονοσόρ		0.80	
+Dan.4:2#1	N-ASN	ἐνύπνιον		0.80	
+Dan.4:2#2	V-2AAI-1S	εἴδω		0.80	
+Dan.4:2#4	V-AOI-1S	εὐλαβέομαι	unsure	0.50	model: unsure
+Dan.4:7#8	N-NSN	δένδρον		0.80	
+Dan.4:7#9	A-NSN	ὑψηλός		0.80	
+Dan.4:7#10	V-PPP-NSN	φύω		0.80	
+Dan.4:7#16	P-GSN	αὐτός		0.80	
+Dan.4:7#17	A-NSF	μέγας		0.80	
+Dan.4:7#21	A-NSN	ἄλλος		0.80	
+Dan.4:7#22	A-NSN	ὅμοιος		0.80	
+Dan.4:7#23	P-DSN	αὐτός		0.80	
+Dan.4:8#4	P-GSN	αὐτός		0.80	
+Dan.4:8#5	A-NSF	μέγας		0.80	
+Dan.4:8#8	P-GSN	αὐτός		0.80	
+Dan.4:8#14	T-NSN	ὁ		0.80	
+Dan.4:8#15	N-NSN	κύτος		0.80	
+Dan.4:8#16	P-GSN	αὐτός		0.80	
+Dan.4:8#21	T-APN	ὁ		0.80	
+Dan.4:8#32	P-DSN	αὐτός		0.80	
+Dan.4:8#33	V-IAI-3P	οἰκέω		0.80	
+Dan.4:8#35	V-IAI-3P	φωτίζω		0.80	
+Dan.4:9#3	P-GSN	αὐτός		0.80	
+Dan.4:9#11	P-GSN	αὐτός		0.80	
+Dan.4:9#12	V-IAI-3P	σκιάζω		0.80	
+Dan.4:9#13	A-NPN	πᾶς		0.80	
+Dan.4:9#14	T-NPN	ὁ		0.80	
+Dan.4:9#15	N-NPN	θηρίον		0.80	
+Dan.4:9#20	P-DSN	αὐτός		0.80	
+Dan.4:9#21	T-NPN	ὁ		0.80	
+Dan.4:9#22	N-NPN	πετεινός		0.80	
+Dan.4:9#25	V-IAI-3P	νοσσεύω		0.80	
+Dan.4:9#28	P-GSN	αὐτός		0.80	
+Dan.4:9#34	A-DPN	πᾶς		0.80	
+Dan.4:9#35	T-DPN	ὁ		0.80	
+Dan.4:9#36	N-DPN	ζῷον		0.80	
+Dan.4:10#1	V-IAI-1S	θεωρέω		0.80	
+Dan.4:10#11	N-DSF	ἰσχύς		0.80	
+Dan.4:11#5	P-DSM	αὐτός	unsure	0.50	model: unsure
+Dan.4:11#6	V-AAM-2P	ἐκκόπτω		0.80	
+Dan.4:11#7	P-ASN	αὐτός		0.80	
+Dan.4:11#9	V-AAM-2P	καταφθείρω		0.80	
+Dan.4:11#10	P-ASN	αὐτός		0.80	
+Dan.4:11#11	V-RPI-3S	προστάσσω		0.80	
+Dan.4:11#14	T-GSM	ὁ		0.80	
+Dan.4:11#15	A-GSM-S	ὕψιστος		0.80	
+Dan.4:11#19	P-ASN	αὐτός		0.80	
+Dan.4:12#7	ADV	αὐτοῦ	unsure	0.50	model: unsure
+Dan.4:12#23	V-PPS-3S	νέμω	unsure	0.50	model: unsure
+Dan.4:13#7	T-NSN	ὁ		0.80	
+Dan.4:13#8	N-NSN	σῶμα		0.80	
+Dan.4:13#9	P-GSM	αὐτός		0.80	
+Dan.4:13#10	V-APS-3S	ἀλλοιόω		0.80	
+Dan.4:13#13	N-APN	ἔτος		0.80	
+Dan.4:13#14	V-APS-3S	βόσκω		0.80	
+Dan.4:13#16	P-DPN	αὐτός		0.80	
+Dan.4:14#10	A-GPN	πᾶς	unsure	0.50	model: unsure
+Dan.4:14#11	T-GPN	ὁ	unsure	0.50	model: unsure
+Dan.4:14#16	T-GPN	ὁ	unsure	0.50	model: unsure
+Dan.4:14#21	K-APN	ὅσος		0.80	
+Dan.4:14#27	P-DPN	αὐτός	unsure	0.50	model: unsure
+Dan.4:14#30	V-2API-3S	ἐκκόπτω		0.80	
+Dan.4:14#37	P-GSN	αὐτός		0.80	
+Dan.4:14#46	P-GSN	αὐτός		0.80	
+Dan.4:14#54	V-2API-3S	ῥίπτω		0.80	
+Dan.4:14#60	V-IAI-3S	ἐσθίω		0.80	
+Dan.4:14#70	N-DPF	χειροπέδη		0.80	
+Dan.4:14#72	V-API-3S	δέω		0.80	
+Dan.4:14#74	P-GPM	αὐτός	unsure	0.50	model: unsure
+Dan.4:14#78	D-DPN	οὗτος		0.80	
+Dan.4:15#3	T-ASN	ὁ	unsure	0.50	model: unsure
+Dan.4:15#19	T-GPM	ὁ		0.80	
+Dan.4:15#20	V-PAP-GPM	κρίνω		0.80	
+Dan.4:15#21	T-APN	ὁ		0.80	
+Dan.4:15#22	N-APN	ἐνύπνιον		0.80	
+Dan.4:15#24	V-ADI-1S	διηγέομαι		0.80	
+Dan.4:15#25	P-DSM	αὐτός		0.80	
+Dan.4:15#26	T-ASN	ὁ		0.80	
+Dan.4:15#27	N-ASN	ἐνύπνιον		0.80	
+Dan.4:15#34	P-GSN	αὐτός		0.80	
+Dan.4:16#7	N-NSF	ὑπόνοια		0.80	
+Dan.4:16#8	V-IAI-3S	κατασπεύδω		0.80	
+Dan.4:16#16	V-APP-GSF	ἀλλοιόω		0.80	
+Dan.4:16#19	P-GSM	αὐτός		0.80	
+Dan.4:16#25	V-AAP-NSM	ἀποθαυμάζω		0.80	
+Dan.4:16#29	A-DSF	πραΰς	guess	0.40	guess: the model chose outside the candidates
+Dan.4:16#31	T-NSN	ὁ		0.80	
+Dan.4:16#32	N-NSN	ἐνύπνιον		0.80	
+Dan.4:16#33	D-NSN	οὗτος		0.80	
+Dan.4:16#34	T-DPM	ὁ		0.80	
+Dan.4:16#35	V-PAP-DPM	μισέω		0.80	
+Dan.4:16#40	P-GSN	αὐτός		0.80	
+Dan.4:16#44	V-2AAO-3S	ἐπέρχομαι		0.80	
+Dan.4:17#1	T-NSN	ὁ		0.80	
+Dan.4:17#2	N-NSN	δένδρον		0.80	
+Dan.4:17#3	T-NSN	ὁ		0.80	
+Dan.4:17#7	V-RPP-NSN	φυτεύω		0.80	
+Dan.4:17#8	R-GSN	ὅς, ἥ		0.80	
+Dan.4:18#2	A-NPN	πᾶς		0.80	
+Dan.4:18#3	T-NPN	ὁ		0.80	
+Dan.4:18#4	N-NPN	πετεινός		0.80	
+Dan.4:18#7	T-NPN	ὁ		0.80	
+Dan.4:18#8	V-PAP-NPN	νοσσεύω		0.80	
+Dan.4:18#10	P-DSN	αὐτός		0.80	
+Dan.4:18#32	V-PAI-3P	δουλεύω		0.80	
+Dan.4:19#1	T-NSN	ὁ	unsure	0.50	model: unsure
+Dan.4:19#4	T-ASN	ὁ		0.80	
+Dan.4:19#5	N-ASN	δένδρον		0.80	
+Dan.4:19#6	D-ASN	ἐκεῖνος		0.80	
+Dan.4:19#12	T-ASN	ὁ		0.80	
+Dan.4:19#13	N-ASN	κύτος		0.80	
+Dan.4:19#14	P-GSN	αὐτός		0.80	
+Dan.4:19#15	V-AMN	ἅπτω		0.80	
+Dan.4:19#20	V-API-2S	ὑψόω		0.80	
+Dan.4:19#36	N-DSF	ὑπερηφανία		0.80	
+Dan.4:19#38	N-DSF	ἰσχύς		0.80	
+Dan.4:19#39	T-APN	ὁ		0.80	
+Dan.4:19#46	P-GSM	αὐτός		0.80	
+Dan.4:19#47	T-NPN	ὁ		0.80	
+Dan.4:19#48	N-NPN	ἔργον		0.80	
+Dan.4:19#50	V-API-3S	ὁράω		0.80	
+Dan.4:20#9	N-DSF	ἰσχύς		0.80	
+Dan.4:20#17	V-AAN	ἐξαίρω		0.80	
+Dan.4:20#18	T-ASN	ὁ		0.80	
+Dan.4:20#19	N-ASN	δένδρον		0.80	
+Dan.4:20#21	V-AAN	ἐκκόπτω		0.80	
+Dan.4:21#7	P-GSM	αὐτός		0.80	
+Dan.4:21#10	V-PAI-3P	κατατρέχω		0.80	
+Dan.4:22#3	V-FAI-3P	ἀπάγω		0.80	
+Dan.4:23#25	V-PPI-3P	ἑτοιμάζω		0.80	
+Dan.4:23#30	V-FAI-3P	ἐπάγω		0.80	
+Dan.4:23#31	T-APN	ὁ		0.80	
+Dan.4:23#32	V-RPP-APN	κρίνω		0.80	
+Dan.4:23#42	P-GSM	αὐτός		0.80	
+Dan.4:24#1	P-GSM	αὐτός		0.80	
+Dan.4:24#15	N-NSF	ἐπιείκεια		0.80	
+Dan.4:24#19	A-NSM	πολυήμερος		0.80	
+Dan.4:24#20	V-2ADS-2S	γίγνομαι		0.80	
+Dan.4:24#29	V-PAS-3S	καταφθείρω		0.80	
+Dan.4:24#35	A-NSM	ἀκριβής		0.80	
+Dan.4:24#41	A-NSM	πλήρης		0.80	
+Dan.4:25#6	N-NSM	Ναβουχοδονοσόρ		0.80	
+Dan.4:26#16	P-GSM	αὐτός		0.80	
+Dan.4:27#5	V-PAI-3S	ἐστί	unsure	0.50	model: unsure
+Dan.4:27#6	N-NSF	Βαβυλών		0.80	
+Dan.4:27#13	N-NSM	οἶκος		0.80	
+Dan.4:27#14	N-GSF	βασιλεία		0.80	
+Dan.4:27#17	N-DSF	ἰσχύς		0.80	
+Dan.4:28#15	P-GSM	αὐτός		0.80	
+Dan.4:28#23	N-VSM	Ναβουχοδονοσόρ		0.80	
+Dan.4:28#28	V-RPI-3S	ἀφαιρέω		0.80	
+Dan.4:28#31	A-DSM	ἕτερος		0.80	
+Dan.4:28#41	V-PAI-1S	καθίστημι		0.80	
+Dan.4:28#59	V-FMI-3S	παραλαμβάνω		0.80	
+Dan.4:28#75	R-DSM	ὅς, ἥ		0.80	
+Dan.4:28#86	V-FPI-3S	εὐφραίνω		0.80	
+Dan.4:29#4	V-FDI-3P	διώκω	unsure	0.50	model: unsure
+Dan.4:29#7	N-APN	ἔτος		0.80	
+Dan.4:29#12	V-APS-2S	ὁράω		0.80	
+Dan.4:29#24	V-FAI-3P	ψωμίζω		0.80	
+Dan.4:29#28	N-GSF	χλόη	guess	0.40	guess: the model chose outside the candidates
+Dan.4:29#33	N-NSF	νομή		0.80	
+Dan.4:30#4	A-NPN	πᾶς		0.80	
+Dan.4:30#8	N-VSM	Ναβουχοδονοσόρ		0.80	
+Dan.4:30#13	V-FAI-3S	ὑστερέω		0.80	
+Dan.4:30#15	A-GPN	πᾶς	unsure	0.50	model: unsure
+Dan.4:30#16	D-GPN	οὗτος	unsure	0.50	model: unsure
+Dan.4:30#17	A-NSN	οὐδείς	unsure	0.50	model: unsure
+Dan.4:30#19	N-NSM	Ναβουχοδονοσόρ		0.80	
+Dan.4:30#23	N-APN	ἔτος		0.80	
+Dan.4:30#24	V-API-1S	πεδάω		0.80	
+Dan.4:30#33	N-GSF	χλόη	guess	0.40	guess: the model chose outside the candidates
+Dan.4:30#39	N-APN	ἔτος		0.80	
+Dan.4:30#54	N-ASN	πρόσωπον		0.80	
+Dan.4:30#67	T-GPM	ὁ		0.80	
+Dan.4:30#68	N-GPM	θεός		0.80	
+Dan.4:30#69	T-GSM	ὁ		0.80	
+Dan.4:30#70	A-GSM	μέγας		0.80	
+Dan.4:30#100	N-ASN	ἐνύπνιον		0.80	
+Dan.4:30#101	V-2AAI-1S	εἴδω		0.80	
+Dan.4:30#105	V-2RAI-3P	λαμβάνω		0.80	
+Dan.4:30#109	N-NSM	ὕπνος		0.80	
+Dan.4:30#114	N-NSM	νυσταγμός		0.80	
+Dan.4:30#120	T-GPN	ὁ		0.80	
+Dan.4:30#121	A-NUI	ἑπτά		0.80	
+Dan.4:30#138	PREP	ἐναντίον		0.80	
+Dan.4:30#151	T-GPM	ὁ		0.80	
+Dan.4:30#152	N-GPM	θεός		0.80	
+Dan.4:30#153	T-GSM	ὁ		0.80	
+Dan.4:30#154	A-GSM	μέγας		0.80	
+Dan.4:30#165	N-VSM	Ναβουχοδονοσόρ		0.80	
+Dan.4:30#171	T-DSM	ὁ		0.80	
+Dan.4:30#172	A-DSM	ἅγιος		0.80	
+Dan.4:30#176	T-DSM	ὁ		0.80	
+Dan.4:30#177	A-DSM	ὕψιστος		0.80	
+Dan.4:30#178	T-NSN	ὁ		0.80	
+Dan.4:30#179	A-NSN	βασίλειος		0.80	
+Dan.4:30#184	V-PPI-3S	ἀποδίδωμι		0.80	
+Dan.4:33#2	D-DSM	ἐκεῖνος		0.80	
+Dan.4:33#5	V-API-3S	ἀποκαθίστημι		0.80	
+Dan.4:33#14	V-API-3S	ἀποδίδωμι		0.80	
+Dan.4:34#1	T-DSM	ὁ		0.80	
+Dan.4:34#2	A-DSM	ὕψιστος		0.80	
+Dan.4:34#3	V-PNI-1S	ἀνθομολογέομαι		0.80	
+Dan.4:34#5	V-PAI-1S	αἰνέω		0.80	
+Dan.4:34#6	T-DSM	ὁ		0.80	
+Dan.4:34#7	V-AAP-DSM	κτίζω		0.80	
+Dan.4:34#20	A-APN	πᾶς		0.80	
+Dan.4:34#21	T-APN	ὁ		0.80	
+Dan.4:34#23	P-DPM	αὐτός	unsure	0.50	model: unsure
+Dan.4:34#26	V-PAI-1S	αἰνέω		0.80	
+Dan.4:34#29	V-PAI-3S	ἐστί	unsure	0.50	model: unsure
+Dan.4:34#31	T-GPM	ὁ		0.80	
+Dan.4:34#32	N-GPM	θεός		0.80	
+Dan.4:34#44	N-APN	σημεῖον		0.80	
+Dan.4:34#46	N-APN	τέρας		0.80	
+Dan.4:34#48	V-PAI-3S	ἀλλοιόω		0.80	
+Dan.4:34#56	V-PAP-NSM	καθίστημι		0.80	
+Dan.4:34#58	PREP	ἀντί		0.80	
+Dan.4:34#59	P-GPM	αὐτός		0.80	
+Dan.4:34#61	T-GSN	ὁ		0.80	
+Dan.4:34#63	P-DSM	αὐτός		0.80	
+Dan.4:34#64	V-FAI-1S	λατρεύω		0.80	
+Dan.4:34#69	P-GSM	αὐτός		0.80	
+Dan.4:34#77	V-PAI-1S	αἰνέω		0.80	
+Dan.4:34#86	F-3DPM	ἑαυτοῦ		0.80	
+Dan.4:34#88	V-AAN	ἀποστρέφω		0.80	
+Dan.4:34#97	V-PAN	ζάω		0.80	
+Dan.4:34#101	N-APN	σημεῖον		0.80	
+Dan.4:34#103	A-APN	θαυμάσιος		0.80	
+Dan.4:34#104	A-APN	μέγας		0.80	
+Dan.4:34#109	A-APN	ὑπερμεγέθης		0.80	
+Dan.4:34#110	N-APN	πρᾶγμα		0.80	
+Dan.4:34#120	V-AAI-3S	ἀλλοιόω		0.80	
+Dan.4:34#123	A-APN	μέγας		0.80	
+Dan.4:34#124	N-APN	πρᾶγμα		0.80	
+Dan.4:34#136	T-DSM	ὁ		0.80	
+Dan.4:34#137	A-DSM	ὕψιστος		0.80	
+Dan.4:34#138	N-APF	θυσία		0.80	
+Dan.4:34#139	V-FAI-1S	προσφέρω		0.80	
+Dan.4:34#146	T-ASN	ὁ		0.80	
+Dan.4:34#147	A-ASN	ἀρεστός		0.80	
+Dan.4:34#149	P-GSM	αὐτός		0.80	
+Dan.4:34#150	V-FAI-1S	ποιέω		0.80	
+Dan.4:34#156	T-NSN	ὁ		0.80	
+Dan.4:34#157	N-NSN	ἔθνος		0.80	
+Dan.4:34#178	V-APS-3P	καταλαμβάνω		0.80	
+Dan.4:34#180	X-ASN	τις		0.80	
+Dan.4:34#182	V-FAI-1S	κατακρίνω		0.80	
+Dan.4:34#188	N-NSM	Ναβουχοδονοσόρ		0.80	
+Dan.4:34#191	A-DPN	πᾶς		0.80	
+Dan.4:34#192	T-DPN	ὁ		0.80	
+Dan.4:34#220	V-PAM-2P	προσφέρω		0.80	
+Dan.4:34#221	P-DSM	αὐτός		0.80	
+Dan.4:34#226	V-PNI-1S	ἀνθομολογέομαι		0.80	
+Dan.4:34#227	P-DSM	αὐτός		0.80	
+Dan.4:34#233	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Dan.4:34#261	V-API-3S	ἀποκαθίστημι		0.80	
+Dan.4:34#263	N-NSM	Ναβουχοδονοσόρ	guess	0.40	guess: the model answered with no candidates
+Dan.4:34#265	A-DPN	πᾶς		0.80	
+Dan.4:34#273	A-DPM	πᾶς		0.80	
+Dan.4:34#274	T-DPM	ὁ		0.80	
+Dan.4:34#275	V-PAP-DPM	οἰκέω		0.80	
+Dan.4:34#292	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Dan.4:34#307	V-PAI-3S	ἐστί	unsure	0.50	model: unsure
+Dan.4:34#310	T-NPN	ὁ		0.80	
+Dan.4:34#311	A-NPN	θαυμάσιος		0.80	
+Dan.4:34#312	P-GSM	αὐτός		0.80	
+Dan.4:34#313	A-NPN	μέγας		0.80	
+Dan.4:34#314	T-NSN	ὁ		0.80	
+Dan.4:34#315	A-NSN	βασίλειος		0.80	
+Dan.4:34#316	P-GSM	αὐτός		0.80	
+Dan.4:34#317	A-NSN	βασίλειος		0.80	
+Dan.4:34#323	P-GSM	αὐτός		0.80	
+Dan.4:34#332	A-GPN	πᾶς		0.80	
+Dan.4:34#333	T-GPN	ὁ		0.80	
+Dan.4:34#334	V-AOP-GPN	γίνομαι		0.80	
+Dan.4:34#335	P-DSM	αὐτός		0.80	
+Dan.4:34#339	P-GSM	αὐτός		0.80	
+Dan.4:34#340	A-DPN	πᾶς		0.80	
+Dan.4:34#348	P-GSM	αὐτός		0.80	
+Dan.5:1#1	N-NSM	Βαλτασάρ	guess	0.40	guess: the model answered with no candidates
+Dan.5:1#10	T-GPN	ὁ		0.80	
+Dan.5:1#11	N-GPN	βασίλειον		0.80	
+Dan.5:1#12	P-GSM	αὐτός		0.80	
+Dan.5:1#20	N-NSM	Βαλτασάρ		0.80	
+Dan.5:1#21	V-PPP-NSM	ἐνυψόω		0.80	
+Dan.5:1#36	A-APM	γλυπτός		0.80	
+Dan.5:1#40	P-GSM	αὐτός		0.80	
+Dan.5:1#53	V-2AAI-3P	ἐξέρχομαι		0.80	
+Dan.5:1#54	N-NPM	δάκτυλος		0.80	
+Dan.5:1#58	V-AAI-3P	ἐπιγράφω	unsure	0.50	model: unsure
+Dan.5:1#63	P-GSM	αὐτός		0.80	
+Dan.5:1#67	PREP	κατέναντι		0.80	
+Dan.5:1#68	T-GSM	ὁ	unsure	0.50	model: unsure
+Dan.5:1#70	N-NSN	μανή	unsure	0.50	model: unsure
+Dan.5:1#71	N-NSN	φαρές	unsure	0.50	model: unsure
+Dan.5:1#72	N-NSN	θεκέλ	unsure	0.50	model: unsure
+Dan.5:1#73	V-PAI-3S	ἐστί	unsure	0.50	model: unsure
+Dan.5:1#77	P-GPM	αὐτός	unsure	0.50	model: unsure
+Dan.5:1#78	N-NSN	μανή	unsure	0.50	model: unsure
+Dan.5:1#79	V-RPI-3S	ἀριθμέω		0.80	
+Dan.5:1#80	N-NSN	φαρές	unsure	0.50	model: unsure
+Dan.5:1#81	V-RPI-3S	ἐξαίρω	unsure	0.50	model: unsure
+Dan.5:1#82	N-NSN	θεκέλ	unsure	0.50	model: unsure
+Dan.5:1#84	N-NSM	Βαλτασάρ	guess	0.40	guess: the model answered with no candidates
+Dan.5:1#92	P-GSM	αὐτός		0.80	
+Dan.5:2#2	V-IAI-3S	πίνω		0.80	
+Dan.5:2#8	P-GSM	αὐτός		0.80	
+Dan.5:2#12	T-APN	ὁ		0.80	
+Dan.5:2#13	N-APN	σκεῦος		0.80	
+Dan.5:2#14	T-APN	ὁ		0.80	
+Dan.5:2#15	A-APN	χρύσεος		0.80	
+Dan.5:2#17	T-APN	ὁ		0.80	
+Dan.5:2#18	A-APN	ἀργύρεος		0.80	
+Dan.5:2#23	R-APN	ὅς, ἥ		0.80	
+Dan.5:2#25	N-NSM	Ναβουχοδονοσόρ		0.80	
+Dan.5:2#28	P-GSM	αὐτός		0.80	
+Dan.5:2#30	N-GSF	Ἱερουσαλήμ		0.80	
+Dan.5:2#32	V-AAN	οἰνοχοέω		0.80	
+Dan.5:2#34	P-DPN	αὐτός		0.80	
+Dan.5:2#37	P-GSM	αὐτός		0.80	
+Dan.5:3#6	P-DPN	αὐτός		0.80	
+Dan.5:4#2	V-IAI-3P	εὐλογέω		0.80	
+Dan.5:4#3	T-APN	ὁ		0.80	
+Dan.5:4#4	N-APN	εἴδωλον		0.80	
+Dan.5:4#5	T-APN	ὁ		0.80	
+Dan.5:4#6	A-APN	χειροποίητος		0.80	
+Dan.5:4#7	P-GPM	αὐτός		0.80	
+Dan.5:4#14	V-AAI-3P	εὐλογέω		0.80	
+Dan.5:4#21	P-GPM	αὐτός		0.80	
+Dan.5:5#6	V-2AAI-3P	ἐξέρχομαι		0.80	
+Dan.5:5#7	N-NPM	δάκτυλος		0.80	
+Dan.5:5#18	P-GSM	αὐτός		0.80	
+Dan.5:5#22	PREP	κατέναντι		0.80	
+Dan.5:5#28	N-GSM	Βαλτασάρ		0.80	
+Dan.5:6#4	P-GSM	αὐτός		0.80	
+Dan.5:6#11	V-IAI-3P	κατασπεύδω		0.80	
+Dan.5:6#12	V-AAI-3S	σπεύδω		0.80	
+Dan.5:6#17	V-2AAI-3S	ἐξανίστημι		0.80	
+Dan.5:6#19	V-IAI-3S	ὁράω		0.80	
+Dan.5:6#27	P-GSM	αὐτός		0.80	
+Dan.5:6#28	V-INI-3P	καυχάομαι		0.80	
+Dan.5:7#11	N-APM	φάρμακος		0.80	
+Dan.5:7#13	N-APM	Χαλδαῖος		0.80	
+Dan.5:7#17	T-ASN	ὁ		0.80	
+Dan.5:7#18	N-ASN	σύγκριμα		0.80	
+Dan.5:7#29	T-ASN	ὁ		0.80	
+Dan.5:7#30	N-ASN	σύγκριμα		0.80	
+Dan.5:7#41	V-AAI-3S	ἐκτίθημι		0.80	
+Dan.5:7#42	N-ASN	πρόσταγμα		0.80	
+Dan.5:7#48	V-AAS-3S	ὑποδείκνυμι		0.80	
+Dan.5:7#49	T-ASN	ὁ		0.80	
+Dan.5:7#50	N-ASN	σύγκριμα		0.80	
+Dan.5:7#53	V-FAI-3S	στολίζω		0.80	
+Dan.5:7#59	V-FAI-3S	περιτίθημι		0.80	
+Dan.5:7#60	P-DSM	αὐτός		0.80	
+Dan.5:7#63	P-DSM	αὐτός		0.80	
+Dan.5:7#65	T-GSN	ὁ		0.80	
+Dan.5:7#66	A-GSN	τρίτος		0.80	
+Dan.5:8#6	N-NPM	φάρμακος		0.80	
+Dan.5:8#8	N-NPM	γαζαρηνός		0.80	
+Dan.5:8#13	T-ASN	ὁ		0.80	
+Dan.5:8#14	N-ASN	σύγκριμα		0.80	
+Dan.5:9#14	A-NSN	μέγας		0.80	
+Dan.5:9#15	V-PAI-3S	ἐστί	unsure	0.50	model: unsure
+Dan.5:9#25	T-ASN	ὁ		0.80	
+Dan.5:9#26	N-ASN	σύγκριμα		0.80	
+Dan.5:10#8	T-GSM	ὁ		0.80	
+Dan.5:10#9	N-GSM	Δανιήλ		0.80	
+Dan.5:12#2	N-NSN	πνεῦμα		0.80	
+Dan.5:12#3	A-NSN	ἅγιος		0.80	
+Dan.5:12#5	P-DSM	αὐτός		0.80	
+Dan.5:12#6	V-PAI-3S	ἐστί	unsure	0.50	model: unsure
+Dan.5:12#16	N-APN	σύγκριμα		0.80	
+Dan.5:12#17	A-APN	ὑπέρογκος		0.80	
+Dan.5:12#18	A-APN	ὑπέρογκος		0.80	
+Dan.5:12#20	N-NSM	Ναβουχοδονοσόρ		0.80	
+Dan.5:13#2	N-NSM	Δανιήλ		0.80	
+Dan.5:13#3	V-API-3S	εἰσάγω		0.80	
+Dan.5:13#12	P-DSM	αὐτός		0.80	
+Dan.5:16#1	INJ	ὦ		0.80	
+Dan.5:16#2	N-VSM	Δανιήλ		0.80	
+Dan.5:16#5	V-AAN	ὑποδείκνυμι		0.80	
+Dan.5:16#6	T-ASN	ὁ		0.80	
+Dan.5:16#7	N-ASN	σύγκριμα		0.80	
+Dan.5:16#11	V-FAI-1S	στολίζω		0.80	
+Dan.5:16#17	V-FAI-1S	περιτίθημι		0.80	
+Dan.5:16#22	T-GSN	ὁ		0.80	
+Dan.5:16#23	A-GSN	τρίτος		0.80	
+Dan.5:17#2	N-NSM	Δανιήλ		0.80	
+Dan.5:17#4	PREP	κατέναντι		0.80	
+Dan.5:17#8	V-2AAI-3S	ἀναγινώσκω		0.80	
+Dan.5:17#17	V-RPI-3S	ἀριθμέω		0.80	
+Dan.5:17#18	V-API-3S	καταλογίζομαι		0.80	
+Dan.5:17#19	V-RPI-3S	ἐξαίρω	unsure	0.50	model: unsure
+Dan.5:17#29	P-GPM	αὐτός	unsure	0.50	model: unsure
+Dan.5:23#3	V-AMI-2S	ποιέω		0.80	
+Dan.5:23#5	T-DPM	ὁ		0.80	
+Dan.5:23#6	A-DPM	φίλος		0.80	
+Dan.5:23#9	V-IAI-2S	πίνω		0.80	
+Dan.5:23#12	T-NPN	ὁ		0.80	
+Dan.5:23#13	N-NPN	σκεῦος		0.80	
+Dan.5:23#25	P-DPN	αὐτός		0.80	
+Dan.5:23#32	V-AAI-2P	αἰνέω		0.80	
+Dan.5:23#33	A-APN	πᾶς		0.80	
+Dan.5:23#34	T-APN	ὁ		0.80	
+Dan.5:23#35	N-APN	εἴδωλον		0.80	
+Dan.5:23#36	T-APN	ὁ		0.80	
+Dan.5:23#37	A-APN	χειροποίητος		0.80	
+Dan.5:23#48	T-NSN	ὁ		0.80	
+Dan.5:23#49	N-NSN	πνεῦμα		0.80	
+Dan.5:23#54	P-GSM	αὐτός		0.80	
+Dan.5:23#56	T-ASN	ὁ		0.80	
+Dan.5:23#57	A-ASN	βασίλειος		0.80	
+Dan.5:23#67	V-AAI-2S	αἰνέω		0.80	
+Dan.5:23#68	P-DSM	αὐτός		0.80	
+Dan.5:26#1	D-NSN	οὗτος	unsure	0.50	model: unsure
+Dan.5:26#2	T-NSN	ὁ	unsure	0.50	model: unsure
+Dan.5:26#3	N-NSN	σύγκριμα	unsure	0.50	model: unsure
+Dan.5:26#6	V-RPI-3S	ἀριθμέω		0.80	
+Dan.5:26#12	V-PAI-3S	ἀπολήγω		0.80	
+Dan.5:27#3	V-RPI-3S	συντελέω	unsure	0.50	model: unsure
+Dan.5:28#7	T-DPM	ὁ		0.80	
+Dan.5:28#8	N-DPM	Πέρσης		0.80	
+Dan.5:29#2	N-NSM	Βαλτασάρ		0.80	
+Dan.5:29#13	P-DSM	αὐτός		0.80	
+Dan.5:29#17	P-DSM	αὐτός		0.80	
+Dan.5:29#23	P-GSM	αὐτός		0.80	
+Dan.5:30#2	T-NSN	ὁ		0.80	
+Dan.5:30#3	N-NSN	σύγκριμα		0.80	
+Dan.5:30#5	N-DSM	Βαλτασάρ		0.80	
+Dan.5:30#9	T-NSN	ὁ		0.80	
+Dan.5:30#10	A-NSN	βασίλειος		0.80	
+Dan.5:30#11	V-RPI-3S	ἐξαίρω	unsure	0.50	model: unsure
+Dan.5:30#20	T-DPM	ὁ		0.80	
+Dan.5:30#21	N-DPM	Πέρσης		0.80	
+Dan.5:31#2	N-NSM	Ἀρταξέρξης		0.80	
+Dan.5:31#4	T-GPM	ὁ		0.80	
+Dan.5:31#5	N-GPM	Μῆδος		0.80	
+Dan.6:1#2	N-NSM	Δαρεῖος		0.80	
+Dan.6:1#3	A-NSM	πλήρης		0.80	
+Dan.6:1#7	A-NSM	ἔνδοξος		0.80	
+Dan.6:1#20	P-GSM	αὐτός		0.80	
+Dan.6:2#3	P-GPM	αὐτός		0.80	
+Dan.6:2#7	P-GPM	αὐτός		0.80	
+Dan.6:2#9	N-NSM	Δανιήλ		0.80	
+Dan.6:3#9	N-NSM	Δανιήλ		0.80	
+Dan.6:3#16	A-NSM	ἔνδοξος		0.80	
+Dan.6:3#18	N-GSM	Δαρεῖος		0.80	
+Dan.6:3#23	A-NSM	ἔνδοξος		0.80	
+Dan.6:3#27	A-NSM	συνετός		0.80	
+Dan.6:3#29	N-NSN	πνεῦμα		0.80	
+Dan.6:3#30	A-NSN	ἅγιος		0.80	
+Dan.6:3#32	P-DSM	αὐτός		0.80	
+Dan.6:3#34	V-PPP-NSM	εὐοδόω		0.80	
+Dan.6:3#41	V-IAI-3S	πράσσω		0.80	
+Dan.6:3#45	V-ADI-3S	βουλεύω	unsure	0.50	model: unsure
+Dan.6:3#53	P-GSM	αὐτός		0.80	
+Dan.6:3#61	P-GSM	αὐτός		0.80	
+Dan.6:4#1	CONJ	ὅτε		0.80	
+Dan.6:4#3	V-ADI-3S	βουλεύω	unsure	0.50	model: unsure
+Dan.6:4#13	P-GSM	αὐτός		0.80	
+Dan.6:4#20	F-3DPM	ἑαυτοῦ		0.80	
+Dan.6:4#23	N-NPM	νεανίσκος		0.80	
+Dan.6:4#34	T-GSM	ὁ		0.80	
+Dan.6:4#35	N-GSM	Δανιήλ		0.80	
+Dan.6:4#39	P-GSM	αὐτός		0.80	
+Dan.6:5#7	F-1GPM	ἑαυτοῦ		0.80	
+Dan.6:5#12	V-FAI-3S	ἀξιόω		0.80	
+Dan.6:5#13	N-ASN	ἀξίωμα		0.80	
+Dan.6:5#17	V-ADS-3S	εὔχομαι	unsure	0.50	model: unsure
+Dan.6:5#28	N-GSM	Δαρεῖος		0.80	
+Dan.6:5#36	V-AAS-3P	ἡττάω		0.80	
+Dan.6:5#39	PREP	ἐναντίον		0.80	
+Dan.6:5#43	V-2APS-3S	ῥίπτω		0.80	
+Dan.6:5#52	N-NSM	Δανιήλ		0.80	
+Dan.6:5#55	V-PNI-3S	δέομαι		0.80	
+Dan.6:5#59	P-GSM	αὐτός		0.80	
+Dan.6:6#2	V-2AAI-3P	προσέρχομαι		0.80	
+Dan.6:6#8	PREP	ἐναντίον		0.80	
+Dan.6:7#10	V-ADS-3S	εὔχομαι	unsure	0.50	model: unsure
+Dan.6:7#14	N-ASN	ἀξίωμα		0.80	
+Dan.6:7#15	X-ASN	τις		0.80	
+Dan.6:7#25	N-GSM	Δαρεῖος		0.80	
+Dan.6:7#28	V-FPI-3S	ῥίπτω		0.80	
+Dan.6:9#5	N-NSM	Δαρεῖος		0.80	
+Dan.6:10#3	N-NSM	Δανιήλ		0.80	
+Dan.6:10#9	P-GSM	αὐτός		0.80	
+Dan.6:10#15	P-GSM	αὐτός		0.80	
+Dan.6:10#16	PREP	κατέναντι		0.80	
+Dan.6:10#17	N-GSF	Ἱερουσαλήμ		0.80	
+Dan.6:10#21	N-ASN	πρόσωπον		0.80	
+Dan.6:10#22	P-GSM	αὐτός		0.80	
+Dan.6:11#7	V-2AAI-3P	καταλαμβάνω		0.80	
+Dan.6:11#9	V-PNP-ASM	εὔχομαι		0.80	
+Dan.6:12#10	N-VSM	Δαρεῖος		0.80	
+Dan.6:12#14	V-AMI-2S	ὁρίζω		0.80	
+Dan.6:12#19	V-ADS-3S	εὔχομαι	unsure	0.50	model: unsure
+Dan.6:12#21	CONJ-N	μηδέ		0.80	
+Dan.6:12#23	N-ASN	ἀξίωμα		0.80	
+Dan.6:12#37	V-FPI-3S	ῥίπτω		0.80	
+Dan.6:12#48	P-DPM	αὐτός		0.80	
+Dan.6:12#49	A-NSM	ἀκριβής		0.80	
+Dan.6:12#57	V-2AAI-3P	ἔπω, ἐρῶ, εἶπον		0.80	
+Dan.6:12#58	P-DSM	αὐτός		0.80	
+Dan.6:12#61	T-DPN	ὁ		0.80	
+Dan.6:12#62	N-GPM	Μῆδος		0.80	
+Dan.6:12#64	N-GPM	Πέρσης		0.80	
+Dan.6:12#68	V-AAS-2S	ἀλλοιόω		0.80	
+Dan.6:12#69	T-ASN	ὁ		0.80	
+Dan.6:12#70	N-ASN	πρόσταγμα		0.80	
+Dan.6:12#71	CONJ-N	μηδέ		0.80	
+Dan.6:12#73	N-ASN	πρόσωπον		0.80	
+Dan.6:12#77	V-AAS-2S	ἐλασσόω		0.80	
+Dan.6:12#78	X-ASN	τις		0.80	
+Dan.6:12#79	T-GPN	ὁ		0.80	
+Dan.6:12#80	V-RPP-GPN	ἐρέω		0.80	
+Dan.6:12#82	V-AAS-2S	κολάζω		0.80	
+Dan.6:12#90	D-DSM	οὗτος		0.80	
+Dan.6:12#94	V-FAI-1S	ποιέω		0.80	
+Dan.6:12#96	V-PAI-2P	λέγω		0.80	
+Dan.6:12#98	V-RAI-3S	ἵστημι		0.80	
+Dan.6:12#100	D-NSN	οὗτος	unsure	0.50	model: unsure
+Dan.6:13#2	V-2AAI-3P	ἔπω, ἐρῶ, εἶπον		0.80	
+Dan.6:13#5	N-ASM	Δανιήλ		0.80	
+Dan.6:13#9	V-PNP-ASM	εὔχομαι		0.80	
+Dan.6:13#11	V-PNP-ASM	δέομαι		0.80	
+Dan.6:13#16	P-GSM	αὐτός		0.80	
+Dan.6:14#6	V-2APN	ῥίπτω		0.80	
+Dan.6:14#20	P-GSM	αὐτός		0.80	
+Dan.6:14#27	T-DSM	ὁ		0.80	
+Dan.6:14#28	N-DSM	Δανιήλ		0.80	
+Dan.6:15#7	P-GPM	αὐτός		0.80	
+Dan.6:16#1	V-AAP-NSM	ἀναβοάω		0.80	
+Dan.6:16#3	N-NSM	Δαρεῖος		0.80	
+Dan.6:16#6	V-2AAI-3S	ἔπω, ἐρῶ, εἶπον		0.80	
+Dan.6:16#7	T-DSM	ὁ		0.80	
+Dan.6:16#8	N-DSM	Δανιήλ		0.80	
+Dan.6:16#12	R-DSM	ὅς, ἥ		0.80	
+Dan.6:16#15	ADV	ἐνδελεχῶς		0.80	
+Dan.6:16#20	V-2FMI-3S	ἐξαιρέω		0.80	
+Dan.6:16#28	V-PAM-2S	θαρρέω		0.80	
+Dan.6:17#2	N-NSM	Δανιήλ		0.80	
+Dan.6:17#3	V-2API-3S	ῥίπτω		0.80	
+Dan.6:17#15	T-ASN	ὁ		0.80	
+Dan.6:17#16	N-ASN	στόμα		0.80	
+Dan.6:17#20	V-AMI-3S	σφραγίζω	unsure	0.50	model: unsure
+Dan.6:17#26	F-3GSM	ἑαυτοῦ		0.80	
+Dan.6:17#33	P-GSM	αὐτός		0.80	
+Dan.6:17#37	P-GPM	αὐτός	unsure	0.50	model: unsure
+Dan.6:17#45	V-AAS-3S	ἀνασπάω		0.80	
+Dan.6:18#6	T-APN	ὁ		0.80	
+Dan.6:18#7	N-APN	βασίλειον		0.80	
+Dan.6:18#8	P-GSM	αὐτός		0.80	
+Dan.6:18#11	A-NSM	νῆστις		0.80	
+Dan.6:18#16	T-GSM	ὁ		0.80	
+Dan.6:18#17	N-GSM	Δανιήλ		0.80	
+Dan.6:18#21	T-GSM	ὁ		0.80	
+Dan.6:18#22	N-GSM	Δανιήλ		0.80	
+Dan.6:18#25	P-GSM	αὐτός		0.80	
+Dan.6:18#27	T-APN	ὁ		0.80	
+Dan.6:18#28	N-APN	στόμα		0.80	
+Dan.6:18#33	V-AAI-3P	παρενοχλέω	guess	0.40	guess: the model chose outside the candidates
+Dan.6:18#34	T-DSM	ὁ		0.80	
+Dan.6:18#35	N-DSM	Δανιήλ		0.80	
+Dan.6:19#4	N-NSM	Δαρεῖος		0.80	
+Dan.6:19#10	F-3GSM	ἑαυτοῦ		0.80	
+Dan.6:20#12	INJ	ὦ		0.80	
+Dan.6:20#13	N-VSM	Δανιήλ		0.80	
+Dan.6:20#21	R-DSM	ὅς, ἥ		0.80	
+Dan.6:20#23	ADV	ἐνδελεχῶς		0.80	
+Dan.6:20#31	V-RAI-3P	ἀχρειόω	guess	0.40	guess: the model answered with no candidates
+Dan.6:21#2	N-NSM	Δανιήλ		0.80	
+Dan.6:22#4	V-PAP-NSM	ζάω		0.80	
+Dan.6:22#18	PREP	ἐναντίον		0.80	
+Dan.6:22#19	P-GSM	αὐτός		0.80	
+Dan.6:22#21	PREP	ἐναντίον		0.80	
+Dan.6:22#26	N-NSF	ἄγνοια		0.80	
+Dan.6:22#37	N-APM	βασιλεύς		0.80	
+Dan.6:22#39	V-AAI-2S	ῥίπτω		0.80	
+Dan.6:23#7	V-2AAI-3P	εἴδω		0.80	
+Dan.6:23#12	V-AAI-3P	παρενοχλέω	guess	0.40	guess: the model chose outside the candidates
+Dan.6:23#13	P-DSM	αὐτός		0.80	
+Dan.6:24#8	T-GSM	ὁ		0.80	
+Dan.6:24#9	N-GSM	Δανιήλ		0.80	
+Dan.6:24#14	P-GPM	αὐτός		0.80	
+Dan.6:24#16	T-NPN	ὁ		0.80	
+Dan.6:24#17	N-NPN	τέκνον		0.80	
+Dan.6:24#18	P-GPM	αὐτός		0.80	
+Dan.6:24#19	V-2API-3P	ῥίπτω		0.80	
+Dan.6:24#20	T-DPM	ὁ		0.80	
+Dan.6:24#21	N-DPM	λέων		0.80	
+Dan.6:24#28	V-AAI-3P	θλάω		0.80	
+Dan.6:24#29	T-APN	ὁ		0.80	
+Dan.6:24#30	N-APN	ὀστέον		0.80	
+Dan.6:24#31	P-GPM	αὐτός		0.80	
+Dan.6:25#2	N-NSM	Δαρεῖος		0.80	
+Dan.6:25#4	A-DPN	πᾶς		0.80	
+Dan.6:25#11	T-DPM	ὁ		0.80	
+Dan.6:25#12	V-PAP-DPM	οἰκέω		0.80	
+Dan.6:25#17	P-GSM	αὐτός		0.80	
+Dan.6:26#16	T-GSM	ὁ		0.80	
+Dan.6:26#17	N-GSM	Δανιήλ		0.80	
+Dan.6:26#20	V-PAI-3S	ἐστί	unsure	0.50	model: unsure
+Dan.6:26#24	V-PAP-NSM	ζάω		0.80	
+Dan.6:27#2	N-NSM	Δαρεῖος		0.80	
+Dan.6:27#4	P-DSM	αὐτός		0.80	
+Dan.6:27#12	T-NPN	ὁ		0.80	
+Dan.6:27#14	N-NPN	εἴδωλον		0.80	
+Dan.6:27#15	T-NPN	ὁ		0.80	
+Dan.6:27#16	A-NPN	χειροποίητος		0.80	
+Dan.6:27#21	V-AMI-3S	λυτρόω		0.80	
+Dan.6:27#24	T-GSM	ὁ		0.80	
+Dan.6:27#25	N-GSM	Δανιήλ		0.80	
+Dan.6:28#4	N-NSM	Δαρεῖος		0.80	
+Dan.6:28#7	T-ASN	ὁ		0.80	
+Dan.6:28#8	N-ASN	γένος		0.80	
+Dan.6:28#9	P-GSM	αὐτός		0.80	
+Dan.6:28#11	N-NSM	Δανιήλ		0.80	
+Dan.6:28#12	V-API-3S	καθίστημι		0.80	
+Dan.6:28#16	N-GSM	Δαρεῖος		0.80	
+Dan.6:28#18	N-NSM	Κῦρος		0.80	
+Dan.6:28#24	P-GSM	αὐτός		0.80	
