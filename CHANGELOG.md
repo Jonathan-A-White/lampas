@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.418
+_2026-11-27_
+- Fixed: after a drill, the tutor now reliably offers the table of the forms you missed, even when you ask what to drill.
+
 ## 0.7.417
 _2026-11-27_
 - New: Pastor Allen Nolan's book-by-book preaching videos (Revelation, Isaiah, Amos and more) can be switched on in Sermon sources and play from the Sermons sheet.

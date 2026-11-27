@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.418",
+    "date": "2026-11-27",
+    "story": "mw-5r3p30.1253",
+    "kind": "fixed",
+    "text": "after a drill, the tutor now reliably offers the table of the forms you missed, even when you ask what to drill."
+  },
+  {
     "version": "0.7.417",
     "date": "2026-11-27",
     "story": "mw-qtu3zvz.280.19",
