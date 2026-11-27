@@ -1126,6 +1126,16 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(BIBLE_TALK_CEILING - bytes - Buffer.byteLength(next), `${bytes} bytes used of ${BIBLE_TALK_CEILING} with a 500-byte line, and a ${Buffer.byteLength(next)}-byte setting more`).toBeGreaterThanOrEqual(0);
   });
 
+  // mw-5r3p30.938 promised 10,000 bytes of room; growth had used it up again (174 spare at batch 736, mw-5r3p30.1254), so two small fixes together held a batch.
+  // The room is counted as the test above counts it: after a 500-byte line in the settings part and one more setting, under the 100,000 the smoke warns past.
+  const BIBLE_TALK_HEADROOM = 10_000;
+  it(`keeps ${BIBLE_TALK_HEADROOM} bytes of room under the ceiling after a 500-byte line and one more setting, so two small fixes in different parts never hold a batch (mw-5r3p30.1254)`, () => {
+    const settingsPart = '330-changing-the-apps-settings.md';
+    const parts = instructionParts(grind.kind as string).map((p) => (p.file.endsWith(settingsPart) ? { ...p, text: `${p.text}${'x'.repeat(499)}\n` } : p));
+    const room = BIBLE_TALK_CEILING - joinedBytes(parts) - Buffer.byteLength(nextSetting());
+    expect(room, `${room} bytes of room left with a 500-byte line and a setting more, of the ${BIBLE_TALK_HEADROOM} kept; say a rule once or shorter to make room (docs/design/bible-talk-trim-map.md)`).toBeGreaterThanOrEqual(BIBLE_TALK_HEADROOM);
+  });
+
   it('keeps every setting key and what Weave and Bible voice say in the instructions after the settings were said more tersely (mw-82lb97i.16)', () => {
     const block = settingsBlock();
     for (const s of SETTINGS) expect(block, s.key).toContain(`\`${keySaid(s.key)}\``);
