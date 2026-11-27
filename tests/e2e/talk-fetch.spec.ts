@@ -52,18 +52,19 @@ test('a talk on Revelation 6: the fetch of 6:2-17 is shown under the reply and t
   expect(second.history).toHaveLength(1);
 });
 
-test('a talk whose fetch reads nothing says so under the reply: Could not read Isaiah 53:5', async ({ page }) => {
+// An Old Testament reference is read since mw-fnvjof.17.314 (Isaiah 53:5 is 'Tutor fetched Isa 53:5'); an Apocrypha verse is the reference the app holds no text of.
+test('a talk whose fetch reads nothing says so under the reply: Could not read Sirach 1:1', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const fake = makeFakePostern();
-  fake.autoReply = { status: 'answered', answer: { answer: 'That is in Isaiah.', words: [], fetch: ['Isaiah 53:5'] } };
+  fake.autoReply = { status: 'answered', answer: { answer: 'That is in Sirach.', words: [], fetch: ['Sirach 1:1'] } };
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/#/?b=rev&c=6&view=english&weave=off');
   await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Talk about Revelation 6' });
-  await (await talkField(sheet)).fill('Where is the suffering servant?');
+  await (await talkField(sheet)).fill('Where does wisdom begin?');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
-  await expect(sheet.locator('[data-talk-unread]')).toHaveText('Could not read Isaiah 53:5');
+  await expect(sheet.locator('[data-talk-unread]')).toHaveText('Could not read Sirach 1:1');
   await expect(sheet.locator('[data-talk-fetched]')).toHaveCount(0);
   await shot(page, 'talk-fetch-unread');
 });
