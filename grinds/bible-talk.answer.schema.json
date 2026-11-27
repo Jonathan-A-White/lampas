@@ -1666,6 +1666,7 @@
                   "sermons.sermon-starters-volume-5-logos",
                   "sermons.lifebible-ttb",
                   "sermons.biblethinker",
+                  "sermons.clarkson-works",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -2405,6 +2406,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "sermons.biblethinker" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.clarkson-works" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

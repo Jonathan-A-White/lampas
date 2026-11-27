@@ -136,6 +136,7 @@ describe('the sermon sources (mw-qtu3zvz.236): one summary line, however many th
 
   it('names how many are on and where they are set, and carries no sermons.<id> row', async () => {
     await db.settings.put({ key: 'sermons.spurgeon-ccel', value: 'on' });
+    await db.settings.put({ key: 'sermons.clarkson-works', value: 'off' }); // it starts On (mw-qtu3zvz.280.16), so the one On is Spurgeon's
     await db.settings.put({ key: 'sermons.henry-sermons', value: 'off' });
     const got = await settingsForTutor();
     const line = got.filter((s) => s.name === SOURCES_LINE);
