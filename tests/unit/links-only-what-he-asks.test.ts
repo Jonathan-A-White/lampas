@@ -31,6 +31,17 @@ describe('the bible-talk links rule: only what he asks for, one link for it (mw-
     expect(sermon).toContain('With no `sermons`, say none is listed (and In another book) and give NO link, never a `sermons.<id>` setting, not even for the preacher he names.');
   });
 
+  // mw-qtu3zvz.284: on sermon-narrowed ('only on grace', no history) the tutor read the words as the verse seen through grace, 3 of 6 live runs,
+  // and answered in its own words with no sermon link or with the verse's own row (104); 'To narrow' said what to do, never how to know a narrowing.
+  it('says in the sermon section that a bare theme, preacher or date, with `sermons` listed, narrows them and not the verse, even as the first words', () => {
+    const sermon = links.slice(links.indexOf('### Links to a sermon'), links.indexOf('### Links to a paradigm table'));
+    expect(sermon).toContain("With `sermons`, a bare theme, preacher or date ('only on grace') narrows them, not the verse, even as his first words. To narrow, answer with the rows that fit");
+    expect(sermon.indexOf("('only on grace')")).toBeLessThan(sermon.indexOf('never one outside the narrowing'));
+    const narrowed = example('sermon-narrowed');
+    expect(narrowed.request.question).toBe('only on grace');
+    expect(narrowed.request.history).toEqual([]);
+  });
+
   it('says the map link goes to the first line with `places` even when another title fits the chapter', () => {
     const map = links.slice(links.indexOf('### Links to a map'), links.indexOf('### Links to a sermon'));
     expect(map).toContain('give ONE link, to the first line with `places` even when another title fits the chapter');
