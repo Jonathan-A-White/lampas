@@ -9,7 +9,7 @@ import { bookOf, sweteTokens, type SweteWord } from '../lxx/swete';
 import type { UsfmBook } from './lxx2012';
 import { carriedAsGreek } from './lxx2012';
 import { chapterFingerprint } from './chapterWriter';
-import { OT_BOOKS, refOf, type TvtmsMaps } from './tvtms';
+import { LXX2012_SPLITS, OT_BOOKS, refOf, type TvtmsMaps } from './tvtms';
 
 // ---------------------------------------------------------------- the books
 
@@ -152,7 +152,20 @@ export function englishByGreekVerse(book: UsfmBook, maps: TvtmsMaps): { byGreek:
         const g = carriedAsGreek(book.code, verse.chapter, v);
         for (const ref of maps.lxx2012ToGreek(refOf(book.code, g.chapter, g.verse)).refs) if (!greek.includes(ref)) greek.push(ref);
       }
-      put(refOf(book.code, verse.chapter, verse.verse), greek, { text: verse.text, supplied: verse.supplied });
+      const usfm = refOf(book.code, verse.chapter, verse.verse);
+      const split = LXX2012_SPLITS.find((s) => s.usfm === usfm);
+      if (!split) {
+        put(usfm, greek, { text: verse.text, supplied: verse.supplied });
+        continue;
+      }
+      // the verse's first words are the end of the Greek verse before: they stand there, the rest where the map puts the verse (LXX2012_SPLITS)
+      if (!verse.text.startsWith(`${split.head} `)) throw new Error(`${usfm}: LXX2012_SPLITS expects the verse to begin ${JSON.stringify(split.head)}, it begins ${JSON.stringify(verse.text.slice(0, 60))}`);
+      const headWords = split.head.split(/\s+/).filter(Boolean).length;
+      const list = byGreek.get(split.greek);
+      const head: Segment = { text: split.head, supplied: verse.supplied.filter((i) => i < headWords) };
+      if (list) list.push(head);
+      else byGreek.set(split.greek, [head]);
+      put(usfm, greek, { text: verse.text.slice(split.head.length + 1), supplied: verse.supplied.filter((i) => i >= headWords).map((i) => i - headWords) });
     }
   }
   return { byGreek, placedAt };

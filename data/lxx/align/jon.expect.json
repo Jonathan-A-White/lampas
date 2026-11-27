@@ -27,16 +27,15 @@
     },
     "2": {
       "gaps": 0,
-      "model": 3,
+      "model": 1,
       "leftovers": [
-        ["2:7:clefts", "'to the clefts of the mountains' renders εἰς σχισμὰς ὀρέων, the last words of Swete's verse 6, whose English Brenton puts at the start of his verse 7; no pairing can fix it."],
-        ["2:7:mountains", "'to the clefts of the mountains' renders εἰς σχισμὰς ὀρέων, the last words of Swete's verse 6, so this verse has no Greek word for it."],
         ["2:11:lord", "'by the Lord' is Brenton's own; the Greek of this verse (προσετάγη τῷ κήτει) has no word for it."]
       ],
       "placePairs": [
         ["2:1 whale @15", "read"],
         ["2:2 whale, @12", "read"],
         ["2:5 cast @3", "read"],
+        ["2:6 clefts @14", "read"],
         ["2:9 vanities @1", "read"],
         ["2:10 I have vowed @10", "read"],
         ["2:10 thanksgiving: @6", "read"],

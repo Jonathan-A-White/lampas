@@ -389,6 +389,14 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Oba.1:3', 'Oba.1:2-3'],
 ].map(([lxx2012, greek]) => ({ section: 'LXX2012', type: 'OneToOne', cells: { 'Brenton (LXX2012)': lxx2012, Greek: greek } }));
 
+/**
+ * A verse of LXX2012 whose first words render the last words of the Greek verse before the one it stands at (a split verse number a verse map cannot move whole): `head` is those words, as the USFM has them
+ * at the start of the verse (englishByGreekVerse throws when it does not), and `greek` the Greek verse they stand at, after that verse's own English. `usfm` is the verse as `refOf` writes it.
+ * mw-u2w5klk.349.157, read against Swete's verses:
+ * - Jonah 2:7: Brenton's 2:6 ends 'my head went down' and his 2:7 begins 'to the clefts of the mountains;', but Swete's 2:6 ends ἔδυ ἡ κεφαλή μου εἰς σχισμὰς ὀρέων, so the words belong at the Greek 2:6.
+ */
+export const LXX2012_SPLITS: ReadonlyArray<{ usfm: string; head: string; greek: string }> = [{ usfm: 'jon 2:7', head: 'to the clefts of the mountains;', greek: 'jon 2:6' }];
+
 /** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows; Exo.35:8-35:27's rows leave LXX2012's 35:8-19 where the Greek has them; Jos.8:30--9:27's stand 8:30-35 at 9:2.1-6). */
 const LXX2012_REPLACED: ReadonlySet<string> = new Set(['Psa.11:1-11:7', 'Exo.35:8-35:27', 'Jos.8:30--9:27']);
 
