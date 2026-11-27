@@ -30,6 +30,7 @@ on a phone, one-handed; Greek type must be large and clear.
 ```bash
 npm run dev          # dev server
 npm run build        # tsc -b + vite build -> dist/ (self-contained)
+npm run build:live     # the deploy's build: build, lxx:ship into dist/data-lxx, dist:check (a host's after_landing runs this)
 npm run preview      # serve dist/ locally
 npm run typecheck    # tsc -b --noEmit, strict
 npm run lint         # eslint (no explicit any)
