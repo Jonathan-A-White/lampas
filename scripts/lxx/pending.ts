@@ -96,11 +96,44 @@ export interface Listing {
   words: PendingWord[];
 }
 
-export const PENDING_USAGE = 'usage: npm run lxx:pending -- --book <code> --batch <n> [--no-morpheus]   |   npm run lxx:pending -- --recheck --book <code> [--no-morpheus]';
+export const PENDING_USAGE = 'usage: npm run lxx:pending -- --book <code> --batch <n> [--chapters <a>[-<b>]] [--words <n>] [--no-morpheus]   |   npm run lxx:pending -- --recheck --book <code> [--no-morpheus]';
+
+const chaptersText = (first: number, last: number): string => (first === last ? `chapter ${first}` : `chapters ${first}-${last}`);
+
+/**
+ * What a model story says its batch is (`--chapters 4-6 --words 624`, copied from the story): the table moves as the derivation's rules land (story
+ * mw-u2w5klk.394: Daniel batch 2 was filed as chapters 3-4, 775 words, and is 4-6, 624), so a listing whose cut is not the story's is refused, naming the table's row,
+ * before a session reads a batch the story did not mean. Both are optional.
+ */
+function expectedBatch(argv: readonly string[]): { first?: number; last?: number; words?: number } {
+  const value = (flag: string): string | undefined => {
+    const at = argv.indexOf(flag);
+    if (at < 0) return undefined;
+    const v = argv[at + 1];
+    if (!v || v.startsWith('--')) throw new Error(PENDING_USAGE);
+    return v;
+  };
+  const out: { first?: number; last?: number; words?: number } = {};
+  const range = value('--chapters');
+  if (range !== undefined) {
+    const m = /^(\d+)(?:-(\d+))?$/.exec(range);
+    if (!m) throw new Error(PENDING_USAGE);
+    out.first = Number(m[1]);
+    out.last = Number(m[2] ?? m[1]);
+    if (out.first < 1 || out.last < out.first) throw new Error(PENDING_USAGE);
+  }
+  const count = value('--words');
+  if (count !== undefined) {
+    if (!/^\d+$/.test(count)) throw new Error(PENDING_USAGE);
+    out.words = Number(count);
+  }
+  return out;
+}
 
 export async function runPending(argv: readonly string[], options: RunOptions = {}): Promise<Listing> {
   const { outDir = OUT_DIR, log = () => {} } = options;
   const args = parseBookArgs(argv, PENDING_USAGE, { batch: true });
+  const expected = expectedBatch(argv);
   requireMorpheusCache(args.book, outDir, args.noMorpheus);
   const result = await derivedBook(args.book, options);
   let name: string;
@@ -114,9 +147,18 @@ export async function runPending(argv: readonly string[], options: RunOptions = 
     const batches = batchesOf(result.book, result.pending, args.size);
     const batch = batches[(args.batch ?? 1) - 1];
     if (!batch) throw new Error(`${result.book} has ${batches.length} batches, not ${args.batch}`);
+    const chapters = chaptersText(batch.firstChapter, batch.lastChapter);
+    if ((expected.first !== undefined && (expected.first !== batch.firstChapter || expected.last !== batch.lastChapter)) || (expected.words !== undefined && expected.words !== batch.words.length)) {
+      const said = expected.first !== undefined ? chaptersText(expected.first, expected.last ?? expected.first) : chapters;
+      throw new Error(
+        [
+          `lxx:pending: ${result.book} batch ${batch.n} is ${chapters} (${batch.words.length} pending words), not ${said}${expected.words !== undefined ? ` (${expected.words} pending words)` : ''}: the batch table has moved since the story was filed.`,
+          `See the table: npm run lxx:batches -- --book ${result.book}. Say so on the story, and take the batch the table's row names (or hand the story back).`,
+        ].join('\n'),
+      );
+    }
     words = batch.words;
     name = batchName(result.book, batch.n);
-    const chapters = batch.firstChapter === batch.lastChapter ? `chapter ${batch.firstChapter}` : `chapters ${batch.firstChapter}-${batch.lastChapter}`;
     title = `# ${name}: ${chapters}, ${words.length} pending words, ${batch.noCandidate} with no candidate`;
   }
   const text = [title, ...LEGEND, ...listingLines(result.words, words)].join('\n') + '\n';
