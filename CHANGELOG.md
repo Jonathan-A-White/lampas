@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.424
+_2026-11-27_
+- Fixed: asked for a sermon the app does not list, the tutor no longer adds a stray button to the sermon source's setting.
+
 ## 0.7.421
 _2026-11-27_
 - Fixed: In the Septuagint's Hosea 6, two phrases of the English now stand beside the Greek words they translate instead of at the end of the verse before.
