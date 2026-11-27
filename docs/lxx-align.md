@@ -23,7 +23,7 @@ and a Builder's own session cuts and pairs those ([The model pass](#the-model-pa
 
 ## The commands
 
-- `npm run lxx:ship -- --out dist/data-lxx` aligns every chapter it ships (the Laptop's deploy step, docs/lxx-derivation.md 'The commands'). `npm run data:build:lxx` (public/data-lxx) is unchanged: one chunk a verse.
+- `npm run lxx:ship -- --out dist/data-lxx` aligns every chapter it ships (the deploy step, which a host runs as `npm run build:live`; docs/lxx-derivation.md 'The commands'). `npm run data:build:lxx` (public/data-lxx) is unchanged: one chunk a verse.
 - `npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>]` is that ship into `<dir>` (a temporary directory by default) and writes the aligned share of each chapter shipped into the file of its book, `docs/lxx-align/<code>.txt` ([the report](#the-report)).
 - `npm run lxx:align-expect [-- --book <code>] [--no-morpheus] [--force]` is the last step of a pairing pass ([A pairing pass](#a-pairing-pass)): the same ship, then, for each book asked, its sidecar `data/lxx/align/<code>.expect.json` and its file under `docs/lxx-align/`. It writes no file under `tests/`.
   Both read the choices under `data/lxx/choices`, so the chapters are the ones the ship ships, and both apply the model pass's files under `data/lxx/align`.

@@ -54,6 +54,8 @@
     "greek-lines:sweep": "tsx scripts/greek-lines-sweep.ts",
     "offline:sizes": "tsx scripts/offline-sizes.ts",
     "lxx:ship": "tsx scripts/lxx/ship.ts",
+    "dist:check": "tsx scripts/dist-check.ts",
+    "build:live": "npm run build && npm run lxx:ship -- --out dist/data-lxx && npm run dist:check",
     "lxx:unpaired": "tsx scripts/lxx/unpaired.ts",
     "variants:sweep": "tsx scripts/variants-sweep.ts",
     "variants:align": "tsx scripts/variants-align.ts",
