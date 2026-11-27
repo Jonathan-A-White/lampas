@@ -63,6 +63,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'David Clarkson\'s sermons', use: 'The sermon list: titles, passages, links to the scans', licence: 'Public domain; Archive\'s terms', link: 'https://archive.org/details/practicalworksof01clar' },
   { name: 'Life Bible Ministry', use: 'The sermon list: titles, passages, links and videos of Through the Bible', licence: 'Free; no terms stated', link: 'https://www.lifebibleministry.com/through-the-bible' },
   { name: 'Bible Thinker', use: 'The sermon list: titles, passages, links and videos of Mike Winger\'s teachings', licence: 'No terms stated', link: 'https://biblethinker.org/mark/' },
+  { name: 'Allen Nolan', use: 'The sermon list: titles, passages and videos of his book-by-book preaching', licence: 'YouTube\'s terms; read through its Data API', link: 'https://www.youtube.com/@allennolan' },
   LOGOS_SERMONS_CREDIT,
   { name: 'Enduring Word', use: 'A link to the chapter\'s commentary by David Guzik; no words kept', licence: 'Linking needs no permission', link: 'https://enduringword.com' },
   { name: 'Thompson Chain Topics', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=TCR' },

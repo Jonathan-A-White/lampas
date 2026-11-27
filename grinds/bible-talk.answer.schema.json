@@ -1667,6 +1667,7 @@
                   "sermons.lifebible-ttb",
                   "sermons.biblethinker",
                   "sermons.clarkson-works",
+                  "sermons.allennolan",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -2412,6 +2413,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "sermons.clarkson-works" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.allennolan" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

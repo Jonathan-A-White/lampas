@@ -12,6 +12,7 @@ import type { SermonBookFile, SermonIndex } from '../../src/data/sermonIndex';
 import type { ThemeBookFile, ThemeIndex } from '../../src/data/themeIndex';
 import { rawUrl, runSermonsBuild, sourceFingerprint, themeLicence } from '../../scripts/sermons-build';
 import { buildTheme, tidyLabel } from '../../scripts/sermons/themes';
+import { videoOf } from '../../src/sermons/video';
 
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as { books: Array<{ code: string; verses: number[] }> };
 const verses = (code: string): readonly number[] | undefined => index.books.find((b) => b.code === code)?.verses;
@@ -633,5 +634,58 @@ describe('runSermonsBuild: the clarkson-works source (mw-qtu3zvz.280.16)', () =>
     const w = clarkson({ 'clarkson-works': 'David Clarkson\'s sermons' });
     await runSermonsBuild(w.options);
     expect(readJson<SermonIndex>(join(w.options.outDir, 'index.json')).sources[0]?.name).toBe('David Clarkson\'s sermons');
+  });
+});
+
+describe('runSermonsBuild: the allennolan source (mw-qtu3zvz.280.19)', () => {
+  const toml = readFileSync('tests/fixtures/sermons/allennolan.toml', 'utf8');
+  const rows = readFileSync('tests/fixtures/sermons/allennolan-3.jsonl', 'utf8');
+  function allennolan() {
+    const dir = mkdtempSync(join(tmpdir(), 'sermons-build-'));
+    const configFile = join(dir, 'sources.json');
+    writeFileSync(configFile, JSON.stringify({ repo: 'https://github.com/Jonathan-A-White/sermon-index', commit: SHA, sources: ['allennolan'], names: { allennolan: 'Allen Nolan' } }));
+    const download = async (url: string, dest: string): Promise<void> => {
+      const { mkdirSync, writeFileSync: write } = await import('node:fs');
+      const { dirname } = await import('node:path');
+      mkdirSync(dirname(dest), { recursive: true });
+      write(dest, url.endsWith('source.toml') ? toml : rows);
+    };
+    return { dir, options: { configFile, rawDir: join(dir, 'raw'), outDir: join(dir, 'out'), download, verses } };
+  }
+
+  it('lists the source Off to start with its credit and his YouTube channel, and one file for each book its three videos touch', async () => {
+    const w = allennolan();
+    const result = await runSermonsBuild(w.options);
+    const [s] = readJson<SermonIndex>(join(w.options.outDir, 'index.json')).sources;
+    expect(s).toMatchObject({
+      id: 'allennolan',
+      name: 'Allen Nolan',
+      kind: 'sermons',
+      onByDefault: false,
+      credit: 'Pastor Allen Nolan; his YouTube channel @allennolan',
+      homepage: 'https://www.youtube.com/@allennolan',
+      rows: 3,
+    });
+    expect([...(s?.books ?? [])].sort()).toEqual(['1co', 'amo', 'rev']);
+    expect(result.sources[0]).toMatchObject({ read: 3, listed: 3, withoutRef: 0, omitted: [] });
+    expect(filesUnder(w.options.outDir)).toEqual(['1co.json', 'amo.json', 'rev.json'].map((f) => `allennolan/${f}`).concat('index.json').sort());
+  });
+
+  it('writes the YouTube watch address as the row\'s url, which the player plays, for Amos 1:11-12', async () => {
+    const w = allennolan();
+    await runSermonsBuild(w.options);
+    const amo = readJson<SermonBookFile>(join(w.options.outDir, 'allennolan', 'amo.json'));
+    expect(amo.rows).toEqual([
+      {
+        id: 'UitRgN_bX3c',
+        title: 'Book of Amos In-Depth Bible Study 10: 4 Sins of EDOM | Pastor Allen Nolan Sermon',
+        ref: { book: 'amo', chapter: 1, from: 11, to: 12 },
+        role: 'text',
+        url: 'https://www.youtube.com/watch?v=UitRgN_bX3c',
+        preacher: 'Allen Nolan',
+        date: '2018-11-13',
+      },
+    ]);
+    expect(videoOf(amo.rows[0].url)).toEqual({ kind: 'youtube', id: 'UitRgN_bX3c' });
   });
 });

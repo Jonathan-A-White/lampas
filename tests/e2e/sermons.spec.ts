@@ -409,7 +409,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   await on('Spurgeon\'s sermons', 'On');
   await on('Matthew Henry\'s sermons', 'On');
   await on('David Clarkson\'s sermons', 'On'); // On to start, as its source.toml says (mw-qtu3zvz.280.16)
-  for (const name of ['Greg Laurie\'s sermons', 'Life Bible Ministry\'s Through the Bible', 'Mike Winger\'s Bible Thinker teachings']) await on(name, 'Off'); // the last two are web lists, Off to start (mw-qtu3zvz.280.3, mw-qtu3zvz.280.4)
+  for (const name of ['Greg Laurie\'s sermons', 'Life Bible Ministry\'s Through the Bible', 'Mike Winger\'s Bible Thinker teachings', 'Allen Nolan']) await on(name, 'Off'); // the last three are web lists, Off to start (mw-qtu3zvz.280.3, mw-qtu3zvz.280.4, mw-qtu3zvz.280.19)
   // his batch 2 books (mw-qtu3zvz.18)
   for (const name of ['Spurgeon\'s My Sermon Notes', 'John Wesley\'s sermons', 'George Whitefield\'s sermons', 'D. L. Moody\'s sermons']) await on(name, 'Off');
   // his batch 3 books (mw-qtu3zvz.20), Jimmy Evans's archive among them, which names no passage
