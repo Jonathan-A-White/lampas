@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.414
+_2026-11-27_
+- New: David Clarkson's sermons now appear in the Sermons sheet, each linking to the scanned book at the Internet Archive, with an On | Off switch in Settings.
+
 ## 0.7.412
 _2026-11-26_
 - New: On the timeline, tap an event or a person for a small card with its date, verses and people; tap a verse to move the text there, and the timeline now follows you from chapter to chapter.
