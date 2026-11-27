@@ -9,7 +9,10 @@ Derived without a Morpheus cache: none.
 | Daniel 1 | 21 | 526 | 337 | 64.1% | 37.5% | — |
 | Daniel 2 | 49 | 1,267 | 851 | 67.2% | 40.6% | — |
 | Daniel 3 | 100 | 2,140 | 618 | 28.9% | 18.3% | — |
+| Daniel 4 | 34 | 1,380 | 429 | 31.1% | 16.6% | — |
+| Daniel 5 | 31 | 600 | 278 | 46.3% | 26.5% | — |
+| Daniel 6 | 28 | 831 | 395 | 47.5% | 26.5% | — |
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Daniel | 170 | 3,933 | 1,806 | 45.9% | 28.0% | — |
+| Daniel | 263 | 6,744 | 2,908 | 43.1% | 25.4% | — |
