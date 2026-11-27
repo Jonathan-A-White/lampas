@@ -336,7 +336,7 @@ Jos.10:2#11	N-NSF	Γαβαών		0.80
 Jos.10:3#3	N-NSM	Ἀδωνιβέζεκ		0.80	
 Jos.10:3#5	N-GSF	Ἱερουσαλήμ		0.80	
 Jos.10:3#7	N-ASM	αιλάμ		0.80	
-Jos.10:3#9	N-GSF	Χεβρών	unsure	0.50	model: unsure
+Jos.10:3#9	N-GSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.10:3#12	N-ASM	Φειδών		0.80	
 Jos.10:3#14	N-GSF	Ἰερειμούθ	unsure	0.50	model: unsure
 Jos.10:3#17	N-ASM	Ἰέφθα	guess	0.40	guess: the model answered with no candidates
@@ -351,7 +351,7 @@ Jos.10:5#5	N-NPM	βασιλεύς		0.80
 Jos.10:5#6	T-GPM	ὁ		0.80	
 Jos.10:5#7	N-GPM	Ἰεβουσαῖος	guess	0.40	guess: the model answered with no candidates
 Jos.10:5#9	N-GSF	Ἱερουσαλήμ		0.80	
-Jos.10:5#12	N-GSF	Χεβρών	unsure	0.50	model: unsure
+Jos.10:5#12	N-GSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.10:5#15	N-GSF	Ἰερειμούθ	unsure	0.50	model: unsure
 Jos.10:5#18	N-GSF	Λαχείς	guess	0.40	guess: the model answered with no candidates
 Jos.10:5#21	N-GSF	Ὀδολλάμ	unsure	0.50	model: unsure
@@ -448,7 +448,7 @@ Jos.10:22#11	N-APM	βασιλεύς		0.80
 Jos.10:23#2	V-2AAI-3P	ἐξάγω		0.80	
 Jos.10:23#5	N-APM	βασιλεύς		0.80	
 Jos.10:23#11	N-GSF	Ἱερουσαλήμ		0.80	
-Jos.10:23#15	N-GSF	Χεβρών	unsure	0.50	model: unsure
+Jos.10:23#15	N-GSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.10:23#19	N-GSF	Ἰερειμούθ	unsure	0.50	model: unsure
 Jos.10:23#23	N-GSF	Λαχείς	guess	0.40	guess: the model answered with no candidates
 Jos.10:23#27	N-GSF	Ὀδολλάμ	unsure	0.50	model: unsure
@@ -522,7 +522,7 @@ Jos.10:35#7	N-GSM	Ἰσραήλ		0.80
 Jos.10:35#21	N-DSF	Λαχείς	guess	0.40	guess: the model answered with no candidates
 Jos.10:36#6	N-NSM	Ἰσραήλ		0.80	
 Jos.10:36#8	P-GSM	αὐτός		0.80	
-Jos.10:36#10	N-ASF	Χεβρών	unsure	0.50	model: unsure
+Jos.10:36#10	N-ASF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.10:37#8	A-ASN	πᾶς		0.80	
 Jos.10:37#9	V-PAP-ASN	ἐμπνέω	guess	0.40	guess: the model answered with no candidates
 Jos.10:37#10	K-NPN	ὅσος		0.80	
@@ -537,6 +537,7 @@ Jos.10:39#22	V-PAP-ASN	ἐμπνέω	guess	0.40	guess: the model answered with n
 Jos.10:39#27	V-2AAI-3P	καταλείπω		0.80	
 Jos.10:39#29	A-ASM	οὐδείς		0.80	
 Jos.10:39#30	V-RPP-ASM	διασῴζω	guess	0.40	guess: the model answered with no candidates
+Jos.10:39#35	N-ASF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.10:40#23	V-2AAI-3P	καταλείπω		0.80	
 Jos.10:40#24	P-GPM	αὐτός		0.80	
 Jos.10:40#25	V-RPP-ASM	σῴζω	unsure	0.50	model: unsure
@@ -678,7 +679,7 @@ Jos.11:20#23	V-APS-3P	ἐξολεθρεύω		0.80
 Jos.11:20#29	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
 Jos.11:21#7	D-DSM	ἐκεῖνος		0.80	
 Jos.11:21#11	N-APM	Ἐνακείμ	guess	0.40	guess: the model chose outside the candidates
-Jos.11:21#16	N-GSF	Χεβρών	unsure	0.50	model: unsure
+Jos.11:21#16	N-GSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.11:21#19	N-GSF	δαβείρ	unsure	0.50	model: unsure
 Jos.11:21#22	N-GSF	Ἀναβώθ	unsure	0.50	model: unsure
 Jos.11:21#27	N-GSM	Ἰσραήλ		0.80	

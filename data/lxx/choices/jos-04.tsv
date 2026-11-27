@@ -673,7 +673,7 @@ Jos.20:7#14	N-ASF	Συχέμ		0.80
 Jos.20:7#18	T-DSN	ὁ		0.80	
 Jos.20:7#19	N-DSN	Ἐφραίμ		0.80	
 Jos.20:7#23	N-ASF	Ἀρβόκ		0.80	
-Jos.20:7#26	N-NSF	Χεβρών		0.80	
+Jos.20:7#26	N-NSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.20:8#3	T-DSN	ὁ		0.80	
 Jos.20:8#8	N-ASM	Βοσόρ		0.80	
 Jos.20:8#18	N-GSM	Ῥουβήν		0.80	

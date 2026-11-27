@@ -72,7 +72,7 @@ Jos.21:10#13	D-NSN	οὗτος	unsure	0.50	model: unsure
 Jos.21:11#3	P-DPM	αὐτός		0.80	
 Jos.21:11#7	T-GPM	ὁ		0.80	
 Jos.21:11#8	N-GSM	Ἐνάκ	unsure	0.50	model: unsure
-Jos.21:11#11	N-NSF	Χεβρών		0.80	
+Jos.21:11#11	N-NSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.21:11#15	N-GSM	Ἰούδας		0.80	
 Jos.21:11#16	T-APN	ὁ		0.80	
 Jos.21:11#18	N-APN	περισπόρια	unsure	0.50	model: unsure
@@ -82,6 +82,7 @@ Jos.21:13#4	N-GSM	Ἀαρών		0.80
 Jos.21:13#8	N-ASN	φυγαδευτήριον		0.80	
 Jos.21:13#9	T-DSM	ὁ		0.80	
 Jos.21:13#10	V-AAP-DSM	φονεύω		0.80	
+Jos.21:13#12	N-ASF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Jos.21:13#14	T-APN	ὁ		0.80	
 Jos.21:13#15	V-RPP-APN	ἀφορίζω		0.80	
 Jos.21:13#16	T-APN	ὁ		0.80	
