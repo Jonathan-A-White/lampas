@@ -37,6 +37,16 @@
       "gaps": 0,
       "model": 0,
       "leftovers": []
+    },
+    "7": {
+      "gaps": 0,
+      "model": 4,
+      "leftovers": [
+        ["7:4:away", ""],
+        ["7:4:goods", ""],
+        ["7:4:take", ""],
+        ["7:4:therefore", ""]
+      ]
     }
   }
 }
