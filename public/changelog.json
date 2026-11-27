@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.415",
+    "date": "2026-11-27",
+    "story": "mw-u2w5klk.349.195",
+    "kind": "fixed",
+    "text": "The Septuagint's Joshua 10 to 12, 14, 15, 20 and 21 now show their Greek like the rest of the book."
+  },
+  {
+    "version": "0.7.415",
+    "date": "2026-11-27",
+    "story": "mw-u2w5klk.349.155",
+    "kind": "fixed",
+    "text": "In Joshua 5:13, tapping \"drew near\" now opens the right Greek word, and \"drawn\" and \"his\" no longer open the wrong words."
+  },
+  {
+    "version": "0.7.415",
+    "date": "2026-11-27",
+    "story": "mw-u2w5klk.349.154",
+    "kind": "fixed",
+    "text": "In Leviticus 8, tapping \"of\" before \"consecration\", and a few small words like \"to\" and \"of\" in nearby verses, now opens the right Greek word."
+  },
+  {
     "version": "0.7.414",
     "date": "2026-11-27",
     "story": "mw-qtu3zvz.280.16",

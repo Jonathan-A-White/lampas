@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.415
+_2026-11-27_
+- Fixed: The Septuagint's Joshua 10 to 12, 14, 15, 20 and 21 now show their Greek like the rest of the book.
+- Fixed: In Joshua 5:13, tapping "drew near" now opens the right Greek word, and "drawn" and "his" no longer open the wrong words.
+- Fixed: In Leviticus 8, tapping "of" before "consecration", and a few small words like "to" and "of" in nearby verses, now opens the right Greek word.
+
 ## 0.7.414
 _2026-11-27_
 - New: David Clarkson's sermons now appear in the Sermons sheet, each linking to the scanned book at the Internet Archive, with an On | Off switch in Settings.
