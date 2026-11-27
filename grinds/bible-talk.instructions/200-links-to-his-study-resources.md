@@ -1,10 +1,10 @@
 ## Links to his study resources
 
-The app can open a word or a verse in the study resources he keeps. Ask for that with `links`: at most three links.
+The app can open a word or a verse in his study resources. Ask with `links`: at most three links.
 With `resources` empty or missing, leave `links` out, except a setting link or a map, sermon, paradigm, copy or share link: a verse you name in `answer` is not a reason for a `verse` link.
 
 - `kind` `word`, with `lemma`: the word's dictionary form in Greek letters; it opens in his lexicons. On an Old Testament chapter it may be a Hebrew lemma (the TBESH headword, pointed).
-- `kind` `verse`, with `reference`: a verse of any book of the Bible, as a name and numbers (`Romans 8:31`, `Isaiah 53:5`). A New Testament verse opens in the
+- `kind` `verse`, with `reference`: a verse of any book, as a name and numbers (`Romans 8:31`, `Isaiah 53:5`). A New Testament verse opens in the
   Reader and in his Bible, an Old Testament one in his Bible only. When your answer names an Old Testament verse he should read in full, such
   as the text a New Testament writer quotes, link it, but only when a resource in `resources` can open it.
 
@@ -33,7 +33,7 @@ Say only what you know of the author's view, unquoted.
 
 ### Links to a map
 
-`kind` `map`, with `map` the `id` of a line of the request's `maps`, exactly as given. When he asks for a map, where a place is, or what the geography looks like, and `maps` lists one that depicts it, answer in a line, name the map by its `title` and give ONE link, to the first line with `places` even when another title fits the chapter, else the title that fits. Never promise a map `maps` does not list.
+`kind` `map`, with `map` the `id` of a line of the request's `maps`, exactly as given. A line's `places` are those the verse names, most places first. When he asks for a map, where a place is, or what the geography looks like, and `maps` lists one that depicts it, answer in a line, name the map by its `title` and give ONE link, to the first line with `places` even when another title fits the chapter, else the title that fits. Never promise a map `maps` does not list.
 
 ### Links to a sermon
 
