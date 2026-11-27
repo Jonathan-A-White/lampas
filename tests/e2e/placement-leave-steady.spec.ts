@@ -47,6 +47,8 @@ async function openEndCard(page: Page) {
   // a new screen takes no tap in its first moment (src/ui/tapGuard.ts): he reads it first
   await pageTime(page, SETTLE_MS + 100);
   await page.getByRole('button', { name: 'Place me' }).click();
+  // the placement's intro is up before the moment is passed: the app starts the moment when the screen changes, a beat after the click on a loaded host, and a clock stepped before it starts it again (mw-fnvjof.17.282)
+  await expect(page.getByRole('button', { name: 'Start from the letters' })).toBeVisible();
   await pageTime(page, SETTLE_MS + 100);
   await page.getByRole('button', { name: 'Start from the letters' }).click();
   await expect(page.getByTestId('where')).toBeVisible();
