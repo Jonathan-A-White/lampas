@@ -14,7 +14,8 @@
 //      (ἔκλαυσαν), the indicative beside the imperative (ἀνταποδίδοτε), the future middle of a present passive (ἀποδώσομαι, ἐπιβλέψομαι), the first person beside the third plural (ἀνέσχον), the feminine genitive
 //      plural of an adjective (πονηρῶν), the third plural beside a dative plural participle (κατοικοῦσιν) and the infinitive of a verb in -άω (ζῆν), each only for a verb TBESG has and only beside the candidates.
 //   6. the personal pronoun beside TAGNT's possessive (story mw-u2w5klk.391; `PERSONAL_PRONOUNS`): TAGNT tags ἐμοῦ and μου S-1SGSN (ἐγώ) in all its 114 words, so the layers offer no P-1GS, and
-//      the Septuagint's ἐμοῦ, μου, σου are the personal pronoun as often (the choices guessed P-1GS 85 times). The settled words are as they were: P-1GS is offered beside, never a choice's candidate.
+//      the Septuagint's ἐμοῦ, μου, σου are the personal pronoun as often (the choices guessed P-1GS 85 times). Story mw-u2w5klk.393: `ἐγώ S-1SGSN` is then listed as `ἐγώ P-1GS`
+//      with its count (`personal`), for the lemma ἐγώ with a possessive tag is no reading (the possessive is ἐμός); a shipped choice that names the old code still settles its word (choices.ts), so the settled words are as they were.
 import { cngOf, withCng } from './agreement';
 import { NOTE_NO_CANDIDATE, NOTE_NOT_IN_NT, type DerivedWord, type PendingWord, type WordCandidate } from './derive';
 import { morpheusKey, type MorpheusCache } from './morpheus';
@@ -26,7 +27,7 @@ export const NOTE_COMPLETED = 'readings added beside the candidates (Morpheus, t
 const VIA_MORPHEUS = 'Morpheus: the second method, a build tool';
 export const VIA_VOCATIVE = 'the vocative beside the nominative: the same form in the plural and in the neuter';
 export const VIA_FEMININE = 'the feminine beside the masculine: the Septuagint writes this noun feminine';
-export const VIA_PRONOUN = 'the personal pronoun beside the possessive: TAGNT tags the stressed and the weak form of the genitive as the possessive';
+export const VIA_PRONOUN = 'the personal pronoun for the possessive code: TAGNT tags the stressed and the weak form of the genitive as the possessive';
 export const VIA_PARADIGM = 'the paradigm of the verb: the same form, or the form of a stem the ending rules do not offer';
 
 /** Nouns the lexicon (TBESG, the New Testament) gives masculine that the Septuagint writes feminine: σχοῖνος is ἡ σχοῖνος, a line (Ps 138:3). By bare letters. */
@@ -39,6 +40,25 @@ export const PERSONAL_PRONOUNS: ReadonlySet<string> = new Set(['ἐγώ', 'σύ'
 export function pronounCode(lemma: string, morph: string): string | undefined {
   const m = /^S-([12])([SP])([GDA])[SP][MFN]$/.exec(morph);
   return m && PERSONAL_PRONOUNS.has(lemma.normalize('NFC')) ? `P-${m[1]}${m[3]}${m[2]}` : undefined;
+}
+
+/**
+ * The candidates with each possessive code of ἐγώ or σύ listed as the personal pronoun it stands for (story mw-u2w5klk.393): TAGNT's `ἐγώ S-1SGSN` is ἐγώ P-1GS (the lemma ἐγώ with
+ * a possessive tag is no reading; the possessive is ἐμός/σός). The reading keeps its count and its place; twins of the same code (S-1SGSN and S-1SGSM, one form) are one reading, with
+ * the larger count. A choice that names the old code still finds it (`applyChoices`, `personalOf`).
+ */
+export function personal(candidates: readonly WordCandidate[]): WordCandidate[] {
+  const out: WordCandidate[] = [];
+  const converted = new Set<WordCandidate>();
+  for (const c of candidates) {
+    const pronoun = pronounCode(c.lemma, c.morph);
+    const made: WordCandidate = pronoun ? { ...c, morph: pronoun, via: [...(c.via ?? []), VIA_PRONOUN] } : c;
+    if (pronoun) converted.add(made);
+    const twin = out.findIndex((x) => x.morph === made.morph && x.lemma === made.lemma && (pronoun || converted.has(x)));
+    if (twin < 0) out.push(made);
+    else if (made.support > out[twin].support) out[twin] = made;
+  }
+  return out;
 }
 
 type Out = DerivedWord | PendingWord;
@@ -233,11 +253,7 @@ export function completeReadings(outs: readonly Out[], formOf: (ref: string) => 
       const feminine = withCng(c.morph, `${cng.slice(0, 2)}F`);
       if (!candidates.some((x) => x.morph === feminine && x.lemma === c.lemma)) candidates.push(beside(c.lemma, feminine, VIA_FEMININE));
     }
-    for (const c of [...candidates]) {
-      const pronoun = pronounCode(c.lemma, c.morph);
-      if (pronoun && !candidates.some((x) => x.morph === pronoun && x.lemma === c.lemma)) candidates.push(beside(c.lemma, pronoun, VIA_PRONOUN));
-    }
-    return parser ? withParadigm(word, candidates, formOf(word.ref), parser) : changed(word, candidates);
+    return parser ? withParadigm(word, personal(candidates), formOf(word.ref), parser) : changed(word, personal(candidates));
   });
 }
 
