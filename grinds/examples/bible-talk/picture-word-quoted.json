@@ -1,0 +1,21 @@
+{
+  "description": "He sent a picture of a word-list page holding one Greek word, περιούσιος, that is in no verse of his: the answer quotes the word as plain text and leaves `words` empty and puts it in no `words_to_add`, since a word seen only in a picture is quoted, not added to his words.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "John 11",
+    "greek": "ἐδάκρυσεν ὁ Ἰησοῦς",
+    "english": "Jesus wept.",
+    "question": "Read the picture and tell me about it.",
+    "history": [],
+    "solid_words": ["ὁ", "καί", "θεός"],
+    "pictures": 1,
+    "settings": { "theme": "phone", "textSize": "normal", "hebrewDepth": "both" }
+  },
+  "photos": ["picture-word-quoted.png"],
+  "expect": {
+    "answer": { "matches": "περιούσιος" },
+    "words": { "equals": [] },
+    "words_to_add": { "present": false },
+    "setting_offer": { "present": false }
+  }
+}
