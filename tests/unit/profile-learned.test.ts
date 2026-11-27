@@ -153,6 +153,23 @@ describe('the bible-talk instructions', () => {
   });
 });
 
+describe('what he volunteers is recorded, not asked back (mw-5r3p30.1252)', () => {
+  const text = instructionsOf('bible-talk');
+  const section = text.slice(text.indexOf('## Learning about him'));
+  it('says a field he just told you is never asked about, not even to confirm, so no profile_question', () => {
+    expect(section).toContain('never ask it back, not even to confirm, and no `profile_question`');
+  });
+  it('says so in the profile_question description too', () => {
+    const schema = JSON.parse(readFileSync('grinds/bible-talk.answer.schema.json', 'utf8')) as { properties: { profile_question: { description: string } } };
+    expect(schema.properties.profile_question.description).toContain('never for a field he just told you');
+  });
+  it('keeps the volunteered example asserting no profile_question', () => {
+    const ex = JSON.parse(readFileSync('grinds/examples/bible-talk/learn-volunteered.json', 'utf8')) as { request: { question: string }; expect: Record<string, unknown> };
+    expect(ex.expect['profile_question']).toEqual({ present: false });
+    expect(ex.request.question).toContain('I only really learn by doing things myself');
+  });
+});
+
 describe('the decline scenarios (mw-5r3p30.416): every wording of no leaves the answer with a decline and no profile_question', () => {
   const NAMES = ['learn-declined', 'learn-declined-not-telling', 'learn-declined-skip-that'];
   it.each(NAMES)('%s expects the decline recorded and no profile_question', (name) => {
