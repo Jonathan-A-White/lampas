@@ -173,6 +173,17 @@ describe.skipIf(!real.run)('Leviticus with the model pass', () => {
     [8, 28, 'their', ['αὐτῶν']],
     [8, 28, 'them', ['αὐτὰ']],
     [8, 28, 'it is', ['ἐστιν']],
+    // mw-u2w5klk.349.154: the 'of' before 'consecration' held ἀπὸ, the word of 'at' before 'their hands'
+    [8, 28, 'of', ['τῆς']],
+    [8, 28, 'at', ['ἀπὸ', 'τῶν']],
+    // the sweep of the prepositions of the moved verses: 'to' held the verb ἐστιν of 'it is', and 'of' in 8:26 held ἐξ, the word of 'with'
+    [8, 28, 'to', []],
+    [8, 28, 'is', ['ἐστιν']],
+    [8, 21, 'to', []],
+    [8, 21, 'it is', ['ἐστιν']],
+    [8, 21, 'is a', ['ἐστιν']],
+    [8, 26, 'of', ['τῆς']],
+    [8, 26, 'with', ['ἐξ']],
   ] as const)('gives the pronoun of Leviticus %i:%i its own Greek word: "%s" holds %j', (chapter, n, english, greek) => {
     const verse = withModel.get(chapter)!.verses.find((v) => v.n === n)!;
     const chunks = verse.e.filter((c) => c.t === english);
