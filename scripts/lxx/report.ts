@@ -5,7 +5,7 @@
 // mw-u2w5klk.265), and SHIPPABLE or NOT with the failing bar lines named (bar.ts: the whole book's). It is the build's one place to see a book fall short. A second run on the same inputs writes the same bytes.
 // Network only to fetch the pinned sources into data/raw (skipped when present); no paid API is called.
 // A book with a Morpheus cache (data/lxx/morpheus/<book>.tsv, morpheus.ts) also shows how many of its guesses Morpheus agreed with, differed from and did not
-// know (release.ts, morpheusCounts); a book with none shows a dash. The block names the books derived without a cache, and a host whose list is another refuses to rewrite it unless --force (mw-u2w5klk.349.52).
+// know (release.ts, morpheusCounts); a book with none shows a dash. The block names the books derived without a cache, and a host with fewer caches than the doc records refuses to rewrite it unless --force (mw-u2w5klk.349.52); one with more writes (mw-u2w5klk.401).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -238,7 +238,7 @@ export async function runReport(argv: readonly string[], options: ReportOptions 
   }
   const block = reportBlock(build, known, rows, asked.note, without);
   const before = existsSync(doc) ? readFileSync(doc, 'utf8') : `${REPORT_INTRO}${REPORT_START}\n${REPORT_END}\n`;
-  refuseOtherCaches(doc, before.slice(Math.max(0, before.indexOf(REPORT_START)), Math.max(0, before.indexOf(REPORT_END))), without, args.force === true);
+  refuseOtherCaches(doc, before.slice(Math.max(0, before.indexOf(REPORT_START)), Math.max(0, before.indexOf(REPORT_END))), without, args.force === true, true);
   const text = withReport(before, block);
   writeFileSync(doc, text);
   log(`wrote ${doc}`);

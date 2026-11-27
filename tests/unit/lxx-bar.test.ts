@@ -502,6 +502,17 @@ describe('lxx:report', async () => {
       expect(readFileSync(doc, 'utf8')).toBe(before);
     });
 
+    // mw-u2w5klk.401: the doc on main was written on a host with no caches; the Laptop, after lxx:link, has more, and its run must write without --force
+    it('writes over a doc written without caches the host now has, and records the shorter list', async () => {
+      const doc = join(tmp(), 'lxx-report.md');
+      await genOnly(doc, tmp());
+      expect(readFileSync(doc, 'utf8')).toContain('Derived without a Morpheus cache: gen.');
+      await genOnly(doc, cacheDir());
+      const written = readFileSync(doc, 'utf8');
+      expect(written).toContain('Derived without a Morpheus cache: none.');
+      expect(written).not.toContain('cache: gen.');
+    });
+
     it('--force writes it anyway and records the new list; the same caches again change nothing', async () => {
       const doc = join(tmp(), 'lxx-report.md');
       await genOnly(doc, cacheDir());
