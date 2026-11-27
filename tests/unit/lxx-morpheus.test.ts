@@ -867,21 +867,40 @@ describe('what the listing lacked (mw-u2w5klk.287): the readings of the Psalms b
       expect(shown(got[0])).toEqual(['σχοῖνος N-ASM', 'σχοῖνος N-ASF+']);
     });
 
-    it('offers the personal pronoun beside the possessive TAGNT tags the stressed ἐμοῦ and μου with: Dan 8:2#9 ἐμοῦ was S-1SGSN only, and the choices guessed P-1GS 85 times (mw-u2w5klk.391)', () => {
+    it('lists a TAGNT possessive of ἐγώ or σύ as the personal pronoun with its count, never the lemma with an S- tag: Dan 8:2#9 ἐμοῦ was S-1SGSN only, and the choices guessed P-1GS 85 times (mw-u2w5klk.391, .393)', () => {
       const got = completeReadings(
         [
           pend('a', [cand('ἐγώ', 'S-1SGSN', { support: 111 }), cand('ἐμός', 'S-1SGSN', { support: 3 }), cand('ἐγώ', 'S-1SGSM', { support: 0 })], ['not in the New Testament: for the parser']),
           pend('b', [cand('σύ', 'S-2SGSN', { support: 40 })]),
           pend('c', [cand('ἐγώ', 'S-1SGSN', { support: 5 }), cand('ἐγώ', 'P-1GS', { support: 9 })]),
           pend('d', [cand('ἐμός', 'S-1SGSN', { support: 3 })]),
+          pend('e', [cand('ἐγώ', 'S-1PGPM', { support: 7 }), cand('σύ', 'S-2SDSF', { support: 2 }), cand('σύ', 'S-2PAPN', { support: 1 }), cand('ἐγώ', 'S-1SAPN', { support: 4 })]),
         ],
-        forms({ a: 'ἐμοῦ', b: 'σου', c: 'μου', d: 'ἐμοῦ' }),
+        forms({ a: 'ἐμοῦ', b: 'σου', c: 'μου', d: 'ἐμοῦ', e: 'ἡμῶν' }),
       );
-      expect(shown(got[0])).toEqual(['ἐγώ S-1SGSN', 'ἐμός S-1SGSN', 'ἐγώ S-1SGSM', 'ἐγώ P-1GS+']);
-      expect(shown(got[1])).toEqual(['σύ S-2SGSN', 'σύ P-2GS+']);
-      // already there: nothing added; and a possessive of ἐμός alone is not the pronoun's
-      expect(shown(got[2])).toEqual(['ἐγώ S-1SGSN', 'ἐγώ P-1GS']);
+      // the count stays with the pronoun; the possessive of ἐμός is its own; the twin ἐγώ S-1SGSM (the same form, count 0) is the same reading
+      expect(got[0].candidates.map((c) => `${c.lemma} ${c.morph} ${c.support}`)).toEqual(['ἐγώ P-1GS 111', 'ἐμός S-1SGSN 3']);
+      expect(shown(got[1])).toEqual(['σύ P-2GS']);
+      // already there: one reading, the larger count
+      expect(got[2].candidates.map((c) => `${c.lemma} ${c.morph} ${c.support}`)).toEqual(['ἐγώ P-1GS 9']);
       expect(shown(got[3])).toEqual(['ἐμός S-1SGSN']);
+      // the other cases and numbers of the pair
+      expect(shown(got[4])).toEqual(['ἐγώ P-1GP', 'σύ P-2DS', 'σύ P-2AP', 'ἐγώ P-1AS']);
+      for (const w of got) for (const c of w.candidates) expect(/^S-/.test(c.morph) && ['ἐγώ', 'σύ'].includes(c.lemma)).toBe(false);
+    });
+
+    it('a choice written when the listing offered ἐγώ S-1SGSN still settles the word, and ships the code it names (shipped choices change only with a model pass; mw-u2w5klk.393)', () => {
+      const [word] = completeReadings([pend('Dan.8:2#9', [cand('ἐγώ', 'S-1SGSN', { support: 111 }), cand('ἐμός', 'S-1SGSN', { support: 3 })])], forms({ 'Dan.8:2#9': 'ἐμοῦ' }));
+      for (const row of ['Dan.8:2#9\tS-1SGSN\tἐγώ\t', 'Dan.8:2#9\tS-1SGSN\t\t']) {
+        const got = applyChoices([word as never], readChoices(`ref\tparsing\tlemma\tmark\n${row}\n`));
+        expect(got.refused).toEqual([]);
+        expect(got.chosen.map((w) => `${w.lemma} ${w.morph} ${w.confidence}`)).toEqual(['ἐγώ S-1SGSN 0.8']);
+      }
+      // the reading it is now listed as, and the possessive of ἐμός, settle as they are named; σύ's too
+      const pron = applyChoices([word as never], readChoices('ref\tparsing\tlemma\tmark\nDan.8:2#9\tP-1GS\tἐγώ\t\n'));
+      expect(pron.chosen.map((w) => `${w.lemma} ${w.morph}`)).toEqual(['ἐγώ P-1GS']);
+      const [you] = completeReadings([pend('Dan.8:2#10', [cand('σύ', 'S-2SGSN', { support: 40 })])], forms({ 'Dan.8:2#10': 'σου' }));
+      expect(applyChoices([you as never], readChoices('ref\tparsing\tlemma\tmark\nDan.8:2#10\tS-2SGSN\tσύ\t\n')).chosen.map((w) => w.morph)).toEqual(['S-2SGSN']);
     });
   });
 

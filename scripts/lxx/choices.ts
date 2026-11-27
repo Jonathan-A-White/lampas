@@ -5,6 +5,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { DerivedWord, PendingWord, WordCandidate } from './derive';
+import { pronounCode } from './complete';
 import { dictionaryLemma } from './parser';
 
 /** unsure: the model chose among the candidates but said so; guess: its own answer, which is a guess whatever the candidates were */
@@ -123,12 +124,16 @@ export function applyChoices(pending: readonly PendingWord[], choices: ReadonlyM
       continue;
     }
     seen.add(word.ref);
-    const hit: WordCandidate | undefined = word.candidates.find((c) => c.morph === pick.parsing && (!pick.lemma || sameLemma(c.lemma, pick.lemma)));
+    // a choice written when the listing offered `ἐγώ S-1SGSN` (TAGNT's possessive code of the pronoun) names a reading the listing now has as `ἐγώ P-1GS` (complete.ts `personal`, story
+    // mw-u2w5klk.393): it still settles the word, in the candidates' order as before, and ships the code it names
+    const named = (c: WordCandidate): boolean => !pick.lemma || sameLemma(c.lemma, pick.lemma);
+    const hit: WordCandidate | undefined = word.candidates.find((c) => named(c) && (c.morph === pick.parsing || pronounCode(c.lemma, pick.parsing) === c.morph));
+    const possessive = hit !== undefined && hit.morph !== pick.parsing;
     if (hit && pick.mark !== 'guess') {
       chosen.push({
         ref: word.ref,
         lemma: hit.lemma,
-        morph: hit.morph,
+        morph: possessive ? pick.parsing : hit.morph,
         layer: 3,
         confidence: pick.mark === 'unsure' ? CONFIDENCE_UNSURE : CONFIDENCE_CHOSEN,
         candidates: word.candidates,
