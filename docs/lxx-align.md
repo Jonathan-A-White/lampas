@@ -28,7 +28,7 @@ and a Builder's own session cuts and pairs those ([The model pass](#the-model-pa
 - `npm run lxx:align-expect [-- --book <code>] [--no-morpheus] [--force]` is the last step of a pairing pass ([A pairing pass](#a-pairing-pass)): the same ship, then, for each book asked, its sidecar `data/lxx/align/<code>.expect.json` and its file under `docs/lxx-align/`. It writes no file under `tests/`.
   Both read the choices under `data/lxx/choices`, so the chapters are the ones the ship ships, and both apply the model pass's files under `data/lxx/align`.
   Which chapters ship depends on which books have a Morpheus cache (git-ignored; a worktree borrows the Laptop's with `npm run lxx:link`), so each book's file in [the report](#the-report) opens with the line 'Derived without a Morpheus cache: ...'.
-  A run on a host whose cache for a book is not the one its file records leaves the file as it was and fails, naming both; `--force` writes it anyway (story mw-u2w5klk.349.24).
+  A run on a host with FEWER caches than its file records (one that would drop a book's Morpheus-derived lines) leaves the file as it was and fails, naming both; a host with more writes over it; `--force` writes it anyway (stories mw-u2w5klk.349.24, .403).
 - `npm run lxx:unpaired [-- --book <code>] [--no-morpheus]` is the same ship into a temporary directory and a count of the English content words that sit where a tap opens no Greek word, per chapter and book ([The unpaired English](#the-unpaired-english)). It prints, writes nothing and never fails on a gap.
 - `npm run lxx:align-choose -- --list --book gen --chapter 1` prints the verses of a chapter that still have a remainder; `npm run lxx:align-choose -- --book gen --chapter 1 --from <file>` checks a model session's file and writes `data/lxx/align/gen-01.tsv`.
 
@@ -128,6 +128,6 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 The report is one file a book, `docs/lxx-align/<code>.txt` (`gen.txt`, `exo.txt`, ...; a `.txt`, because CLAUDE.md names every `.md` under `docs/`), so two passes on two books write no file in common (mw-u2w5klk.349.73).
 Each opens with the book's name, a line that it is GENERATED, and 'Derived without a Morpheus cache: <code>.' or '... none.' for this book alone, then 'Each chapter shipped' (a row for each chapter the ship wrote) and the book's own row.
 `npm run lxx:align-expect -- --book gen` writes the book's file (and its sidecar, [A pairing pass](#a-pairing-pass)); `npm run lxx:align` writes the file of every book it ships.
-A run on a host whose Morpheus cache for the book is not the one the file was written with leaves it as it was and fails, naming both lists; `--force` writes it anyway.
+A run on a host with a Morpheus cache fewer than the file was written with leaves it as it was and fails, naming both lists; a host with more caches writes over it; `--force` writes it anyway.
 `tests/unit/lxx-align-choose-gen.test.ts` fails, naming the command, when a file differs from what the ship gives (on a host whose cache for the book is the file's).
 There is no total across books in the files, since a total would be a file every pass writes: add the book rows when you want it.

@@ -699,12 +699,13 @@ export function renderBookReport(shares: readonly AlignShare[], without: boolean
 
 /**
  * Writes the book's file (docs/lxx-align/<code>.txt), where `shares` are its chapters; false where the file already says it. A file written on a host whose Morpheus cache for the book was another is
- * left as it was and the run fails, naming both (mw-u2w5klk.349.24); `force` writes it anyway.
+ * left as it was and the run fails, naming both (mw-u2w5klk.349.24); `force` writes it anyway. As lxx:report does (mw-u2w5klk.401), a host with MORE caches than the file records writes over it
+ * (mw-u2w5klk.403): only a run without a cache the file records having would drop Morpheus-derived lines, and that one is refused.
  */
 export function writeBookReport(file: string, shares: readonly AlignShare[], without: boolean, force = false): boolean {
   if (shares.length === 0) throw new Error(`no chapter of the book was shipped, so ${file} is left as it was`);
   const now = existsSync(file) ? readFileSync(file, 'utf8') : undefined;
-  if (now !== undefined) refuseOtherCaches(file, now, without ? [shares[0].code] : [], force);
+  if (now !== undefined) refuseOtherCaches(file, now, without ? [shares[0].code] : [], force, true);
   const next = renderBookReport(shares, without);
   if (next === now) return false;
   mkdirSync(dirname(file), { recursive: true });

@@ -12,7 +12,7 @@ import { weaveVerse } from '../../src/data/weave';
 import { buildLxx, LEXICON_FILE, type LxxIndex, type LxxInput, type LxxLexiconEntry } from '../../scripts/data-build-lxx';
 import { chapterFingerprint } from '../../scripts/data/chapterWriter';
 import {
-  alignChapter, alignReportFile, SUPPLIED_FOR_VERB, alignVerse, renderAlignReport, renderBookReport, runAlign, type AlignShare, type AlignSink,
+  alignChapter, alignReportFile, SUPPLIED_FOR_VERB, alignVerse, renderAlignReport, renderBookReport, runAlign, writeBookReport, type AlignShare, type AlignSink,
 } from '../../scripts/lxx/align';
 import { readModelRows } from '../../scripts/lxx/align-choose';
 import { deriveBook, type DeriveInput } from '../../scripts/lxx/derive';
@@ -558,6 +558,30 @@ describe('npm run lxx:ship carries the chunks to the directory', () => {
     writeFileSync(join(reportDir, 'gen.txt'), before);
     await expect(runAlign(['--out', tmp(), '--no-morpheus'], { ...options(), reportDir, log: () => undefined })).rejects.toThrow(/without a Morpheus cache: none.*without a cache for: gen.*--force/s);
     expect(readFileSync(join(reportDir, 'gen.txt'), 'utf8')).toBe(before);
+  });
+
+  // mw-u2w5klk.403: as lxx:report does (.401), a host with MORE caches than the file records writes over it; only a host with fewer is refused
+  describe('writeBookReport and the caches of the host that wrote the file', () => {
+    const shares: AlignShare[] = [{ code: 'gen', book: 'Genesis', chapter: 1, verses: 31, words: 751, paired: 600, sure: 500, tokens: 800, pairedTokens: 600, model: 0 }];
+
+    it('rewrites a file recorded without the book\'s cache, on a run that has it, with no --force', () => {
+      const file = join(tmp(), 'gen.txt');
+      writeFileSync(file, renderBookReport(shares, true));
+      expect(writeBookReport(file, shares, false)).toBe(true);
+      const text = readFileSync(file, 'utf8');
+      expect(text).toContain('Derived without a Morpheus cache: none.');
+      expect(text).not.toContain('cache: gen.');
+    });
+
+    it('still refuses a file recorded with the cache on a run without it, naming both, and --force writes it', () => {
+      const file = join(tmp(), 'gen.txt');
+      const before = renderBookReport(shares, false);
+      writeFileSync(file, before);
+      expect(() => writeBookReport(file, shares, true)).toThrow(/without a Morpheus cache: none.*without a cache for: gen.*--force/s);
+      expect(readFileSync(file, 'utf8')).toBe(before);
+      expect(writeBookReport(file, shares, true, true)).toBe(true);
+      expect(readFileSync(file, 'utf8')).toContain('Derived without a Morpheus cache: gen.');
+    });
   });
 
   it('--force writes it anyway, and records the new state', async () => {
