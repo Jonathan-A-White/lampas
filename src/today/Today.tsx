@@ -493,11 +493,12 @@ const COULD_HOLD: readonly { key: string; name: string; text: string }[] = [
   { key: 'dailyDevotional', name: 'Devotional', text: 'one devotional for the day, from your Logos library or Morning RePhil' },
 ];
 
-/** The pieces that exist to open Logos: drawn only while it is On. (The Psalms and Proverbs read in Lampas since mw-5r3p30.1007.) */
-const LOGOS_PIECES: readonly string[] = ['dailyDevotional'];
+/** The pieces drawn only when something can be drawn for them: the Devotional, which devotionalToday leaves out with Logos Off and a Logos book chosen, but draws as Morning RePhil, a web page that needs no Logos.
+ *  (The Psalms and Proverbs read in Lampas since mw-5r3p30.1007.) */
+const DRAWN_PIECES: readonly string[] = ['dailyDevotional'];
 
-/** With nothing switched on: the first time, a kind explanation of what Today could hold; once he has changed a Daily row, only where to choose. */
-function Nothing({ logosOn }: { logosOn: boolean }) {
+/** With nothing switched on: the first time, a kind explanation of what Today could hold; once he has changed a Daily row, only where to choose. `devotionalDrawn`: Today would draw a devotional were the piece On. */
+function Nothing({ devotionalDrawn }: { devotionalDrawn: boolean }) {
   const explained = useLiveQuery(async () => ({ at: await getExplained() }), []);
   useEffect(() => {
     if (explained && explained.at === undefined) void noteExplained();
@@ -518,7 +519,7 @@ function Nothing({ logosOn }: { logosOn: boolean }) {
       <p className="text-lg font-medium">Today is empty for now.</p>
       <p className="pt-1 text-base text-muted">It can gather the day in one place, and you choose what goes on it. Turn on any of these:</p>
       <ul className="divide-y divide-line pt-3">
-        {COULD_HOLD.filter((piece) => logosOn || !LOGOS_PIECES.includes(piece.key)).map((piece) => (
+        {COULD_HOLD.filter((piece) => devotionalDrawn || !DRAWN_PIECES.includes(piece.key)).map((piece) => (
           <li key={piece.key} className="py-2">
             <p className="text-base font-medium">{piece.name}</p>
             <p className="text-base text-muted">{piece.text}</p>
@@ -539,7 +540,6 @@ export function Today() {
   const memorize = useSetting(dailyMemorizeSetting);
   const plan = useSetting(dailyPlanSetting);
   const kept = { psalms: useSetting(dailyPsalmsSetting), devotional: useSetting(dailyDevotionalSetting) };
-  const logosOn = useLogosOn();
   const sources = useDrawSources();
   const psalms = kept.psalms;
   const tickBoxes = useSetting(dailyTicksSetting);
@@ -577,7 +577,7 @@ export function Today() {
       <ScreenHeader title="Today" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} action={<HeaderButton onClick={() => openSetting('dailyReview')}>Settings</HeaderButton>} />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-3">
         <div>
-          {!ready ? null : none ? <Nothing logosOn={logosOn === true} /> : null}
+          {!ready ? null : none ? <Nothing devotionalDrawn={todays !== undefined} /> : null}
           {ready && review === 'on' ? <ReviewPiece ticks={ticks} /> : null}
           {ready && memorize === 'on' ? <MemorizePiece ticks={ticks} /> : null}
           {ready && plan === 'on' ? <PlanPiece ticks={ticks} date={date} /> : null}

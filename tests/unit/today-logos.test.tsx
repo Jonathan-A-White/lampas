@@ -81,6 +81,15 @@ describe('Today with Logos Off', () => {
     expect(explained).toHaveTextContent('Review');
   });
 
+  it('with nothing switched on and Which devotional on Morning RePhil, a web page that needs no Logos, still names the Devotional among what Today could hold', async () => {
+    await db.settings.bulkPut(['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'].map((key) => ({ key, value: 'off' })).concat([{ key: 'resource.logos', value: 'off' }]));
+    await db.settings.put({ key: 'devotional', value: MORNING_REPHIL_ID });
+    render(<Today />);
+    const explained = await screen.findByTestId('today-explained');
+    expect(explained).toHaveTextContent('Devotional');
+    expect(within(explained).getByRole('button', { name: 'Turn on Devotional in Settings' })).toBeInTheDocument();
+  });
+
   it('explains the Devotional as one devotional for the day, not as one opened in Logos, since it can be Morning RePhil (mw-r9xo1pj.31)', async () => {
     await db.settings.bulkPut(['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'].map((key) => ({ key, value: 'off' })).concat([{ key: 'resource.logos', value: 'on' }]));
     render(<Today />);
