@@ -16,7 +16,9 @@ Derived without a Morpheus cache: none.
 | Daniel 8 | 27 | 677 | 485 | 71.6% | 45.8% | — |
 | Daniel 9 | 27 | 829 | 532 | 64.2% | 38.7% | — |
 | Daniel 10 | 21 | 551 | 399 | 72.4% | 46.8% | — |
+| Daniel 11 | 45 | 1,094 | 743 | 67.9% | 38.3% | — |
+| Daniel 12 | 13 | 322 | 200 | 62.1% | 36.0% | — |
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Daniel | 366 | 9,536 | 4,827 | 50.6% | 30.5% | — |
+| Daniel | 424 | 10,952 | 5,770 | 52.7% | 31.5% | — |
