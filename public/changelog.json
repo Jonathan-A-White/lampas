@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.417",
+    "date": "2026-11-27",
+    "story": "mw-qtu3zvz.280.19",
+    "kind": "new",
+    "text": "Pastor Allen Nolan's book-by-book preaching videos (Revelation, Isaiah, Amos and more) can be switched on in Sermon sources and play from the Sermons sheet."
+  },
+  {
+    "version": "0.7.417",
+    "date": "2026-11-27",
+    "story": "mw-u2w5klk.349.157",
+    "kind": "fixed",
+    "text": "In the Septuagint's Jonah 2, 'to the clefts of the mountains' now sits with the Greek words it translates, at the end of verse 6."
+  },
+  {
+    "version": "0.7.417",
+    "date": "2026-11-27",
+    "story": "mw-fnvjof.17.349",
+    "kind": "fixed",
+    "text": "When Today is empty and Logos is off, it now offers the Devotional if you have chosen Morning RePhil."
+  },
+  {
     "version": "0.7.415",
     "date": "2026-11-27",
     "story": "mw-u2w5klk.349.195",

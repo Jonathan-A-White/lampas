@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.417
+_2026-11-27_
+- New: Pastor Allen Nolan's book-by-book preaching videos (Revelation, Isaiah, Amos and more) can be switched on in Sermon sources and play from the Sermons sheet.
+- Fixed: In the Septuagint's Jonah 2, 'to the clefts of the mountains' now sits with the Greek words it translates, at the end of verse 6.
+- Fixed: When Today is empty and Logos is off, it now offers the Devotional if you have chosen Morning RePhil.
+
 ## 0.7.415
 _2026-11-27_
 - Fixed: The Septuagint's Joshua 10 to 12, 14, 15, 20 and 21 now show their Greek like the rest of the book.
