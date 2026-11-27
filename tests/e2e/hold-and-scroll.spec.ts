@@ -3,7 +3,7 @@
 // Two real touch points through CDP Input.dispatchTouchEvent (tests/e2e/bottom-reach.spec.ts's way of a phone's own touches), on the Memorize session of Exodus 20:8-12 (five verses: one piece, since a longer passage is learned a piece at a time, src/memorize/pieces.ts, and a piece of Exodus 20:1-17 is too short to scroll),
 // 'English · Read and say · step 1 of 7', whose foot is the kit's hold bar (src/talk/Bars.tsx HeldTalkBar).
 import { expect, test, type CDPSession, type Locator, type Page } from '@playwright/test';
-import { clips, honestMic } from '../support/honest-fakes';
+import { clips, countRecognised, honestMic, recognised } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -36,10 +36,22 @@ async function watchBar(bar: Locator): Promise<void> {
     el.addEventListener('pointercancel', () => (seen.cancel += 1));
   });
 }
+/**
+ * Waits until the recogniser has heard words (the clip is heard in real time while a finger holds the bar): a hold let go before the first word is heard as nothing, and sends nothing
+ * ('Try again'), which a loaded host showed (mw-fnvjof.17.238). The wait is on what the recogniser has heard, not on a time.
+ */
+const heardSome = (page: Page) =>
+  expect
+    .poll(async () => {
+      const heard = await recognised(page);
+      return heard.interim + heard.final;
+    })
+    .toBeGreaterThan(0);
 const barSeen = (page: Page) => page.evaluate(() => (window as unknown as { barSeen: { down: number; up: number; cancel: number } }).barSeen);
 
 async function openPassage(page: Page): Promise<{ bar: Locator; area: Locator; scroller: Locator }> {
   await honestMic(page, { clip: clips.english });
+  await countRecognised(page);
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse]').first()).toBeVisible();
@@ -81,6 +93,7 @@ test('a second finger scrolls the passage while Hold to say it is held: the hold
     await touch.send('touchEnd', [dragged]); // a touchEnd names the fingers that lift
     await expect(bar).toHaveText(/Release to send/);
     expect((await barSeen(page)).cancel).toBe(0);
+    await heardSome(page);
     await touch.send('touchEnd', [first]);
   } finally {
     await touch.done();
@@ -105,11 +118,11 @@ test('a second finger that touches the bar and lifts leaves the hold: it is sent
     const second: Finger = { x: box.x + 12, y: hold.y, id: 2 };
     await touch.send('touchStart', [first, second]);
     await touch.send('touchEnd', [second]);
-    await page.waitForTimeout(300); // a real-time wait: a window in which nothing must happen (the lift of the second finger must not send)
+    // the window in which nothing must happen (the lift of the second finger must not send) is the time the clip takes to be heard: the first finger lifts only after words were heard
+    await heardSome(page);
     await expect(bar).toHaveText(/Release to send/);
     await expect(page.getByTestId('judgement')).toHaveCount(0);
     expect((await barSeen(page)).cancel).toBe(0);
-    await page.waitForTimeout(2800); // a real-time wait: the clip is heard in real time while the finger holds; a hold lifted at 300 ms was heard as nothing ('Try again') on a loaded host
     await touch.send('touchEnd', [first]);
   } finally {
     await touch.done();
@@ -189,6 +202,7 @@ const putGoal = (page: Page, value: string) =>
 
 async function openSayIt(page: Page): Promise<Locator> {
   await honestMic(page, { clip: { ...clips.english, transcript: 'delta' } });
+  await countRecognised(page);
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
@@ -231,7 +245,7 @@ test('on the letter drill a second finger on the card leaves the hold alone, and
     await touch.send('touchEnd', [{ ...second, y: second.y - 120 }]);
     await expect(bar).toHaveText(/Let go when you have said it/);
     expect((await barSeen(page)).cancel).toBe(0);
-    await page.waitForTimeout(4500); // a real-time wait: the clip ('delta') is heard in real time while the finger holds, as tests/e2e/say-it.spec.ts's hold of 4500 ms
+    await heardSome(page); // the clip ('delta') is heard in real time while the finger holds
     await touch.send('touchEnd', [first]);
   } finally {
     await touch.done();
@@ -255,10 +269,10 @@ test('on the letter drill a second finger that touches the bar and lifts leaves 
     const second: Finger = { x: box.x + 12, y: hold.y, id: 2 };
     await touch.send('touchStart', [first, second]);
     await touch.send('touchEnd', [second]);
-    await page.waitForTimeout(300); // a real-time wait: a window in which nothing must happen (the lift of the second finger must not send)
+    // the window in which nothing must happen (the lift of the second finger must not send) is the time the clip takes to be heard
+    await heardSome(page);
     await expect(bar).toHaveText(/Let go when you have said it/);
     await expect(drill.getByTestId('say-result')).toHaveCount(0);
-    await page.waitForTimeout(4200); // a real-time wait: the clip is heard in real time while the finger holds
     await touch.send('touchEnd', [first]);
   } finally {
     await touch.done();

@@ -74,6 +74,36 @@ export async function honestMic(page: Page, options: MicScriptOptions = {}): Pro
   await page.addInitScript(micInitScript({ clip: clips.english, ...options }));
 }
 
+/**
+ * Counts what the page's recogniser has heard, from the first script (after honestMic): each recogniser the app makes adds one to `interim` for a result of words so far and one to `final`
+ * for the clip heard whole. A spec that holds a bar while the clip is heard waits on `recognised(page)` instead of a fixed time: a hold let go before the first word was heard is heard as nothing.
+ */
+export async function countRecognised(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    type Listen = { addEventListener(type: 'result', listener: (e: { results: ArrayLike<{ isFinal: boolean }> }) => void): void };
+    const host = window as unknown as Record<string, (new () => Listen) | undefined> & { __recognised?: { interim: number; final: number } };
+    const Base = host.SpeechRecognition;
+    if (!Base) return;
+    const seen = { interim: 0, final: 0 };
+    host.__recognised = seen;
+    class Counting extends Base {
+      constructor() {
+        super();
+        this.addEventListener('result', (e) => {
+          if (e.results[0]?.isFinal) seen.final += 1;
+          else seen.interim += 1;
+        });
+      }
+    }
+    host.SpeechRecognition = Counting;
+    host.webkitSpeechRecognition = Counting;
+  });
+}
+
+/** What countRecognised has counted so far: results of words heard so far, and the clip heard whole. */
+export const recognised = (page: Page): Promise<{ interim: number; final: number }> =>
+  page.evaluate(() => (window as unknown as { __recognised?: { interim: number; final: number } }).__recognised ?? { interim: 0, final: 0 });
+
 /** The wake word on the page from the first script: startWake hands itself to the kit's fake, which opens no microphone (Hands-free, mw-rl10piw.6). */
 export async function honestWake(page: Page, options: WakeFakeOptions = {}): Promise<void> {
   await page.addInitScript(wakeInitScript(options));

@@ -45,7 +45,8 @@ const englishOf = (v: Verse): string => squash(v.e.map((c) => c.t).join(' '));
 async function openShare(page: Page): Promise<void> {
   await openUnlocked(page);
   await noRecording(page);
-  await honestSpeech(page, { msPerWord: 1 });
+  // 645 verses are read: the kit's 150 ms before each one's first word was 97 s of a 240 s test, and on a loaded host the suite's run timed out (mw-fnvjof.17.276)
+  await honestSpeech(page, { msPerWord: 1, baseMs: 1 });
   await page.goto('/');
   await expect(page.locator('[data-verse]').first()).toBeVisible();
   await page.evaluate(
