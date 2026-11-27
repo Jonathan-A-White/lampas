@@ -669,3 +669,24 @@ describe("LXX2012's Joshua 20 and 21 stand at the Greek verses their text is", (
     expect(unplacedVerses(placedAt, new Set([...range(1, 9).map((v) => `jos 20:${v}`), ...range(1, 45).map((v) => `jos 21:${v}`)]))).toEqual([]);
   });
 });
+
+// mw-u2w5klk.349.157: Brenton's Jonah 2:7 begins 'to the clefts of the mountains;', which ends Swete's 2:6 (εἰς σχισμὰς ὀρέων): LXX2012_SPLITS cuts those words off the verse and stands them at the Greek verse they render.
+describe("LXX2012's Jonah 2:7 begins with the last words of the Greek 2:6", () => {
+  const jonah = parseUsfm(fixture('lxx2012-jon-2.usfm'));
+  const maps = buildMaps([]);
+  it('stands "to the clefts of the mountains;" at the end of the Greek 2:6 and the rest of the verse at the Greek 2:7', () => {
+    const { byGreek, placedAt } = englishByGreekVerse(jonah, maps);
+    const text = (ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' | ');
+    expect(text('jon 2:6')).toBe('Water was poured around me to the soul: the lowest deep compassed me, my head went down | to the clefts of the mountains;');
+    expect(text('jon 2:7')).toMatch(/^I went down into the earth, whose bars are the everlasting barriers:/);
+    expect(text('jon 2:7')).not.toMatch(/clefts/);
+    expect(placedAt.get('jon 2:7')).toBe('jon 2:7');
+    expect(placedAt.get('jon 2:6')).toBe('jon 2:6');
+  });
+  it('keeps the positions of the supplied words of the part left in the verse', () => {
+    const { byGreek } = englishByGreekVerse(jonah, maps);
+    // 2:7 has no supplied word; 2:11's ('land') and 2:10's ('my') are as the USFM has them
+    expect(byGreek.get('jon 2:7')?.[0].supplied).toEqual([]);
+    expect(byGreek.get('jon 2:10')?.[0].supplied).toEqual(jonah.chapters[0].verses.find((v) => v.verse === 10)!.supplied);
+  });
+});
