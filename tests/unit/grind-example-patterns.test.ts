@@ -82,3 +82,34 @@ describe.each([
     expect(re.test(answer)).toBe(true);
   });
 });
+
+// mw-fnvjof.17.360: form-all-filled's answer is one sentence with no question mark that never names the empty optional field
+// ("Why would it help?"): its two patterns, read from the JSON, over answers they must refuse and pass.
+describe('the answer patterns of form-all-filled', () => {
+  const json = JSON.parse(readFileSync('grinds/examples/bible-talk/form-all-filled.json', 'utf8')) as { expect: { answer: { all: { matches: string }[] } } };
+  const patterns = json.expect.answer.all.map((check) => check.matches);
+  const passes = (answer: string): boolean => patterns.every((pattern) => new RegExp(pattern).test(answer));
+
+  it('are ones the mill can read', () => {
+    for (const pattern of patterns) expect(usesBeyondRe2(pattern)).toBe(false);
+  });
+  it.each([
+    'That is everything I need, so tap Send when you are ready.',
+    'Everything is filled in; tap Send when you like.',
+  ])('passes %j', (answer) => {
+    expect(passes(answer)).toBe(true);
+  });
+  it.each([
+    'It is all filled in. Tap Send when you are ready.',
+    'Everything is filled in; would you like to say why it would help?',
+    'Everything is filled in, so tap Send.\nWhat else?',
+    'Tap Send. Why would it help?',
+    'It is filled in; tell me why it would help, or tap Send.',
+    'It is filled in; I could help you say more, or tap Send.',
+    'It is filled in; tap Send when you WHY are ready.',
+    'Done.',
+    '',
+  ])('refuses %j', (answer) => {
+    expect(passes(answer)).toBe(false);
+  });
+});

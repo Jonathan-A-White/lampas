@@ -1,0 +1,78 @@
+{
+  "description": "Every required field holds something and his last words fill an optional one (the kind): the tutor says so in one sentence, with no question mark, never names the empty why field and leaves form_ask out.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Ask for a book",
+    "question": "It is a grammar.",
+    "history": [
+      {
+        "q": "Help me fill this in.",
+        "a": "Which book would you like to ask for?"
+      }
+    ],
+    "solid_words": [],
+    "settings": {},
+    "screen": {
+      "name": "Ask for a book",
+      "facts": []
+    },
+    "form": {
+      "name": "Ask for a book",
+      "command": "ask-for-book",
+      "fields": [
+        {
+          "name": "title",
+          "label": "Which book?",
+          "hint": "The title, and its author if you know it",
+          "required": true,
+          "kind": "text",
+          "value": "Mounce, Basics of Biblical Greek"
+        },
+        {
+          "name": "kind",
+          "label": "Kind of book",
+          "required": false,
+          "kind": "choice",
+          "value": "",
+          "options": [
+            "Lexicon",
+            "Grammar",
+            "Greek text",
+            "Interlinear",
+            "Commentary",
+            "Bible",
+            "Devotional"
+          ]
+        },
+        {
+          "name": "why",
+          "label": "Why would it help?",
+          "required": false,
+          "kind": "text",
+          "value": ""
+        }
+      ]
+    }
+  },
+  "expect": {
+    "words": {
+      "equals": []
+    },
+    "answer": {
+      "all": [
+        {
+          "matches": "^[^.!?\\n]{10,200}[.!]$"
+        },
+        {
+          "matches": "^(?:(?:(?:(?:(?:(?:(?:(?:[yY]|[eE])|[lL])|[pP])|[^wWhHyYeElLpP])|[hH](?:(?:[hH]|[eE](?:[hH]|[lL][hH])))*(?:(?:(?:(?:[yY]|[lL])|[pP])|[^wWhHyYeElLpP])|[eE](?:(?:(?:(?:[yY]|[eE])|[pP])|[^wWhHyYeElLpP])|[lL](?:(?:(?:[yY]|[eE])|[lL])|[^wWhHyYeElLpP]))))|(?:[wW]|[hH](?:(?:[hH]|[eE](?:[hH]|[lL][hH])))*(?:[wW]|[eE](?:[wW]|[lL][wW])))(?:(?:[wW]|[hH](?:(?:[wW]|[eE](?:[wW]|[lL][wW]))|(?:[hH]|[eE](?:[hH]|[lL][hH]))(?:(?:[hH]|[eE](?:[hH]|[lL][hH])))*(?:[wW]|[eE](?:[wW]|[lL][wW])))))*(?:(?:(?:(?:(?:[yY]|[eE])|[lL])|[pP])|[^wWhHyYeElLpP])|[hH](?:(?:(?:(?:[lL]|[pP])|[^wWhHyYeElLpP])|[eE](?:(?:(?:(?:[yY]|[eE])|[pP])|[^wWhHyYeElLpP])|[lL](?:(?:(?:[yY]|[eE])|[lL])|[^wWhHyYeElLpP])))|(?:[hH]|[eE](?:[hH]|[lL][hH]))(?:(?:[hH]|[eE](?:[hH]|[lL][hH])))*(?:(?:(?:(?:[yY]|[lL])|[pP])|[^wWhHyYeElLpP])|[eE](?:(?:(?:(?:[yY]|[eE])|[pP])|[^wWhHyYeElLpP])|[lL](?:(?:(?:[yY]|[eE])|[lL])|[^wWhHyYeElLpP])))))))*(?:(?:|[hH](?:(?:[hH]|[eE](?:[hH]|[lL][hH])))*(?:|[eE](?:|[lL])))|(?:[wW]|[hH](?:(?:[hH]|[eE](?:[hH]|[lL][hH])))*(?:[wW]|[eE](?:[wW]|[lL][wW])))(?:(?:[wW]|[hH](?:(?:[wW]|[eE](?:[wW]|[lL][wW]))|(?:[hH]|[eE](?:[hH]|[lL][hH]))(?:(?:[hH]|[eE](?:[hH]|[lL][hH])))*(?:[wW]|[eE](?:[wW]|[lL][wW])))))*(?:|[hH](?:(?:|[eE](?:|[lL]))|(?:[hH]|[eE](?:[hH]|[lL][hH]))(?:(?:[hH]|[eE](?:[hH]|[lL][hH])))*(?:|[eE](?:|[lL]))))))$"
+        }
+      ]
+    },
+    "form_ask": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
