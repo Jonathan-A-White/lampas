@@ -36,6 +36,13 @@ describe('the bible-talk links rule: only what he asks for, one link for it (mw-
     expect(map).toContain('give ONE link, to the first line with `places` even when another title fits the chapter');
   });
 
+  // mw-5r3p30.1255: .1254's trim dropped this sentence and map-in-logos then linked SodomAndGomorrah, not the Logos row he named, in 2 of 3 smoke runs.
+  it('says what a line\'s `places` are before it says to link the first line with them, so a row with none (a Logos row he names) is not read as the one to take', () => {
+    const map = links.slice(links.indexOf('### Links to a map'), links.indexOf('### Links to a sermon'));
+    expect(map).toContain('A line\'s `places` are those the verse names, most places first.');
+    expect(map.indexOf('A line\'s `places`')).toBeLessThan(map.indexOf('to the first line with `places`'));
+  });
+
   it.each([
     ['work-not-relevant', 'links.0'],
     ['no-sermon-listed', 'links'],
