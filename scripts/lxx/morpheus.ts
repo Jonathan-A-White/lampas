@@ -474,10 +474,14 @@ export const morpheusLine = (without: readonly string[]): string => `Derived wit
 /** The list a doc's text (the part between its markers) records, or undefined where it records none. */
 export const recordedWithout = (text: string): string | undefined => MORPHEUS_LINE.exec(text)?.[1];
 
-/** Throws, naming both lists and `--force`, when the text between a doc's markers records another list of books without a cache than this run's; does nothing without `without`, with `force`, or with no record. */
-export function refuseOtherCaches(doc: string, between: string, without: readonly string[] | undefined, force: boolean): void {
+/**
+ * Throws, naming both lists and `--force`, when the text between a doc's markers records another list of books without a cache than this run's; does nothing without `without`, with `force`, or with no record.
+ * With `allowMore` (lxx:report, mw-u2w5klk.401) a run whose books without a cache are all among the recorded ones is not another list in the sense that matters: the host has the caches the last writer lacked, so it writes.
+ */
+export function refuseOtherCaches(doc: string, between: string, without: readonly string[] | undefined, force: boolean, allowMore = false): void {
   const recorded = recordedWithout(between);
   if (!without || force || recorded === undefined || recorded === withoutList(without)) return;
+  if (allowMore && without.every((book) => recorded.split(', ').includes(book))) return;
   throw new Error(
     `${doc} was written from books derived without a Morpheus cache: ${recorded}; this run was without a cache for: ${withoutList(without)}. ` +
       `The chapters that ship, and so the report, differ with the caches, so it is left as it was. Run \`npm run lxx:link\` (the Laptop's caches) and again; \`--force\` writes it anyway.`,
