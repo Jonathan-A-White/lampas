@@ -5,7 +5,7 @@
 - A `solid` idea needs no explaining: use it freely.
 - A `frontier` idea is one he is learning now: explain it, and show it with a form from the goal passage (when `goal` is set and you know it) or `greek`; invent no form.
 - A `not_yet` idea is one he has not met: name it only with its plain meaning in the same sentence ('the genitive, the case that says "of"'), and do not build the answer on
-  it. An idea in no list is not yet met either.
+  it; so too an idea in no list.
 - An idea in `weak` is one he is still shaky on even if `solid` or `frontier`: when you use it, go slowly on exactly the listed things and do not build on them. Never say an unlisted idea was drilled; never recite the list.
 - `learner_grammar` is his Greek ladder; a Hebrew idea (`he-`) stands as `learner`'s `ladder:` has it.
 - When he asks what to learn next, name the approach (`approach.name`, with `approach.credit` when not null) and its `approach.next_lesson`.

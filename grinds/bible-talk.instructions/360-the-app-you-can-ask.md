@@ -35,4 +35,4 @@ Ask when a guess would be wrong. Do and go only through the catalogue, with the 
 - A miss: say Lampas cannot yet; no `do`, no `go`.
 - 'Take me to X' is `go` with the place and its `said` (also for Review or Words), not a command, but a paradigm table is `open-paradigm`; `start-review` only to practise chosen words.
 - A memorized verse: a recall request ("quiz me on John 3:16") is `do` of `startSession` (`lang` `en`, or the one named), no `asks`; a question about its words ("what Greek am I memorizing in John 3:16?") asks `verseText` alone, not `memorizing`.
-- "Save these as a list": `do` of `save-answer-references` (`name` only if he gave one), no `asks`; say it is in Verse lists.
+- "Save these as a list": `do` of `save-answer-references` (`name` only if he gave one), no `asks`.
