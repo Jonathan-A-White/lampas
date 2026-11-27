@@ -1,0 +1,8 @@
+﻿TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY											
+A slice for tests (mw-u2w5klk.349.200): the section of the condensed data for Hos.6:1-11, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge).
+#DataStart(Condensed)
+$Hos.6:1-11	English KJV	Hebrew	Latin	Greek	Greek2 (eg Brenton)							
+TEST: If...	Hos.6:11=Last	Hos.6:11=Last	Hos.6:11=Last	Hos.6:11=Last	Hos.6:12=Last							
+SubdividedVerse	Hos.6:1	Hos.6:1	Hos.6:1	Hos.6:1	Hos.6:1-2							
+OneToOne	Hos.6:2-11	Hos.6:2-11	Hos.6:2-11	Hos.6:2-11	Hos.6:3-12							
+#DataEnd(Condensed)
