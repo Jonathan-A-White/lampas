@@ -1,5 +1,5 @@
 {
-  "description": "He sent a picture of a word-list page holding one Greek word, περιούσιος, that is in no verse of his: the answer quotes the word as plain text and puts it in neither `words` nor `words_to_add`, since a word seen only in a picture is quoted, not added to his words.",
+  "description": "He sent a picture of a word-list page holding one Greek word, περιούσιος, that is in no verse of his: the answer quotes the word as plain text and leaves `words` empty and puts it in no `words_to_add`, since a word seen only in a picture is quoted, not added to his words.",
   "schemaVersion": "1",
   "request": {
     "reference": "John 11",
@@ -14,7 +14,7 @@
   "photos": ["picture-word-quoted.png"],
   "expect": {
     "answer": { "matches": "περιούσιος" },
-    "words": { "present": false },
+    "words": { "equals": [] },
     "words_to_add": { "present": false },
     "setting_offer": { "present": false }
   }
