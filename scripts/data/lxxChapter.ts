@@ -158,9 +158,21 @@ export function englishByGreekVerse(book: UsfmBook, maps: TvtmsMaps): { byGreek:
         put(usfm, greek, { text: verse.text, supplied: verse.supplied });
         continue;
       }
+      const words = (text: string): number => text.split(/\s+/).filter(Boolean).length;
+      if (split.tail !== undefined) {
+        // the verse's last words are the start of the Greek verse after: they stand there before its own English, the rest where the map puts the verse (LXX2012_SPLITS)
+        if (!verse.text.endsWith(` ${split.tail}`)) throw new Error(`${usfm}: LXX2012_SPLITS expects the verse to end ${JSON.stringify(split.tail)}, it ends ${JSON.stringify(verse.text.slice(-60))}`);
+        const keptWords = words(verse.text) - words(split.tail);
+        const tail: Segment = { text: split.tail, supplied: verse.supplied.filter((i) => i >= keptWords).map((i) => i - keptWords) };
+        const list = byGreek.get(split.greek);
+        if (list) list.unshift(tail);
+        else byGreek.set(split.greek, [tail]);
+        put(usfm, greek, { text: verse.text.slice(0, verse.text.length - split.tail.length - 1), supplied: verse.supplied.filter((i) => i < keptWords) });
+        continue;
+      }
       // the verse's first words are the end of the Greek verse before: they stand there, the rest where the map puts the verse (LXX2012_SPLITS)
       if (!verse.text.startsWith(`${split.head} `)) throw new Error(`${usfm}: LXX2012_SPLITS expects the verse to begin ${JSON.stringify(split.head)}, it begins ${JSON.stringify(verse.text.slice(0, 60))}`);
-      const headWords = split.head.split(/\s+/).filter(Boolean).length;
+      const headWords = words(split.head);
       const list = byGreek.get(split.greek);
       const head: Segment = { text: split.head, supplied: verse.supplied.filter((i) => i < headWords) };
       if (list) list.push(head);

@@ -690,3 +690,38 @@ describe("LXX2012's Jonah 2:7 begins with the last words of the Greek 2:6", () =
     expect(byGreek.get('jon 2:10')?.[0].supplied).toEqual(jonah.chapters[0].verses.find((v) => v.verse === 10)!.supplied);
   });
 });
+
+// mw-u2w5klk.349.200: Brenton's Hosea 6:3 ends 'and shall know him:' and his 6:10 ends 'in the house of Israel.', which are the first words of Swete's 6:3 (καὶ γνωσόμεθα) and 6:10 (ἐν τῷ οἴκῳ τοῦ Ἰσραήλ): a tail in
+// LXX2012_SPLITS cuts those words off the end of the verse and stands them at the start of the Greek verse they render.
+describe("LXX2012's Hosea 6:3 and 6:10 end with the first words of the next Greek verse", () => {
+  const hosea = parseUsfm(fixture('lxx2012-hos-6.usfm'));
+  const maps = buildMaps(parseTvtms(fixture('tvtms-v200-slice.txt')));
+  const woven = () => englishByGreekVerse(hosea, maps);
+  const text = (byGreek: ReturnType<typeof englishByGreekVerse>['byGreek'], ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' | ');
+
+  it('stands "and shall know him:" at the start of the Greek 6:3 and "in the house of Israel." at the start of the Greek 6:10, after nothing of the verse before', () => {
+    const { byGreek } = woven();
+    expect(text(byGreek, 'hos 6:2')).toBe('After two days he will heal us: in the third day we shall arise, and live before him,');
+    expect(text(byGreek, 'hos 6:3')).toBe('and shall know him: | let us follow on to know the Lord: we shall find him ready as the morning, and he will come to us as the early and latter rain to the earth.');
+    expect(text(byGreek, 'hos 6:9')).toBe('And your strength is that of a robber: the priests have hid the way, they have murdered the people of Sicima; for they have wrought iniquity');
+    expect(text(byGreek, 'hos 6:10')).toBe('in the house of Israel. | I have seen horrible things there, even the fornication of Ephraim: Israel and Juda are defiled;');
+  });
+  it('keeps the places of the supplied words on each side of the cut', () => {
+    const { byGreek } = woven();
+    // 'him' (the last word of 'and shall know him:') is supplied in the tail; 'is that' (words 3 and 4) and 'the people of' (17 to 19) stay in the part left
+    expect(byGreek.get('hos 6:3')?.[0].supplied).toEqual([3]);
+    expect(byGreek.get('hos 6:2')?.[0].supplied).toEqual([]);
+    expect(byGreek.get('hos 6:10')?.[0].supplied).toEqual([]);
+    expect(byGreek.get('hos 6:9')?.[0].supplied).toEqual([3, 4, 17, 18, 19]);
+  });
+  it('leaves each cut verse standing at the Greek verse the map puts it at', () => {
+    const { placedAt } = woven();
+    expect(placedAt.get('hos 6:3')).toBe('hos 6:2');
+    expect(placedAt.get('hos 6:10')).toBe('hos 6:9');
+    expect(placedAt.get('hos 6:4')).toBe('hos 6:3');
+  });
+  it('throws when the verse does not end with the words of the tail', () => {
+    const other = parseUsfm(fixture('lxx2012-hos-6.usfm').replace('and shall know \\add him\\add*:', 'and shall know:'));
+    expect(() => englishByGreekVerse(other, maps)).toThrow(/LXX2012_SPLITS expects the verse to end/);
+  });
+});

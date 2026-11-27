@@ -46,6 +46,17 @@ describe('the model pass files of Hosea', () => {
   });
 });
 
+describe('the sidecar of Hosea 6 (story mw-u2w5klk.349.200)', () => {
+  // Brenton's 6:3 ends 'and shall know him:' and his 6:10 ends 'in the house of Israel.', the first words of the Greek 6:3 and 6:10: LXX2012_SPLITS stands them there, so they are no leftover
+  it('leaves only 6:8 "despised" as a leftover: "know" of 6:2 and "house" and "israel" of 6:9 stand at the Greek that renders them', () => {
+    const leftovers = readExpect('hos')!.chapters['6'].leftovers!.map(([key]) => key);
+    expect(leftovers).not.toContain('6:2:know');
+    expect(leftovers).not.toContain('6:9:house');
+    expect(leftovers).not.toContain('6:9:israel');
+    expect(leftovers).toEqual(['6:8:despised']);
+  });
+});
+
 describe('the notes of Hosea', () => {
   // mw-u2w5klk.349.161: the notes said chapters 2 to 4 and 7 to 14 were not shipped after the report listed 2, 3, 7, 8 and 9; Hosea 4 ships since mw-u2w5klk.349.199
   it('name as not shipped the chapters the report of the book lacks, and no other', () => {
@@ -127,6 +138,26 @@ describe.skipIf(!real.run)('Hosea with the model pass', () => {
         expect(verse.e.some((c) => c.y === 'model' && c.t === r.text && c.g.join(',') === r.g.join(',')), `${r.ref} ${r.text}`).toBe(true);
       }
     }
+  });
+
+  it('stands the first words of the Greek 6:3 and 6:10 at their own verse: "shall know" renders γνωσόμεθα, "house" οἴκῳ and "Israel." Ἰσραήλ (story mw-u2w5klk.349.200)', () => {
+    const greekOf = (v: number, re: RegExp): string[] => {
+      const verse = withModel.get(6)!.verses.find((x) => x.n === v)!;
+      const chunk = verse.e.find((c) => re.test(c.t));
+      expect(chunk, `6:${v} ${re}`).toBeDefined();
+      return chunk!.g.map((g) => verse.g[g].t);
+    };
+    const verses = withModel.get(6)!.verses;
+    expect(joined(verses.find((x) => x.n === 2)!)).not.toMatch(/know/);
+    expect(joined(verses.find((x) => x.n === 3)!)).toMatch(/^and shall know him: let us follow/);
+    expect(greekOf(3, /^shall know$/)).toEqual(['γνωσόμεθα·']);
+    expect(joined(verses.find((x) => x.n === 9)!)).not.toMatch(/house/);
+    expect(joined(verses.find((x) => x.n === 10)!)).toMatch(/^in the house of Israel\. I have seen/);
+    expect(greekOf(10, /^house$/)).toEqual(['οἴκῳ']);
+    expect(greekOf(10, /^Israel\.$/)).toEqual(['Ἰσραήλ·']);
+    // 6:9 "they have wrought iniquity": ἐποίησαν and ἀνομίαν, which the aligner's by-place pair swapped once the verse's last words moved to 6:10
+    expect(greekOf(9, /^they have wrought$/)).toEqual(['ἐποίησαν']);
+    expect(greekOf(9, /^iniquity$/)).toEqual(['ἀνομίαν']);
   });
 
   it('pairs the English of Hosea 5:10 "removed" with μετατιθέντες, where a tap on "removed" opened the Verse view', () => {

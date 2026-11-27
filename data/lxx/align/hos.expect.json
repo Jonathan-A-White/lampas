@@ -17,12 +17,9 @@
     },
     "6": {
       "gaps": 0,
-      "model": 4,
+      "model": 1,
       "leftovers": [
-        ["6:2:know", "'shall know him' ends Brenton's 6:2 and renders γνωσόμεθα, the first words of the Greek 6:3, which no chunk of this verse can hold."],
-        ["6:8:despised", "'despised me' renders κατεφρόνησέν μου, the end of the Greek 6:7, which Brenton's English puts in his 6:8."],
-        ["6:9:house", "'in the house of Israel' renders ἐν τῷ οἴκῳ τοῦ Ἰσραήλ, the start of the Greek 6:10, which Brenton's English puts at the end of his 6:9."],
-        ["6:9:israel", "'in the house of Israel' renders ἐν τῷ οἴκῳ τοῦ Ἰσραήλ, the start of the Greek 6:10, which Brenton's English puts at the end of his 6:9."]
+        ["6:8:despised", "'despised me' renders κατεφρόνησέν μου, the end of the Greek 6:7, which Brenton's English puts in his 6:8."]
       ]
     }
   }

@@ -13,18 +13,17 @@ Hos.6:1	10	us up.	-		0.80
 Hos.6:2	1	he will	-		0.80
 Hos.6:2	2	us:	-		0.80
 Hos.6:2	3	shall	-		0.80
-Hos.6:2	4	him,	-		0.80
-Hos.6:2	5	shall know	-		0.80
-Hos.6:3	1	let us	-		0.80
-Hos.6:3	1	follow on	2		0.80
-Hos.6:3	1	to	3		0.80
-Hos.6:3	2	shall	-		0.80
-Hos.6:3	3	the	-		0.80
-Hos.6:3	3	morning,	8		0.80
-Hos.6:3	4	he will	-		0.80
-Hos.6:3	5	to us	-		0.80
-Hos.6:3	6	the	-		0.80
-Hos.6:3	7	to the	-		0.80
+Hos.6:3	1	shall	-		0.80
+Hos.6:3	2	him: let us	-		0.80
+Hos.6:3	3	on	-		0.80
+Hos.6:3	3	to	3		0.80
+Hos.6:3	4	shall	-		0.80
+Hos.6:3	5	the	-		0.80
+Hos.6:3	5	morning,	8		0.80
+Hos.6:3	6	he will	-		0.80
+Hos.6:3	7	to us	-		0.80
+Hos.6:3	8	the	-		0.80
+Hos.6:3	9	to the	-		0.80
 Hos.6:4	1	What	0		0.80
 Hos.6:4	1	shall I	-		0.80
 Hos.6:4	2	to	-		0.80
@@ -65,15 +64,14 @@ Hos.6:9	3	have	-		0.80
 Hos.6:9	4	the	-		0.80
 Hos.6:9	5	they have	-		0.80
 Hos.6:9	6	the people of Sicima;	10		0.80
-Hos.6:9	7	they have wrought	13		0.80
-Hos.6:9	7	iniquity	12		0.80
-Hos.6:9	7	in the house of Israel.	-		0.80
-Hos.6:10	1	I have	-		0.80
-Hos.6:10	2	horrible things	6		0.80
-Hos.6:10	3	even	-		0.80
-Hos.6:10	4	fornication	8		0.80
-Hos.6:10	4	of	-		0.80
-Hos.6:10	5	are defiled;	11		0.80
+Hos.6:9	7	they have	-		0.80
+Hos.6:10	1	of	3		0.80
+Hos.6:10	2	I have	-		0.80
+Hos.6:10	3	horrible things	6		0.80
+Hos.6:10	4	even	-		0.80
+Hos.6:10	5	fornication	8		0.80
+Hos.6:10	5	of	-		0.80
+Hos.6:10	6	are defiled;	11		0.80
 Hos.6:11	1	together grapes	1		0.80
 Hos.6:11	1	for	-		0.80
 Hos.6:11	2	when	3,4		0.80
@@ -92,3 +90,5 @@ Hos.6:5	fix	of my mouth:	10,11		0.80
 Hos.6:2	fix	we shall arise,	11		0.80
 Hos.6:5	fix	have I mown down	2		0.80
 Hos.6:5	fix	I have slain	6		0.80
+Hos.6:9	fix	they have wrought	13		0.80
+Hos.6:9	fix	iniquity	12		0.80
