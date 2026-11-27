@@ -7,6 +7,16 @@
       "gaps": 0,
       "model": 0,
       "leftovers": []
+    },
+    "2": {
+      "gaps": 0,
+      "model": 4,
+      "leftovers": [
+        ["2:6:assembly", ""],
+        ["2:6:lord", ""],
+        ["2:12:breach", ""],
+        ["2:12:made", ""]
+      ]
     }
   }
 }
