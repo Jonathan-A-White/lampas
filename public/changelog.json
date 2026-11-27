@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.425",
+    "date": "2026-11-27",
+    "story": "mw-u2w5klk.349.66",
+    "kind": "fixed",
+    "text": "Tapping an English word in Micah now opens the Greek word that renders it, instead of the verse."
+  },
+  {
     "version": "0.7.424",
     "date": "2026-11-27",
     "story": "mw-fnvjof.17.332",

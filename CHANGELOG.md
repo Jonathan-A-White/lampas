@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.425
+_2026-11-27_
+- Fixed: Tapping an English word in Micah now opens the Greek word that renders it, instead of the verse.
+
 ## 0.7.424
 _2026-11-27_
 - Fixed: asked for a sermon the app does not list, the tutor no longer adds a stray button to the sermon source's setting.
