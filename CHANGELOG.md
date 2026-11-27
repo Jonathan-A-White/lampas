@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.427
+_2026-11-27_
+- Fixed: asked "only on grace" with sermons listed, the tutor now names and links a sermon on grace instead of talking about the verse.
+
 ## 0.7.425
 _2026-11-27_
 - Fixed: Tapping an English word in Micah now opens the Greek word that renders it, instead of the verse.
