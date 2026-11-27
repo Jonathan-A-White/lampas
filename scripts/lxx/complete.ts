@@ -13,7 +13,8 @@
 //   5. the paradigm readings of a verb form the layers' stem guess misses (story mw-u2w5klk.379; `paradigmReadings`): the perfect passive of a verb in -αίρω (ἐξῆρται) and of ἀπωθέω (ἀπῶσμαι), the aorist of a verb in -αίω
 //      (ἔκλαυσαν), the indicative beside the imperative (ἀνταποδίδοτε), the future middle of a present passive (ἀποδώσομαι, ἐπιβλέψομαι), the first person beside the third plural (ἀνέσχον), the feminine genitive
 //      plural of an adjective (πονηρῶν), the third plural beside a dative plural participle (κατοικοῦσιν) and the infinitive of a verb in -άω (ζῆν), each only for a verb TBESG has and only beside the candidates.
-// Not here: ἐμοῦ as the personal pronoun (P-1GS): TAGNT writes ἐμοῦ S-1SGSN in all its 114 words (mw-u2w5klk.284 holds the recheck), so the candidates are TAGNT's.
+//   6. the personal pronoun beside TAGNT's possessive (story mw-u2w5klk.391; `PERSONAL_PRONOUNS`): TAGNT tags ἐμοῦ and μου S-1SGSN (ἐγώ) in all its 114 words, so the layers offer no P-1GS, and
+//      the Septuagint's ἐμοῦ, μου, σου are the personal pronoun as often (the choices guessed P-1GS 85 times). The settled words are as they were: P-1GS is offered beside, never a choice's candidate.
 import { cngOf, withCng } from './agreement';
 import { NOTE_NO_CANDIDATE, NOTE_NOT_IN_NT, type DerivedWord, type PendingWord, type WordCandidate } from './derive';
 import { morpheusKey, type MorpheusCache } from './morpheus';
@@ -25,10 +26,20 @@ export const NOTE_COMPLETED = 'readings added beside the candidates (Morpheus, t
 const VIA_MORPHEUS = 'Morpheus: the second method, a build tool';
 export const VIA_VOCATIVE = 'the vocative beside the nominative: the same form in the plural and in the neuter';
 export const VIA_FEMININE = 'the feminine beside the masculine: the Septuagint writes this noun feminine';
+export const VIA_PRONOUN = 'the personal pronoun beside the possessive: TAGNT tags the stressed and the weak form of the genitive as the possessive';
 export const VIA_PARADIGM = 'the paradigm of the verb: the same form, or the form of a stem the ending rules do not offer';
 
 /** Nouns the lexicon (TBESG, the New Testament) gives masculine that the Septuagint writes feminine: σχοῖνος is ἡ σχοῖνος, a line (Ps 138:3). By bare letters. */
 export const SEPTUAGINT_FEMININE: ReadonlySet<string> = new Set(['σχοῖνος'].map(bareOf));
+
+/** The lemmas whose possessive TAGNT code (S-1SGSN) stands for the personal pronoun too (P-1GS): ἐγώ and σύ. By NFC lemma. */
+export const PERSONAL_PRONOUNS: ReadonlySet<string> = new Set(['ἐγώ', 'σύ'].map((l) => l.normalize('NFC')));
+
+/** The personal pronoun's code beside a possessive's of ἐγώ or σύ: S-1SGSN (person 1, singular, genitive) is P-1GS; undefined for any other code. */
+export function pronounCode(lemma: string, morph: string): string | undefined {
+  const m = /^S-([12])([SP])([GDA])[SP][MFN]$/.exec(morph);
+  return m && PERSONAL_PRONOUNS.has(lemma.normalize('NFC')) ? `P-${m[1]}${m[3]}${m[2]}` : undefined;
+}
 
 type Out = DerivedWord | PendingWord;
 const isPending = (w: Out): w is PendingWord => !('layer' in w);
@@ -221,6 +232,10 @@ export function completeReadings(outs: readonly Out[], formOf: (ref: string) => 
       if (!cng || cng[2] !== 'M' || !c.morph.startsWith('N-') || !SEPTUAGINT_FEMININE.has(bareOf(c.lemma))) continue;
       const feminine = withCng(c.morph, `${cng.slice(0, 2)}F`);
       if (!candidates.some((x) => x.morph === feminine && x.lemma === c.lemma)) candidates.push(beside(c.lemma, feminine, VIA_FEMININE));
+    }
+    for (const c of [...candidates]) {
+      const pronoun = pronounCode(c.lemma, c.morph);
+      if (pronoun && !candidates.some((x) => x.morph === pronoun && x.lemma === c.lemma)) candidates.push(beside(c.lemma, pronoun, VIA_PRONOUN));
     }
     return parser ? withParadigm(word, candidates, formOf(word.ref), parser) : changed(word, candidates);
   });

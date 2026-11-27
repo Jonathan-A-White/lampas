@@ -866,6 +866,23 @@ describe('what the listing lacked (mw-u2w5klk.287): the readings of the Psalms b
       const got = completeReadings([pend('a', [cand('σχοῖνος', 'N-ASM', { support: 297 })], ['not in the New Testament: for the parser'])], forms({ a: 'σχοῖνον' }));
       expect(shown(got[0])).toEqual(['σχοῖνος N-ASM', 'σχοῖνος N-ASF+']);
     });
+
+    it('offers the personal pronoun beside the possessive TAGNT tags the stressed ἐμοῦ and μου with: Dan 8:2#9 ἐμοῦ was S-1SGSN only, and the choices guessed P-1GS 85 times (mw-u2w5klk.391)', () => {
+      const got = completeReadings(
+        [
+          pend('a', [cand('ἐγώ', 'S-1SGSN', { support: 111 }), cand('ἐμός', 'S-1SGSN', { support: 3 }), cand('ἐγώ', 'S-1SGSM', { support: 0 })], ['not in the New Testament: for the parser']),
+          pend('b', [cand('σύ', 'S-2SGSN', { support: 40 })]),
+          pend('c', [cand('ἐγώ', 'S-1SGSN', { support: 5 }), cand('ἐγώ', 'P-1GS', { support: 9 })]),
+          pend('d', [cand('ἐμός', 'S-1SGSN', { support: 3 })]),
+        ],
+        forms({ a: 'ἐμοῦ', b: 'σου', c: 'μου', d: 'ἐμοῦ' }),
+      );
+      expect(shown(got[0])).toEqual(['ἐγώ S-1SGSN', 'ἐμός S-1SGSN', 'ἐγώ S-1SGSM', 'ἐγώ P-1GS+']);
+      expect(shown(got[1])).toEqual(['σύ S-2SGSN', 'σύ P-2GS+']);
+      // already there: nothing added; and a possessive of ἐμός alone is not the pronoun's
+      expect(shown(got[2])).toEqual(['ἐγώ S-1SGSN', 'ἐγώ P-1GS']);
+      expect(shown(got[3])).toEqual(['ἐμός S-1SGSN']);
+    });
   });
 
   describe('the ending rules’ candidates (parse) with a lexicon that has an invented headword and a lemma with no part of speech', () => {
