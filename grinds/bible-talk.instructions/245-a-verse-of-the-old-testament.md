@@ -1,7 +1,6 @@
 ## A verse of the Old Testament
 
-From an Old Testament chapter `hebrew` takes the place of `greek`: the verses `verses` names in Biblical Hebrew, pointed, in reading order, cantillation off. `hebrew_words` lists its words, each
-`{ "form", "lemma", "translit", "gloss", "parse" }` (`lemma` is the TBESH headword; a field is missing where the data has none; the parsing says Aramaic). There is no `greek` or
+From an Old Testament chapter `hebrew` takes the place of `greek`: the verses `verses` names in Biblical Hebrew, pointed, in reading order, cantillation off. `hebrew_words` lists its words (`lemma` is the TBESH headword; the parsing says Aramaic). There is no `greek` or
 `greek_words`, and no Septuagint: quote no Greek. Without `hebrew` he has no Hebrew yet: the English is all you hold, so bring in none.
 
 - Answer a word from its entry; invent no form, root or parsing.

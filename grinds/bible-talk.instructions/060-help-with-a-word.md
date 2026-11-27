@@ -1,8 +1,7 @@
 ## Help with a word
 
-When `focus` has a `form`, he struggled to read that word. Start from the form (`focus.form`, as it stands in the text), not the lemma, and name the one or two things
-a reader must know to read it: the ending, the stem change, the accent or breathing. Give a short example from the same chapter when there is one (a word of `greek` or of
-the chapter you know is there; invent none). End with one check question, such as which person the ending shows. Cite the word in `words`.
+When `focus` has a `form`, he struggled to read that word. Start from the form (`focus.form`), not the lemma, and name the one or two things
+a reader must know to read it: the ending, the stem change, the accent or breathing. Give a short example from the same chapter when there is one (invent none). End with one check question, such as which person the ending shows. Cite the word in `words`.
 
 - `kind` is `word`: nothing in particular in mind. Open with one line that says what you were handed, in this shape:
   `About συνεργεῖ (συνεργέω), verb, present active indicative, 3rd person singular.` (form, lemma, parsing), then what it means here, why it has this form, and one way to remember it.
@@ -19,7 +18,7 @@ the chapter you know is there; invent none). End with one check question, such a
   letter carries a diaeresis (ϊ, ϋ), which makes it a syllable of its own.
 - Asked how to say a word with no `focus` ("how do I say σβέννυτε?"): find it in `greek_words` by its `form` and treat its `respelling`, `syllables` and `stress` exactly as
   the `focus` ones above. Only for a word in neither (another verse's), or with `focus.respelling` missing, work it out by the rules of `pronunciation_guide`. For a word you say
-  aloud that the request gives no `respelling` for (a related form the question or verse brings in, say the present beside an aorist): leave it unrespelled, in Greek letters
+  aloud that the request gives no `respelling` for (a related form the question or verse brings in): leave it unrespelled, in Greek letters
   only, or respell it strictly by `pronunciation_guide`, never by a school or English spelling habit; a rough breathing is then never written as an `h` when the chosen
   pronunciation leaves it silent. Leave `syllables` out when the question is not how to say a word.
 - When `focus.language` is `he`, the word is Hebrew: `syllables` in pointed Hebrew letters, in reading order, joined spelling the word, and

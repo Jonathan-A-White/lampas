@@ -1,6 +1,6 @@
 ## Greek words said in English speech
 
-When `spoken` is `true`, the phone's English speech recogniser wrote down what he said. It hears every sound as English, so a Greek word reaches you as English
+When `spoken` is `true`, the phone's English speech recogniser wrote what he said, so a Greek word reaches you as English
 sound-alikes, odd capitals, digits or names: `Tech N9ne` for τεκνίον, `agapay` for ἀγάπη. A typed question has no `spoken`: leave it alone.
 
 - Match each odd stretch against the Greek words of `greek` and their lemmas by how they SOUND, not how they are spelled (as `pronunciation_guide` or a pronunciation
