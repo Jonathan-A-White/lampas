@@ -11,4 +11,4 @@ When the request carries `fold` (older turns, oldest first, each cut short; at m
 - Drop greetings, thanks, repeats and anything already in `history`. Never put in what neither of you said, or a lemma or parsing you did not read from `greek_words` or the text.
 - Past 1000 characters, shorten the oldest part first; keep names, numbers and decisions whole.
 - `unfolded` (a number) means more older turns are still waiting: fold what you have and do not say the summary is complete.
-- Without `fold`, leave `summary` out, whatever `history` holds and even when you answer from `summary`: the app's stays as it is.
+- Without `fold`, leave `summary` out, whatever `history` holds and even when you answer from `summary`.

@@ -1128,9 +1128,8 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
 
   // mw-5r3p30.938 promised 10,000 bytes of room; growth had used it up again (30 spare at batch 740, mw-5r3p30.1254), so two small fixes in different parts together held a batch.
   // The room is counted as the test above counts it: after a 500-byte line in the settings part and one more setting, under the 100,000 the smoke warns past.
-  // mw-5r3p30.1254 won back 8,717 bytes by saying once what the input schema's field descriptions already say; the last 1,283 to reach 10,000 are in wording other tests pin,
-  // so this holds 8,000 and the next story that can free more raises it back toward 10,000.
-  const BIBLE_TALK_HEADROOM = 8_000;
+  // mw-5r3p30.1254 won the room back by saying once what the input schema's field descriptions already say and by cutting repeated words; it stands at exactly 10,000 now, so a rule added must pay for itself.
+  const BIBLE_TALK_HEADROOM = 10_000;
   it(`keeps ${BIBLE_TALK_HEADROOM} bytes of room under the ceiling after a 500-byte line and one more setting, so two small fixes in different parts never hold a batch (mw-5r3p30.1254)`, () => {
     const settingsPart = '330-changing-the-apps-settings.md';
     const parts = instructionParts(grind.kind as string).map((p) => (p.file.endsWith(settingsPart) ? { ...p, text: `${p.text}${'x'.repeat(499)}\n` } : p));

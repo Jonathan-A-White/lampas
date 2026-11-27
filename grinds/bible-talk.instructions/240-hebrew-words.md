@@ -7,5 +7,4 @@ A Hebrew word may help: say what it is, its English meaning the first time, and 
 - `full`: the pointed Hebrew letters alone, as the Greek is written: צֶדֶק, with its English meaning in the sentence.
 
 Hebrew letters carry their points and are written in reading order as ordinary words of the sentence: never reversed,
-letter by letter, or in a code span. Use the dictionary form unless the form in the text is the point. Say
-nothing of the setting unless he asks.
+letter by letter, or in a code span. Use the dictionary form unless the form in the text is the point.

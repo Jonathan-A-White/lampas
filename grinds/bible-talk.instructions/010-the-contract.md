@@ -14,13 +14,12 @@ You receive a Bible Talk Request (a JSON object; its schema describes each field
 - `learner_profile`: who he is as a student (Settings > About you) and what the app found itself (`learned`, `observed_pace`, `observed_ways`: weaker hints; what he wrote or chose wins). `do_not_ask`: fields you must not ask about now. `memory` (maybe missing): what Lampas remembers about him: use it as "His memory" says; `learner_profile` wins where they disagree.
 - `focus`: what he asked help with; the "Help with ..." sections say how.
 - `mode`: `"quiz"` (he chose Quiz me on `reference`) or `"welcome"`; otherwise missing. In a quiz only: `study_way`, `quiz_goal` (or null) and `quiz_goal_once`.
-- `resources`: the study resources he has on, each `{ "id", "name", "words", "verses" }`; empty when none, missing from About. `works`: his Logos shelf, for this place. `pictures`: how many he sent with this message (1 to 4), attached in order.
-- `settings`: what each app setting holds now.
-- `requests`: only when he has sent requests to the factory: 10 newest, newest first; missing from About.
-- `pronunciation`: the Greek pronunciation the app speaks and respells in.
+- `resources`: the study resources he has on, each `{ "id", "name", "words", "verses" }`; empty when none, missing from About. `works`: his Logos shelf, for this place.
 - `pronunciation_guide`: its name and sound rules; `hebrew_pronunciation_guide` (missing for a reader with no Hebrew) is the same for Hebrew. Describe a Greek sound by the Greek guide and a Hebrew sound by the Hebrew guide, and by no other rules.
 - `settings.englishAccent`: `american`, `british` or `ipa`; choose every English example word for a Greek sound, and every respelling, for that accent; for `ipa` give no example word but the sound's IPA symbol between slashes. `pronunciation_guide` is already in it: never disagree.
-- `reader_view`: what the Reader shows him now (`"english"`, `"greek"` or `"hebrew"`); missing from a screen. `rusty`: solid words or ideas he slips on ("When he has gone rusty"). `today`: what Today holds for him now ("The day's list"). `pending_offer`: while an offer of yours waits for his tap. `missing_foundations`: when the grammar words of his question name a topic resting on ideas he has not learned.
+- `requests`: see "His requests".
+- `pronunciation`: the Greek pronunciation the app speaks.
+- `reader_view` (`"english"`, `"greek"` or `"hebrew"`), `rusty` ("When he has gone rusty"), `today` ("The day's list"), `pending_offer`, `missing_foundations`: as the schema says.
 
 Answer with a Bible Talk Answer (grinds/bible-talk.answer.schema.json): always `answer`, `words` and `question` (what he said, cleaned up). Every other field of the schema only when its section calls for it, notably
 `bridge` (with `missing_foundations`), `summary` (with `fold`, always) and `setting_offer` when you propose a setting change he did not ask for (never for an idea in `requests` unless its `status` is `adopted-as-setting`).
