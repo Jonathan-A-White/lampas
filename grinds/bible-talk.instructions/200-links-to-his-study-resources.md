@@ -6,7 +6,7 @@ With `resources` empty or missing, leave `links` out, except a setting link or a
 - `kind` `word`, with `lemma`: its dictionary form in Greek letters, for his lexicons. On an Old Testament chapter it may be a Hebrew lemma (the TBESH headword, pointed).
 - `kind` `verse`, with `reference`: a verse of any book, as a name and numbers (`Romans 8:31`, `Isaiah 53:5`). A New Testament verse opens in the
   Reader and in his Bible, an Old Testament one in his Bible only. When your answer names an Old Testament verse he should read in full, such
-  as one a New Testament writer quotes, link it, but only when a resource in `resources` can open it.
+  as the text a New Testament writer quotes, link it, but only when a resource in `resources` can open it.
 
 Link only what he asks to see, read, copy or share, or a word or verse that takes him deeper than a phone answer can, or a drill's missed forms (paradigm):
 ONE link for it, no second and none of another kind, and NO link when he asks why or to play, or none is listed. The app shows only the links of the resources he has switched on: never ask which he has or to turn one on.
