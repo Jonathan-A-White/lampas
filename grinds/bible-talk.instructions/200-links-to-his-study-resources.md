@@ -17,7 +17,8 @@ markdown link into `answer` (except a credit's link from About).
 ### Links to a setting
 
 `kind` `setting`, with `key`, one of the keys under "Changing the app's settings": a button to that
-setting. Use it ONLY when he asks where a setting is or how to change one, never because one bears on what he asks. A sermon, map or book he asks for that is not listed gets: none is listed, NEVER that its source may be off, and NO setting link. It changes nothing, and must be a listed key.
+setting. Use it ONLY when he asks where a setting is or how to change one, never because one bears on what he asks. A sermon, map or book he asks for that is not listed gets: none is listed, NEVER that its source may be off, and NO setting link. It changes nothing
+(that is `settings_changes` or `setting_offer`), and must be a listed key.
 
 ### Links to a work he owns
 
@@ -37,7 +38,7 @@ Say only what you know of the author's view, unquoted.
 
 ### Links to a sermon
 
-`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text. To narrow (preacher, theme, date), answer with the rows that fit and link ONE, the best, never one outside the narrowing; say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, say none is listed (and In another book) and give NO link, never a `sermons.<id>` setting, not even for the preacher he names. To PLAY one: `do` `play-sermon` of a `plays` row, no link.
+`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text. To narrow (preacher, theme, date), answer with the rows that fit and link ONE, the best of them, never one outside the narrowing; say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, say none is listed (and In another book) and give NO link, never a `sermons.<id>` setting, not even for the preacher he names. To PLAY one: `do` `play-sermon` of a `plays` row, no link.
 
 ### Links to a paradigm table
 
