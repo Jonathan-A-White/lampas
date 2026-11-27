@@ -86,11 +86,11 @@ describe('the bundled Logos sources', () => {
   it('are not offered while his import lacks them, but the free sources are', () => {
     const all = bundledSources();
     const on = (key: string) => (key.startsWith('sermons.') || key === 'resource.logos' ? 'on' : undefined);
-    expect(enabledOf(all, on, new Set()).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'lifebible-ttb', 'biblethinker', 'clarkson-works']);
-    expect(enabledOf(all, on, new Set([GREG])).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'greg-laurie-logos', 'lifebible-ttb', 'biblethinker', 'clarkson-works']);
+    expect(enabledOf(all, on, new Set()).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'lifebible-ttb', 'biblethinker', 'clarkson-works', 'allennolan']);
+    expect(enabledOf(all, on, new Set([GREG])).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'greg-laurie-logos', 'lifebible-ttb', 'biblethinker', 'clarkson-works', 'allennolan']);
     // a list made from Logos books is a Logos source: while Logos is off it is not used, though his import holds it and its switch is On (mw-qtu3zvz.92)
     const logosOff = (key: string) => (key.startsWith('sermons.') ? 'on' : undefined);
-    expect(enabledOf(all, logosOff, new Set([GREG])).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'lifebible-ttb', 'biblethinker', 'clarkson-works']);
+    expect(enabledOf(all, logosOff, new Set([GREG])).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'lifebible-ttb', 'biblethinker', 'clarkson-works', 'allennolan']);
     expect(sourceOffered(all.find((s) => s.id === 'greg-laurie-logos')!, new Set([GREG]))).toBe(true);
   });
 
