@@ -145,6 +145,22 @@ describe.skipIf(!real.run)('Joshua with the model pass', () => {
     expect(left).toEqual([]);
   });
 
+  // Story mw-u2w5klk.349.155: in Joshua 5:13 the aligner paired 'drew' (of 'drew near') to ἐσπασμένη 'drawn' and 'he' (of 'that he looked up') to αὐτοῦ of 'in his hand'.
+  it('Joshua 5:13: ἐσπασμένη goes with "drawn", not "drew"; "drew near" renders προσελθών; αὐτοῦ of "in his hand" goes with "his", not "he"', () => {
+    const verse = withModel.get(5)!.verses.find((x) => x.n === 13)!;
+    const greekOf = (c: { g: number[] }): string[] => c.g.map((g) => verse.g[g].t.replace(/[.,;·:]+$/, ''));
+    const drew = verse.e.find((c) => /\bdrew\b/.test(c.t))!;
+    expect(drew).toBeDefined();
+    expect(greekOf(drew)).not.toContain('ἐσπασμένη');
+    expect(greekOf(drew)).toContain('προσελθὼν');
+    expect(greekOf(verse.e.find((c) => /\bdrawn\b/.test(c.t))!)).toContain('ἐσπασμένη');
+    const he = verse.e.find((c) => c.t === 'he')!;
+    expect(he).toBeDefined();
+    expect(he.g).toEqual([]);
+    const his = verse.e.find((c) => c.t === 'his')!;
+    expect(greekOf(his)).toContain('αὐτοῦ');
+  });
+
   it('pairs the English of Joshua 3:14 "removed" with ἀπῆρεν, where a tap on "removed" opened the Verse view', () => {
     const verse = withModel.get(3)!.verses.find((v) => v.n === 14)!;
     const chunk = verse.e.find((c) => /removed/.test(c.t));
