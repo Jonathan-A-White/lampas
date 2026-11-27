@@ -47,16 +47,16 @@ describe('the model pass files of Hosea', () => {
 });
 
 describe('the notes of Hosea', () => {
-  // mw-u2w5klk.349.161: the notes said chapters 2 to 4 and 7 to 14 were not shipped after the report listed 2, 3, 7, 8 and 9
+  // mw-u2w5klk.349.161: the notes said chapters 2 to 4 and 7 to 14 were not shipped after the report listed 2, 3, 7, 8 and 9; Hosea 4 ships since mw-u2w5klk.349.199
   it('name as not shipped the chapters the report of the book lacks, and no other', () => {
     const report = readFileSync(join('docs', 'lxx-align', 'hos.txt'), 'utf8');
     const shipped = [...report.matchAll(/^\| Hosea (\d+) \|/gm)].map((m) => Number(m[1]));
     const missing = Array.from({ length: 14 }, (_, i) => i + 1).filter((n) => !shipped.includes(n));
-    expect(missing).toEqual([4, 10, 11, 12, 13, 14]);
+    expect(missing).toEqual([10, 11, 12, 13, 14]);
     const notes = readFileSync(join('docs', 'lxx-align', 'hos-notes.txt'), 'utf8');
-    expect(notes).toContain('chapters 4 and 10 to 14 are not shipped yet');
+    expect(notes).toContain('chapters 10 to 14 are not shipped yet');
     expect(notes).not.toContain('2 to 4 and 7 to 14');
-    expect(notes).toContain('Hosea 2, 3, 7, 8 and 9 ship');
+    expect(notes).toContain('Hosea 2, 3, 4, 7, 8 and 9 ship');
   });
 });
 

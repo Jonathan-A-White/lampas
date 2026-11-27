@@ -306,7 +306,7 @@ Deu.15:9#17	A-NSN	ἕβδομος		0.80
 Deu.15:9#18	N-NSN	ἔτος		0.80	
 Deu.15:9#22	V-ADS-3S	πονηρεύομαι		0.80	
 Deu.15:9#29	T-DSM	ὁ		0.80	
-Deu.15:9#30	V-PNP-DSM	ἐπιδέω		0.80	
+Deu.15:9#30	V-PMP-DSM	ἐπιδέω		0.80	
 Deu.15:9#34	P-DSM	αὐτός		0.80	
 Deu.15:9#36	V-FDI-3S	καταβοάω	guess	0.40	guess: the model answered with no candidates
 Deu.15:10#3	P-DSM	αὐτός		0.80	
@@ -333,7 +333,7 @@ Deu.15:11#20	V-FAI-2S	ἀνοίγω	guess	0.40	guess: the model chose outside th
 Deu.15:11#27	T-DSM	ὁ		0.80	
 Deu.15:11#28	N-DSM	πένης	guess	0.40	guess: the model answered with no candidates
 Deu.15:11#30	T-DSM	ὁ		0.80	
-Deu.15:11#31	V-PNP-DSM	ἐπιδέω		0.80	
+Deu.15:11#31	V-PMP-DSM	ἐπιδέω		0.80	
 Deu.15:11#32	T-DSM	ὁ		0.80	
 Deu.15:12#3	V-APS-3S	πιπράσκω		0.80	
 Deu.15:12#12	N-NSF	Ἑβραῖος	guess	0.40	guess: the model chose outside the candidates

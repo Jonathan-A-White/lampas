@@ -334,7 +334,7 @@ Mic.4:8#22	N-GSF	Ἱερουσαλήμ		0.80
 Mic.4:9#4	I-ASN	τίς	unsure	0.50	model: unsure
 Mic.4:9#6	A-APN	κακός		0.80	
 Mic.4:9#20	N-NPF	ὠδίν		0.80	
-Mic.4:10#3	V-PNM-2S	ἀνδρίζω		0.80	
+Mic.4:10#3	V-PMM-2S	ἀνδρίζω		0.80	
 Mic.4:10#6	N-VSF	θυγάτηρ		0.80	
 Mic.4:10#7	N-GSF	Σειών		0.80	
 Mic.4:10#9	V-PAP-NSF	τίκτω		0.80	
