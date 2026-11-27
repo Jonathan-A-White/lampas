@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { checkDist, readDist, type DistState } from '../../scripts/dist-check';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const whole: DistState = {
   indexHtml: true,
@@ -62,7 +63,7 @@ describe('readDist', () => {
   const dirs: string[] = [];
   afterEach(() => {
     for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
-  });
+  }, HOOK_TIMEOUT_MS);
 
   it('reads a dist folder and a choices folder as the check wants them', () => {
     const root = mkdtempSync(join(tmpdir(), 'lampas-dist-check-'));
