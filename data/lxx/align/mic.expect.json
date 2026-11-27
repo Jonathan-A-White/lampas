@@ -12,10 +12,10 @@
       "gaps": 0,
       "model": 4,
       "leftovers": [
-        ["2:6:assembly", ""],
-        ["2:6:lord", ""],
-        ["2:12:breach", ""],
-        ["2:12:made", ""]
+        ["2:6:assembly", "Brenton's 2:6 holds 'in the assembly of the Lord', which renders Swete's 2:5 ending ἐν ἐκκλησίᾳ Κυρίου; the verse map puts the English a verse later than those Greek words and a model chunk cannot point out of its verse."],
+        ["2:6:lord", "Brenton's 2:6 holds 'in the assembly of the Lord', which renders Swete's 2:5 ending ἐν ἐκκλησίᾳ Κυρίου; the verse map puts the English a verse later than those Greek words and a model chunk cannot point out of its verse."],
+        ["2:12:breach", "Brenton's 2:12 ends 'through the breach made before them:', which renders the start of Swete's 2:13 (διὰ τῆς διακοπῆς πρὸ προσώπου αὐτῶν); the English stands a verse before its Greek and a model chunk cannot point out of its verse."],
+        ["2:12:made", "Brenton's 2:12 ends 'through the breach made before them:', which renders the start of Swete's 2:13 (διὰ τῆς διακοπῆς πρὸ προσώπου αὐτῶν); the English stands a verse before its Greek and a model chunk cannot point out of its verse."]
       ]
     },
     "3": {
@@ -42,10 +42,10 @@
       "gaps": 0,
       "model": 4,
       "leftovers": [
-        ["7:4:away", ""],
-        ["7:4:goods", ""],
-        ["7:4:take", ""],
-        ["7:4:therefore", ""]
+        ["7:4:away", "Brenton's 7:4 begins 'therefore I will take away their goods', which renders the end of Swete's 7:3 (καὶ ἐξελοῦμαι τὰ ἀγαθὰ αὐτῶν); the English stands a verse after its Greek and a model chunk cannot point out of its verse."],
+        ["7:4:goods", "Brenton's 7:4 begins 'therefore I will take away their goods', which renders the end of Swete's 7:3 (καὶ ἐξελοῦμαι τὰ ἀγαθὰ αὐτῶν); the English stands a verse after its Greek and a model chunk cannot point out of its verse."],
+        ["7:4:take", "Brenton's 7:4 begins 'therefore I will take away their goods', which renders the end of Swete's 7:3 (καὶ ἐξελοῦμαι τὰ ἀγαθὰ αὐτῶν); the English stands a verse after its Greek and a model chunk cannot point out of its verse."],
+        ["7:4:therefore", "Brenton's 7:4 begins 'therefore I will take away their goods', which renders the end of Swete's 7:3 (καὶ ἐξελοῦμαι τὰ ἀγαθὰ αὐτῶν); the English stands a verse after its Greek and a model chunk cannot point out of its verse."]
       ]
     }
   }
