@@ -8,7 +8,7 @@ Derived without a Morpheus cache: none.
 | --- | --- | --- | --- | --- | --- | --- |
 | Micah 1 | 16 | 320 | 320 | 100.0% | 81.3% | 118 (36.9%) |
 | Micah 2 | 13 | 289 | 279 | 96.5% | 82.4% | 160 (55.4%) |
-| Micah 3 | 12 | 292 | 212 | 72.6% | 46.9% | — |
+| Micah 3 | 12 | 292 | 292 | 100.0% | 86.6% | 157 (53.8%) |
 | Micah 4 | 13 | 345 | 265 | 76.8% | 51.3% | — |
 | Micah 5 | 15 | 332 | 256 | 77.1% | 53.6% | — |
 | Micah 6 | 16 | 334 | 256 | 76.6% | 54.5% | — |
@@ -16,4 +16,4 @@ Derived without a Morpheus cache: none.
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Micah | 105 | 2,342 | 1,905 | 81.3% | 58.2% | 278 (11.9%) |
+| Micah | 105 | 2,342 | 1,985 | 84.8% | 63.1% | 435 (18.6%) |
