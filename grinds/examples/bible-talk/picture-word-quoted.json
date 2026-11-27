@@ -15,6 +15,7 @@
   "expect": {
     "answer": { "matches": "περιούσιος" },
     "words": { "present": false },
-    "words_to_add": { "present": false }
+    "words_to_add": { "present": false },
+    "setting_offer": { "present": false }
   }
 }
