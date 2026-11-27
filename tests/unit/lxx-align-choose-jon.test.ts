@@ -45,6 +45,13 @@ describe('the model pass files of Jonah', () => {
       }
     }
   });
+
+  it("has no leftover for 'clefts' and 'mountains': the verse map stands Brenton's 'to the clefts of the mountains;' at Swete's 2:6, where εἰς σχισμὰς ὀρέων is (mw-u2w5klk.349.157)", () => {
+    const keys = (readExpect('jon')!.chapters['2'].leftovers ?? []).map(([key]) => key);
+    expect(keys).not.toContain('2:7:clefts');
+    expect(keys).not.toContain('2:7:mountains');
+    expect(keys).toEqual(['2:11:lord']);
+  });
 });
 
 describe.skipIf(!real.run)('Jonah with the model pass', () => {
@@ -131,6 +138,14 @@ describe.skipIf(!real.run)('Jonah with the model pass', () => {
     expect(greek(1, 12, /tempest/)).toEqual(['ὁ', 'κλύδων', 'ὁ', 'μέγας', 'οὗτος']);
     expect(greek(1, 7, /^mischief/)).toEqual(['κακία']);
     expect(greek(1, 8, /occupation/)).toEqual(['σου', 'ἐργασία']);
+  });
+
+  it("stands 'to the clefts of the mountains;' in 2:6 on εἰς σχισμὰς ὀρέων, so 2:7 begins with 'I went down' (mw-u2w5klk.349.157)", () => {
+    expect(greek(2, 6, /^clefts$/)).toEqual(['σχισμὰς']);
+    expect(greek(2, 6, /^mountains;$/)).toEqual(['ὀρέων,']);
+    const seven = withModel.get(2)!.verses.find((v) => v.n === 7)!;
+    expect(seven.e.some((c) => /clefts|mountains/.test(c.t))).toBe(false);
+    expect(joined(withModel.get(2)!.verses.find((v) => v.n === 6)!)).toMatch(/my head went down to the clefts of the mountains;$/);
   });
 
   it('gives the verbs of the book the Greek word that renders them', () => {
