@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.419
+_2026-11-27_
+- Fixed: The Septuagint's Deuteronomy 15 and 31, Hosea 4 and Micah 4 now show their Greek like the rest of those books.
+
 ## 0.7.418
 _2026-11-27_
 - Fixed: after a drill, the tutor now reliably offers the table of the forms you missed, even when you ask what to drill.
