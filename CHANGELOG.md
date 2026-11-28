@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.438
+_2026-11-28_
+- Fixed: the Logos books group in the sermon sources list no longer says its books open at the verse you are reading; it says a book is offered where its sermons are known.
+
 ## 0.7.437
 _2026-11-28_
 - Fixed: the fade at the right of the tools line under a verse now sits on the door that is cut by the edge, instead of out to the right of it.
