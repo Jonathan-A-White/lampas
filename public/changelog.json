@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.434",
+    "date": "2026-11-28",
+    "story": "mw-82lb97i.47",
+    "kind": "fixed",
+    "text": "Skipping to the next verse while paused at a chapter's last verse now moves to the next chapter and stays paused instead of starting to read it."
+  },
+  {
     "version": "0.7.427",
     "date": "2026-11-27",
     "story": "mw-qtu3zvz.284",

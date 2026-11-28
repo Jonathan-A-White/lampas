@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.434
+_2026-11-28_
+- Fixed: Skipping to the next verse while paused at a chapter's last verse now moves to the next chapter and stays paused instead of starting to read it.
+
 ## 0.7.427
 _2026-11-27_
 - Fixed: asked "only on grace" with sermons listed, the tutor now names and links a sermon on grace instead of talking about the verse.
