@@ -78,8 +78,11 @@ One guard in the shell (`src/ui/tapGuard.ts`, started once by App; mw-5r3p30.597
 `screenOf` reads in the address: the route, the Verse view, a Paradigms table) and after any element of role `dialog` or `alertdialog` (every sheet,
 drill screen and confirm card) is put in or taken out of the page, and after a tap on a link that leaves the app (`target="_blank"` or another origin or
 scheme: Adopted in <version>, a study resource, Listen in Audible; mw-5r3p30.457, `tests/e2e/your-requests.spec.ts` counts the tabs), so the second tap of a double tap reaches nothing; no screen or sheet has code of
-its own for it. A spec or step that puts the moment back must wait it out (`SETTLE_MS + 100`) before its first tap on a screen or sheet that just
-opened, and before a tap beneath one that just closed; `features/tap-guard.feature`, `features/sheet-double-tap.feature`, `tests/unit/tap-guard.test.tsx`
+its own for it. The same holds for the speaking bar: a tap that takes it out of the page (its Stop, mw-82lb97i.44) and a tap that brings it in (a Play:
+the bar was not on the page at the tap and came within the moment of it, mw-ar5k42b.27; `tests/e2e/play-double-tap.spec.ts`) swallow taps for the moment.
+A spec or step that puts the moment back must wait it out (`SETTLE_MS + 100`) before its first tap on a screen or sheet that just
+opened, before a tap beneath one that just closed, and before its next tap after a Play that started a reading (`pageTime`; a reading too short to
+outlast the moment needs a slower fake voice); `features/tap-guard.feature`, `features/sheet-double-tap.feature`, `tests/unit/tap-guard.test.tsx`
 (which fails on a modal in `src/` without a dialog role, and on a file that asks for its own moment) and `tests/e2e/double-tap-guard.spec.ts` hold the proof.
 That spec double-taps on the page's clock (`tapTwice`, whose `between` may give the second tap another point when this size draws the Tester's control
 elsewhere) and waits for a new screen with `pageTime`; a screen that waits on its data is drawn in real time, so a target is measured once it is still.

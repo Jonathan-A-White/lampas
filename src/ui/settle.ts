@@ -6,7 +6,8 @@
 // test's Parsing drill button, the placement's quick round Say it again and Stop here; mw-hqd5bz.26, and the placement intro's buttons, which sit where Place me /
 // Place again sat on the Goal screen; mw-hqd5bz.27; Drill it's Hint and its Done after Finish, the short drill's Done, the letter drill's Done and
 // Another round, the Parsing drill's Ask the tutor | Talk about it and the reading drill's Skip this word; mw-5r3p30.430; the placement end card's
-// buttons, mw-86e9r1.22). Review and the placement's walk have none. A change of screen, and a sheet or confirm card as it opens and as it closes,
+// buttons, mw-86e9r1.22). Review and the placement's walk have none. A change of screen, a sheet or confirm card as it opens and as it closes, and the
+// speaking bar as a tap brings it into the page (a Play, mw-ar5k42b.27) or takes it out (its Stop, mw-82lb97i.44),
 // swallow every tap for the same moment (`swallowTaps`), called by the one app-wide guard (src/ui/tapGuard.ts, mw-5r3p30.597), not by any screen.
 // A control that flips a state inside one screen (Paradigms' Study | Review mode, Hide all and a reveal cell) takes one tap per moment (`oneTap`,
 // mw-svw421.41): the second tap of a double tap would flip it back, or land on the control that took its place. A control that a tap makes go away and
@@ -102,8 +103,9 @@ export function justTapped(key: string): boolean {
 const SWALLOWED = ['pointerdown', 'mousedown', 'click'] as const;
 
 /**
- * Drops every tap for `settle.ms` from now, wherever it lands. The app-wide guard calls it as a screen changes and as a sheet comes or goes
- * (src/ui/tapGuard.ts): the second tap of a double tap would land on whatever the next screen or sheet draws under the same spot. The tap that
+ * Drops every tap for `settle.ms` from now, wherever it lands. The app-wide guard calls it as a screen changes, as a sheet comes or goes and as a tap
+ * brings the speaking bar in or takes it out (src/ui/tapGuard.ts): the second tap of a double tap would land on whatever the next screen or sheet, or
+ * the page laid out again for the bar, draws under the same spot. The tap that
  * calls it is already past the window, so it goes through as it was. A press is only kept from the app (its default stays: a scroll still starts).
  */
 export function swallowTaps(): void {

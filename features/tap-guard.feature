@@ -43,3 +43,13 @@ Feature: A double tap that changes the screen or opens a sheet does nothing with
     Given he is on "#/?b=rom&c=8&view=greek" and a screen ignores taps for a moment
     When he taps the heading "Walking by the Spirit" and at once taps a word of its passage
     Then the passage is open with no word sheet over it
+
+  Scenario: A second tap on the Reader's Play does not turn the Reader to Greek
+    A Play brings the speaking bar into the page, and the page is laid out again for it: the header's Play leaves and the English | Greek switch slides into its
+    place (mw-ar5k42b.27). The bar coming at a tap swallows taps for the same moment.
+    Given he is on "#/?b=rom&c=8&view=english&weave=off" with a voice to read and a screen ignores taps for a moment
+    When he taps "Read from the top" and at once taps "Greek"
+    Then the chapter is being read and the Reader is still in English
+    When he waits a moment
+    And he taps "Greek"
+    Then the Reader is in Greek

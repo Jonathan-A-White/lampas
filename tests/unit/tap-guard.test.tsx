@@ -5,7 +5,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { navigate, openParadigm, openVerse, replaceHash, useRoute } from '../support/routes';
 import { settle, SETTLE_MS } from '../../src/ui/settle';
@@ -120,6 +120,130 @@ describe('the speaking bar going away at a tap on it takes no tap in the moment 
     await wait(120);
     tap('Beneath');
     expect(beneath).toHaveBeenCalledTimes(1);
+  });
+});
+
+// mw-ar5k42b.27: a Play brings the speaking bar into the page and the page is laid out again for it (the Reader's header loses its Play and the English | Greek switch slides into
+// its place, a foot's Play gives way to a Stop, a sheet's text is pushed up), so what the first tap put under the thumb took the second tap of a double tap
+describe('the speaking bar coming at a tap takes no tap in the moment after it', () => {
+  // a reading that starts or ends by itself, with no tap: the test moves the bar through these
+  const reading: { start: (slot?: 'foot' | 'sheet') => void; end: () => void } = { start: () => {}, end: () => {} };
+  const start = (slot?: 'foot' | 'sheet') => reading.start(slot);
+  const end = () => reading.end();
+  function Reader({ beneath, slid }: { beneath: () => void; slid: () => void }) {
+    useTapGuard();
+    const [bar, setBar] = useState<'none' | 'foot' | 'sheet'>('none');
+    useEffect(() => {
+      reading.start = (slot = 'foot') => setBar(slot);
+      reading.end = () => setBar('none');
+    }, []);
+    const drawn = (
+      <section data-testid="speaking-bar" aria-label="Speaking">
+        <button type="button" onClick={() => setBar('none')}>
+          Stop
+        </button>
+      </section>
+    );
+    return (
+      <>
+        {/* the header's Play leaves as the bar takes the reading, and its neighbour stands where it was */}
+        {bar === 'none' ? (
+          <button type="button" onClick={() => setBar('foot')}>
+            Play
+          </button>
+        ) : (
+          <button type="button" onClick={slid}>
+            Greek
+          </button>
+        )}
+        <button type="button" onClick={beneath}>
+          Beneath
+        </button>
+        <button type="button" onClick={() => setBar('sheet')}>
+          Move
+        </button>
+        <div data-speaking-slot="1">{bar === 'foot' ? drawn : null}</div>
+        <div data-speaking-slot="3">{bar === 'sheet' ? drawn : null}</div>
+      </>
+    );
+  }
+
+  it('swallows the second tap of a double tap on Play, on what slid into its place and on what lay beneath, and takes a tap after the moment', async () => {
+    const beneath = vi.fn();
+    const slid = vi.fn();
+    render(<Reader beneath={beneath} slid={slid} />);
+    tap('Play');
+    expect(screen.getByRole('region', { name: 'Speaking' })).toBeTruthy();
+    await wait(120);
+    tap('Greek');
+    tap('Beneath');
+    expect(slid).not.toHaveBeenCalled();
+    expect(beneath).not.toHaveBeenCalled();
+    await wait(SETTLE_MS);
+    tap('Greek');
+    tap('Beneath');
+    expect(slid).toHaveBeenCalledTimes(1);
+    expect(beneath).toHaveBeenCalledTimes(1);
+  });
+
+  it('holds the moment from when the bar came, not from the tap: a second tap just under a moment after the tap is still swallowed when the bar came late', async () => {
+    const beneath = vi.fn();
+    render(<Reader beneath={beneath} slid={() => {}} />);
+    tap('Beneath');
+    expect(beneath).toHaveBeenCalledTimes(1);
+    // the voice takes 300 ms to take the reading: the bar comes then, within the moment of the tap
+    await wait(300);
+    act(() => start());
+    await wait(SETTLE_MS - 50);
+    tap('Beneath');
+    expect(beneath).toHaveBeenCalledTimes(1);
+    await wait(100);
+    tap('Beneath');
+    expect(beneath).toHaveBeenCalledTimes(2);
+  });
+
+  it('swallows nothing for a bar that comes with no tap in the moment before it (a reading that starts by itself)', async () => {
+    const beneath = vi.fn();
+    render(<Reader beneath={beneath} slid={() => {}} />);
+    tap('Beneath');
+    await wait(SETTLE_MS + 50);
+    act(() => start());
+    await wait(120);
+    tap('Beneath');
+    expect(beneath).toHaveBeenCalledTimes(2);
+  });
+
+  it('swallows nothing for a bar that a tap moves to another slot, or that goes and comes back while it was up at the tap (the voice between two verses)', async () => {
+    const beneath = vi.fn();
+    render(<Reader beneath={beneath} slid={() => {}} />);
+    act(() => start());
+    await wait(SETTLE_MS + 50);
+    tap('Move');
+    expect(document.querySelector('[data-speaking-slot="3"] [data-testid="speaking-bar"]')).not.toBeNull();
+    await wait(120);
+    tap('Beneath');
+    expect(beneath).toHaveBeenCalledTimes(1);
+    await wait(SETTLE_MS + 50);
+    // a tap while the bar is up; then the bar is out of the page for a moment and back, by itself
+    tap('Beneath');
+    expect(beneath).toHaveBeenCalledTimes(2);
+    act(() => end());
+    await wait(20);
+    act(() => start('sheet'));
+    await wait(120);
+    // another control than the one just tapped (the same one twice in a moment is dropped whatever the bar does): the bar's own Stop takes the tap
+    tap('Stop');
+    expect(screen.queryByRole('region', { name: 'Speaking' })).toBeNull();
+  });
+
+  it('takes every tap at once while the moment is 0, as the other tests do', async () => {
+    settle.ms = 0;
+    const slid = vi.fn();
+    render(<Reader beneath={() => {}} slid={slid} />);
+    tap('Play');
+    await wait(120);
+    tap('Greek');
+    expect(slid).toHaveBeenCalledTimes(1);
   });
 });
 

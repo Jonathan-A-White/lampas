@@ -1,7 +1,7 @@
 // features/steps/tap-guard.steps.tsx — runs features/tap-guard.feature: the second tap of a double tap that changed the screen or opened a sheet lands, within
 // the settle moment, on what the first brought up, and does nothing (src/ui/tapGuard.ts); a tap after the moment works.
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -14,9 +14,12 @@ import { settle, SETTLE_MS } from '../../src/ui/settle';
 import { usageWritesSettled } from '../../src/tips/usageLog';
 import { seedHisWords } from '../../tests/support/his-words';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { stopReading } from '../../src/speech/readAloud';
+import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
+  stopReading();
   settle.ms = 0;
   vi.restoreAllMocks();
   cleanup();
@@ -160,6 +163,36 @@ describeFeature(feature, ({ Scenario }) => {
       await act(async () => {});
       expect(window.location.hash).toContain('p=1');
       expect(screen.queryByRole('dialog', { name: 'Word' })).toBeNull();
+    });
+  });
+
+  Scenario("A second tap on the Reader's Play does not turn the Reader to Greek", ({ Given, When, Then, And }) => {
+    const language = (name: string) => within(screen.getByRole('group', { name: 'Language' })).getByRole('button', { name });
+    Given('he is on {string} with a voice to read and a screen ignores taps for a moment', async (_: unknown, hash: string) => {
+      // the phone's voice (the honest fake on a clock held by hand: the reading stays at its first verse)
+      stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
+      await fresh(hash);
+      await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+    });
+    When('he taps {string} and at once taps {string}', async (_: unknown, first: string, second: string) => {
+      await user.click(byText(first));
+      // the speaking bar has taken the reading, and the header's Play has left
+      await waitFor(() => expect(screen.getByRole('region', { name: 'Speaking' })).toBeInTheDocument());
+      expect(screen.queryByRole('button', { name: first })).toBeNull();
+      await user.click(byText(second));
+    });
+    Then('the chapter is being read and the Reader is still in English', async () => {
+      await act(async () => {});
+      expect(screen.getByRole('region', { name: 'Speaking' })).toBeInTheDocument();
+      expect(language('English')).toHaveAttribute('aria-pressed', 'true');
+      expect(language('Greek')).toHaveAttribute('aria-pressed', 'false');
+      expect(window.location.hash).toContain('view=english');
+    });
+    When('he waits a moment', reads);
+    And('he taps {string}', (_: unknown, name: string) => user.click(byText(name)));
+    Then('the Reader is in Greek', async () => {
+      await waitFor(() => expect(language('Greek')).toHaveAttribute('aria-pressed', 'true'));
+      stopReading();
     });
   });
 });

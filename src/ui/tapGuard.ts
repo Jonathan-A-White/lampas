@@ -13,6 +13,11 @@
 // A tap on the speaking bar that takes the bar out of the page (its Stop) is a change too (mw-82lb97i.44): the text box grows into the bar's place, and the second tap of a double tap
 // landed on a word of it, or on the place line (the whole chapter in the Verse view). So the bar's last tap is noted, and the bar going within the moment of it swallows taps; a bar
 // that ends by itself, or moves to another slot, swallows nothing.
+// A tap that brings the bar INTO the page (a Play: Read from the top, Play verse 5, Play again, Hear the verse, Read aloud) is a change as well (mw-ar5k42b.27): the page is laid out
+// again for the bar. The Reader's header loses its Play and the English | Greek switch slides into its place (the second tap of a double tap turned the Reader to Greek, or opened
+// Choose a book on the chapter's name grown beside it); a foot's Play gives way to a Stop; a sheet's text is pushed up by the bar's height. So a tap made while no bar is on the page is
+// noted, and the bar coming within the moment of it swallows taps for a moment from then; a reading that starts by itself (no tap in the moment before it), a bar that moves to another
+// slot, and a bar that was up at the tap (the voice between two verses) swallow nothing. A foot or a header that swaps into the bar needs no code of its own.
 import { useEffect } from 'react';
 import { paradigmOf, readerOf, routeOf, watchAddress } from '../nav/route';
 import { settle, swallowTaps } from './settle';
@@ -67,15 +72,24 @@ export function startTapGuard(): () => void {
   });
   // a sheet comes or goes (or the Open in the app strip goes) in the commit of that tap; the observer hears it a microtask later, still long before a thumb's second tap
   let barTappedAt: number | null = null;
-  const onBar = (event: MouseEvent): void => {
+  // the last tap made while no bar was on the page: the one a bar that comes in its moment was brought by
+  let bareTappedAt: number | null = null;
+  const noteTap = (event: MouseEvent): void => {
     if (event.target instanceof Element && event.target.closest(BAR)) barTappedAt = performance.now();
+    bareTappedAt = document.querySelector(BAR) === null ? performance.now() : null;
   };
-  document.addEventListener('click', onBar, true);
+  document.addEventListener('click', noteTap, true);
+  const inMoment = (at: number | null): boolean => at !== null && performance.now() - at < settle.ms;
   const observer = new MutationObserver((records) => {
     if (records.some((record) => [...record.addedNodes, ...record.removedNodes].some(holdsModal) || [...record.removedNodes].some(holdsStrip))) swallowTaps();
     // the bar is gone (not moved to another slot) within the moment of a tap on it: that tap took it away
-    if (barTappedAt !== null && performance.now() - barTappedAt < settle.ms && records.some((record) => [...record.removedNodes].some(holdsBar)) && document.querySelector(BAR) === null) {
+    if (inMoment(barTappedAt) && records.some((record) => [...record.removedNodes].some(holdsBar)) && document.querySelector(BAR) === null) {
       barTappedAt = null;
+      swallowTaps();
+    }
+    // the bar has come (it was not on the page at the tap, so it has not moved from another slot) within the moment of a tap: that tap brought it, and the page is laid out again for it
+    if (inMoment(bareTappedAt) && records.some((record) => [...record.addedNodes].some(holdsBar)) && document.querySelector(BAR) !== null) {
+      bareTappedAt = null;
       swallowTaps();
     }
   });
@@ -107,7 +121,7 @@ export function startTapGuard(): () => void {
     stopWatching();
     document.removeEventListener('click', onLink, true);
     document.removeEventListener('click', onSame, true);
-    document.removeEventListener('click', onBar, true);
+    document.removeEventListener('click', noteTap, true);
     observer.disconnect();
   };
 }

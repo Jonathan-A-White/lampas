@@ -3,6 +3,9 @@
 // is over in a moment and has no bar. A screen with a bottom edge leaves a <BarSlot level> there, and the bar is drawn into the highest
 // one that is on screen: the shell's foot (level 0), the Reader at its foot (1), the Verse view above its hold bar (2), the Talk sheet above its
 // foot (3). So there is one bar, in flow and never over text or behind a sheet, and a screen that pushes its own controls up stays reachable.
+// The bar coming into the page pushes what is above its slot up, and the foot or header it takes the reading from is laid out again (the Reader's header loses its Play, the Verse
+// view's foot turns to Stop): the app-wide tap guard (src/ui/tapGuard.ts) sees either bar come and go by its data-testid, and a tap that brings it in (mw-ar5k42b.27) or takes it
+// out (mw-82lb97i.44) swallows taps for the settle moment, so no foot or header here has a guard of its own for the second tap of a double tap.
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { SpeakingBar } from 'voice-kit/speech/react';
