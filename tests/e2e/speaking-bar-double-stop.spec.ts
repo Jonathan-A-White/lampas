@@ -105,10 +105,10 @@ const VOICES: Array<[string, Voice]> = [
 ];
 
 /** A licensed phone with the settle moment as on his phone (openUnlocked's 0 put back by an init script that runs after it: unset, the moment is SETTLE_MS), John 3 in English opened. */
-async function openJohn3(page: Page, voice: Voice): Promise<void> {
+async function openJohn3(page: Page, voice: Voice, msPerWord = 5): Promise<void> {
   await openUnlocked(page);
   await page.addInitScript(() => window.localStorage.removeItem('lampas.settleMs'));
-  await honestSpeech(page, { msPerWord: 5 });
+  await honestSpeech(page, { msPerWord });
   await stubRecording(page);
   await page.goto('/');
   await keep(page, 'bibleVoice', voice === 'phone' ? 'phone' : 'msb-david');
@@ -125,6 +125,10 @@ async function openJohn3(page: Page, voice: Voice): Promise<void> {
 
 const bar = (page: Page) => page.getByRole('region', { name: 'Speaking', exact: true });
 const stop = (page: Page) => bar(page).getByRole('button', { name: 'Stop', exact: true });
+
+/** The tap that started the reading brought the bar into the page, and the page takes no tap for the settle moment after that (src/ui/tapGuard.ts, mw-ar5k42b.27): the page's clock runs
+ * through it, so the Stop tapped next is a tap of its own and not the second of a double tap on Play. */
+const afterPlay = (page: Page): Promise<void> => pageTime(page, 1000);
 
 const hashOf = (page: Page): Promise<string> => page.evaluate(() => window.location.hash);
 
@@ -154,6 +158,7 @@ for (const [name, voice] of VOICES) {
       await page.getByRole('button', { name: 'Read from the top', exact: true }).click();
       await expect(page.locator('[data-reading-bar]')).toContainText('Reading verse 1');
       await expect(page.locator('[data-speaking-slot="1"] [data-testid="speaking-bar"]')).toHaveCount(1);
+      await afterPlay(page);
       await stopTwice(page, gap);
       await readerStill(page);
       await expect(page.getByRole('button', { name: 'Read from the top', exact: true })).toBeVisible();
@@ -168,6 +173,7 @@ for (const [name, voice] of VOICES) {
     await openJohn3(page, voice);
     await page.getByRole('button', { name: 'Read from the top', exact: true }).click();
     await expect(page.locator('[data-reading-bar]')).toContainText('Reading verse 1');
+    await afterPlay(page);
     await openSettings(page);
     await expect(settingsHeading(page)).toBeVisible();
     await pageTime(page, 1000);
@@ -177,12 +183,14 @@ for (const [name, voice] of VOICES) {
   });
 
   test(`the Verse view (level 2), John 3:16 read by ${name}: Stop tapped twice 100 ms apart acts on nothing under the bar`, async ({ page }) => {
-    await openJohn3(page, voice);
+    // one verse, and the phone voice must still be reading it once the moment after its Play has passed (afterPlay): 200 ms a word
+    await openJohn3(page, voice, 200);
     const view = await openVerseView(page, 16);
     await pageTime(page, 2000);
     await view.getByRole('button', { name: 'Listen', exact: true }).click();
     await view.getByRole('button', { name: 'Play verse 16', exact: true }).click();
     await expect(page.locator('[data-speaking-slot="2"] [data-testid="speaking-bar"]')).toHaveCount(1);
+    await afterPlay(page);
     await stopTwice(page, 100);
     await expect(view).toBeVisible();
   });
@@ -209,6 +217,7 @@ test('the Talk sheet (level 3), the tutor’s answer read aloud by the phone voi
   await pageTime(page, 1000);
   await sheet.getByRole('button', { name: 'Read aloud', exact: true }).click();
   await expect(page.locator('[data-speaking-slot="3"] [data-testid="speaking-bar"]')).toHaveCount(1);
+  await afterPlay(page);
   const before = await hashOf(page);
   await tapTwice(page, stop(page), 100, { touch: true });
   await pageTime(page, 1000);
