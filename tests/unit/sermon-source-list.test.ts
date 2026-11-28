@@ -174,7 +174,10 @@ describe('the one list of sermon sources', () => {
     expect(countLine(17, 120)).toBe('17 of 120 on');
     expect(countLine(0, 120)).toBe('none of 120 on');
     expect(GROUP_WORDS.listed.title).toBe('Listed by passage');
-    expect(GROUP_WORDS.books.title).toBe('Logos books, at the verse');
+    // a book is offered at a verse only where its sermons are known (mw-qtu3zvz.239), so the group never says it opens at the verse you are reading
+    expect(GROUP_WORDS.books.title).toBe('Logos books, where sermons are known');
+    expect(GROUP_WORDS.books.line).toBe('Under In Logos a book is offered only at a verse where its sermons are known, and opens at that sermon.');
+    expect(`${GROUP_WORDS.books.title} ${GROUP_WORDS.books.line}`).not.toMatch(/at the verse/);
   });
 });
 

@@ -170,7 +170,7 @@ test('120 sources: the row in Settings, the top of the list, a search, All off a
   await expect(listed.getByRole('heading', { name: 'Listed by passage', level: 2 })).toBeVisible();
   await expect(listed.getByTestId('group-count')).toHaveText(`${LISTS_ON} of ${LISTS} on`);
   await expect(listed.getByText('Each sermon is listed at its verse. The count on the Sermons door is these.')).toBeVisible();
-  await expect(books.getByRole('heading', { name: 'Logos books, at the verse', level: 2 })).toBeAttached();
+  await expect(books.getByRole('heading', { name: 'Logos books, where sermons are known', level: 2 })).toBeAttached();
   await expect(books.getByTestId('group-count')).toHaveText(`3 of ${BOOKS.length} on`);
   await expect(page.locator('[data-source]')).toHaveCount(TOTAL);
   // every source once, each Off | On and none with a Pin; a list stands for its books
@@ -196,7 +196,7 @@ test('120 sources: the row in Settings, the top of the list, a search, All off a
 
   // scrolled into the list the field and the status line stay at the top of it; the second group begins after the first
   const screen = (await page.locator('.screen').boundingBox())!;
-  await books.getByRole('heading', { name: 'Logos books, at the verse', level: 2 }).scrollIntoViewIfNeeded();
+  await books.getByRole('heading', { name: 'Logos books, where sermons are known', level: 2 }).scrollIntoViewIfNeeded();
   const stuck = (await field.boundingBox())!;
   expect(stuck.y).toBeGreaterThanOrEqual(screen.y - 1);
   expect(stuck.y).toBeLessThan(screen.y + 24);

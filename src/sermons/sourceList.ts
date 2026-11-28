@@ -9,7 +9,7 @@ import { sourceKey, sourceOffered } from './enabled';
 import { matching } from '../ui/listFilter';
 import type { SermonSource } from './types';
 
-/** The two groups of the list, named by what On gives: each sermon at its verse, or one link to the whole book at the verse. */
+/** The two groups of the list, named by what On gives: each sermon at its verse, or a Logos book offered at the verses where its sermons are known. */
 export type SourceGroup = 'listed' | 'books';
 
 export const GROUP_ORDER: readonly SourceGroup[] = ['listed', 'books'];
@@ -17,7 +17,7 @@ export const GROUP_ORDER: readonly SourceGroup[] = ['listed', 'books'];
 /** A group's heading and the one line under it. */
 export const GROUP_WORDS: Record<SourceGroup, { title: string; line: string }> = {
   listed: { title: 'Listed by passage', line: 'Each sermon is listed at its verse. The count on the Sermons door is these.' },
-  books: { title: 'Logos books, at the verse', line: 'Logos opens the book at the verse you are reading. Lampas cannot say which sermons it holds there.' },
+  books: { title: 'Logos books, where sermons are known', line: 'Under In Logos a book is offered only at a verse where its sermons are known, and opens at that sermon.' },
 };
 
 /** One row of the list. */

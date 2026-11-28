@@ -83,7 +83,7 @@ const INFO: Record<Kind, Omit<KindInfo, 'kind'>> = {
   sermons: {
     plural: 'Sermon books',
     singular: 'Sermon book',
-    help: `A book of sermons is switched in ${SERMON_SOURCES_PLACE}, with every other sermon source, each Off or On. One that is on opens at the verse you are reading, under In Logos on the Sermons sheet.`,
+    help: `A book of sermons is switched in ${SERMON_SOURCES_PLACE}, with every other sermon source, each Off or On. One that is on is offered under In Logos on the Sermons sheet at a verse where its sermons are known.`,
     steps: 'on',
   },
 };

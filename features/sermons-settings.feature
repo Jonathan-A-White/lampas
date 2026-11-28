@@ -45,7 +45,7 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
     Then the search field reads "Search 9 sermon sources"
     And the status line reads "3 of 9 on"
     And the group "Listed by passage" reads "3 of 4 on" and holds "Test Laurie's sermons"
-    And the second group "Logos books, at the verse" reads "none of 5 on"
+    And the second group "Logos books, where sermons are known" reads "none of 5 on"
     And the list has no source "Greg Laurie Sermon Archive"
     And a sermon book his import lacks is not listed
     And no source has a Pin
@@ -55,7 +55,7 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
     When he turns the first sermon book to "On"
     Then that sermon book is "on" on his shelf
     And the status line reads "4 of 9 on"
-    And the second group "Logos books, at the verse" reads "1 of 5 on"
+    And the second group "Logos books, where sermons are known" reads "1 of 5 on"
 
   Scenario: With a search typed the two buttons act on what is shown, and Undo puts it back
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
