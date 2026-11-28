@@ -2,7 +2,7 @@
   "name": "lampas",
   "private": true,
   "license": "MIT",
-  "version": "0.7.431",
+  "version": "0.7.432",
   "type": "module",
   "scripts": {
     "predev": "node scripts/audio-index.mjs",
