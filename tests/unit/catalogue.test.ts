@@ -477,6 +477,15 @@ describe('the sermons kind holds sermons, in words a reader can read (mw-qtu3zvz
     expect(RULES.values.sermons).toMatch(/where its sermons are known/);
   });
 
+  it('names no one in the third person in any kind: every entry value, the rules\u2019 value lines and each id, type and series value (mw-qtu3zvz.128)', () => {
+    const third = /\b(his|He|His|he is|he checks)\b|\bhe\b/;
+    expect(CATALOGUE.length).toBeGreaterThan(0);
+    for (const e of CATALOGUE) expect(e.value, `${e.kind} ${e.resource}`).not.toMatch(third);
+    for (const kind of KINDS) expect(RULES.values[kind], kind).not.toMatch(third);
+    const rules = RULES as unknown as { ids: { resource: string; value?: string }[]; types: { type: string; value?: string }[]; series: { series?: string; value?: string }[] };
+    for (const r of [...rules.ids, ...rules.types, ...rules.series]) expect(r.value ?? '', JSON.stringify(r).slice(0, 80)).not.toMatch(third);
+  });
+
   it('names no one in the third person: the sermons value, the rules’ value line and the bundled index (.105)', () => {
     expect(sermons.length).toBeGreaterThan(0);
     for (const e of sermons) expect(e.value, e.resource).not.toMatch(/\bhis\b|\bhe is\b|\bHis\b/);
