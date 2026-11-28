@@ -82,7 +82,8 @@ its own for it. The same holds for the speaking bar: a tap that takes it out of 
 the bar was not on the page at the tap and came within the moment of it, mw-ar5k42b.27; `tests/e2e/play-double-tap.spec.ts`) swallow taps for the moment.
 A spec or step that puts the moment back must wait it out (`SETTLE_MS + 100`) before its first tap on a screen or sheet that just
 opened, before a tap beneath one that just closed, and before its next tap after a Play that started a reading (`pageTime`; a reading too short to
-outlast the moment needs a slower fake voice); `features/tap-guard.feature`, `features/sheet-double-tap.feature`, `tests/unit/tap-guard.test.tsx`
+outlast the moment needs a slower fake voice) or after a fake tutor's or mill's answer that is read aloud the instant a tap or a hold's release sent for it
+(a real answer takes seconds; `tests/e2e/reading-drill.spec.ts`, `tests/e2e/double-tap-guard.spec.ts` mw-1vuvq6.10); `features/tap-guard.feature`, `features/sheet-double-tap.feature`, `tests/unit/tap-guard.test.tsx`
 (which fails on a modal in `src/` without a dialog role, and on a file that asks for its own moment) and `tests/e2e/double-tap-guard.spec.ts` hold the proof.
 That spec double-taps on the page's clock (`tapTwice`, whose `between` may give the second tap another point when this size draws the Tester's control
 elsewhere) and waits for a new screen with `pageTime`; a screen that waits on its data is drawn in real time, so a target is measured once it is still.

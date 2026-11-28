@@ -409,7 +409,12 @@ test('mw-1vuvq6.10: a double tap on the bridge idea sheet\'s Done leaves the tal
   await reads(page);
   await (await talkField(talk)).fill('Why is the genitive used here?');
   await talk.getByRole('button', { name: 'Send', exact: true }).click();
-  await talk.getByRole('button', { name: 'Take me there: The Greek alphabet' }).click();
+  const there = talk.getByRole('button', { name: 'Take me there: The Greek alphabet' });
+  await expect(there).toBeVisible();
+  // the fake tutor answers at once and the answer is read aloud: the speaking bar comes within the moment of the Send tap, and the page takes no tap for a moment after it
+  // (src/ui/tapGuard.ts, mw-ar5k42b.27); a real answer takes seconds
+  await reads(page);
+  await there.click();
   const idea = ideas(page);
   await expect(idea.getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);

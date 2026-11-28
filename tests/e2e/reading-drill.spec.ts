@@ -109,8 +109,14 @@ test('a double tap on Next word skips no word, and one on Finish leaves the end 
   const bar = page.getByRole('button', { name: 'Hold to read verse 28', exact: true });
   await holdFor(page, bar, HOLD_MS);
   await expect(panel).toContainText('Words to fix');
+  // The fake mill answers at once and the verdict is read aloud: the speaking bar comes within the moment of the hold's release, and the page takes no tap for a moment
+  // after it (src/ui/tapGuard.ts, mw-ar5k42b.27); a real verdict takes seconds. He hears it out before his next press.
+  await pageTime(page, SETTLE_MS + 100);
   await holdFor(page, bar, HOLD_MS);
-  await panel.getByRole('button', { name: 'Drill this sound', exact: true }).click();
+  const drillIt = panel.getByRole('button', { name: 'Drill this sound', exact: true });
+  await expect(drillIt).toBeVisible();
+  await pageTime(page, SETTLE_MS + 100);
+  await drillIt.click();
   const drill = page.getByRole('dialog', { name: 'Reading drill' });
   // a sheet that opens takes no tap in its first moment (src/ui/tapGuard.ts, mw-i7xe0n.26): he reads it first
   await expect(drill).toBeVisible();
@@ -122,6 +128,8 @@ test('a double tap on Next word skips no word, and one on Finish leaves the end 
     await expect(drill).toContainText(`Word ${i + 1} of 5`);
     await holdFor(page, drill.getByRole('button', { name: /^Hold to read / }), HOLD_MS);
     await expect(drill).toContainText('Well read');
+    // a verdict read aloud at once brings the speaking bar within the moment of the hold's release (see above): the moment passes before the double tap
+    await pageTime(page, SETTLE_MS + 100);
     // 120 ms apart on the page's clock, inside the new word's settle moment, though this host delivers the second tap 400 ms of real time late
     await tapTwice(page, drill.getByRole('button', { name: i === 4 ? 'Finish' : 'Next word', exact: true }), 120, { lagMs: 400 });
     if (i < 4) {
