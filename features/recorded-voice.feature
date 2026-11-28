@@ -261,6 +261,29 @@ Feature: The recorded voice reads a chapter that has timings
     And the audio element plays the recording of John 4 from its start
     And verse 1 is marked as being read
 
+  Scenario: Next verse on a paused Play to End at the last verse of John 3 opens John 4 and stays paused (mw-82lb97i.47)
+    Given John 3 is open in English with the recorded voice chosen
+    When he selects verse 36 and taps "Read from here"
+    And he taps "Pause" on the speaking bar
+    And he taps "Next verse" on the speaking bar
+    Then the Reader shows John 4
+    And the recording of John 4 is loaded, paused at its start
+    And verse 1 is marked as being read
+    And the reading is paused
+    And the speaking bar offers Resume in place of Pause
+    When he taps "Resume" on the speaking bar
+    Then the audio element plays the recording of John 4 from its start
+
+  Scenario: The lock screen's next track on a paused Play to End at the last verse of John 3 opens John 4 and stays paused (mw-82lb97i.47)
+    Given John 3 is open in English with the recorded voice chosen
+    When he selects verse 36 and taps "Read from here"
+    And he taps "Pause" on the speaking bar
+    And he presses Next on the lock screen
+    Then the Reader shows John 4
+    And the recording of John 4 is loaded, paused at its start
+    And the reading is paused
+    And the speaking bar offers Resume in place of Pause
+
   Scenario: A Listen of a section never leaves its section: Next verse at its last verse does nothing
     Given John 3 is open in English with the recorded voice chosen
     When he taps the heading "Jesus and Nicodemus"

@@ -5,10 +5,12 @@ import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChapterTimings } from '../../src/data/audioTimings';
 import type { Chapter } from '../../src/data/chapter';
+import { forgetChapters } from '../../src/data/chapter';
 import { clearBus } from '../../src/events/bus';
-import { planOf, getReading, pauseReading, startReading, stopReading } from '../../src/speech/readAloud';
+import { continueReading, planOf, getReading, pauseReading, resumeReading, startReading, stopReading } from '../../src/speech/readAloud';
 import { resetMediaSession } from '../../src/speech/mediaSession';
 import { recordingElement, resetRecordedVoice, setBibleVoice } from '../../src/speech/recordedVoice';
+import { afterTurns } from '../support/turns';
 import { stubAudio, type FakeAudio } from '../support/fake-audio';
 import { stubMediaSession, unstubMediaSession, type FakeMediaSession } from '../support/fake-media-session';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../support/fake-speech';
@@ -19,6 +21,13 @@ const TIMINGS: ChapterTimings = {
   audio: 'https://example.test/jhn-3.mp3',
   duration: 400,
   verses: chapter.verses.map((v, i): [number, number, number] => [v.n, 3 + i * 10, 3 + (i + 1) * 10]),
+};
+
+const john4 = JSON.parse(readFileSync('public/data/jhn/4.json', 'utf8')) as Chapter;
+const TIMINGS4: ChapterTimings = {
+  audio: 'https://example.test/jhn-4.mp3',
+  duration: 600,
+  verses: john4.verses.map((v, i): [number, number, number] => [v.n, 3 + i * 10, 3 + (i + 1) * 10]),
 };
 
 let session: FakeMediaSession;
@@ -100,6 +109,30 @@ describe('a recorded reading on the lock screen', () => {
     session.handlers.previoustrack?.();
     expect(getReading().verse).toBe(1);
     expect(recordingElement()?.currentTime).toBe(0);
+  });
+
+  it('has a next track that leaves a paused Play to End paused when it crosses the chapter’s last verse (mw-82lb97i.47)', async () => {
+    const last = chapter.verses[chapter.verses.length - 1].n;
+    forgetChapters();
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(john4), { status: 200, headers: { 'Content-Type': 'application/json' } })));
+    startReading({ chapter: 3, plan: plan(), from: last, continuous: true, book: 'jhn', span: 'book', recorded: TIMINGS });
+    pauseReading();
+    expect(getReading()).toMatchObject({ status: 'paused', verse: last });
+    session.handlers.nexttrack?.();
+    // the reading crosses into John 4, still paused, and the recording does not play
+    await afterTurns();
+    expect(getReading()).toMatchObject({ status: 'paused', verse: null, crossing: { book: 'jhn', chapter: 4 } });
+    expect(audio.playing()).toBeNull();
+    expect(session.playbackState).toBe('paused');
+    // the Reader that opens John 4 hands over its plan: the recording waits at verse 1, paused
+    continueReading({ book: 'jhn', chapter: 4, plan: planOf(john4.verses, 'english', null), recorded: TIMINGS4 });
+    expect(getReading()).toMatchObject({ status: 'paused', verse: 1, crossing: null });
+    expect(audio.playing()).toBeNull();
+    expect(recordingElement()?.src).toBe(TIMINGS4.audio);
+    expect(recordingElement()?.currentTime).toBe(0);
+    resumeReading();
+    expect(audio.playing()).toBe(recordingElement());
+    expect(getReading().status).toBe('reading');
   });
 
   it('is cleared when the reading ends: no metadata, state none, no handlers', () => {

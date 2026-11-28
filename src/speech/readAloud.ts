@@ -145,6 +145,8 @@ let completed: string | null = null;
 let recording: ChapterTimings | null = null;
 /** the last verse the recording plays to: at its end the reading goes on as at the end of a spoken verse (afterVerse) */
 let recordedUntil = 0;
+/** A paused recorded reading was skipped on past a chapter's last verse (skipRecordedVerse): the next chapter is opened for it and waits there, paused (mw-82lb97i.47). */
+let holdOnCross = false;
 /** The lock screen shows this reading (src/speech/mediaSession.ts, mw-82lb97i.7): a recording is, or was just, its sound, and it goes on into the next chapter's recording. The phone's voice never has one. */
 let lockScreen = false;
 const listeners = new Set<() => void>();
@@ -198,6 +200,7 @@ function finish(my: number, natural = false): void {
   lockScreen = false;
   letSleep();
   suspended = null;
+  holdOnCross = false;
   completed = natural ? state.listen : null;
   endedWhole = natural;
   set(IDLE);
@@ -387,7 +390,7 @@ function dropRecording(): void {
 }
 
 /** Plays the reading from verse `from` in `timings`; false when it cannot (the verse or the span's last verse is not in them), and the phone's voice reads instead. */
-function playFromRecording(timings: ChapterTimings, from: number, my: number, title: boolean): boolean {
+function playFromRecording(timings: ChapterTimings, from: number, my: number, title: boolean, held = false): boolean {
   const at = plan.findIndex((v) => v.n === from);
   const last = plan[lastIndexFrom(at)];
   const end = at >= 0 && last ? spanOf(timings, last.n)?.end : undefined;
@@ -404,6 +407,7 @@ function playFromRecording(timings: ChapterTimings, from: number, my: number, ti
       failed: () => recordingFailed(my),
     },
     title,
+    held,
   );
   if (!played) {
     recording = null;
@@ -505,6 +509,7 @@ export function startReading(options: StartOptions): void {
   } else suspended = null;
   startedWith = options.answer === undefined ? { ...options, notice: undefined } : startedWith;
   completed = null;
+  holdOnCross = false;
   resetInterrupts();
   dropRecording();
   lockScreen = false;
@@ -550,7 +555,9 @@ export function setAnswerGate(gate: ((go: () => void) => void) | null): void {
 export function continueReading(options: { book: string; chapter: number; plan: PlanVerse[]; recorded?: ChapterTimings; notice?: string }): void {
   const to = state.crossing;
   const first = options.plan[0];
-  if (state.status !== 'reading' || !to || to.book !== options.book || to.chapter !== options.chapter) return;
+  const held = holdOnCross && state.status === 'paused';
+  if ((state.status !== 'reading' && !held) || !to || to.book !== options.book || to.chapter !== options.chapter) return;
+  holdOnCross = false;
   plan = options.plan;
   chapterNumber = options.chapter;
   bookCode = options.book;
@@ -559,8 +566,11 @@ export function continueReading(options: { book: string; chapter: number; plan: 
   if (!first) return finish(epoch);
   const notice = noVoiceNotice(first.n, true) ?? options.notice ?? state.notice;
   set({ ...state, verse: first.n, notice, crossing: null });
-  if (options.recorded && playFromRecording(options.recorded, first.n, epoch, true)) return;
+  if (options.recorded && playFromRecording(options.recorded, first.n, epoch, true, held)) return;
+  // no recording for this chapter: the phone's voice has the verse, and a paused reading waits for his Resume
+  if (held) set({ ...state, status: 'reading' });
   readVerse(first.n, epoch);
+  if (held) pauseReading();
 }
 
 /** Pauses the speech where it is: the package keeps the sentence reached, and its bar offers Resume. */
@@ -577,6 +587,7 @@ export function pauseReading(): void {
 /** Reads on from the sentence it was paused at; when the voice was taken meanwhile (a word said alone), from the start of the verse. */
 export function resumeReading(): void {
   if (state.status !== 'paused' || (state.verse === null && !state.crossing)) return;
+  holdOnCross = false;
   if (recording && !state.crossing) {
     set({ ...state, status: 'reading' });
     keepAwake();
@@ -694,7 +705,7 @@ export function restartRecorded(): boolean {
  * seeks to the start of the verse before or after the one being read, however far into this one it is. A paused reading stays paused there, one in progress plays on from it, and the
  * verse mark follows at once. It stays inside the span: a verse reads only itself, a Listen of a section keeps to its section (the verse after its last, or before its first, is not
  * gone to), and the chapter's first verse has none before it. After the chapter's last verse a Play to End (Play to either) goes on into the next chapter's first verse, as it does
- * when the recording ends by itself (a paused one plays on there: the Reader opens the chapter only for a reading that plays), else nothing happens. False when it did nothing. */
+ * when the recording ends by itself (a paused one crosses paused: the next chapter opens with its recording waiting at its start, mw-82lb97i.47), else nothing happens. False when it did nothing. */
 export function skipRecordedVerse(by: -1 | 1): boolean {
   if (!recording || state.status === 'idle' || state.verse === null || state.crossing || state.answer !== null || loading || clipping) return false;
   const at = plan.findIndex((v) => v.n === state.verse);
@@ -708,10 +719,8 @@ export function skipRecordedVerse(by: -1 | 1): boolean {
   const to = at + by;
   if (to > last && by === 1 && at === plan.length - 1 && (reach === 'book' || reach === 'bible') && chapterAhead()) {
     const my = epoch;
-    if (state.status === 'paused') {
-      keepAwake();
-      set({ ...state, status: 'reading' });
-    }
+    // a paused reading crosses paused: the Reader opens the chapter and the recording waits at its start for his Resume (mw-82lb97i.47)
+    holdOnCross = state.status === 'paused';
     stopRecording();
     recordingReached(my);
     return true;
@@ -801,6 +810,7 @@ export function stopReading(): void {
   letSleep();
   suspended = null;
   completed = null;
+  holdOnCross = false;
   resetInterrupts();
   set(IDLE);
   publish({ kind: 'reading-stopped' });

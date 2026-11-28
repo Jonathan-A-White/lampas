@@ -401,8 +401,9 @@ function startOf(recording: ChapterTimings, n: number, title: boolean): number |
 /** Plays `recording` from the start of verse `from` to `until` seconds, telling `to` as it goes. `title` (the default) plays the recording's first verse from second 0, the
  * narrator's announcement included: a chapter, a book or the Bible from its beginning. A verse or a pericope passes false and starts at the verse's own second
  * (mw-82lb97i.28). The src carries the start as a media fragment (#t=) where the element is loaded afresh, so the browser begins there, and the element is silent until its
- * second is at the start. The element and its src are kept when it is the recording already loaded. Call it straight from the tap. */
-export function playRecording(recording: ChapterTimings, from: number, until: number, to: RecordingListener, title = true): boolean {
+ * second is at the start. The element and its src are kept when it is the recording already loaded. Call it straight from the tap. `held` loads and seeks it all but does not
+ * play: it waits at the verse's start, and resumeRecording plays it (a paused reading opened on a new chapter, mw-82lb97i.47). */
+export function playRecording(recording: ChapterTimings, from: number, until: number, to: RecordingListener, title = true, held = false): boolean {
   halt();
   const el = audio();
   withTitle = title;
@@ -418,7 +419,11 @@ export function playRecording(recording: ChapterTimings, from: number, until: nu
     listener = null;
     return false;
   }
-  play();
+  if (held) {
+    wantPlaying = false;
+    playToken++;
+    mute(false);
+  } else play();
   return true;
 }
 

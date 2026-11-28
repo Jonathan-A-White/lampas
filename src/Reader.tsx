@@ -526,7 +526,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // A crossing into another book (Genesis 50 into Exodus 1) waits, as a spoken start does, for that book's timings (timingsReady): the chapter is here before its timings file is (mw-rl10piw.29).
   const bibleVoice = useSetting(bibleVoiceSetting);
   useEffect(() => {
-    if (!(plan && crossingHere && readingStatus === 'reading' && bibleVoice !== undefined)) return;
+    // a paused reading is handed the chapter too: continueReading opens it paused only for a skip made while paused (readAloud.ts holdOnCross), else it waits for the Resume
+    if (!(plan && crossingHere && readingStatus !== 'idle' && bibleVoice !== undefined)) return;
     let live = true;
     void timingsReady(BOOK, bibleVoice).then(() => {
       if (!live) return;

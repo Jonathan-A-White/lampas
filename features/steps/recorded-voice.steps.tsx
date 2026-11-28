@@ -721,6 +721,47 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('verse {int} is marked as being read', marked);
   });
 
+  const john4PausedAtStart = async () => {
+    await waitFor(() => expect(getReading()).toMatchObject({ status: 'paused', crossing: null, verse: 1 }));
+    expect(audio.playing()).toBeNull();
+    // it was handed to the element and never played: only John 3's play() was made
+    expect(element().src).toBe(audioOf(4));
+    expect(element().currentTime).toBe(0);
+    expect(audio.playedAt).toEqual([startOf(36)]);
+  };
+
+  Scenario('Next verse on a paused Play to End at the last verse of John 3 opens John 4 and stays paused (mw-82lb97i.47)', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he selects verse {int} and taps {string}', selectAndReadFromHere);
+    And('he taps "Pause" on the speaking bar', () => onBar(null, 'Pause'));
+    And('he taps "Next verse" on the speaking bar', () => onBar(null, 'Next verse'));
+    Then('the Reader shows John 4', showsJohn4);
+    And('the recording of John 4 is loaded, paused at its start', john4PausedAtStart);
+    And('verse {int} is marked as being read', marked);
+    And('the reading is paused', () => expect(getReading().status).toBe('paused'));
+    And('the speaking bar offers Resume in place of Pause', firstIsResume);
+    When('he taps "Resume" on the speaking bar', () => onBar(null, 'Resume'));
+    Then('the audio element plays the recording of John 4 from its start', async () => {
+      await waitFor(() => expect(audio.playing()).toBe(recordingElement()));
+      expect(element().src).toBe(audioOf(4));
+      expect(element().currentTime).toBe(0);
+      expect(getReading()).toMatchObject({ status: 'reading', verse: 1 });
+    });
+  });
+
+  Scenario("The lock screen's next track on a paused Play to End at the last verse of John 3 opens John 4 and stays paused (mw-82lb97i.47)", ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he selects verse {int} and taps {string}', selectAndReadFromHere);
+    And('he taps "Pause" on the speaking bar', () => onBar(null, 'Pause'));
+    And('he presses Next on the lock screen', () => {
+      act(() => session.handlers.nexttrack?.());
+    });
+    Then('the Reader shows John 4', showsJohn4);
+    And('the recording of John 4 is loaded, paused at its start', john4PausedAtStart);
+    And('the reading is paused', () => expect(getReading().status).toBe('paused'));
+    And('the speaking bar offers Resume in place of Pause', firstIsResume);
+  });
+
   Scenario('A Listen of a section never leaves its section: Next verse at its last verse does nothing', ({ Given, When, Then, And }) => {
     Given(opened, () => open());
     When('he taps the heading {string}', tapSectionHeading);
