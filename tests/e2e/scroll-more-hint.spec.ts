@@ -177,3 +177,82 @@ for (const width of [412, 320]) {
     await shot(page, `scroll-more-rest-${width}`);
   });
 }
+
+/** The end fade against the row it cues (mw-fnvjof.17.164): where its edges stand against the row's right edge, and the door under it. */
+async function fadeOver(line: Locator) {
+  return line.evaluate((row) => {
+    const fade = row.parentElement?.querySelector('[data-scroll-fade="end"]');
+    if (!fade) return null;
+    const box = row.getBoundingClientRect();
+    const f = fade.getBoundingClientRect();
+    const under = [...row.querySelectorAll('button, a[href]')]
+      .map((el) => ({ name: (el.textContent ?? '').trim(), r: el.getBoundingClientRect() }))
+      .filter(({ r }) => r.width > 0 && r.left < f.right && r.right > f.left && r.right > box.right + 1);
+    return {
+      rowLeft: box.left,
+      rowRight: box.right,
+      fadeLeft: f.left,
+      fadeRight: f.right,
+      overlapsRow: f.left < box.right && f.right > box.left,
+      cut: under.map(({ name, r }) => ({ name, left: r.left, right: r.right })),
+    };
+  });
+}
+
+for (const state of ['at rest', 'after Memorize']) {
+  test(`390: ${state} the tools line's end fade lies on the row's right edge, over the cut door`, async ({ page }) => {
+    const { line, tools } = await openLuke(page, 390);
+    if (state === 'after Memorize') {
+      await tools.getByRole('button', { name: 'Memorize', exact: true }).click();
+      await expect(tools.getByRole('button', { name: 'Memorizing · English' })).toBeVisible();
+    }
+    await expect.poll(async () => (await stateOf(line)).end?.shown, 'a fade on the right').toBe(true);
+    const o = await fadeOver(line);
+    if (!o) throw new Error('no end fade');
+    expect(o.overlapsRow, 'the fade overlaps the scroll row').toBe(true);
+    expect(Math.abs(o.fadeRight - o.rowRight), 'the fade ends within 2 px of the row\'s right edge').toBeLessThanOrEqual(2);
+    expect(o.cut.length, 'a cut door is under the fade').toBeGreaterThan(0);
+    for (const door of o.cut) expect(door.left, `the fade's left edge is inside the cut door "${door.name}"`).toBeLessThan(o.fadeLeft);
+    await shot(page, `scroll-more-fade-over-${state === 'at rest' ? 'rest' : 'memorizing'}`);
+  });
+}
+
+/** Sweep (mw-fnvjof.17.164): every fade on the page, each against the sideways scroller it cues (the one in its wrapper): an end fade ends at the scroller's right edge and a start fade begins at its left edge, within 2 px. A wrapper wider than its scroll box (padding on it) stands a fade off the edge. */
+async function fadesOffTheirRows(page: Page): Promise<{ checked: number; off: string[] }> {
+  return page.evaluate(() => {
+    const off: string[] = [];
+    const fades = [...document.querySelectorAll('[data-scroll-fade]')];
+    for (const fade of fades) {
+      const side = fade.getAttribute('data-scroll-fade');
+      const scroller = [...(fade.parentElement?.children ?? [])].find((el) => el !== fade && /auto|scroll/.test(getComputedStyle(el).overflowX));
+      const label = `${side} fade of ${scroller ? scroller.tagName.toLowerCase() + ' ' + ([...scroller.attributes].map((a) => a.name).filter((n) => n.startsWith('data-') || n === 'aria-label').join(' ') || (scroller.className || '').toString().slice(0, 60)) : 'no scroller'}`;
+      if (!scroller) {
+        off.push(`${label}: its wrapper holds no sideways scroller`);
+        continue;
+      }
+      const row = scroller.getBoundingClientRect();
+      const f = fade.getBoundingClientRect();
+      const gap = side === 'end' ? Math.abs(f.right - row.right) : Math.abs(f.left - row.left);
+      if (gap > 2) off.push(`${label}: ${gap.toFixed(1)} px off the row's edge`);
+    }
+    return { checked: fades.length, off };
+  });
+}
+
+test('sweep 390: every fade on the Reader and on the Verse view stands on the edge of its own row', async ({ page }) => {
+  const { line, tools } = await openLuke(page, 390);
+  await expect.poll(async () => (await stateOf(line)).end?.shown, 'the tools line shows its fade').toBe(true);
+  const verse = await fadesOffTheirRows(page);
+  expect(verse.checked, 'the Verse view draws a fade').toBeGreaterThan(0);
+  expect(verse.off).toEqual([]);
+  await tools.getByRole('button', { name: 'Memorize', exact: true }).click();
+  await expect(tools.getByRole('button', { name: 'Memorizing · English' })).toBeVisible();
+  expect((await fadesOffTheirRows(page)).off).toEqual([]);
+  // the Reader's chips row, at the narrowest window
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto('/#/?b=luk&c=15');
+  await page.reload();
+  await expect(page.locator('[data-reader-chips]')).toBeAttached();
+  // the chips row stands in a padding-free wrapper, so wherever it overflows its fade is on its edge; it must not draw one off it
+  expect((await fadesOffTheirRows(page)).off).toEqual([]);
+});

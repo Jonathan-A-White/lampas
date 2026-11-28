@@ -70,3 +70,19 @@ describe('peekExtra over the tools line', () => {
     });
   }
 });
+
+// A fade is placed at its wrapper's edge, so a wrapper with padding stands it off the scroll box's edge over empty page (mw-fnvjof.17.164: the Verse view's Tools group has the ?'s room, 72 px).
+// jsdom has no layout, so this reads the wrapper classes of every ScrollMore; tests/e2e/scroll-more-hint.spec.ts measures the fades on the real rows.
+describe('a ScrollMore wrapper has no padding', () => {
+  const PADDING = /(^|\s)(?:[\w-]+:)*(?:p|px|pr|pl|ps|pe)-/;
+  const uses = files('src').filter((path) => /<ScrollMore\b/.test(readFileSync(path, 'utf8')));
+  it('finds the rows', () => expect(uses.length).toBeGreaterThan(2));
+  for (const path of uses) {
+    it(`${path}: wrapperClassName carries no padding`, () => {
+      const text = readFileSync(path, 'utf8');
+      for (const m of text.matchAll(/<ScrollMore\b[^>]*?wrapperClassName=(?:"([^"]*)"|\{`([^`]*)`\})/g)) {
+        expect(m[1] ?? m[2], `${path}: a padded wrapper stands the fade off the row's edge; wrap the row and ScrollFades in a padding-free relative div`).not.toMatch(PADDING);
+      }
+    });
+  }
+});
