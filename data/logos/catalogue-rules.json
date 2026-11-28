@@ -8,7 +8,7 @@
     "commentary": "The depth of his library at the verse he is reading: the tutor names what it argues and the link is where he checks it.",
     "bible": "The whole Bible from a reader that holds only the New Testament.",
     "devotional": "Today opens the day's reading in his own copy.",
-    "sermons": "Your own sermon archive opened at the verse you are reading: whatever Logos has indexed of it by passage is answered there, which Lampas cannot list."
+    "sermons": "Your own sermon archive, offered at a verse where its sermons are known and opened at that sermon: Lampas offers it nowhere else."
   },
   "works": [
     {"id":"calvin-commentaries","lang":"en","title":"Calvin's Commentaries","author":"John Calvin","kind":"commentary","source":"His Logos library listing of 2026-10-08 (vault plans/lampas-logos-library-2026-10-08.csv, ResourceId and ReferenceSupersets columns)"},

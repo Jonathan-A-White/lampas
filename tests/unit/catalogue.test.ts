@@ -470,6 +470,13 @@ describe('the sermons kind holds sermons, in words a reader can read (mw-qtu3zvz
     expect(bare.filter((e) => e.series === 'Early Church Fathers (Protestant Edition)').map((e) => e.resource)).toEqual([]);
   });
 
+  it('does not say a sermon book opens at the verse you are reading: it is offered only where its sermons are known (mw-qtu3zvz.285)', () => {
+    expect(sermons.length).toBeGreaterThan(0);
+    for (const e of sermons) expect(e.value, e.resource).not.toMatch(/opened at the verse you are reading|cannot list/);
+    expect(RULES.values.sermons).not.toMatch(/opened at the verse you are reading|cannot list/);
+    expect(RULES.values.sermons).toMatch(/where its sermons are known/);
+  });
+
   it('names no one in the third person: the sermons value, the rules’ value line and the bundled index (.105)', () => {
     expect(sermons.length).toBeGreaterThan(0);
     for (const e of sermons) expect(e.value, e.resource).not.toMatch(/\bhis\b|\bhe is\b|\bHis\b/);
