@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.436",
+    "date": "2026-11-28",
+    "story": "mw-ar5k42b.27",
+    "kind": "fixed",
+    "text": "A quick double tap on Play starts the reading and does nothing else: it no longer turns the Reader to Greek or opens the book chooser over the reading."
+  },
+  {
     "version": "0.7.435",
     "date": "2026-11-28",
     "story": "mw-82lb97i.48",

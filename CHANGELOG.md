@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.436
+_2026-11-28_
+- Fixed: A quick double tap on Play starts the reading and does nothing else: it no longer turns the Reader to Greek or opens the book chooser over the reading.
+
 ## 0.7.435
 _2026-11-28_
 - Fixed: Restart while one verse plays in David's recorded voice reads that verse again instead of jumping to the chapter's first verse.
