@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.437
+_2026-11-28_
+- Fixed: the fade at the right of the tools line under a verse now sits on the door that is cut by the edge, instead of out to the right of it.
+
 ## 0.7.436
 _2026-11-28_
 - Fixed: A quick double tap on Play starts the reading and does nothing else: it no longer turns the Reader to Greek or opens the book chooser over the reading.
