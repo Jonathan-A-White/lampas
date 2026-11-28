@@ -352,3 +352,61 @@ test.describe('a verse’s Play in David’s voice is silent until its start, an
     await page.getByRole('button', { name: 'Stop', exact: true }).first().click();
   });
 });
+
+// mw-82lb97i.48: John 1:50 played alone by the Verse view's Play, Restart tapped once it was a few seconds in, went back to the chapter's very start and read John 1:1 (restartListen
+// restarted from the plan's first verse, and a verse's Listen is started with the chapter's whole plan). Restart must read verse 50 again: from the tap on, the element is never
+// HEARD (playing, not muted, its volume above 0) below verse 50's start, and the reading is paused at verse 50's end, as a Play of it is.
+test('Restart on John 1:50 played alone by the Verse view’s Play reads verse 50 again, not John 1:1', async ({ page }) => {
+  test.setTimeout(120_000);
+  const other = await start(page);
+  const span = JOHN.chapters['1'].verses.find(([n]) => n === 50);
+  if (!span) throw new Error('no timing for John 1:50');
+  silentMp3(JOHN.chapters['1'].duration);
+  await openVerse(page, 1, 50);
+  const view = page.getByRole('region', { name: 'Verse view' });
+  const played = await plays(page);
+  await expect(async () => {
+    if ((await plays(page)) > played) return;
+    const play = view.getByRole('button', { name: 'Play verse 50', exact: true });
+    if (await play.isVisible()) await play.click();
+    expect(await plays(page), 'the Play tap was taken').toBeGreaterThan(played);
+  }).toPass({ intervals: [250, 500, 1000], timeout: 30_000 });
+  // his tap came about two seconds in (the element at 364.12 s)
+  await page.waitForFunction(
+    () => {
+      const a = (window as unknown as { lampasAudio?: HTMLMediaElement }).lampasAudio;
+      return !!a && !a.paused && a.currentTime > 364;
+    },
+    undefined,
+    { polling: 20, timeout: 30_000 },
+  );
+  // from here on, every second the element can be heard at, 10 ms apart and at each 'timeupdate', 'seeked' and 'playing'
+  await page.evaluate(() => {
+    const w = window as unknown as { lampasAudio: HTMLMediaElement; lampasHeardAfter: number[] };
+    w.lampasHeardAfter = [];
+    const look = (): void => {
+      const a = w.lampasAudio;
+      if (a && !a.paused && !a.muted && a.volume > 0 && a.readyState >= 3) w.lampasHeardAfter.push(a.currentTime);
+    };
+    setInterval(look, 10);
+    for (const type of ['timeupdate', 'seeked', 'playing']) w.lampasAudio.addEventListener(type, look);
+  });
+  const before = (await pauses(page)).length;
+  await page.getByTestId('speaking-bar').getByRole('button', { name: 'Restart', exact: true }).click();
+  await expect(view.getByRole('button', { name: 'Play again', exact: true })).toBeVisible({ timeout: 60_000 });
+  const heard = await page.evaluate(() => (window as unknown as { lampasHeardAfter: number[] }).lampasHeardAfter.slice());
+  expect(heard.length, 'the verse was heard again after Restart').toBeGreaterThan(0);
+  // verse 50 starts at 361.94 s; the player may start up to END_SLACK and a frame before it (src/speech/recordedVoice.ts)
+  expect(Math.min(...heard), `the least second heard after Restart (verse 50 starts at ${span[1]} s, verse 1 at 6.86 s)`).toBeGreaterThanOrEqual(361.85);
+  const at = (await pauses(page)).slice(before);
+  expect(at.length, 'the reading was paused after Restart').toBeGreaterThan(0);
+  const last = at[at.length - 1];
+  console.log(`Restart on John 1:50: pauses after the tap at ${at.map((s) => s.toFixed(2)).join(', ')} s; least second heard ${Math.min(...heard).toFixed(2)} s`);
+  // never more than 50 ms past 371.25 s (into verse 51's 'Then'); short of the end by no more than SHORT_MS, as every verse's stop in this spec: the element's second moves in bursts and
+  // may stand behind the sound when it is paused (1 Restart in 6 here stopped at 371.17 s, the other five at 371.21 to 371.23 s)
+  expect(last, `the second the reading was paused at (verse 50 ends at ${span[2]} s)`).toBeLessThanOrEqual(371.25 + 0.05);
+  expect(last, `the second the reading was paused at (verse 50 ends at ${span[2]} s)`).toBeGreaterThanOrEqual(span[2] - SHORT_MS / 1000);
+  expect(await spoken(page)).toEqual([]);
+  expect(other).toEqual([]);
+  await shot(page, 'recorded-voice-restart-john-1-50');
+});

@@ -677,14 +677,16 @@ function onBeside(): void {
 
 if (typeof window !== 'undefined') subscribeBeside(onBeside);
 
-/** The speaking bar's Restart on a Listen reads it again from its first verse (the package alone would restart the verse it is in). False when what is
+/** The speaking bar's Restart on a Listen reads it again from its first verse (the package alone would restart the verse it is in): a passage's or the chapter's from its plan's
+ * first, a verse's from that verse, which is all it reads (its plan is the whole chapter's, so the plan's first would be the chapter's verse 1, mw-82lb97i.48). False when what is
  * being read is not a Listen: the bar then restarts the speech as it always did. */
 export function restartListen(): boolean {
   // a reading of an answer (the passage player's too) never set startedWith: the bar restarts its speech
   if (state.listen === null || state.answer !== null || state.status === 'idle' || !startedWith) return false;
-  const first = startedWith.plan[0];
-  if (!first) return false;
-  startReading({ ...startedWith, from: first.n });
+  // a Listen started again where it was (after an answer, resumeParked) keeps its plan, so its first is still the plan's first; a verse's `from` is the verse itself
+  const first = startedWith.continuous ? startedWith.plan[0]?.n : startedWith.from;
+  if (first === undefined) return false;
+  startReading({ ...startedWith, from: first });
   return true;
 }
 

@@ -190,7 +190,7 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
   When δ' ends its stretch (the end of a run before an English chunk of a woven plan, or a one-letter word comes next) there is no word to join it to: `loneLetterCuts` cuts it
   off as its clip, the dh sound, on every phone (mw-5r3p30.657; the same test sweeps every plan kind).
 - **Listen is a Listen** (mw-5r3p30.130, `docs/verse-view.md` 'Listen is a player'): a reading started with `listen: <key>` is paused by an in-app interruption and goes on by itself when it ends
-  (`readAloud.ts` `interruptListen`; a word beside it, a Hold to ask, a recording, a tutor's answer); the speaking bar's Restart on it goes back to the first verse (`restartListen`); one that ran
+  (`readAloud.ts` `interruptListen`; a word beside it, a Hold to ask, a recording, a tutor's answer); the speaking bar's Restart on it goes back to the first verse of what was started (`restartListen`: a verse's Listen to that verse, never the chapter's verse 1, mw-82lb97i.48); one that ran
   to its end by itself is remembered (`useListenCompleted`) so the Verse view's foot says Play again.
 - **An interruption pauses, it does not end (mw-5r3p30.122).** A word, speaker or Tap to hear that speaks while a reading or a tutor's answer is under way (playing or
   paused) pauses it where it is (the package keeps the sentence, `greek.ts` `speakBeside`) and is said BESIDE it, straight to the phone's synthesiser: the bar stays,
