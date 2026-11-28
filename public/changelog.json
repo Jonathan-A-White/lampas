@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.435",
+    "date": "2026-11-28",
+    "story": "mw-82lb97i.48",
+    "kind": "fixed",
+    "text": "Restart while one verse plays in David's recorded voice reads that verse again instead of jumping to the chapter's first verse."
+  },
+  {
     "version": "0.7.434",
     "date": "2026-11-28",
     "story": "mw-82lb97i.47",

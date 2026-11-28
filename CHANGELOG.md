@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.435
+_2026-11-28_
+- Fixed: Restart while one verse plays in David's recorded voice reads that verse again instead of jumping to the chapter's first verse.
+
 ## 0.7.434
 _2026-11-28_
 - Fixed: Skipping to the next verse while paused at a chapter's last verse now moves to the next chapter and stays paused instead of starting to read it.
